@@ -7,7 +7,7 @@
     "speak-mcp": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup src/index.ts --format cjs --dts --clean",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "prepare": "npm run build"
@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
   }

@@ -10,7 +10,7 @@ export function register(server: McpServer): void {
     {
       isVideo: z
         .boolean()
-        .describe("Whether the file being uploaded is a video"),
+        .describe("Set true for video files, false for audio files"),
       filename: z.string().describe("Original filename including extension"),
       mimeType: z
         .string()
@@ -40,24 +40,39 @@ export function register(server: McpServer): void {
     "upload_media",
     "Upload a media file to Speak AI by providing a publicly accessible URL. Speak AI will fetch and process the file asynchronously.",
     {
-      mediaUrl: z
+      name: z.string().describe("Display name for the media file"),
+      url: z
         .string()
-        .url()
-        .optional()
-        .describe("Publicly accessible URL of the media file to import"),
-      fileName: z.string().optional().describe("Desired display name for the media file"),
+        .describe("Publicly accessible URL of the media file (or pre-signed S3 URL)"),
       mediaType: z
+        .enum(["audio", "video"])
+        .describe('Type of media: "audio" or "video"'),
+      description: z.string().optional().describe("Description of the media file"),
+      sourceLanguage: z
         .string()
         .optional()
-        .describe('Type of media: "audio" or "video"'),
+        .describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
+      tags: z
+        .string()
+        .optional()
+        .describe("Comma-separated tags for the media"),
       folderId: z
         .string()
         .optional()
         .describe("ID of the folder to place the media in"),
-      language: z
+      callbackUrl: z
         .string()
         .optional()
-        .describe('BCP-47 language code, e.g. "en" or "fr"'),
+        .describe("Webhook callback URL for this specific upload"),
+      fields: z
+        .array(
+          z.object({
+            id: z.string().describe("Custom field ID"),
+            value: z.string().describe("Custom field value"),
+          })
+        )
+        .optional()
+        .describe("Custom field values to attach to the media"),
     },
     async (body) => {
       try {
@@ -82,9 +97,9 @@ export function register(server: McpServer): void {
     "List all media files in the workspace with optional filtering, pagination, and sorting.",
     {
       mediaType: z
-        .string()
+        .enum(["audio", "video", "text"])
         .optional()
-        .describe('Filter by media type: "audio" or "video"'),
+        .describe('Filter by media type: "audio", "video", or "text"'),
       page: z
         .number()
         .int()
@@ -100,11 +115,12 @@ export function register(server: McpServer): void {
       sortBy: z
         .string()
         .optional()
-        .describe('Sort field, e.g. "createdAt" or "name"'),
+        .describe('Sort field and direction, e.g. "createdAt:desc" or "name:asc"'),
       filterMedia: z
-        .string()
+        .number()
+        .int()
         .optional()
-        .describe("Filter by media processing status"),
+        .describe("Filter: 0=Uploaded, 1=Assigned, 2=Both (default: 2)"),
       filterName: z
         .string()
         .optional()
@@ -113,6 +129,18 @@ export function register(server: McpServer): void {
         .string()
         .optional()
         .describe("Filter media within a specific folder"),
+      from: z
+        .string()
+        .optional()
+        .describe("Start date for date range filter (ISO 8601)"),
+      to: z
+        .string()
+        .optional()
+        .describe("End date for date range filter (ISO 8601)"),
+      isFavorites: z
+        .boolean()
+        .optional()
+        .describe("Filter to only show favorited media"),
     },
     async (params) => {
       try {
@@ -188,7 +216,7 @@ export function register(server: McpServer): void {
       speakers: z
         .array(
           z.object({
-            speakerId: z.string().describe("Internal speaker identifier"),
+            id: z.string().describe("Speaker identifier from the transcript"),
             name: z.string().describe("Display name to assign to the speaker"),
           })
         )
@@ -198,7 +226,7 @@ export function register(server: McpServer): void {
       try {
         const result = await speakClient.put(
           `/v1/media/speakers/${mediaId}`,
-          { speakers }
+          speakers
         );
         return {
           content: [
@@ -241,23 +269,31 @@ export function register(server: McpServer): void {
   // 8. Update media metadata
   server.tool(
     "update_media_metadata",
-    "Update metadata fields (e.g. title, description, tags) for an existing media file.",
+    "Update metadata fields (name, description, tags, status) for an existing media file.",
     {
       mediaId: z.string().describe("Unique identifier of the media file"),
-      title: z.string().optional().describe("New display title for the media"),
+      name: z.string().optional().describe("New display name for the media"),
       description: z.string().optional().describe("Description or notes for the media"),
-      language: z
-        .string()
-        .optional()
-        .describe("BCP-47 language code to override the detected language"),
       folderId: z
         .string()
         .optional()
         .describe("Move media to this folder ID"),
-      customFields: z
-        .record(z.unknown())
+      tags: z
+        .array(z.string())
         .optional()
-        .describe("Any additional custom metadata fields as key-value pairs"),
+        .describe("Array of tags to assign to the media"),
+      status: z
+        .string()
+        .optional()
+        .describe("Media status value"),
+      remark: z
+        .string()
+        .optional()
+        .describe("Internal remark or note"),
+      manageBy: z
+        .string()
+        .optional()
+        .describe("User ID to assign management of this media to"),
     },
     async ({ mediaId, ...body }) => {
       try {
