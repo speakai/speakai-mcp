@@ -1,8 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   // 1. Get signed upload URL
   server.tool(
     "get_signed_upload_url",
@@ -18,7 +20,7 @@ export function register(server: McpServer): void {
     },
     async ({ isVideo, filename, mimeType }) => {
       try {
-        const result = await speakClient.get("/v1/media/upload/signedurl", {
+        const result = await api.get("/v1/media/upload/signedurl", {
           params: { isVideo, filename, mimeType },
         });
         return {
@@ -76,7 +78,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/media/upload", body);
+        const result = await api.post("/v1/media/upload", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -144,7 +146,7 @@ export function register(server: McpServer): void {
     },
     async (params) => {
       try {
-        const result = await speakClient.get("/v1/media", { params });
+        const result = await api.get("/v1/media", { params });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -168,7 +170,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/media/insight/${mediaId}`);
+        const result = await api.get(`/v1/media/insight/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -192,7 +194,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/media/transcript/${mediaId}`);
+        const result = await api.get(`/v1/media/transcript/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -224,7 +226,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId, speakers }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           `/v1/media/speakers/${mediaId}`,
           speakers
         );
@@ -251,7 +253,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/media/status/${mediaId}`);
+        const result = await api.get(`/v1/media/status/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -297,7 +299,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId, ...body }) => {
       try {
-        const result = await speakClient.put(`/v1/media/${mediaId}`, body);
+        const result = await api.put(`/v1/media/${mediaId}`, body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -321,7 +323,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.delete(`/v1/media/${mediaId}`);
+        const result = await api.delete(`/v1/media/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },

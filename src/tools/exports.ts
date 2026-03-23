@@ -1,8 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   server.tool(
     "export_media",
     "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv, md).",
@@ -38,7 +40,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId, fileType, ...query }) => {
       try {
-        const result = await speakClient.post(
+        const result = await api.post(
           `/v1/media/export/${mediaId}/${fileType}`,
           null,
           { params: query }
@@ -98,7 +100,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post(
+        const result = await api.post(
           "/v1/media/exportMultiple",
           body
         );

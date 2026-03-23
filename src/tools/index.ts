@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 
 import * as media from "./media.js";
 import * as text from "./text.js";
@@ -26,8 +27,14 @@ const modules = [
   webhooks,
 ];
 
-export function registerAllTools(server: McpServer): void {
+/**
+ * Register all 45 MCP tools on a server instance.
+ * @param server - McpServer instance
+ * @param client - Optional custom axios client (for server-side use with per-request auth).
+ *                 If omitted, uses the default client from env vars (STDIO mode).
+ */
+export function registerAllTools(server: McpServer, client?: AxiosInstance): void {
   for (const mod of modules) {
-    mod.register(server);
+    mod.register(server, client);
   }
 }

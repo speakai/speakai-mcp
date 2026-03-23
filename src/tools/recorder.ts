@@ -1,8 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   server.tool(
     "check_recorder_status",
     "Check whether a recorder/survey is active and accepting submissions.",
@@ -11,7 +13,7 @@ export function register(server: McpServer): void {
     },
     async ({ token }) => {
       try {
-        const result = await speakClient.get(`/v1/recorder/status/${token}`);
+        const result = await api.get(`/v1/recorder/status/${token}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -34,7 +36,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/recorder/create", body);
+        const result = await api.post("/v1/recorder/create", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -57,7 +59,7 @@ export function register(server: McpServer): void {
     },
     async (params) => {
       try {
-        const result = await speakClient.get("/v1/recorder", { params });
+        const result = await api.get("/v1/recorder", { params });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -78,7 +80,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/recorder/clone", body);
+        const result = await api.post("/v1/recorder/clone", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -99,7 +101,7 @@ export function register(server: McpServer): void {
     },
     async ({ recorderId }) => {
       try {
-        const result = await speakClient.get(`/v1/recorder/${recorderId}`);
+        const result = await api.get(`/v1/recorder/${recorderId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -120,7 +122,7 @@ export function register(server: McpServer): void {
     },
     async ({ recorderId }) => {
       try {
-        const result = await speakClient.get(`/v1/recorder/recordings/${recorderId}`);
+        const result = await api.get(`/v1/recorder/recordings/${recorderId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -141,7 +143,7 @@ export function register(server: McpServer): void {
     },
     async ({ recorderId }) => {
       try {
-        const result = await speakClient.get(`/v1/recorder/url/${recorderId}`);
+        const result = await api.get(`/v1/recorder/url/${recorderId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -163,7 +165,7 @@ export function register(server: McpServer): void {
     },
     async ({ recorderId, settings }) => {
       try {
-        const result = await speakClient.put(`/v1/recorder/settings/${recorderId}`, settings);
+        const result = await api.put(`/v1/recorder/settings/${recorderId}`, settings);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -187,7 +189,7 @@ export function register(server: McpServer): void {
     },
     async ({ recorderId, questions }) => {
       try {
-        const result = await speakClient.put(`/v1/recorder/questions/${recorderId}`, { questions });
+        const result = await api.put(`/v1/recorder/questions/${recorderId}`, { questions });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -208,7 +210,7 @@ export function register(server: McpServer): void {
     },
     async ({ recorderId }) => {
       try {
-        const result = await speakClient.delete(`/v1/recorder/${recorderId}`);
+        const result = await api.delete(`/v1/recorder/${recorderId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };

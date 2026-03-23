@@ -1,15 +1,17 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   server.tool(
     "list_automations",
     "List all automation rules configured in the workspace.",
     {},
     async () => {
       try {
-        const result = await speakClient.get("/v1/automations");
+        const result = await api.get("/v1/automations");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -30,7 +32,7 @@ export function register(server: McpServer): void {
     },
     async ({ automationId }) => {
       try {
-        const result = await speakClient.get(`/v1/automations/${automationId}`);
+        const result = await api.get(`/v1/automations/${automationId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -57,7 +59,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/automations/", body);
+        const result = await api.post("/v1/automations/", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -85,7 +87,7 @@ export function register(server: McpServer): void {
     },
     async ({ automationId, ...body }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           `/v1/automations/${automationId}`,
           body
         );
@@ -110,7 +112,7 @@ export function register(server: McpServer): void {
     },
     async ({ automationId, enabled }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           `/v1/automations/status/${automationId}`,
           { enabled }
         );

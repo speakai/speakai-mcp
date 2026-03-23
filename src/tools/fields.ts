@@ -1,15 +1,17 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   server.tool(
     "list_fields",
     "List all custom fields defined in the workspace.",
     {},
     async () => {
       try {
-        const result = await speakClient.get("/v1/fields");
+        const result = await api.get("/v1/fields");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -35,7 +37,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/fields", body);
+        const result = await api.post("/v1/fields", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -58,7 +60,7 @@ export function register(server: McpServer): void {
     },
     async ({ fields }) => {
       try {
-        const result = await speakClient.post("/v1/fields/multi", { fields });
+        const result = await api.post("/v1/fields/multi", { fields });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -85,7 +87,7 @@ export function register(server: McpServer): void {
     },
     async ({ id, ...body }) => {
       try {
-        const result = await speakClient.put(`/v1/fields/${id}`, body);
+        const result = await api.put(`/v1/fields/${id}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };

@@ -1,8 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   server.tool(
     "create_webhook",
     "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
@@ -15,7 +17,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/webhook", body);
+        const result = await api.post("/v1/webhook", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -34,7 +36,7 @@ export function register(server: McpServer): void {
     {},
     async () => {
       try {
-        const result = await speakClient.get("/v1/webhook");
+        const result = await api.get("/v1/webhook");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -60,7 +62,7 @@ export function register(server: McpServer): void {
     },
     async ({ webhookId, ...body }) => {
       try {
-        const result = await speakClient.put(`/v1/webhook/${webhookId}`, body);
+        const result = await api.put(`/v1/webhook/${webhookId}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -81,7 +83,7 @@ export function register(server: McpServer): void {
     },
     async ({ webhookId }) => {
       try {
-        const result = await speakClient.delete(`/v1/webhook/${webhookId}`);
+        const result = await api.delete(`/v1/webhook/${webhookId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };

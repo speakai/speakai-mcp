@@ -1,15 +1,17 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   server.tool(
     "list_prompts",
     "List all available Magic Prompt templates for AI-powered questions about your media.",
     {},
     async () => {
       try {
-        const result = await speakClient.get("/v1/prompt");
+        const result = await api.get("/v1/prompt");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -35,7 +37,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/prompt", body);
+        const result = await api.post("/v1/prompt", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };

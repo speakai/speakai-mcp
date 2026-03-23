@@ -1,8 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   // Folder Views
   server.tool(
     "get_all_folder_views",
@@ -10,7 +12,7 @@ export function register(server: McpServer): void {
     {},
     async () => {
       try {
-        const result = await speakClient.get("/v1/folders/views");
+        const result = await api.get("/v1/folders/views");
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -33,7 +35,7 @@ export function register(server: McpServer): void {
     },
     async ({ folderId }) => {
       try {
-        const result = await speakClient.get(`/v1/folders/${folderId}/views`);
+        const result = await api.get(`/v1/folders/${folderId}/views`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -61,7 +63,7 @@ export function register(server: McpServer): void {
     },
     async ({ folderId, ...body }) => {
       try {
-        const result = await speakClient.post(
+        const result = await api.post(
           `/v1/folders/${folderId}/views`,
           body
         );
@@ -93,7 +95,7 @@ export function register(server: McpServer): void {
     },
     async ({ folderId, viewId, ...body }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           `/v1/folders/${folderId}/views/${viewId}`,
           body
         );
@@ -119,7 +121,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/folders/views/clone", body);
+        const result = await api.post("/v1/folders/views/clone", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -148,7 +150,7 @@ export function register(server: McpServer): void {
     },
     async (params) => {
       try {
-        const result = await speakClient.get("/v1/folder", { params });
+        const result = await api.get("/v1/folder", { params });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -171,7 +173,7 @@ export function register(server: McpServer): void {
     },
     async ({ folderId }) => {
       try {
-        const result = await speakClient.get(`/v1/folder/${folderId}`);
+        const result = await api.get(`/v1/folder/${folderId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -198,7 +200,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/folder", body);
+        const result = await api.post("/v1/folder", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -221,7 +223,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/folder/clone", body);
+        const result = await api.post("/v1/folder/clone", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -245,7 +247,7 @@ export function register(server: McpServer): void {
     },
     async ({ folderId, ...body }) => {
       try {
-        const result = await speakClient.put(`/v1/folder/${folderId}`, body);
+        const result = await api.put(`/v1/folder/${folderId}`, body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -268,7 +270,7 @@ export function register(server: McpServer): void {
     },
     async ({ folderId }) => {
       try {
-        const result = await speakClient.delete(`/v1/folder/${folderId}`);
+        const result = await api.delete(`/v1/folder/${folderId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },

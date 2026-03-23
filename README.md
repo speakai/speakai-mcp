@@ -35,17 +35,13 @@ Ask your AI assistant to work with your Speak AI data:
 
 ## Quick Start
 
-### 1. Get Your Credentials
+### 1. Get Your API Key
 
 1. Log in to [Speak AI](https://app.speakai.co)
 2. Go to **Settings > Developer**
 3. Copy your **API Key**
-4. Generate an **Access Token**:
 
-```sh
-curl -X POST https://api.speakai.co/v1/auth/accessToken \
-  -H "x-speakai-key: YOUR_API_KEY"
-```
+That's it — the server handles access token management automatically.
 
 ### 2. Connect to Your AI Assistant
 
@@ -89,8 +85,7 @@ Windows: `%APPDATA%\Claude\claude_desktop_config.json`
       "command": "npx",
       "args": ["-y", "@speakai/mcp-server"],
       "env": {
-        "SPEAK_API_KEY": "your-api-key",
-        "SPEAK_ACCESS_TOKEN": "your-access-token"
+        "SPEAK_API_KEY": "your-api-key"
       }
     }
   }
@@ -101,7 +96,6 @@ Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```sh
 export SPEAK_API_KEY="your-api-key"
-export SPEAK_ACCESS_TOKEN="your-access-token"
 
 claude mcp add speak-ai -- npx -y @speakai/mcp-server
 claude
@@ -110,7 +104,7 @@ claude
 **Any STDIO-compatible MCP client:**
 
 ```sh
-SPEAK_API_KEY=your-key SPEAK_ACCESS_TOKEN=your-token npx @speakai/mcp-server
+SPEAK_API_KEY=your-key npx @speakai/mcp-server
 ```
 
 ### Environment Variables
@@ -118,7 +112,7 @@ SPEAK_API_KEY=your-key SPEAK_ACCESS_TOKEN=your-token npx @speakai/mcp-server
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `SPEAK_API_KEY` | Yes | — | Your Speak AI API key |
-| `SPEAK_ACCESS_TOKEN` | Yes | — | JWT access token |
+| `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed using your API key) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
 ---

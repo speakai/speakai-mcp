@@ -1,8 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   server.tool(
     "list_meeting_events",
     "List scheduled or completed meeting assistant events with filtering and pagination.",
@@ -20,7 +22,7 @@ export function register(server: McpServer): void {
     },
     async (params) => {
       try {
-        const result = await speakClient.get("/v1/meeting-assistant/events", {
+        const result = await api.get("/v1/meeting-assistant/events", {
           params,
         });
         return {
@@ -48,7 +50,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post(
+        const result = await api.post(
           "/v1/meeting-assistant/events/schedule",
           body
         );
@@ -74,7 +76,7 @@ export function register(server: McpServer): void {
     },
     async ({ meetingAssistantEventId }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           "/v1/meeting-assistant/events/remove",
           null,
           { params: { meetingAssistantEventId } }
@@ -101,7 +103,7 @@ export function register(server: McpServer): void {
     },
     async ({ meetingAssistantEventId }) => {
       try {
-        const result = await speakClient.delete(
+        const result = await api.delete(
           "/v1/meeting-assistant/events",
           { params: { meetingAssistantEventId } }
         );

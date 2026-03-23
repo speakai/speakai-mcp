@@ -26,8 +26,16 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/index.ts
+var index_exports = {};
+__export(index_exports, {
+  createSpeakClient: () => createSpeakClient,
+  formatAxiosError: () => formatAxiosError,
+  registerAllTools: () => registerAllTools
+});
+module.exports = __toCommonJS(index_exports);
 var import_mcp = require("@modelcontextprotocol/sdk/server/mcp.js");
 var import_stdio = require("@modelcontextprotocol/sdk/server/stdio.js");
 
@@ -42,21 +50,113 @@ var import_zod = require("zod");
 var import_axios = __toESM(require("axios"));
 var BASE_URL = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
 var API_KEY = process.env.SPEAK_API_KEY ?? "";
-var ACCESS_TOKEN = process.env.SPEAK_ACCESS_TOKEN ?? "";
-if (!API_KEY) {
+if (!API_KEY && !process.env.SPEAK_MCP_LIBRARY_MODE) {
   process.stderr.write(
     "[speak-mcp] Warning: SPEAK_API_KEY is not set. All requests will fail.\n"
   );
 }
+var accessToken = process.env.SPEAK_ACCESS_TOKEN ?? "";
+var refreshToken = "";
+var tokenExpiresAt = 0;
+async function authenticate() {
+  try {
+    const res = await import_axios.default.post(
+      `${BASE_URL}/v1/auth/accessToken`,
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-speakai-key": API_KEY
+        }
+      }
+    );
+    if (res.data?.data?.accessToken) {
+      accessToken = res.data.data.accessToken;
+      refreshToken = res.data.data.refreshToken ?? "";
+      tokenExpiresAt = Date.now() + 50 * 60 * 1e3;
+      process.stderr.write("[speak-mcp] Authenticated successfully\n");
+    }
+  } catch (err) {
+    process.stderr.write(
+      `[speak-mcp] Authentication failed: ${err instanceof Error ? err.message : err}
+`
+    );
+  }
+}
+async function refreshAccessToken() {
+  if (!refreshToken) {
+    return authenticate();
+  }
+  try {
+    const res = await import_axios.default.post(
+      `${BASE_URL}/v1/auth/refreshToken`,
+      { refreshToken },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-speakai-key": API_KEY,
+          "x-access-token": accessToken
+        }
+      }
+    );
+    if (res.data?.data?.accessToken) {
+      accessToken = res.data.data.accessToken;
+      refreshToken = res.data.data.refreshToken ?? refreshToken;
+      tokenExpiresAt = Date.now() + 50 * 60 * 1e3;
+      process.stderr.write("[speak-mcp] Token refreshed\n");
+    }
+  } catch {
+    return authenticate();
+  }
+}
+async function ensureAuthenticated() {
+  if (!accessToken || Date.now() >= tokenExpiresAt) {
+    if (accessToken && refreshToken) {
+      await refreshAccessToken();
+    } else {
+      await authenticate();
+    }
+  }
+}
 var speakClient = import_axios.default.create({
   baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-    "x-speakai-key": API_KEY,
-    ...ACCESS_TOKEN ? { "x-access-token": ACCESS_TOKEN } : {}
-  },
+  headers: { "Content-Type": "application/json" },
   timeout: 6e4
 });
+speakClient.interceptors.request.use(
+  async (config) => {
+    await ensureAuthenticated();
+    config.headers.set("x-speakai-key", API_KEY);
+    config.headers.set("x-access-token", accessToken);
+    return config;
+  }
+);
+speakClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retried) {
+      originalRequest._retried = true;
+      tokenExpiresAt = 0;
+      await ensureAuthenticated();
+      originalRequest.headers["x-speakai-key"] = API_KEY;
+      originalRequest.headers["x-access-token"] = accessToken;
+      return speakClient(originalRequest);
+    }
+    return Promise.reject(error);
+  }
+);
+function createSpeakClient(options) {
+  return import_axios.default.create({
+    baseURL: options.baseUrl,
+    headers: {
+      "Content-Type": "application/json",
+      "x-speakai-key": options.apiKey,
+      "x-access-token": options.accessToken
+    },
+    timeout: 6e4
+  });
+}
 function formatAxiosError(error) {
   if (import_axios.default.isAxiosError(error)) {
     const status = error.response?.status;
@@ -69,7 +169,8 @@ function formatAxiosError(error) {
 }
 
 // src/tools/media.ts
-function register(server2) {
+function register(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "get_signed_upload_url",
     "Get a pre-signed S3 URL for direct media file upload. Use this before uploading a file directly to Speak AI storage.",
@@ -80,7 +181,7 @@ function register(server2) {
     },
     async ({ isVideo, filename, mimeType }) => {
       try {
-        const result = await speakClient.get("/v1/media/upload/signedurl", {
+        const result = await api.get("/v1/media/upload/signedurl", {
           params: { isVideo, filename, mimeType }
         });
         return {
@@ -117,7 +218,7 @@ function register(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/media/upload", body);
+        const result = await api.post("/v1/media/upload", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -148,7 +249,7 @@ function register(server2) {
     },
     async (params) => {
       try {
-        const result = await speakClient.get("/v1/media", { params });
+        const result = await api.get("/v1/media", { params });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -170,7 +271,7 @@ function register(server2) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/media/insight/${mediaId}`);
+        const result = await api.get(`/v1/media/insight/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -192,7 +293,7 @@ function register(server2) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/media/transcript/${mediaId}`);
+        const result = await api.get(`/v1/media/transcript/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -220,7 +321,7 @@ function register(server2) {
     },
     async ({ mediaId, speakers }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           `/v1/media/speakers/${mediaId}`,
           speakers
         );
@@ -245,7 +346,7 @@ function register(server2) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/media/status/${mediaId}`);
+        const result = await api.get(`/v1/media/status/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -274,7 +375,7 @@ function register(server2) {
     },
     async ({ mediaId, ...body }) => {
       try {
-        const result = await speakClient.put(`/v1/media/${mediaId}`, body);
+        const result = await api.put(`/v1/media/${mediaId}`, body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -296,7 +397,7 @@ function register(server2) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.delete(`/v1/media/${mediaId}`);
+        const result = await api.delete(`/v1/media/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -318,7 +419,8 @@ __export(text_exports, {
   register: () => register2
 });
 var import_zod2 = require("zod");
-function register2(server2) {
+function register2(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "create_text_note",
     "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
@@ -338,7 +440,7 @@ function register2(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/text/create", body);
+        const result = await api.post("/v1/text/create", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -360,7 +462,7 @@ function register2(server2) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/text/insight/${mediaId}`);
+        const result = await api.get(`/v1/text/insight/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -382,7 +484,7 @@ function register2(server2) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/text/reanalyze/${mediaId}`);
+        const result = await api.get(`/v1/text/reanalyze/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -409,7 +511,7 @@ function register2(server2) {
     },
     async ({ mediaId, ...body }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           `/v1/text/update/${mediaId}`,
           body
         );
@@ -434,7 +536,8 @@ __export(exports_exports, {
   register: () => register3
 });
 var import_zod3 = require("zod");
-function register3(server2) {
+function register3(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "export_media",
     "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv, md).",
@@ -450,7 +553,7 @@ function register3(server2) {
     },
     async ({ mediaId, fileType, ...query }) => {
       try {
-        const result = await speakClient.post(
+        const result = await api.post(
           `/v1/media/export/${mediaId}/${fileType}`,
           null,
           { params: query }
@@ -484,7 +587,7 @@ function register3(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post(
+        const result = await api.post(
           "/v1/media/exportMultiple",
           body
         );
@@ -509,14 +612,15 @@ __export(folders_exports, {
   register: () => register4
 });
 var import_zod4 = require("zod");
-function register4(server2) {
+function register4(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "get_all_folder_views",
     "Retrieve all saved views across all folders.",
     {},
     async () => {
       try {
-        const result = await speakClient.get("/v1/folders/views");
+        const result = await api.get("/v1/folders/views");
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -538,7 +642,7 @@ function register4(server2) {
     },
     async ({ folderId }) => {
       try {
-        const result = await speakClient.get(`/v1/folders/${folderId}/views`);
+        const result = await api.get(`/v1/folders/${folderId}/views`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -562,7 +666,7 @@ function register4(server2) {
     },
     async ({ folderId, ...body }) => {
       try {
-        const result = await speakClient.post(
+        const result = await api.post(
           `/v1/folders/${folderId}/views`,
           body
         );
@@ -590,7 +694,7 @@ function register4(server2) {
     },
     async ({ folderId, viewId, ...body }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           `/v1/folders/${folderId}/views/${viewId}`,
           body
         );
@@ -615,7 +719,7 @@ function register4(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/folders/views/clone", body);
+        const result = await api.post("/v1/folders/views/clone", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -639,7 +743,7 @@ function register4(server2) {
     },
     async (params) => {
       try {
-        const result = await speakClient.get("/v1/folder", { params });
+        const result = await api.get("/v1/folder", { params });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -661,7 +765,7 @@ function register4(server2) {
     },
     async ({ folderId }) => {
       try {
-        const result = await speakClient.get(`/v1/folder/${folderId}`);
+        const result = await api.get(`/v1/folder/${folderId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -684,7 +788,7 @@ function register4(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/folder", body);
+        const result = await api.post("/v1/folder", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -706,7 +810,7 @@ function register4(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/folder/clone", body);
+        const result = await api.post("/v1/folder/clone", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -729,7 +833,7 @@ function register4(server2) {
     },
     async ({ folderId, ...body }) => {
       try {
-        const result = await speakClient.put(`/v1/folder/${folderId}`, body);
+        const result = await api.put(`/v1/folder/${folderId}`, body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -751,7 +855,7 @@ function register4(server2) {
     },
     async ({ folderId }) => {
       try {
-        const result = await speakClient.delete(`/v1/folder/${folderId}`);
+        const result = await api.delete(`/v1/folder/${folderId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -773,7 +877,8 @@ __export(recorder_exports, {
   register: () => register5
 });
 var import_zod5 = require("zod");
-function register5(server2) {
+function register5(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "check_recorder_status",
     "Check whether a recorder/survey is active and accepting submissions.",
@@ -782,7 +887,7 @@ function register5(server2) {
     },
     async ({ token }) => {
       try {
-        const result = await speakClient.get(`/v1/recorder/status/${token}`);
+        const result = await api.get(`/v1/recorder/status/${token}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -804,7 +909,7 @@ function register5(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/recorder/create", body);
+        const result = await api.post("/v1/recorder/create", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -826,7 +931,7 @@ function register5(server2) {
     },
     async (params) => {
       try {
-        const result = await speakClient.get("/v1/recorder", { params });
+        const result = await api.get("/v1/recorder", { params });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -846,7 +951,7 @@ function register5(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/recorder/clone", body);
+        const result = await api.post("/v1/recorder/clone", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -866,7 +971,7 @@ function register5(server2) {
     },
     async ({ recorderId }) => {
       try {
-        const result = await speakClient.get(`/v1/recorder/${recorderId}`);
+        const result = await api.get(`/v1/recorder/${recorderId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -886,7 +991,7 @@ function register5(server2) {
     },
     async ({ recorderId }) => {
       try {
-        const result = await speakClient.get(`/v1/recorder/recordings/${recorderId}`);
+        const result = await api.get(`/v1/recorder/recordings/${recorderId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -906,7 +1011,7 @@ function register5(server2) {
     },
     async ({ recorderId }) => {
       try {
-        const result = await speakClient.get(`/v1/recorder/url/${recorderId}`);
+        const result = await api.get(`/v1/recorder/url/${recorderId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -927,7 +1032,7 @@ function register5(server2) {
     },
     async ({ recorderId, settings }) => {
       try {
-        const result = await speakClient.put(`/v1/recorder/settings/${recorderId}`, settings);
+        const result = await api.put(`/v1/recorder/settings/${recorderId}`, settings);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -948,7 +1053,7 @@ function register5(server2) {
     },
     async ({ recorderId, questions }) => {
       try {
-        const result = await speakClient.put(`/v1/recorder/questions/${recorderId}`, { questions });
+        const result = await api.put(`/v1/recorder/questions/${recorderId}`, { questions });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -968,7 +1073,7 @@ function register5(server2) {
     },
     async ({ recorderId }) => {
       try {
-        const result = await speakClient.delete(`/v1/recorder/${recorderId}`);
+        const result = await api.delete(`/v1/recorder/${recorderId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -988,7 +1093,8 @@ __export(embed_exports, {
   register: () => register6
 });
 var import_zod6 = require("zod");
-function register6(server2) {
+function register6(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "create_embed",
     "Create an embeddable player/transcript widget for a media file.",
@@ -998,7 +1104,7 @@ function register6(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/embed", body);
+        const result = await api.post("/v1/embed", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1019,7 +1125,7 @@ function register6(server2) {
     },
     async ({ embedId, ...body }) => {
       try {
-        const result = await speakClient.put(`/v1/embed/${embedId}`, body);
+        const result = await api.put(`/v1/embed/${embedId}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1039,7 +1145,7 @@ function register6(server2) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/embed/${mediaId}`);
+        const result = await api.get(`/v1/embed/${mediaId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1059,7 +1165,7 @@ function register6(server2) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get("/v1/embed/iframe", {
+        const result = await api.get("/v1/embed/iframe", {
           params: { mediaId }
         });
         return {
@@ -1081,14 +1187,15 @@ __export(prompt_exports, {
   register: () => register7
 });
 var import_zod7 = require("zod");
-function register7(server2) {
+function register7(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "list_prompts",
     "List all available Magic Prompt templates for AI-powered questions about your media.",
     {},
     async () => {
       try {
-        const result = await speakClient.get("/v1/prompt");
+        const result = await api.get("/v1/prompt");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1110,7 +1217,7 @@ function register7(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/prompt", body);
+        const result = await api.post("/v1/prompt", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1130,7 +1237,8 @@ __export(meeting_exports, {
   register: () => register8
 });
 var import_zod8 = require("zod");
-function register8(server2) {
+function register8(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "list_meeting_events",
     "List scheduled or completed meeting assistant events with filtering and pagination.",
@@ -1142,7 +1250,7 @@ function register8(server2) {
     },
     async (params) => {
       try {
-        const result = await speakClient.get("/v1/meeting-assistant/events", {
+        const result = await api.get("/v1/meeting-assistant/events", {
           params
         });
         return {
@@ -1166,7 +1274,7 @@ function register8(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post(
+        const result = await api.post(
           "/v1/meeting-assistant/events/schedule",
           body
         );
@@ -1189,7 +1297,7 @@ function register8(server2) {
     },
     async ({ meetingAssistantEventId }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           "/v1/meeting-assistant/events/remove",
           null,
           { params: { meetingAssistantEventId } }
@@ -1213,7 +1321,7 @@ function register8(server2) {
     },
     async ({ meetingAssistantEventId }) => {
       try {
-        const result = await speakClient.delete(
+        const result = await api.delete(
           "/v1/meeting-assistant/events",
           { params: { meetingAssistantEventId } }
         );
@@ -1236,14 +1344,15 @@ __export(fields_exports, {
   register: () => register9
 });
 var import_zod9 = require("zod");
-function register9(server2) {
+function register9(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "list_fields",
     "List all custom fields defined in the workspace.",
     {},
     async () => {
       try {
-        const result = await speakClient.get("/v1/fields");
+        const result = await api.get("/v1/fields");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1265,7 +1374,7 @@ function register9(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/fields", body);
+        const result = await api.post("/v1/fields", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1285,7 +1394,7 @@ function register9(server2) {
     },
     async ({ fields }) => {
       try {
-        const result = await speakClient.post("/v1/fields/multi", { fields });
+        const result = await api.post("/v1/fields/multi", { fields });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1308,7 +1417,7 @@ function register9(server2) {
     },
     async ({ id, ...body }) => {
       try {
-        const result = await speakClient.put(`/v1/fields/${id}`, body);
+        const result = await api.put(`/v1/fields/${id}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1328,14 +1437,15 @@ __export(automations_exports, {
   register: () => register10
 });
 var import_zod10 = require("zod");
-function register10(server2) {
+function register10(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "list_automations",
     "List all automation rules configured in the workspace.",
     {},
     async () => {
       try {
-        const result = await speakClient.get("/v1/automations");
+        const result = await api.get("/v1/automations");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1355,7 +1465,7 @@ function register10(server2) {
     },
     async ({ automationId }) => {
       try {
-        const result = await speakClient.get(`/v1/automations/${automationId}`);
+        const result = await api.get(`/v1/automations/${automationId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1378,7 +1488,7 @@ function register10(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/automations/", body);
+        const result = await api.post("/v1/automations/", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1402,7 +1512,7 @@ function register10(server2) {
     },
     async ({ automationId, ...body }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           `/v1/automations/${automationId}`,
           body
         );
@@ -1426,7 +1536,7 @@ function register10(server2) {
     },
     async ({ automationId, enabled }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           `/v1/automations/status/${automationId}`,
           { enabled }
         );
@@ -1449,7 +1559,8 @@ __export(webhooks_exports, {
   register: () => register11
 });
 var import_zod11 = require("zod");
-function register11(server2) {
+function register11(server2, client) {
+  const api = client ?? speakClient;
   server2.tool(
     "create_webhook",
     "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
@@ -1459,7 +1570,7 @@ function register11(server2) {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/webhook", body);
+        const result = await api.post("/v1/webhook", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1477,7 +1588,7 @@ function register11(server2) {
     {},
     async () => {
       try {
-        const result = await speakClient.get("/v1/webhook");
+        const result = await api.get("/v1/webhook");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1499,7 +1610,7 @@ function register11(server2) {
     },
     async ({ webhookId, ...body }) => {
       try {
-        const result = await speakClient.put(`/v1/webhook/${webhookId}`, body);
+        const result = await api.put(`/v1/webhook/${webhookId}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1519,7 +1630,7 @@ function register11(server2) {
     },
     async ({ webhookId }) => {
       try {
-        const result = await speakClient.delete(`/v1/webhook/${webhookId}`);
+        const result = await api.delete(`/v1/webhook/${webhookId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1547,9 +1658,9 @@ var modules = [
   automations_exports,
   webhooks_exports
 ];
-function registerAllTools(server2) {
+function registerAllTools(server2, client) {
   for (const mod of modules) {
-    mod.register(server2);
+    mod.register(server2, client);
   }
 }
 
@@ -1568,4 +1679,10 @@ main().catch((err) => {
   process.stderr.write(`[speak-mcp] Fatal error: ${err}
 `);
   process.exit(1);
+});
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  createSpeakClient,
+  formatAxiosError,
+  registerAllTools
 });

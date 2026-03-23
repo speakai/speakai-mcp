@@ -1,8 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   server.tool(
     "create_embed",
     "Create an embeddable player/transcript widget for a media file.",
@@ -12,7 +14,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/embed", body);
+        const result = await api.post("/v1/embed", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -34,7 +36,7 @@ export function register(server: McpServer): void {
     },
     async ({ embedId, ...body }) => {
       try {
-        const result = await speakClient.put(`/v1/embed/${embedId}`, body);
+        const result = await api.put(`/v1/embed/${embedId}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -55,7 +57,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/embed/${mediaId}`);
+        const result = await api.get(`/v1/embed/${mediaId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -76,7 +78,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get("/v1/embed/iframe", {
+        const result = await api.get("/v1/embed/iframe", {
           params: { mediaId },
         });
         return {

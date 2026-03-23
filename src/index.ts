@@ -3,6 +3,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerAllTools } from "./tools/index.js";
+import { createSpeakClient, formatAxiosError } from "./client.js";
+
+// Public API — for use as a library (e.g., from speak-server)
+export { registerAllTools } from "./tools/index.js";
+export { createSpeakClient, formatAxiosError } from "./client.js";
 
 const server = new McpServer({
   name: "speak-ai",

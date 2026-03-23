@@ -1,8 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
 
-export function register(server: McpServer): void {
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
   server.tool(
     "create_text_note",
     "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
@@ -34,7 +36,7 @@ export function register(server: McpServer): void {
     },
     async (body) => {
       try {
-        const result = await speakClient.post("/v1/text/create", body);
+        const result = await api.post("/v1/text/create", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -57,7 +59,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/text/insight/${mediaId}`);
+        const result = await api.get(`/v1/text/insight/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -82,7 +84,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId }) => {
       try {
-        const result = await speakClient.get(`/v1/text/reanalyze/${mediaId}`);
+        const result = await api.get(`/v1/text/reanalyze/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -116,7 +118,7 @@ export function register(server: McpServer): void {
     },
     async ({ mediaId, ...body }) => {
       try {
-        const result = await speakClient.put(
+        const result = await api.put(
           `/v1/text/update/${mediaId}`,
           body
         );
