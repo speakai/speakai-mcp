@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://speakai.co/assets/images/speak-ai-logo.png" alt="Speak AI" width="200" />
+  <img src="assets/logo.png" alt="Speak AI" width="120" />
 </p>
 
 <h1 align="center">Speak AI MCP Server</h1>
