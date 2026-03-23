@@ -56,14 +56,14 @@ For **Claude on the web** (claude.ai) and **ChatGPT**, use the hosted endpoint. 
 **Claude (claude.ai):**
 
 1. Go to **Settings > Connectors > Add Connector**
-2. Enter the URL: `https://api.speakai.co/v1/mcp/sse`
+2. Enter the URL: `https://api.speakai.co/v1/mcp`
 3. Add your authentication headers
 4. Start chatting with your Speak AI data
 
 **ChatGPT:**
 
 1. Go to **Settings > Connectors > Create**
-2. Enter the MCP URL: `https://api.speakai.co/v1/mcp/sse`
+2. Enter the MCP URL: `https://api.speakai.co/v1/mcp`
 3. Configure authentication with your API key
 4. Done — your GPT can now access Speak AI
 

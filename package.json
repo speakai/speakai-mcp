@@ -1,13 +1,14 @@
 {
   "name": "@speakai/mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official Speak AI MCP Server — connect Claude and other AI assistants to Speak AI's transcription, insights, and media management API",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "speak-mcp": "dist/index.js"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs --clean",
+    "build": "tsup src/index.ts --format cjs --clean && cp src/types.d.ts dist/index.d.ts",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "prepare": "npm run build"
