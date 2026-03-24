@@ -7,10 +7,10 @@ export { createSpeakClient, formatAxiosError } from "./client.js";
 /**
  * Entry point: detect whether we're running as CLI or MCP server.
  *
- * - `speak-mcp` (bare)                  → MCP STDIO server
- * - `speak-mcp list-media`              → CLI mode
- * - `speak-mcp config set-key`          → CLI mode
- * - `speak-mcp --help`                  → CLI help
+ * - `speakai-mcp` (bare)                  → MCP STDIO server
+ * - `speakai-mcp list-media`              → CLI mode
+ * - `speakai-mcp config set-key`          → CLI mode
+ * - `speakai-mcp --help`                  → CLI help
  */
 const args = process.argv.slice(2);
 
@@ -67,7 +67,7 @@ if (isCliMode) {
           const transport = new StdioServerTransport();
           server.connect(transport).then(() => {
             process.stderr.write(
-              "[speak-mcp] Server started on stdio transport\n"
+              "[speakai-mcp] Server started on stdio transport\n"
             );
           });
         });

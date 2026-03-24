@@ -23,7 +23,7 @@ function requireApiKey(): void {
   resolveBaseUrl();
   if (!key) {
     printError(
-      'No API key configured. Run "speak-mcp config set-key" or set SPEAK_API_KEY.'
+      'No API key configured. Run "speakai-mcp config set-key" or set SPEAK_API_KEY.'
     );
     process.exit(1);
   }
@@ -33,7 +33,7 @@ export function createCli(): Command {
   const program = new Command();
 
   program
-    .name("speak-mcp")
+    .name("speakai-mcp")
     .description(
       "Speak AI CLI & MCP Server — transcribe, analyze, and manage media from the command line"
     )

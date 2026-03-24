@@ -47,7 +47,7 @@ function getApiKey() {
 async function authenticate() {
   const apiKey = getApiKey();
   if (!apiKey) {
-    throw new Error("SPEAK_API_KEY is not set. Run 'speak-mcp config set-key' or set the environment variable.");
+    throw new Error("SPEAK_API_KEY is not set. Run 'speakai-mcp config set-key' or set the environment variable.");
   }
   try {
     const res = await import_axios.default.post(
@@ -64,11 +64,11 @@ async function authenticate() {
       accessToken = res.data.data.accessToken;
       refreshToken = res.data.data.refreshToken ?? "";
       tokenExpiresAt = Date.now() + 50 * 60 * 1e3;
-      process.stderr.write("[speak-mcp] Authenticated successfully\n");
+      process.stderr.write("[speakai-mcp] Authenticated successfully\n");
     }
   } catch (err) {
     process.stderr.write(
-      `[speak-mcp] Authentication failed: ${err instanceof Error ? err.message : err}
+      `[speakai-mcp] Authentication failed: ${err instanceof Error ? err.message : err}
 `
     );
   }
@@ -93,7 +93,7 @@ async function refreshAccessToken() {
       accessToken = res.data.data.accessToken;
       refreshToken = res.data.data.refreshToken ?? refreshToken;
       tokenExpiresAt = Date.now() + 50 * 60 * 1e3;
-      process.stderr.write("[speak-mcp] Token refreshed\n");
+      process.stderr.write("[speakai-mcp] Token refreshed\n");
     }
   } catch {
     return authenticate();
@@ -1886,14 +1886,14 @@ function requireApiKey() {
   resolveBaseUrl();
   if (!key) {
     printError(
-      'No API key configured. Run "speak-mcp config set-key" or set SPEAK_API_KEY.'
+      'No API key configured. Run "speakai-mcp config set-key" or set SPEAK_API_KEY.'
     );
     process.exit(1);
   }
 }
 function createCli() {
   const program = new import_commander.Command();
-  program.name("speak-mcp").description(
+  program.name("speakai-mcp").description(
     "Speak AI CLI & MCP Server \u2014 transcribe, analyze, and manage media from the command line"
   ).version("1.0.0");
   const config = program.command("config").description("Manage configuration");
@@ -2315,7 +2315,7 @@ if (isCliMode) {
           const transport = new StdioServerTransport();
           server.connect(transport).then(() => {
             process.stderr.write(
-              "[speak-mcp] Server started on stdio transport\n"
+              "[speakai-mcp] Server started on stdio transport\n"
             );
           });
         });

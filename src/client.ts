@@ -21,7 +21,7 @@ let tokenExpiresAt = 0;
 async function authenticate(): Promise<void> {
   const apiKey = getApiKey();
   if (!apiKey) {
-    throw new Error("SPEAK_API_KEY is not set. Run 'speak-mcp config set-key' or set the environment variable.");
+    throw new Error("SPEAK_API_KEY is not set. Run 'speakai-mcp config set-key' or set the environment variable.");
   }
 
   try {
@@ -40,11 +40,11 @@ async function authenticate(): Promise<void> {
       accessToken = res.data.data.accessToken;
       refreshToken = res.data.data.refreshToken ?? "";
       tokenExpiresAt = Date.now() + 50 * 60 * 1000;
-      process.stderr.write("[speak-mcp] Authenticated successfully\n");
+      process.stderr.write("[speakai-mcp] Authenticated successfully\n");
     }
   } catch (err) {
     process.stderr.write(
-      `[speak-mcp] Authentication failed: ${err instanceof Error ? err.message : err}\n`
+      `[speakai-mcp] Authentication failed: ${err instanceof Error ? err.message : err}\n`
     );
   }
 }
@@ -74,7 +74,7 @@ async function refreshAccessToken(): Promise<void> {
       accessToken = res.data.data.accessToken;
       refreshToken = res.data.data.refreshToken ?? refreshToken;
       tokenExpiresAt = Date.now() + 50 * 60 * 1000;
-      process.stderr.write("[speak-mcp] Token refreshed\n");
+      process.stderr.write("[speakai-mcp] Token refreshed\n");
     }
   } catch {
     return authenticate();

@@ -30,10 +30,10 @@
 **From the command line:**
 
 ```sh
-speak-mcp upload https://example.com/meeting.mp3 --wait
-speak-mcp transcript abc123 --plain
-speak-mcp ask abc123 "What were the action items?"
-speak-mcp export abc123 -f pdf --speakers
+speakai-mcp upload https://example.com/meeting.mp3 --wait
+speakai-mcp transcript abc123 --plain
+speakai-mcp ask abc123 "What were the action items?"
+speakai-mcp export abc123 -f pdf --speakers
 ```
 
 ---
@@ -58,7 +58,7 @@ Install globally and configure your API key once:
 
 ```sh
 npm install -g @speakai/mcp-server
-speak-mcp config set-key
+speakai-mcp config set-key
 ```
 
 Or run without installing:
@@ -70,13 +70,13 @@ npx @speakai/mcp-server config set-key
 Then use any command:
 
 ```sh
-speak-mcp ls                                    # List all media
-speak-mcp upload https://example.com/call.mp3   # Upload media
-speak-mcp transcript <id>                       # Get transcript
-speak-mcp insights <id>                         # Get AI insights
-speak-mcp ask <id> "Summarize this meeting"     # Ask AI questions
-speak-mcp export <id> -f pdf --speakers         # Export transcript
-speak-mcp schedule-meeting <zoom-url>           # Join a meeting
+speakai-mcp ls                                    # List all media
+speakai-mcp upload https://example.com/call.mp3   # Upload media
+speakai-mcp transcript <id>                       # Get transcript
+speakai-mcp insights <id>                         # Get AI insights
+speakai-mcp ask <id> "Summarize this meeting"     # Ask AI questions
+speakai-mcp export <id> -f pdf --speakers         # Export transcript
+speakai-mcp schedule-meeting <zoom-url>           # Join a meeting
 ```
 
 ### All CLI Commands
@@ -105,16 +105,16 @@ Every command supports:
 
 ```sh
 # Pipe transcript to a file
-speak-mcp transcript abc123 --plain > meeting.txt
+speakai-mcp transcript abc123 --plain > meeting.txt
 
 # Upload and wait for processing
-speak-mcp upload https://example.com/interview.mp3 -n "Q1 Interview" --wait
+speakai-mcp upload https://example.com/interview.mp3 -n "Q1 Interview" --wait
 
 # Create text note from stdin
-cat notes.txt | speak-mcp create-text "Meeting Notes"
+cat notes.txt | speakai-mcp create-text "Meeting Notes"
 
 # List only video files as JSON
-speak-mcp ls --type video --json | jq '.mediaList[].name'
+speakai-mcp ls --type video --json | jq '.mediaList[].name'
 ```
 
 ---
@@ -367,8 +367,9 @@ All requests require `x-speakai-key` (API key) and `x-access-token` (JWT) header
 ## Development
 
 ```sh
-git clone https://github.com/speakai/speak-mcp.git
-cd speak-mcp
+git clone https://github.com/speakai/speakai-mcp.git
+cd speakai-mcp
+
 npm install
 npm run dev    # Run with hot reload
 npm run build  # Production build
