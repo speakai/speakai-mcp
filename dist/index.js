@@ -6,6 +6,9 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -28,45 +31,32 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/index.ts
-var index_exports = {};
-__export(index_exports, {
+// src/client.ts
+var client_exports = {};
+__export(client_exports, {
   createSpeakClient: () => createSpeakClient,
   formatAxiosError: () => formatAxiosError,
-  registerAllTools: () => registerAllTools
+  speakClient: () => speakClient
 });
-module.exports = __toCommonJS(index_exports);
-var import_mcp = require("@modelcontextprotocol/sdk/server/mcp.js");
-var import_stdio = require("@modelcontextprotocol/sdk/server/stdio.js");
-
-// src/tools/media.ts
-var media_exports = {};
-__export(media_exports, {
-  register: () => register
-});
-var import_zod = require("zod");
-
-// src/client.ts
-var import_axios = __toESM(require("axios"));
-var BASE_URL = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
-var API_KEY = process.env.SPEAK_API_KEY ?? "";
-if (!API_KEY && !process.env.SPEAK_MCP_LIBRARY_MODE) {
-  process.stderr.write(
-    "[speak-mcp] Warning: SPEAK_API_KEY is not set. All requests will fail.\n"
-  );
+function getBaseUrl() {
+  return process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
 }
-var accessToken = process.env.SPEAK_ACCESS_TOKEN ?? "";
-var refreshToken = "";
-var tokenExpiresAt = 0;
+function getApiKey() {
+  return process.env.SPEAK_API_KEY ?? "";
+}
 async function authenticate() {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error("SPEAK_API_KEY is not set. Run 'speak-mcp config set-key' or set the environment variable.");
+  }
   try {
     const res = await import_axios.default.post(
-      `${BASE_URL}/v1/auth/accessToken`,
+      `${getBaseUrl()}/v1/auth/accessToken`,
       {},
       {
         headers: {
           "Content-Type": "application/json",
-          "x-speakai-key": API_KEY
+          "x-speakai-key": apiKey
         }
       }
     );
@@ -89,12 +79,12 @@ async function refreshAccessToken() {
   }
   try {
     const res = await import_axios.default.post(
-      `${BASE_URL}/v1/auth/refreshToken`,
+      `${getBaseUrl()}/v1/auth/refreshToken`,
       { refreshToken },
       {
         headers: {
           "Content-Type": "application/json",
-          "x-speakai-key": API_KEY,
+          "x-speakai-key": getApiKey(),
           "x-access-token": accessToken
         }
       }
@@ -118,35 +108,6 @@ async function ensureAuthenticated() {
     }
   }
 }
-var speakClient = import_axios.default.create({
-  baseURL: BASE_URL,
-  headers: { "Content-Type": "application/json" },
-  timeout: 6e4
-});
-speakClient.interceptors.request.use(
-  async (config) => {
-    await ensureAuthenticated();
-    config.headers.set("x-speakai-key", API_KEY);
-    config.headers.set("x-access-token", accessToken);
-    return config;
-  }
-);
-speakClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    const retryCount = originalRequest._retryCount ?? 0;
-    if (error.response?.status === 401 && retryCount < 2) {
-      originalRequest._retryCount = retryCount + 1;
-      tokenExpiresAt = 0;
-      await ensureAuthenticated();
-      originalRequest.headers["x-speakai-key"] = API_KEY;
-      originalRequest.headers["x-access-token"] = accessToken;
-      return speakClient(originalRequest);
-    }
-    return Promise.reject(error);
-  }
-);
 function createSpeakClient(options) {
   return import_axios.default.create({
     baseURL: options.baseUrl,
@@ -168,11 +129,54 @@ function formatAxiosError(error) {
   if (error instanceof Error) return error.message;
   return String(error);
 }
+var import_axios, accessToken, refreshToken, tokenExpiresAt, speakClient;
+var init_client = __esm({
+  "src/client.ts"() {
+    "use strict";
+    import_axios = __toESM(require("axios"));
+    accessToken = process.env.SPEAK_ACCESS_TOKEN ?? "";
+    refreshToken = "";
+    tokenExpiresAt = 0;
+    speakClient = import_axios.default.create({
+      headers: { "Content-Type": "application/json" },
+      timeout: 6e4
+    });
+    speakClient.interceptors.request.use(
+      async (config) => {
+        config.baseURL = getBaseUrl();
+        await ensureAuthenticated();
+        config.headers.set("x-speakai-key", getApiKey());
+        config.headers.set("x-access-token", accessToken);
+        return config;
+      }
+    );
+    speakClient.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+        const retryCount = originalRequest._retryCount ?? 0;
+        if (error.response?.status === 401 && retryCount < 2) {
+          originalRequest._retryCount = retryCount + 1;
+          tokenExpiresAt = 0;
+          await ensureAuthenticated();
+          originalRequest.headers["x-speakai-key"] = getApiKey();
+          originalRequest.headers["x-access-token"] = accessToken;
+          return speakClient(originalRequest);
+        }
+        return Promise.reject(error);
+      }
+    );
+  }
+});
 
 // src/tools/media.ts
-function register(server2, client) {
+var media_exports = {};
+__export(media_exports, {
+  register: () => register
+});
+function register(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "get_signed_upload_url",
     "Get a pre-signed S3 URL for direct media file upload. Use this before uploading a file directly to Speak AI storage.",
     {
@@ -198,7 +202,7 @@ function register(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "upload_media",
     "Upload a media file to Speak AI by providing a publicly accessible URL. Speak AI will fetch and process the file asynchronously.",
     {
@@ -233,7 +237,7 @@ function register(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "list_media",
     "List all media files in the workspace with optional filtering, pagination, and sorting.",
     {
@@ -264,7 +268,7 @@ function register(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "get_media_insights",
     "Retrieve AI-generated insights for a media file, including topics, sentiment, action items, and summaries.",
     {
@@ -286,7 +290,7 @@ function register(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "get_transcript",
     "Retrieve the full transcript for a media file, including speaker labels and timestamps.",
     {
@@ -308,7 +312,7 @@ function register(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_transcript_speakers",
     "Update or rename speaker labels in a media transcript.",
     {
@@ -339,7 +343,7 @@ function register(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "get_media_status",
     "Check the processing status of a media file (e.g. pending, transcribing, completed, failed).",
     {
@@ -361,7 +365,7 @@ function register(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_media_metadata",
     "Update metadata fields (name, description, tags, status) for an existing media file.",
     {
@@ -390,7 +394,7 @@ function register(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "delete_media",
     "Permanently delete a media file and all associated transcripts and insights.",
     {
@@ -413,16 +417,23 @@ function register(server2, client) {
     }
   );
 }
+var import_zod;
+var init_media = __esm({
+  "src/tools/media.ts"() {
+    "use strict";
+    import_zod = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/text.ts
 var text_exports = {};
 __export(text_exports, {
   register: () => register2
 });
-var import_zod2 = require("zod");
-function register2(server2, client) {
+function register2(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "create_text_note",
     "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
     {
@@ -455,7 +466,7 @@ function register2(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "get_text_insight",
     "Retrieve AI-generated insights for a text note, including topics, sentiment, summaries, and action items.",
     {
@@ -477,7 +488,7 @@ function register2(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "reanalyze_text",
     "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models.",
     {
@@ -499,7 +510,7 @@ function register2(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_text_note",
     "Update an existing text note's name, content, or metadata. Updating text content will trigger re-analysis.",
     {
@@ -530,16 +541,23 @@ function register2(server2, client) {
     }
   );
 }
+var import_zod2;
+var init_text = __esm({
+  "src/tools/text.ts"() {
+    "use strict";
+    import_zod2 = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/exports.ts
 var exports_exports = {};
 __export(exports_exports, {
   register: () => register3
 });
-var import_zod3 = require("zod");
-function register3(server2, client) {
+function register3(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "export_media",
     "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv, md).",
     {
@@ -572,7 +590,7 @@ function register3(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "export_multiple_media",
     "Export multiple media files at once, optionally merged into a single file.",
     {
@@ -606,16 +624,23 @@ function register3(server2, client) {
     }
   );
 }
+var import_zod3;
+var init_exports = __esm({
+  "src/tools/exports.ts"() {
+    "use strict";
+    import_zod3 = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/folders.ts
 var folders_exports = {};
 __export(folders_exports, {
   register: () => register4
 });
-var import_zod4 = require("zod");
-function register4(server2, client) {
+function register4(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "get_all_folder_views",
     "Retrieve all saved views across all folders.",
     {},
@@ -635,7 +660,7 @@ function register4(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "get_folder_views",
     "Retrieve all saved views for a specific folder.",
     {
@@ -657,7 +682,7 @@ function register4(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "create_folder_view",
     "Create a new saved view for a folder with custom filters and display settings.",
     {
@@ -684,7 +709,7 @@ function register4(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_folder_view",
     "Update an existing saved view's name, filters, or display settings.",
     {
@@ -712,7 +737,7 @@ function register4(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "clone_folder_view",
     "Duplicate an existing folder view.",
     {
@@ -734,7 +759,7 @@ function register4(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "list_folders",
     "List all folders in the workspace with pagination and sorting.",
     {
@@ -758,7 +783,7 @@ function register4(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "get_folder_info",
     "Get detailed information about a specific folder including its contents.",
     {
@@ -780,7 +805,7 @@ function register4(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "create_folder",
     "Create a new folder in the workspace.",
     {
@@ -803,7 +828,7 @@ function register4(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "clone_folder",
     "Duplicate an existing folder and all of its contents.",
     {
@@ -825,7 +850,7 @@ function register4(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_folder",
     "Update a folder's name or other properties.",
     {
@@ -848,7 +873,7 @@ function register4(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "delete_folder",
     "Permanently delete a folder. Media within the folder will be moved, not deleted.",
     {
@@ -871,16 +896,23 @@ function register4(server2, client) {
     }
   );
 }
+var import_zod4;
+var init_folders = __esm({
+  "src/tools/folders.ts"() {
+    "use strict";
+    import_zod4 = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/recorder.ts
 var recorder_exports = {};
 __export(recorder_exports, {
   register: () => register5
 });
-var import_zod5 = require("zod");
-function register5(server2, client) {
+function register5(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "check_recorder_status",
     "Check whether a recorder/survey is active and accepting submissions.",
     {
@@ -900,7 +932,7 @@ function register5(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "create_recorder",
     "Create a new recorder or survey for collecting audio/video submissions.",
     {
@@ -922,7 +954,7 @@ function register5(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "list_recorders",
     "List all recorders/surveys in the workspace.",
     {
@@ -944,7 +976,7 @@ function register5(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "clone_recorder",
     "Duplicate an existing recorder including all its settings and questions.",
     {
@@ -964,7 +996,7 @@ function register5(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "get_recorder_info",
     "Get detailed information about a specific recorder including its settings and questions.",
     {
@@ -984,7 +1016,7 @@ function register5(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "get_recorder_recordings",
     "List all submissions/recordings collected by a specific recorder.",
     {
@@ -1004,7 +1036,7 @@ function register5(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "generate_recorder_url",
     "Generate a shareable public URL for a recorder/survey.",
     {
@@ -1024,7 +1056,7 @@ function register5(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_recorder_settings",
     "Update configuration settings for a recorder (branding, permissions, etc.).",
     {
@@ -1045,7 +1077,7 @@ function register5(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_recorder_questions",
     "Update the survey questions for a recorder.",
     {
@@ -1066,7 +1098,7 @@ function register5(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "delete_recorder",
     "Permanently delete a recorder/survey. Existing recordings are preserved.",
     {
@@ -1087,16 +1119,23 @@ function register5(server2, client) {
     }
   );
 }
+var import_zod5;
+var init_recorder = __esm({
+  "src/tools/recorder.ts"() {
+    "use strict";
+    import_zod5 = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/embed.ts
 var embed_exports = {};
 __export(embed_exports, {
   register: () => register6
 });
-var import_zod6 = require("zod");
-function register6(server2, client) {
+function register6(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "create_embed",
     "Create an embeddable player/transcript widget for a media file.",
     {
@@ -1117,7 +1156,7 @@ function register6(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_embed",
     "Update settings for an existing embed widget.",
     {
@@ -1138,7 +1177,7 @@ function register6(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "check_embed",
     "Check if an embed exists for a media file and retrieve its configuration.",
     {
@@ -1158,7 +1197,7 @@ function register6(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "get_embed_iframe_url",
     "Get the iframe URL for embedding a media player/transcript on a webpage.",
     {
@@ -1181,16 +1220,23 @@ function register6(server2, client) {
     }
   );
 }
+var import_zod6;
+var init_embed = __esm({
+  "src/tools/embed.ts"() {
+    "use strict";
+    import_zod6 = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/prompt.ts
 var prompt_exports = {};
 __export(prompt_exports, {
   register: () => register7
 });
-var import_zod7 = require("zod");
-function register7(server2, client) {
+function register7(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "list_prompts",
     "List all available Magic Prompt templates for AI-powered questions about your media.",
     {},
@@ -1208,7 +1254,7 @@ function register7(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "ask_magic_prompt",
     "Ask an AI-powered question about a specific media file using Speak AI's Magic Prompt.",
     {
@@ -1231,16 +1277,23 @@ function register7(server2, client) {
     }
   );
 }
+var import_zod7;
+var init_prompt = __esm({
+  "src/tools/prompt.ts"() {
+    "use strict";
+    import_zod7 = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/meeting.ts
 var meeting_exports = {};
 __export(meeting_exports, {
   register: () => register8
 });
-var import_zod8 = require("zod");
-function register8(server2, client) {
+function register8(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "list_meeting_events",
     "List scheduled or completed meeting assistant events with filtering and pagination.",
     {
@@ -1265,7 +1318,7 @@ function register8(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "schedule_meeting_event",
     "Schedule the Speak AI meeting assistant to join and record an upcoming meeting.",
     {
@@ -1290,7 +1343,7 @@ function register8(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "remove_assistant_from_meeting",
     "Remove the Speak AI assistant from an active or scheduled meeting.",
     {
@@ -1314,7 +1367,7 @@ function register8(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "delete_scheduled_assistant",
     "Cancel and delete a scheduled meeting assistant event.",
     {
@@ -1338,16 +1391,23 @@ function register8(server2, client) {
     }
   );
 }
+var import_zod8;
+var init_meeting = __esm({
+  "src/tools/meeting.ts"() {
+    "use strict";
+    import_zod8 = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/fields.ts
 var fields_exports = {};
 __export(fields_exports, {
   register: () => register9
 });
-var import_zod9 = require("zod");
-function register9(server2, client) {
+function register9(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "list_fields",
     "List all custom fields defined in the workspace.",
     {},
@@ -1365,7 +1425,7 @@ function register9(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "create_field",
     "Create a new custom field for categorizing and tagging media.",
     {
@@ -1387,7 +1447,7 @@ function register9(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_multiple_fields",
     "Update multiple custom fields in a single batch operation.",
     {
@@ -1407,7 +1467,7 @@ function register9(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_field",
     "Update a specific custom field by ID.",
     {
@@ -1431,16 +1491,23 @@ function register9(server2, client) {
     }
   );
 }
+var import_zod9;
+var init_fields = __esm({
+  "src/tools/fields.ts"() {
+    "use strict";
+    import_zod9 = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/automations.ts
 var automations_exports = {};
 __export(automations_exports, {
   register: () => register10
 });
-var import_zod10 = require("zod");
-function register10(server2, client) {
+function register10(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "list_automations",
     "List all automation rules configured in the workspace.",
     {},
@@ -1458,7 +1525,7 @@ function register10(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "get_automation",
     "Get detailed information about a specific automation rule.",
     {
@@ -1478,7 +1545,7 @@ function register10(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "create_automation",
     "Create a new automation rule for automatic media processing workflows.",
     {
@@ -1501,7 +1568,7 @@ function register10(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_automation",
     "Update an existing automation rule's configuration.",
     {
@@ -1528,7 +1595,7 @@ function register10(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "toggle_automation_status",
     "Enable or disable an automation rule.",
     {
@@ -1553,16 +1620,23 @@ function register10(server2, client) {
     }
   );
 }
+var import_zod10;
+var init_automations = __esm({
+  "src/tools/automations.ts"() {
+    "use strict";
+    import_zod10 = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/webhooks.ts
 var webhooks_exports = {};
 __export(webhooks_exports, {
   register: () => register11
 });
-var import_zod11 = require("zod");
-function register11(server2, client) {
+function register11(server, client) {
   const api = client ?? speakClient;
-  server2.tool(
+  server.tool(
     "create_webhook",
     "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
     {
@@ -1583,7 +1657,7 @@ function register11(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "list_webhooks",
     "List all configured webhooks in the workspace.",
     {},
@@ -1601,7 +1675,7 @@ function register11(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "update_webhook",
     "Update an existing webhook's URL or subscribed events.",
     {
@@ -1623,7 +1697,7 @@ function register11(server2, client) {
       }
     }
   );
-  server2.tool(
+  server.tool(
     "delete_webhook",
     "Delete a webhook and stop receiving notifications at its endpoint.",
     {
@@ -1644,43 +1718,611 @@ function register11(server2, client) {
     }
   );
 }
+var import_zod11;
+var init_webhooks = __esm({
+  "src/tools/webhooks.ts"() {
+    "use strict";
+    import_zod11 = require("zod");
+    init_client();
+  }
+});
 
 // src/tools/index.ts
-var modules = [
-  media_exports,
-  text_exports,
-  exports_exports,
-  folders_exports,
-  recorder_exports,
-  embed_exports,
-  prompt_exports,
-  meeting_exports,
-  fields_exports,
-  automations_exports,
-  webhooks_exports
-];
-function registerAllTools(server2, client) {
+var tools_exports = {};
+__export(tools_exports, {
+  registerAllTools: () => registerAllTools
+});
+function registerAllTools(server, client) {
   for (const mod of modules) {
-    mod.register(server2, client);
+    mod.register(server, client);
   }
 }
+var modules;
+var init_tools = __esm({
+  "src/tools/index.ts"() {
+    "use strict";
+    init_media();
+    init_text();
+    init_exports();
+    init_folders();
+    init_recorder();
+    init_embed();
+    init_prompt();
+    init_meeting();
+    init_fields();
+    init_automations();
+    init_webhooks();
+    modules = [
+      media_exports,
+      text_exports,
+      exports_exports,
+      folders_exports,
+      recorder_exports,
+      embed_exports,
+      prompt_exports,
+      meeting_exports,
+      fields_exports,
+      automations_exports,
+      webhooks_exports
+    ];
+  }
+});
+
+// src/cli/config.ts
+var config_exports = {};
+__export(config_exports, {
+  getConfigPath: () => getConfigPath,
+  loadConfig: () => loadConfig,
+  resolveApiKey: () => resolveApiKey,
+  resolveBaseUrl: () => resolveBaseUrl,
+  saveConfig: () => saveConfig
+});
+function ensureDir() {
+  if (!import_fs.default.existsSync(CONFIG_DIR)) {
+    import_fs.default.mkdirSync(CONFIG_DIR, { recursive: true });
+  }
+}
+function loadConfig() {
+  try {
+    if (import_fs.default.existsSync(CONFIG_FILE)) {
+      return JSON.parse(import_fs.default.readFileSync(CONFIG_FILE, "utf-8"));
+    }
+  } catch {
+  }
+  return {};
+}
+function saveConfig(config) {
+  ensureDir();
+  import_fs.default.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2) + "\n", {
+    mode: 384
+    // Owner read/write only
+  });
+}
+function resolveApiKey() {
+  if (process.env.SPEAK_API_KEY) return process.env.SPEAK_API_KEY;
+  const config = loadConfig();
+  if (config.apiKey) {
+    process.env.SPEAK_API_KEY = config.apiKey;
+    return config.apiKey;
+  }
+  return void 0;
+}
+function resolveBaseUrl() {
+  if (process.env.SPEAK_BASE_URL) return process.env.SPEAK_BASE_URL;
+  const config = loadConfig();
+  if (config.baseUrl) {
+    process.env.SPEAK_BASE_URL = config.baseUrl;
+    return config.baseUrl;
+  }
+  return "https://api.speakai.co";
+}
+function getConfigPath() {
+  return CONFIG_FILE;
+}
+var import_fs, import_path, import_os, CONFIG_DIR, CONFIG_FILE;
+var init_config = __esm({
+  "src/cli/config.ts"() {
+    "use strict";
+    import_fs = __toESM(require("fs"));
+    import_path = __toESM(require("path"));
+    import_os = __toESM(require("os"));
+    CONFIG_DIR = import_path.default.join(import_os.default.homedir(), ".speakai");
+    CONFIG_FILE = import_path.default.join(CONFIG_DIR, "config.json");
+  }
+});
+
+// src/cli/format.ts
+function printJson(data) {
+  console.log(JSON.stringify(data, null, 2));
+}
+function printTable(rows, columns) {
+  if (rows.length === 0) {
+    console.log("No results found.");
+    return;
+  }
+  const widths = columns.map((col) => {
+    const maxData = rows.reduce(
+      (max, row) => Math.max(max, String(row[col.key] ?? "").length),
+      0
+    );
+    return col.width ?? Math.max(col.label.length, Math.min(maxData, 50));
+  });
+  const header = columns.map((col, i) => col.label.padEnd(widths[i])).join("  ");
+  console.log(header);
+  console.log(widths.map((w) => "\u2500".repeat(w)).join("\u2500\u2500"));
+  for (const row of rows) {
+    const line = columns.map((col, i) => {
+      const val = String(row[col.key] ?? "\u2014");
+      return val.length > widths[i] ? val.slice(0, widths[i] - 1) + "\u2026" : val.padEnd(widths[i]);
+    }).join("  ");
+    console.log(line);
+  }
+  console.log(`
+${rows.length} result${rows.length === 1 ? "" : "s"}`);
+}
+function printError(message) {
+  console.error(`Error: ${message}`);
+}
+function printSuccess(message) {
+  console.log(message);
+}
+var init_format = __esm({
+  "src/cli/format.ts"() {
+    "use strict";
+  }
+});
+
+// src/cli/index.ts
+var cli_exports = {};
+__export(cli_exports, {
+  createCli: () => createCli
+});
+async function getClient() {
+  const { speakClient: speakClient2 } = await Promise.resolve().then(() => (init_client(), client_exports));
+  return speakClient2;
+}
+function requireApiKey() {
+  const key = resolveApiKey();
+  resolveBaseUrl();
+  if (!key) {
+    printError(
+      'No API key configured. Run "speak-mcp config set-key" or set SPEAK_API_KEY.'
+    );
+    process.exit(1);
+  }
+}
+function createCli() {
+  const program = new import_commander.Command();
+  program.name("speak-mcp").description(
+    "Speak AI CLI & MCP Server \u2014 transcribe, analyze, and manage media from the command line"
+  ).version("1.0.0");
+  const config = program.command("config").description("Manage configuration");
+  config.command("set-key").description("Set your Speak AI API key").argument("[key]", "API key (omit for interactive prompt)").action(async (key) => {
+    if (!key) {
+      const rl = (0, import_readline.createInterface)({
+        input: process.stdin,
+        output: process.stdout
+      });
+      key = await new Promise(
+        (resolve) => rl.question("Enter your Speak AI API key: ", (answer) => {
+          rl.close();
+          resolve(answer.trim());
+        })
+      );
+    }
+    if (!key) {
+      printError("No key provided.");
+      process.exit(1);
+    }
+    const cfg = loadConfig();
+    cfg.apiKey = key;
+    saveConfig(cfg);
+    printSuccess(`API key saved to ${getConfigPath()}`);
+  });
+  config.command("show").description("Show current configuration").action(() => {
+    const cfg = loadConfig();
+    const envKey = process.env.SPEAK_API_KEY;
+    console.log(`Config file: ${getConfigPath()}`);
+    console.log(
+      `API key:     ${cfg.apiKey ? cfg.apiKey.slice(0, 8) + "..." : "(not set)"}`
+    );
+    console.log(
+      `Base URL:    ${cfg.baseUrl ?? "https://api.speakai.co (default)"}`
+    );
+    if (envKey) {
+      console.log(
+        `Env override: SPEAK_API_KEY=${envKey.slice(0, 8)}...`
+      );
+    }
+  });
+  config.command("set-url").description("Set custom API base URL").argument("<url>", "Base URL (e.g. https://api.speakai.co)").action((url) => {
+    const cfg = loadConfig();
+    cfg.baseUrl = url;
+    saveConfig(cfg);
+    printSuccess(`Base URL set to ${url}`);
+  });
+  program.command("list-media").alias("ls").description("List media files").option("-t, --type <type>", "Filter by type (audio, video, text)").option("-p, --page <n>", "Page number (0-based)", "0").option("-s, --page-size <n>", "Results per page", "20").option("--sort <field>", "Sort field", "createdAt:desc").option("-f, --folder <id>", "Filter by folder ID").option("-n, --name <filter>", "Filter by name").option("--favorites", "Show only favorites").option("--json", "Output raw JSON").action(async (opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const params = {
+        page: parseInt(opts.page),
+        pageSize: parseInt(opts.pageSize),
+        sortBy: opts.sort,
+        filterMedia: 2
+        // 0=Uploaded, 1=Assigned, 2=Both
+      };
+      if (opts.type) params.mediaType = opts.type;
+      if (opts.folder) params.folderId = opts.folder;
+      if (opts.name) params.filterName = opts.name;
+      if (opts.favorites) params.isFavorites = true;
+      const res = await client.get("/v1/media", { params });
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      console.log(`Total: ${data.totalCount} | Page ${opts.page} of ${data.pages}
+`);
+      printTable(data.mediaList ?? [], [
+        { key: "_id", label: "ID", width: 14 },
+        { key: "name", label: "Name", width: 40 },
+        { key: "mediaType", label: "Type", width: 6 },
+        { key: "state", label: "Status", width: 12 },
+        { key: "createdAt", label: "Created", width: 20 }
+      ]);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("get-transcript").alias("transcript").description("Get transcript for a media file").argument("<mediaId>", "Media file ID").option("--json", "Output raw JSON").option("--plain", "Output plain text only (no timestamps)").action(async (mediaId, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.get(`/v1/media/transcript/${mediaId}`);
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      if (opts.plain) {
+        const segments2 = data?.transcript ?? data ?? [];
+        for (const seg of segments2) {
+          console.log(seg.text ?? "");
+        }
+        return;
+      }
+      const segments = data?.transcript ?? data ?? [];
+      let lastSpeaker = "";
+      for (const seg of segments) {
+        const speaker = seg.speakerId ?? "?";
+        const start = seg.instances?.[0]?.start ?? "";
+        const text = seg.text ?? "";
+        if (speaker !== lastSpeaker) {
+          console.log(`
+[Speaker ${speaker}] ${start}`);
+          lastSpeaker = speaker;
+        }
+        process.stdout.write(text + " ");
+      }
+      console.log();
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("get-insights").alias("insights").description("Get AI-generated insights for a media file").argument("<mediaId>", "Media file ID").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.get(`/v1/media/insight/${mediaId}`);
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      if (data?.summary) {
+        console.log("\u2500\u2500 Summary \u2500\u2500");
+        console.log(data.summary + "\n");
+      }
+      const categories = [
+        "keywords",
+        "topics",
+        "people",
+        "locations",
+        "brands",
+        "sentiment"
+      ];
+      for (const cat of categories) {
+        const items = data?.[cat];
+        if (items && Array.isArray(items) && items.length > 0) {
+          console.log(`\u2500\u2500 ${cat.charAt(0).toUpperCase() + cat.slice(1)} \u2500\u2500`);
+          for (const item of items.slice(0, 20)) {
+            const name = typeof item === "string" ? item : item.name ?? item.text ?? JSON.stringify(item);
+            console.log(`  ${name}`);
+          }
+          if (items.length > 20) console.log(`  ... and ${items.length - 20} more`);
+          console.log();
+        }
+      }
+      if (data?.sentiment && !Array.isArray(data.sentiment)) {
+        console.log("\u2500\u2500 Sentiment \u2500\u2500");
+        printJson(data.sentiment);
+        console.log();
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("upload").description("Upload media from a URL").argument("<url>", "Publicly accessible media URL").option("-n, --name <name>", "Display name").option("-t, --type <type>", "Media type (audio or video)", "audio").option("-l, --language <lang>", "Source language (BCP-47)", "en-US").option("-f, --folder <id>", "Destination folder ID").option("--tags <tags>", "Comma-separated tags").option("--wait", "Wait for processing to complete").option("--json", "Output raw JSON").action(async (url, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const body = {
+        name: opts.name ?? url.split("/").pop()?.split("?")[0] ?? "Upload",
+        url,
+        mediaType: opts.type,
+        sourceLanguage: opts.language
+      };
+      if (opts.folder) body.folderId = opts.folder;
+      if (opts.tags) body.tags = opts.tags;
+      const res = await client.post("/v1/media/upload", body);
+      const data = res.data?.data;
+      if (opts.json && !opts.wait) {
+        printJson(data);
+        return;
+      }
+      const mediaId = data?.mediaId;
+      printSuccess(`Uploaded: ${mediaId} (state: ${data?.state})`);
+      if (opts.wait && mediaId) {
+        process.stdout.write("Processing");
+        let status = data?.state;
+        while (status !== "processed" && status !== "failed") {
+          await new Promise((r) => setTimeout(r, 5e3));
+          process.stdout.write(".");
+          const statusRes = await client.get(`/v1/media/status/${mediaId}`);
+          status = statusRes.data?.data?.state;
+        }
+        console.log();
+        if (status === "processed") {
+          printSuccess(`Done! Media ${mediaId} is ready.`);
+        } else {
+          printError(`Processing failed for ${mediaId}`);
+          process.exit(1);
+        }
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("export").description("Export media transcript/insights").argument("<mediaId>", "Media file ID").option(
+    "-f, --format <type>",
+    "Export format (pdf, docx, srt, vtt, txt, csv, md)",
+    "txt"
+  ).option("--speakers", "Include speaker names").option("--timestamps", "Include timestamps").option("--redacted", "Apply PII redaction").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const params = {};
+      if (opts.speakers) params.isSpeakerNames = true;
+      if (opts.timestamps) params.isTimeStamps = true;
+      if (opts.redacted) params.isRedacted = true;
+      const res = await client.post(
+        `/v1/media/export/${mediaId}/${opts.format}`,
+        null,
+        { params }
+      );
+      if (opts.json) {
+        printJson(res.data);
+      } else {
+        printJson(res.data?.data ?? res.data);
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("status").description("Check processing status of a media file").argument("<mediaId>", "Media file ID").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.get(`/v1/media/status/${mediaId}`);
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      console.log(`Name:     ${data?.name ?? "\u2014"}`);
+      console.log(`Status:   ${data?.state ?? "\u2014"}`);
+      console.log(`Type:     ${data?.mediaType ?? "\u2014"}`);
+      const dur = data?.duration;
+      const durStr = dur?.inSecond ? `${Math.round(dur.inSecond)}s` : typeof dur === "number" ? `${Math.round(dur)}s` : "\u2014";
+      console.log(`Duration: ${durStr}`);
+      console.log(`Created:  ${data?.createdAt ?? "\u2014"}`);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("create-text").description("Create a text note for AI analysis").argument("<name>", "Note title").option("-t, --text <text>", "Text content (or pipe via stdin)").option("-f, --folder <id>", "Folder ID").option("--tags <tags>", "Comma-separated tags").option("--json", "Output raw JSON").action(async (name, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      let text = opts.text;
+      if (!text && !process.stdin.isTTY) {
+        const chunks = [];
+        for await (const chunk of process.stdin) {
+          chunks.push(chunk);
+        }
+        text = Buffer.concat(chunks).toString("utf-8").trim();
+      }
+      if (!text) {
+        printError("Provide text via --text or pipe via stdin");
+        process.exit(1);
+      }
+      const body = { name, text, rawText: text };
+      if (opts.folder) body.folderId = opts.folder;
+      if (opts.tags) body.tags = opts.tags;
+      const res = await client.post("/v1/text/create", body);
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+      } else {
+        printSuccess(`Created text note: ${data?.mediaId ?? data?._id}`);
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("list-folders").alias("folders").description("List all folders").option("--json", "Output raw JSON").action(async (opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.get("/v1/folder", {
+        params: { page: 0, pageSize: 100, sortBy: "createdAt:desc" }
+      });
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      const folders = Array.isArray(data) ? data : data?.folderList ?? data?.folders ?? [];
+      printTable(folders, [
+        { key: "_id", label: "ID", width: 14 },
+        { key: "name", label: "Name", width: 40 },
+        { key: "createdAt", label: "Created", width: 20 }
+      ]);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("ask").description("Ask an AI question about a media file").argument("<mediaId>", "Media file ID").argument("<prompt>", "Your question").option("--assistant <type>", "Assistant type (general, researcher, marketer, sales, recruiter)", "general").option("--json", "Output raw JSON").action(async (mediaId, prompt, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.post("/v1/prompt", {
+        mediaIds: [mediaId],
+        prompt,
+        assistantType: opts.assistant
+      });
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+      } else {
+        console.log(data?.answer ?? data?.message ?? JSON.stringify(data, null, 2));
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("schedule-meeting").description("Schedule AI assistant to join a meeting").argument("<url>", "Meeting URL (Zoom, Meet, Teams)").option("-t, --title <title>", "Meeting title").option("-d, --date <datetime>", "Meeting date/time (ISO 8601, omit to join now)").option("-l, --language <lang>", "Meeting language", "en-US").option("--json", "Output raw JSON").action(async (url, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const body = {
+        meetingURL: url,
+        title: opts.title ?? "Meeting",
+        meetingLanguage: opts.language
+      };
+      if (opts.date) body.meetingDate = opts.date;
+      const res = await client.post(
+        "/v1/meeting-assistant/events/schedule",
+        body
+      );
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+      } else {
+        printSuccess(`Meeting scheduled: ${data?._id ?? "OK"}`);
+        if (!opts.date) console.log("Assistant will join immediately.");
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  return program;
+}
+var import_commander, import_readline;
+var init_cli = __esm({
+  "src/cli/index.ts"() {
+    "use strict";
+    import_commander = require("commander");
+    import_readline = require("readline");
+    init_config();
+    init_format();
+  }
+});
 
 // src/index.ts
-var server = new import_mcp.McpServer({
-  name: "speak-ai",
-  version: "1.0.0"
+var index_exports = {};
+__export(index_exports, {
+  createSpeakClient: () => createSpeakClient,
+  formatAxiosError: () => formatAxiosError,
+  registerAllTools: () => registerAllTools
 });
-registerAllTools(server);
-async function main() {
-  const transport = new import_stdio.StdioServerTransport();
-  await server.connect(transport);
-  process.stderr.write("[speak-mcp] Server started on stdio transport\n");
+module.exports = __toCommonJS(index_exports);
+init_tools();
+init_client();
+var args = process.argv.slice(2);
+var cliCommands = [
+  "config",
+  "list-media",
+  "ls",
+  "get-transcript",
+  "transcript",
+  "get-insights",
+  "insights",
+  "upload",
+  "export",
+  "status",
+  "create-text",
+  "list-folders",
+  "folders",
+  "ask",
+  "schedule-meeting",
+  "help"
+];
+var isCliMode = args.length > 0 && (args[0].startsWith("-") || cliCommands.includes(args[0]));
+if (isCliMode) {
+  Promise.resolve().then(() => (init_config(), config_exports)).then(({ resolveApiKey: resolveApiKey2, resolveBaseUrl: resolveBaseUrl2 }) => {
+    resolveApiKey2();
+    resolveBaseUrl2();
+    Promise.resolve().then(() => (init_cli(), cli_exports)).then(({ createCli: createCli2 }) => {
+      const program = createCli2();
+      program.parseAsync(process.argv).catch((err) => {
+        console.error(`Error: ${err.message}`);
+        process.exit(1);
+      });
+    });
+  });
+} else {
+  import("@modelcontextprotocol/sdk/server/mcp.js").then(({ McpServer }) => {
+    import("@modelcontextprotocol/sdk/server/stdio.js").then(
+      ({ StdioServerTransport }) => {
+        Promise.resolve().then(() => (init_tools(), tools_exports)).then(({ registerAllTools: registerAllTools2 }) => {
+          const server = new McpServer({
+            name: "speak-ai",
+            version: "1.0.0"
+          });
+          registerAllTools2(server);
+          const transport = new StdioServerTransport();
+          server.connect(transport).then(() => {
+            process.stderr.write(
+              "[speak-mcp] Server started on stdio transport\n"
+            );
+          });
+        });
+      }
+    );
+  });
 }
-main().catch((err) => {
-  process.stderr.write(`[speak-mcp] Fatal error: ${err}
-`);
-  process.exit(1);
-});
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   createSpeakClient,

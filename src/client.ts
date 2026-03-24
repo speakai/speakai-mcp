@@ -1,12 +1,11 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
-const BASE_URL = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
-const API_KEY = process.env.SPEAK_API_KEY ?? "";
-
-if (!API_KEY && !process.env.SPEAK_MCP_LIBRARY_MODE) {
-  process.stderr.write(
-    "[speak-mcp] Warning: SPEAK_API_KEY is not set. All requests will fail.\n"
-  );
+// Read lazily so CLI config can set env vars before first use
+function getBaseUrl(): string {
+  return process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
+}
+function getApiKey(): string {
+  return process.env.SPEAK_API_KEY ?? "";
 }
 
 /**
@@ -20,14 +19,19 @@ let tokenExpiresAt = 0;
  * Fetch a new access token using the API key.
  */
 async function authenticate(): Promise<void> {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error("SPEAK_API_KEY is not set. Run 'speak-mcp config set-key' or set the environment variable.");
+  }
+
   try {
     const res = await axios.post(
-      `${BASE_URL}/v1/auth/accessToken`,
+      `${getBaseUrl()}/v1/auth/accessToken`,
       {},
       {
         headers: {
           "Content-Type": "application/json",
-          "x-speakai-key": API_KEY,
+          "x-speakai-key": apiKey,
         },
       }
     );
@@ -35,7 +39,6 @@ async function authenticate(): Promise<void> {
     if (res.data?.data?.accessToken) {
       accessToken = res.data.data.accessToken;
       refreshToken = res.data.data.refreshToken ?? "";
-      // Tokens typically expire in 1 hour — refresh at 50 minutes
       tokenExpiresAt = Date.now() + 50 * 60 * 1000;
       process.stderr.write("[speak-mcp] Authenticated successfully\n");
     }
@@ -56,12 +59,12 @@ async function refreshAccessToken(): Promise<void> {
 
   try {
     const res = await axios.post(
-      `${BASE_URL}/v1/auth/refreshToken`,
+      `${getBaseUrl()}/v1/auth/refreshToken`,
       { refreshToken },
       {
         headers: {
           "Content-Type": "application/json",
-          "x-speakai-key": API_KEY,
+          "x-speakai-key": getApiKey(),
           "x-access-token": accessToken,
         },
       }
@@ -74,7 +77,6 @@ async function refreshAccessToken(): Promise<void> {
       process.stderr.write("[speak-mcp] Token refreshed\n");
     }
   } catch {
-    // Refresh token expired — re-authenticate from scratch
     return authenticate();
   }
 }
@@ -93,19 +95,20 @@ async function ensureAuthenticated(): Promise<void> {
 }
 
 /**
- * Default client — used in STDIO mode. Auto-manages tokens using the API key.
+ * Default client — used in STDIO and CLI modes. Auto-manages tokens.
+ * baseURL is set lazily on first request via interceptor.
  */
 export const speakClient = axios.create({
-  baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
   timeout: 60_000,
 });
 
-// Interceptor: inject fresh auth headers before every request
+// Interceptor: set baseURL + inject auth headers before every request
 speakClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    config.baseURL = getBaseUrl();
     await ensureAuthenticated();
-    config.headers.set("x-speakai-key", API_KEY);
+    config.headers.set("x-speakai-key", getApiKey());
     config.headers.set("x-access-token", accessToken);
     return config;
   }
@@ -120,9 +123,9 @@ speakClient.interceptors.response.use(
 
     if (error.response?.status === 401 && retryCount < 2) {
       originalRequest._retryCount = retryCount + 1;
-      tokenExpiresAt = 0; // force re-auth
+      tokenExpiresAt = 0;
       await ensureAuthenticated();
-      originalRequest.headers["x-speakai-key"] = API_KEY;
+      originalRequest.headers["x-speakai-key"] = getApiKey();
       originalRequest.headers["x-access-token"] = accessToken;
       return speakClient(originalRequest);
     }
@@ -131,8 +134,7 @@ speakClient.interceptors.response.use(
 );
 
 /**
- * Create a client with pre-existing auth — used when embedded in speak-server
- * where auth is already validated by middleware.
+ * Create a client with pre-existing auth — used when embedded in speak-server.
  */
 export function createSpeakClient(options: {
   baseUrl: string;
