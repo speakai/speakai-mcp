@@ -178,7 +178,7 @@ function register(server, client) {
   const api = client ?? speakClient;
   server.tool(
     "get_signed_upload_url",
-    "Get a pre-signed S3 URL for direct media file upload. Use this before uploading a file directly to Speak AI storage.",
+    "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
       isVideo: import_zod.z.boolean().describe("Set true for video files, false for audio files"),
       filename: import_zod.z.string().min(1).describe("Original filename including extension"),
@@ -204,11 +204,11 @@ function register(server, client) {
   );
   server.tool(
     "upload_media",
-    "Upload a media file to Speak AI by providing a publicly accessible URL. Speak AI will fetch and process the file asynchronously.",
+    "Upload media from a publicly accessible URL. Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
     {
       name: import_zod.z.string().min(1).describe("Display name for the media file"),
       url: import_zod.z.string().describe("Publicly accessible URL of the media file (or pre-signed S3 URL)"),
-      mediaType: import_zod.z.enum(["audio", "video"]).describe('Type of media: "audio" or "video"'),
+      mediaType: import_zod.z.enum([import_shared.MediaType.AUDIO, import_shared.MediaType.VIDEO]).describe('Type of media: "audio" or "video"'),
       description: import_zod.z.string().optional().describe("Description of the media file"),
       sourceLanguage: import_zod.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
       tags: import_zod.z.string().optional().describe("Comma-separated tags for the media"),
@@ -239,9 +239,9 @@ function register(server, client) {
   );
   server.tool(
     "list_media",
-    "List all media files in the workspace with optional filtering, pagination, and sorting.",
+    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_magic_prompt. For deep full-text search across transcripts, use search_media instead.",
     {
-      mediaType: import_zod.z.enum(["audio", "video", "text"]).optional().describe('Filter by media type: "audio", "video", or "text"'),
+      mediaType: import_zod.z.enum([import_shared.MediaType.AUDIO, import_shared.MediaType.VIDEO, import_shared.MediaType.TEXT]).optional().describe('Filter by media type: "audio", "video", or "text"'),
       page: import_zod.z.number().int().positive().optional().describe("Page number for pagination (default: 1)"),
       pageSize: import_zod.z.number().int().positive().optional().describe("Number of results per page (default: 20)"),
       sortBy: import_zod.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc" or "name:asc"'),
@@ -270,7 +270,7 @@ function register(server, client) {
   );
   server.tool(
     "get_media_insights",
-    "Retrieve AI-generated insights for a media file, including topics, sentiment, action items, and summaries.",
+    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_magic_prompt instead.",
     {
       mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
     },
@@ -292,7 +292,7 @@ function register(server, client) {
   );
   server.tool(
     "get_transcript",
-    "Retrieve the full transcript for a media file, including speaker labels and timestamps.",
+    "Retrieve the full transcript for a processed media file with speaker labels and timestamps. The media must be in 'processed' state. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
     {
       mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
     },
@@ -345,7 +345,7 @@ function register(server, client) {
   );
   server.tool(
     "get_media_status",
-    "Check the processing status of a media file (e.g. pending, transcribing, completed, failed).",
+    "Check the processing status of a media file. States: pending \u2192 transcribing \u2192 analyzing \u2192 processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
     {
       mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
     },
@@ -416,13 +416,120 @@ function register(server, client) {
       }
     }
   );
+  server.tool(
+    "get_captions",
+    "Get captions for a media file. Captions are separate from full transcripts and are formatted for display/subtitles.",
+    {
+      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
+    },
+    async ({ mediaId }) => {
+      try {
+        const result = await api.get(`/v1/media/caption/${mediaId}`);
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "list_supported_languages",
+    "List all languages supported for transcription. Use the language codes when uploading media with a specific sourceLanguage.",
+    {},
+    async () => {
+      try {
+        const result = await api.get("/v1/media/supportedLanguages");
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "get_media_statistics",
+    "Get workspace-level media statistics \u2014 total counts, processing status breakdown, storage usage, etc.",
+    {},
+    async () => {
+      try {
+        const result = await api.get("/v1/media/statistics");
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "toggle_media_favorite",
+    "Mark or unmark a media file as a favorite for quick access.",
+    {
+      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/media/favorites", body);
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "reanalyze_media",
+    "Re-run AI analysis on a media file using the latest models. Use this after Speak AI has updated its analysis capabilities or if the original analysis was incomplete.",
+    {
+      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file to re-analyze")
+    },
+    async ({ mediaId }) => {
+      try {
+        const result = await api.get(`/v1/media/reanalyze/${mediaId}`);
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
 }
-var import_zod;
+var import_zod, import_shared;
 var init_media = __esm({
   "src/tools/media.ts"() {
     "use strict";
     import_zod = require("zod");
     init_client();
+    import_shared = require("@speakai/shared");
   }
 });
 
@@ -1237,8 +1344,134 @@ __export(prompt_exports, {
 function register7(server, client) {
   const api = client ?? speakClient;
   server.tool(
+    "ask_magic_prompt",
+    [
+      "Ask an AI-powered question about your media using Speak AI's Magic Prompt.",
+      "Supports querying a single file, multiple files, entire folders, or your whole workspace.",
+      "Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media.",
+      "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
+      "To continue a conversation, pass the promptId from a previous response.",
+      "Returns a promptId \u2014 save it to continue the conversation with follow-up questions."
+    ].join(" "),
+    {
+      prompt: import_zod7.z.string().min(1).describe("The question or prompt to ask about the media"),
+      mediaIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Array of media IDs to query. Omit along with folderIds to search across all media in your workspace."),
+      folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Array of folder IDs to scope the query to. Omit along with mediaIds to search across all media."),
+      folderId: import_zod7.z.string().optional().describe("Single folder ID to scope the query to. Use folderIds for multiple folders."),
+      assistantType: import_zod7.z.enum(Object.values(import_shared2.AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
+      assistantTemplateId: import_zod7.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
+      promptId: import_zod7.z.string().optional().describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
+      speakers: import_zod7.z.array(import_zod7.z.string()).optional().describe("Filter to specific speaker IDs from the transcript"),
+      tags: import_zod7.z.array(import_zod7.z.string()).optional().describe("Filter media by tags"),
+      startDate: import_zod7.z.string().optional().describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
+      endDate: import_zod7.z.string().optional().describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
+      isIndividualPrompt: import_zod7.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files.")
+    },
+    async (params) => {
+      try {
+        const result = await api.post("/v1/prompt", params);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "retry_magic_prompt",
+    "Retry a failed or incomplete Magic Prompt response. Use when a previous ask_magic_prompt call returned an error or incomplete answer.",
+    {
+      promptId: import_zod7.z.string().min(1).describe("ID of the conversation containing the failed message"),
+      messageId: import_zod7.z.string().min(1).describe("ID of the specific message to retry")
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/prompt/retry", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "get_chat_history",
+    "Get a list of recent Magic Prompt conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_magic_prompt or retrieve full messages via get_chat_messages.",
+    {
+      limit: import_zod7.z.number().int().positive().optional().describe("Number of recent conversations to return (default: 10)")
+    },
+    async ({ limit }) => {
+      try {
+        const result = await api.get("/v1/prompt/history", {
+          params: limit ? { limit } : void 0
+        });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "get_chat_messages",
+    "Get full message history for conversations. Can filter by promptId for a specific conversation, by media/folder, or search across all chat messages. Returns questions, answers, references, and metadata.",
+    {
+      promptId: import_zod7.z.string().optional().describe("Filter to a specific conversation by its ID"),
+      folderId: import_zod7.z.string().optional().describe("Filter messages by folder ID"),
+      mediaIds: import_zod7.z.string().optional().describe("Filter by media IDs (comma-separated)"),
+      query: import_zod7.z.string().optional().describe("Search text in prompts and answers"),
+      page: import_zod7.z.number().int().optional().describe("Page number for pagination (default: 0)"),
+      pageSize: import_zod7.z.number().int().optional().describe("Results per page (default: 25)")
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/prompt/messages", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "delete_chat_message",
+    "Delete a specific chat message from conversation history.",
+    {
+      promptId: import_zod7.z.string().min(1).describe("ID of the message to delete")
+    },
+    async ({ promptId }) => {
+      try {
+        const result = await api.delete(`/v1/prompt/message/${promptId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
     "list_prompts",
-    "List all available Magic Prompt templates for AI-powered questions about your media.",
+    "List all available Magic Prompt templates. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
     {},
     async () => {
       try {
@@ -1255,16 +1488,119 @@ function register7(server, client) {
     }
   );
   server.tool(
-    "ask_magic_prompt",
-    "Ask an AI-powered question about a specific media file using Speak AI's Magic Prompt.",
+    "get_favorite_prompts",
+    "Get all prompts and answers that have been marked as favorites. Useful for finding saved insights and important AI-generated analysis.",
+    {},
+    async () => {
+      try {
+        const result = await api.get("/v1/prompt/favorites");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "toggle_prompt_favorite",
+    "Mark or unmark a chat message as a favorite for easy retrieval later.",
     {
-      mediaId: import_zod7.z.string().min(1).describe("Unique identifier of the media file to query"),
-      prompt: import_zod7.z.string().min(1).describe("The question or prompt to ask about the media"),
-      promptId: import_zod7.z.string().optional().describe("ID of a predefined prompt template to use")
+      promptId: import_zod7.z.string().min(1).describe("ID of the conversation"),
+      messageId: import_zod7.z.string().min(1).describe("ID of the specific message to favorite/unfavorite"),
+      isFavorite: import_zod7.z.boolean().describe("true to mark as favorite, false to remove")
     },
     async (body) => {
       try {
-        const result = await api.post("/v1/prompt", body);
+        const result = await api.post("/v1/prompt/favorites", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "update_chat_title",
+    "Update the title of a chat conversation for easier identification in history.",
+    {
+      promptId: import_zod7.z.string().min(1).describe("ID of the conversation to rename"),
+      title: import_zod7.z.string().min(1).describe("New title for the conversation")
+    },
+    async ({ promptId, title }) => {
+      try {
+        const result = await api.put(`/v1/prompt/${promptId}`, { title });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "submit_chat_feedback",
+    "Submit feedback on a chat response (thumbs up/down). Helps improve AI answer quality.",
+    {
+      promptId: import_zod7.z.string().min(1).describe("ID of the conversation"),
+      messageId: import_zod7.z.string().min(1).describe("ID of the message to rate"),
+      score: import_zod7.z.number().describe("Feedback score: 1 for thumbs up, -1 for thumbs down"),
+      reason: import_zod7.z.string().optional().describe("Optional explanation for the feedback")
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/prompt/feedback", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "get_chat_statistics",
+    "Get usage statistics for Magic Prompt / chat. Returns metrics on prompt usage, optionally filtered by date range.",
+    {
+      startDate: import_zod7.z.string().optional().describe("Start date for stats (ISO 8601)"),
+      endDate: import_zod7.z.string().optional().describe("End date for stats (ISO 8601)")
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/prompt/statistics", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "export_chat_answer",
+    "Export a Magic Prompt conversation or answer. Useful for saving AI-generated summaries, reports, or analysis results.",
+    {
+      promptId: import_zod7.z.string().min(1).describe("ID of the conversation to export")
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/prompt/export", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -1277,12 +1613,13 @@ function register7(server, client) {
     }
   );
 }
-var import_zod7;
+var import_zod7, import_shared2;
 var init_prompt = __esm({
   "src/tools/prompt.ts"() {
     "use strict";
     import_zod7 = require("zod");
     init_client();
+    import_shared2 = require("@speakai/shared");
   }
 });
 
@@ -1727,6 +2064,400 @@ var init_webhooks = __esm({
   }
 });
 
+// src/tools/analytics.ts
+var analytics_exports = {};
+__export(analytics_exports, {
+  register: () => register12
+});
+function register12(server, client) {
+  const api = client ?? speakClient;
+  server.tool(
+    "search_media",
+    [
+      "Deep search across all media transcripts, insights, and metadata.",
+      "Returns matching media with sentiment data, tags, and content excerpts.",
+      "Use this to find specific topics, keywords, or themes across your entire library.",
+      "For filtering by media type, folder, tags, or speakers, use the filterList parameter.",
+      "Results are scoped by date range \u2014 defaults to current month if not specified."
+    ].join(" "),
+    {
+      query: import_zod12.z.string().min(1).describe("Search query \u2014 searches across transcripts, insights, and metadata"),
+      startDate: import_zod12.z.string().optional().describe("Start date for search range (ISO 8601). Defaults to start of current month."),
+      endDate: import_zod12.z.string().optional().describe("End date for search range (ISO 8601). Defaults to now."),
+      filterList: import_zod12.z.array(
+        import_zod12.z.object({
+          fieldName: import_zod12.z.enum(Object.values(import_shared3.FilterFieldName)).describe("Field to filter on"),
+          fieldOperator: import_zod12.z.enum(Object.values(import_shared3.FilterOperator)).describe("Filter operator"),
+          fieldValue: import_zod12.z.array(import_zod12.z.string()).describe("Values to filter by"),
+          fieldCondition: import_zod12.z.enum(Object.values(import_shared3.FilterCondition)).describe("Condition linking multiple filters")
+        })
+      ).optional().describe("Advanced filters for narrowing search results by tags, speakers, media type, sentiment, folder, etc.")
+    },
+    async (params) => {
+      try {
+        const result = await api.post("/v1/analytics/search", params);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+}
+var import_zod12, import_shared3;
+var init_analytics = __esm({
+  "src/tools/analytics.ts"() {
+    "use strict";
+    import_zod12 = require("zod");
+    init_client();
+    import_shared3 = require("@speakai/shared");
+  }
+});
+
+// src/tools/clips.ts
+var clips_exports = {};
+__export(clips_exports, {
+  register: () => register13
+});
+function register13(server, client) {
+  const api = client ?? speakClient;
+  server.tool(
+    "create_clip",
+    [
+      "Create a highlight clip from one or more media files by specifying time ranges.",
+      `Clips are processed asynchronously (states: ${Object.values(import_shared4.ClipState).join(", ")}) \u2014 use get_clips to check status.`,
+      "Maximum total clip duration is 30 minutes.",
+      "Use multiple timeRanges to stitch segments from different media files together."
+    ].join(" "),
+    {
+      title: import_zod13.z.string().min(1).describe("Title for the clip"),
+      mediaType: import_zod13.z.enum([import_shared4.MediaType.AUDIO, import_shared4.MediaType.VIDEO]).describe("Output media type"),
+      timeRanges: import_zod13.z.array(
+        import_zod13.z.object({
+          mediaId: import_zod13.z.string().min(1).describe("Source media file ID"),
+          startTime: import_zod13.z.number().min(0).describe("Start time in seconds"),
+          endTime: import_zod13.z.number().describe("End time in seconds (must be > startTime)")
+        })
+      ).min(1).describe("Array of time ranges to include in the clip. Each specifies a source media and start/end times."),
+      description: import_zod13.z.string().optional().describe("Description of the clip"),
+      tags: import_zod13.z.array(import_zod13.z.string()).optional().describe("Tags for the clip"),
+      mergeStrategy: import_zod13.z.enum(["CONCATENATE"]).optional().describe("How to merge multiple segments (default: CONCATENATE)")
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/clips", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "get_clips",
+    "List clips, optionally filtered by folder or media files. If clipId is provided, returns a single clip with its download URL (when processed).",
+    {
+      clipId: import_zod13.z.string().optional().describe("Get a specific clip by ID"),
+      folderId: import_zod13.z.string().optional().describe("Filter clips by folder ID"),
+      mediaIds: import_zod13.z.array(import_zod13.z.string()).optional().describe("Filter clips by source media file IDs")
+    },
+    async ({ clipId, ...params }) => {
+      try {
+        const url = clipId ? `/v1/clips/${clipId}` : "/v1/clips";
+        const result = await api.get(url, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "update_clip",
+    "Update a clip's title, description, or tags.",
+    {
+      clipId: import_zod13.z.string().min(1).describe("ID of the clip to update"),
+      title: import_zod13.z.string().optional().describe("New title"),
+      description: import_zod13.z.string().optional().describe("New description"),
+      tags: import_zod13.z.array(import_zod13.z.string()).optional().describe("New tags")
+    },
+    async ({ clipId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/clips/${clipId}`, body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "delete_clip",
+    "Permanently delete a clip and its associated media file.",
+    {
+      clipId: import_zod13.z.string().min(1).describe("ID of the clip to delete")
+    },
+    async ({ clipId }) => {
+      try {
+        const result = await api.delete(`/v1/clips/${clipId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+}
+var import_zod13, import_shared4;
+var init_clips = __esm({
+  "src/tools/clips.ts"() {
+    "use strict";
+    import_zod13 = require("zod");
+    init_client();
+    import_shared4 = require("@speakai/shared");
+  }
+});
+
+// src/media-utils.ts
+function isVideoFile(filePath) {
+  return VIDEO_EXTENSIONS.includes(path.extname(filePath).toLowerCase());
+}
+function getMimeType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const isVideo = isVideoFile(filePath);
+  if (ext === ".mp4") return isVideo ? "video/mp4" : "audio/mp4";
+  if (ext === ".webm") return isVideo ? "video/webm" : "audio/webm";
+  return MIME_TYPES[ext] ?? (isVideo ? "video/mp4" : "audio/mpeg");
+}
+function detectMediaType(filePath) {
+  return isVideoFile(filePath) ? "video" : "audio";
+}
+var path, VIDEO_EXTENSIONS, MIME_TYPES;
+var init_media_utils = __esm({
+  "src/media-utils.ts"() {
+    "use strict";
+    path = __toESM(require("path"));
+    VIDEO_EXTENSIONS = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
+    MIME_TYPES = {
+      ".mp3": "audio/mpeg",
+      ".m4a": "audio/mp4",
+      ".wav": "audio/wav",
+      ".ogg": "audio/ogg",
+      ".flac": "audio/flac",
+      ".mov": "video/quicktime",
+      ".avi": "video/x-msvideo",
+      ".mkv": "video/x-matroska",
+      ".wmv": "video/x-ms-wmv"
+    };
+  }
+});
+
+// src/tools/workflows.ts
+var workflows_exports = {};
+__export(workflows_exports, {
+  register: () => register14
+});
+function register14(server, client) {
+  const api = client ?? speakClient;
+  server.tool(
+    "upload_and_analyze",
+    [
+      "Upload media from a URL, wait for processing to complete, then return the transcript and AI insights \u2014 all in one call.",
+      "This is a convenience tool that combines upload_media + polling get_media_status + get_transcript + get_media_insights.",
+      "Processing typically takes 1-3 minutes for audio under 60 minutes.",
+      "Use this when you want the full analysis result without managing the polling loop yourself."
+    ].join(" "),
+    {
+      url: import_zod14.z.string().describe("Publicly accessible URL of the media file"),
+      name: import_zod14.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
+      mediaType: import_zod14.z.enum([import_shared5.MediaType.AUDIO, import_shared5.MediaType.VIDEO]).optional().describe("Media type (default: audio)"),
+      sourceLanguage: import_zod14.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
+      folderId: import_zod14.z.string().optional().describe("Folder ID to place the media in"),
+      tags: import_zod14.z.string().optional().describe("Comma-separated tags")
+    },
+    async (params) => {
+      try {
+        const uploadBody = {
+          name: params.name ?? params.url.split("/").pop()?.split("?")[0] ?? "Upload",
+          url: params.url,
+          mediaType: params.mediaType ?? "audio"
+        };
+        if (params.sourceLanguage) uploadBody.sourceLanguage = params.sourceLanguage;
+        if (params.folderId) uploadBody.folderId = params.folderId;
+        if (params.tags) uploadBody.tags = params.tags;
+        const uploadRes = await api.post("/v1/media/upload", uploadBody);
+        const mediaId = uploadRes.data?.data?.mediaId;
+        if (!mediaId) {
+          return {
+            content: [{ type: "text", text: `Error: Upload succeeded but no mediaId returned.
+${JSON.stringify(uploadRes.data, null, 2)}` }],
+            isError: true
+          };
+        }
+        let state = uploadRes.data?.data?.state;
+        let attempts = 0;
+        while (state !== import_shared5.MediaState.PROCESSED && state !== import_shared5.MediaState.FAILED && attempts < MAX_POLL_ATTEMPTS) {
+          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+          const statusRes = await api.get(`/v1/media/status/${mediaId}`);
+          state = statusRes.data?.data?.state;
+          attempts++;
+        }
+        if (state === import_shared5.MediaState.FAILED) {
+          return {
+            content: [{ type: "text", text: `Error: Processing failed for media ${mediaId}` }],
+            isError: true
+          };
+        }
+        if (state !== import_shared5.MediaState.PROCESSED) {
+          return {
+            content: [{ type: "text", text: `Timeout: Media ${mediaId} is still processing (state: ${state}). Use get_media_status to check later.` }],
+            isError: true
+          };
+        }
+        const [transcriptRes, insightsRes] = await Promise.all([
+          api.get(`/v1/media/transcript/${mediaId}`),
+          api.get(`/v1/media/insight/${mediaId}`)
+        ]);
+        const result = {
+          mediaId,
+          state: "processed",
+          transcript: transcriptRes.data?.data,
+          insights: insightsRes.data?.data
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  server.tool(
+    "upload_local_file",
+    [
+      "Upload a local file to Speak AI for transcription and analysis.",
+      "Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry.",
+      "Works with any audio or video file on the local filesystem.",
+      "After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights."
+    ].join(" "),
+    {
+      filePath: import_zod14.z.string().describe("Absolute path to the local audio or video file"),
+      name: import_zod14.z.string().optional().describe("Display name (defaults to filename)"),
+      mediaType: import_zod14.z.enum([import_shared5.MediaType.AUDIO, import_shared5.MediaType.VIDEO]).optional().describe("Media type (auto-detected from extension if omitted)"),
+      sourceLanguage: import_zod14.z.string().optional().describe("BCP-47 language code (e.g., 'en-US')"),
+      folderId: import_zod14.z.string().optional().describe("Folder ID to place the media in"),
+      tags: import_zod14.z.string().optional().describe("Comma-separated tags")
+    },
+    async (params) => {
+      try {
+        const filePath = params.filePath;
+        if (!fs.existsSync(filePath)) {
+          return {
+            content: [{ type: "text", text: `Error: File not found: ${filePath}` }],
+            isError: true
+          };
+        }
+        const filename = path2.basename(filePath);
+        const isVideo = isVideoFile(filePath);
+        const mediaType = params.mediaType ?? detectMediaType(filePath);
+        const mimeType = getMimeType(filePath);
+        const signedRes = await api.get("/v1/media/upload/signedurl", {
+          params: { isVideo, filename, mimeType }
+        });
+        const signedData = signedRes.data?.data;
+        const uploadUrl = signedData?.signedUrl ?? signedData?.url;
+        const s3Key = signedData?.key ?? signedData?.s3Key;
+        if (!uploadUrl) {
+          return {
+            content: [{ type: "text", text: `Error: Could not get signed upload URL.
+${JSON.stringify(signedRes.data, null, 2)}` }],
+            isError: true
+          };
+        }
+        const fileBuffer = fs.readFileSync(filePath);
+        const axios2 = (await import("axios")).default;
+        await axios2.put(uploadUrl, fileBuffer, {
+          headers: {
+            "Content-Type": mimeType
+          },
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity
+        });
+        const createBody = {
+          name: params.name ?? filename,
+          url: uploadUrl.split("?")[0],
+          // S3 URL without query params
+          mediaType
+        };
+        if (s3Key) createBody.s3Key = s3Key;
+        if (params.sourceLanguage) createBody.sourceLanguage = params.sourceLanguage;
+        if (params.folderId) createBody.folderId = params.folderId;
+        if (params.tags) createBody.tags = params.tags;
+        const createRes = await api.post("/v1/media/upload", createBody);
+        const data = createRes.data?.data;
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  mediaId: data?.mediaId,
+                  state: data?.state,
+                  message: `File uploaded successfully. Use get_media_status to poll until state is 'processed', then use get_transcript and get_media_insights.`
+                },
+                null,
+                2
+              )
+            }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+}
+var import_zod14, import_shared5, fs, path2, POLL_INTERVAL_MS, MAX_POLL_ATTEMPTS;
+var init_workflows = __esm({
+  "src/tools/workflows.ts"() {
+    "use strict";
+    import_zod14 = require("zod");
+    init_client();
+    import_shared5 = require("@speakai/shared");
+    fs = __toESM(require("fs"));
+    path2 = __toESM(require("path"));
+    init_media_utils();
+    POLL_INTERVAL_MS = 5e3;
+    MAX_POLL_ATTEMPTS = 120;
+  }
+});
+
 // src/tools/index.ts
 var tools_exports = {};
 __export(tools_exports, {
@@ -1752,6 +2483,9 @@ var init_tools = __esm({
     init_fields();
     init_automations();
     init_webhooks();
+    init_analytics();
+    init_clips();
+    init_workflows();
     modules = [
       media_exports,
       text_exports,
@@ -1763,8 +2497,260 @@ var init_tools = __esm({
       meeting_exports,
       fields_exports,
       automations_exports,
-      webhooks_exports
+      webhooks_exports,
+      analytics_exports,
+      clips_exports,
+      workflows_exports
     ];
+  }
+});
+
+// src/resources.ts
+var resources_exports = {};
+__export(resources_exports, {
+  registerResources: () => registerResources
+});
+function registerResources(server, client) {
+  const api = client ?? speakClient;
+  server.resource(
+    "media-library",
+    "speakai://media",
+    { description: "List of all media files in your Speak AI workspace" },
+    async () => {
+      try {
+        const result = await api.get("/v1/media", {
+          params: { page: 0, pageSize: 50, sortBy: "createdAt:desc", filterMedia: 2 }
+        });
+        return {
+          contents: [
+            {
+              uri: "speakai://media",
+              mimeType: "application/json",
+              text: JSON.stringify(result.data?.data, null, 2)
+            }
+          ]
+        };
+      } catch {
+        return { contents: [] };
+      }
+    }
+  );
+  server.resource(
+    "folders",
+    "speakai://folders",
+    { description: "List of all folders in your Speak AI workspace" },
+    async () => {
+      try {
+        const result = await api.get("/v1/folder", {
+          params: { page: 0, pageSize: 100, sortBy: "createdAt:desc" }
+        });
+        return {
+          contents: [
+            {
+              uri: "speakai://folders",
+              mimeType: "application/json",
+              text: JSON.stringify(result.data?.data, null, 2)
+            }
+          ]
+        };
+      } catch {
+        return { contents: [] };
+      }
+    }
+  );
+  server.resource(
+    "supported-languages",
+    "speakai://languages",
+    { description: "List of supported transcription languages" },
+    async () => {
+      try {
+        const result = await api.get("/v1/media/supportedLanguages");
+        return {
+          contents: [
+            {
+              uri: "speakai://languages",
+              mimeType: "application/json",
+              text: JSON.stringify(result.data?.data, null, 2)
+            }
+          ]
+        };
+      } catch {
+        return { contents: [] };
+      }
+    }
+  );
+  server.resource(
+    "transcript",
+    new import_mcp.ResourceTemplate("speakai://media/{mediaId}/transcript", { list: void 0 }),
+    { description: "Full transcript for a specific media file" },
+    async (uri, { mediaId }) => {
+      try {
+        const result = await api.get(`/v1/media/transcript/${mediaId}`);
+        return {
+          contents: [
+            {
+              uri: uri.href,
+              mimeType: "application/json",
+              text: JSON.stringify(result.data?.data, null, 2)
+            }
+          ]
+        };
+      } catch {
+        return { contents: [] };
+      }
+    }
+  );
+  server.resource(
+    "insights",
+    new import_mcp.ResourceTemplate("speakai://media/{mediaId}/insights", { list: void 0 }),
+    { description: "AI-generated insights for a specific media file" },
+    async (uri, { mediaId }) => {
+      try {
+        const result = await api.get(`/v1/media/insight/${mediaId}`);
+        return {
+          contents: [
+            {
+              uri: uri.href,
+              mimeType: "application/json",
+              text: JSON.stringify(result.data?.data, null, 2)
+            }
+          ]
+        };
+      } catch {
+        return { contents: [] };
+      }
+    }
+  );
+}
+var import_mcp;
+var init_resources = __esm({
+  "src/resources.ts"() {
+    "use strict";
+    import_mcp = require("@modelcontextprotocol/sdk/server/mcp.js");
+    init_client();
+  }
+});
+
+// src/prompts.ts
+var prompts_exports = {};
+__export(prompts_exports, {
+  registerPrompts: () => registerPrompts
+});
+function registerPrompts(server) {
+  server.prompt(
+    "analyze-meeting",
+    "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
+    {
+      url: import_zod15.z.string().describe("URL of the meeting recording"),
+      name: import_zod15.z.string().optional().describe("Meeting name (optional)")
+    },
+    async ({ url, name }) => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: [
+              `Please analyze this meeting recording:`,
+              ``,
+              `1. Upload "${name ?? "Meeting"}" from: ${url}`,
+              `2. Wait for processing to complete`,
+              `3. Get the full transcript and AI insights`,
+              `4. Summarize:`,
+              `   - Key discussion points`,
+              `   - Action items with owners (if identifiable from speakers)`,
+              `   - Decisions made`,
+              `   - Open questions or follow-ups needed`,
+              `   - Overall sentiment`,
+              ``,
+              `Use upload_and_analyze to handle the upload and processing in one step.`
+            ].join("\n")
+          }
+        }
+      ]
+    })
+  );
+  server.prompt(
+    "research-across-media",
+    "Search for themes, patterns, or topics across multiple recordings or your entire media library.",
+    {
+      topic: import_zod15.z.string().describe("The topic, theme, or question to research"),
+      folder: import_zod15.z.string().optional().describe("Folder ID to scope the research (optional)")
+    },
+    async ({ topic, folder }) => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: [
+              `Research this topic across my media library: "${topic}"`,
+              ``,
+              folder ? `Scope: folder ${folder}` : `Scope: entire workspace`,
+              ``,
+              `Steps:`,
+              `1. Use search_media to find relevant media matching this topic`,
+              `2. For the most relevant results, use ask_magic_prompt with the matching mediaIds to ask: "${topic}"`,
+              `3. Synthesize findings across all results:`,
+              `   - Common themes and patterns`,
+              `   - Notable quotes or data points`,
+              `   - Contradictions or differing perspectives`,
+              `   - Trends over time (if date range is available)`,
+              ``,
+              `Present a research summary with citations (media name + timestamp where possible).`
+            ].join("\n")
+          }
+        }
+      ]
+    })
+  );
+  server.prompt(
+    "meeting-brief",
+    "Prepare a brief from recent meetings \u2014 pull transcripts, extract decisions, and summarize open items.",
+    {
+      days: import_zod15.z.string().optional().describe("Number of days to look back (default: 7)"),
+      folder: import_zod15.z.string().optional().describe("Folder ID to scope to (optional)")
+    },
+    async ({ days, folder }) => {
+      const lookback = parseInt(days ?? "7");
+      const fromDate = /* @__PURE__ */ new Date();
+      fromDate.setDate(fromDate.getDate() - lookback);
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: [
+                `Prepare a meeting brief from the last ${lookback} days.`,
+                ``,
+                folder ? `Scope: folder ${folder}` : `Scope: all media`,
+                `Date range: ${fromDate.toISOString().split("T")[0]} to today`,
+                ``,
+                `Steps:`,
+                `1. Use list_media to find recent recordings (from: ${fromDate.toISOString().split("T")[0]})`,
+                `2. For each meeting, use get_media_insights to get summaries and action items`,
+                `3. Compile a brief with:`,
+                `   - Summary of each meeting (2-3 sentences)`,
+                `   - All action items consolidated (grouped by owner if possible)`,
+                `   - Key decisions made across meetings`,
+                `   - Open questions or unresolved topics`,
+                `   - Upcoming items that were mentioned`,
+                ``,
+                `Format as a clean, scannable document.`
+              ].join("\n")
+            }
+          }
+        ]
+      };
+    }
+  );
+}
+var import_zod15;
+var init_prompts = __esm({
+  "src/prompts.ts"() {
+    "use strict";
+    import_zod15 = require("zod");
   }
 });
 
@@ -1895,7 +2881,7 @@ function createCli() {
   const program = new import_commander.Command();
   program.name("speakai-mcp").description(
     "Speak AI CLI & MCP Server \u2014 transcribe, analyze, and manage media from the command line"
-  ).version("1.0.0");
+  ).version("2.0.0");
   const config = program.command("config").description("Manage configuration");
   config.command("set-key").description("Set your Speak AI API key").argument("[key]", "API key (omit for interactive prompt)").action(async (key) => {
     if (!key) {
@@ -1935,11 +2921,145 @@ function createCli() {
       );
     }
   });
+  config.command("test").description("Validate your API key and test connectivity").action(async () => {
+    const key = resolveApiKey();
+    resolveBaseUrl();
+    if (!key) {
+      printError('No API key configured. Run "speakai-mcp config set-key" or set SPEAK_API_KEY.');
+      process.exit(1);
+    }
+    try {
+      const axios2 = (await import("axios")).default;
+      const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
+      const res = await axios2.post(
+        `${baseUrl}/v1/auth/accessToken`,
+        {},
+        { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
+      );
+      if (res.data?.data?.accessToken) {
+        printSuccess("API key is valid. Connection successful.");
+      } else {
+        printError("Unexpected response \u2014 key may be invalid.");
+        process.exit(1);
+      }
+    } catch (err) {
+      printError(`Authentication failed: ${err.response?.data?.message ?? err.message}`);
+      process.exit(1);
+    }
+  });
   config.command("set-url").description("Set custom API base URL").argument("<url>", "Base URL (e.g. https://api.speakai.co)").action((url) => {
     const cfg = loadConfig();
     cfg.baseUrl = url;
     saveConfig(cfg);
     printSuccess(`Base URL set to ${url}`);
+  });
+  program.command("init").description("Interactive setup \u2014 configure API key and auto-detect MCP clients").action(async () => {
+    const rl = (0, import_readline.createInterface)({ input: process.stdin, output: process.stdout });
+    const ask = (q) => new Promise((resolve) => rl.question(q, (a) => resolve(a.trim())));
+    console.log("\n  Speak AI MCP Server \u2014 Setup\n");
+    const existingKey = resolveApiKey();
+    let key = existingKey;
+    if (existingKey) {
+      console.log(`  API key: ${existingKey.slice(0, 8)}... (already configured)`);
+      const change = await ask("  Change it? (y/N) ");
+      if (change.toLowerCase() === "y") key = "";
+    }
+    if (!key) {
+      key = await ask("  Enter your Speak AI API key: ");
+      if (!key) {
+        printError("No key provided.");
+        rl.close();
+        process.exit(1);
+      }
+    }
+    process.stdout.write("  Validating...");
+    try {
+      const axios2 = (await import("axios")).default;
+      const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
+      const res = await axios2.post(
+        `${baseUrl}/v1/auth/accessToken`,
+        {},
+        { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
+      );
+      if (!res.data?.data?.accessToken) throw new Error("Invalid response");
+      console.log(" valid!\n");
+    } catch {
+      console.log(" failed!");
+      printError("API key is invalid. Get your key at https://app.speakai.co/developers/apikeys");
+      rl.close();
+      process.exit(1);
+    }
+    const cfg = loadConfig();
+    cfg.apiKey = key;
+    saveConfig(cfg);
+    printSuccess(`API key saved to ${getConfigPath()}`);
+    const os2 = await import("os");
+    const fs3 = await import("fs");
+    const pathMod = await import("path");
+    const home = os2.homedir();
+    const clients = [
+      {
+        name: "Claude Desktop",
+        configPath: process.platform === "darwin" ? pathMod.join(home, "Library/Application Support/Claude/claude_desktop_config.json") : pathMod.join(home, "AppData/Roaming/Claude/claude_desktop_config.json"),
+        exists: false
+      },
+      {
+        name: "Cursor",
+        configPath: pathMod.join(home, ".cursor/mcp.json"),
+        exists: false
+      },
+      {
+        name: "Windsurf",
+        configPath: pathMod.join(home, ".windsurf/mcp.json"),
+        exists: false
+      },
+      {
+        name: "VS Code",
+        configPath: pathMod.join(home, ".vscode/mcp.json"),
+        exists: false
+      }
+    ];
+    for (const c of clients) {
+      const dir = pathMod.dirname(c.configPath);
+      c.exists = fs3.existsSync(dir);
+    }
+    const detected = clients.filter((c) => c.exists);
+    if (detected.length > 0) {
+      console.log("\n  Detected MCP clients:");
+      for (const c of detected) {
+        console.log(`    - ${c.name}`);
+      }
+      const configure = await ask("\n  Auto-configure MCP server in these clients? (Y/n) ");
+      if (configure.toLowerCase() !== "n") {
+        const mcpEntry = {
+          command: "npx",
+          args: ["-y", "@speakai/mcp-server"],
+          env: { SPEAK_API_KEY: key }
+        };
+        for (const c of detected) {
+          try {
+            let config2 = {};
+            if (fs3.existsSync(c.configPath)) {
+              config2 = JSON.parse(fs3.readFileSync(c.configPath, "utf-8"));
+            }
+            const servers = config2.mcpServers ?? {};
+            servers["speak-ai"] = mcpEntry;
+            config2.mcpServers = servers;
+            const dir = pathMod.dirname(c.configPath);
+            if (!fs3.existsSync(dir)) fs3.mkdirSync(dir, { recursive: true });
+            fs3.writeFileSync(c.configPath, JSON.stringify(config2, null, 2) + "\n");
+            printSuccess(`Configured ${c.name}: ${c.configPath}`);
+          } catch (err) {
+            printError(`Failed to configure ${c.name}: ${err.message}`);
+          }
+        }
+      }
+    }
+    console.log("\n  For Claude Code, run:");
+    console.log(`    export SPEAK_API_KEY="your-api-key"`);
+    console.log("    claude mcp add speak-ai -- npx -y @speakai/mcp-server\n");
+    rl.close();
+    printSuccess("Setup complete! You're ready to go.");
   });
   program.command("list-media").alias("ls").description("List media files").option("-t, --type <type>", "Filter by type (audio, video, text)").option("-p, --page <n>", "Page number (0-based)", "0").option("-s, --page-size <n>", "Results per page", "20").option("--sort <field>", "Sort field", "createdAt:desc").option("-f, --folder <id>", "Filter by folder ID").option("-n, --name <filter>", "Filter by name").option("--favorites", "Show only favorites").option("--json", "Output raw JSON").action(async (opts) => {
     requireApiKey();
@@ -2056,40 +3176,88 @@ function createCli() {
       process.exit(1);
     }
   });
-  program.command("upload").description("Upload media from a URL").argument("<url>", "Publicly accessible media URL").option("-n, --name <name>", "Display name").option("-t, --type <type>", "Media type (audio or video)", "audio").option("-l, --language <lang>", "Source language (BCP-47)", "en-US").option("-f, --folder <id>", "Destination folder ID").option("--tags <tags>", "Comma-separated tags").option("--wait", "Wait for processing to complete").option("--json", "Output raw JSON").action(async (url, opts) => {
+  program.command("upload").description("Upload media from a URL or local file").argument("<source>", "Media URL or local file path").option("-n, --name <name>", "Display name").option("-t, --type <type>", "Media type (audio or video)").option("-l, --language <lang>", "Source language (BCP-47)", "en-US").option("-f, --folder <id>", "Destination folder ID").option("--tags <tags>", "Comma-separated tags").option("--wait", "Wait for processing to complete").option("--json", "Output raw JSON").action(async (source, opts) => {
     requireApiKey();
     const client = await getClient();
     try {
-      const body = {
-        name: opts.name ?? url.split("/").pop()?.split("?")[0] ?? "Upload",
-        url,
-        mediaType: opts.type,
-        sourceLanguage: opts.language
-      };
-      if (opts.folder) body.folderId = opts.folder;
-      if (opts.tags) body.tags = opts.tags;
-      const res = await client.post("/v1/media/upload", body);
-      const data = res.data?.data;
-      if (opts.json && !opts.wait) {
-        printJson(data);
-        return;
+      const fs3 = await import("fs");
+      const pathMod = await import("path");
+      const isLocalFile = fs3.existsSync(source);
+      let mediaId;
+      let state;
+      if (isLocalFile) {
+        const filename = pathMod.basename(source);
+        const isVideo = isVideoFile(source);
+        const mediaType = opts.type ?? detectMediaType(source);
+        const mimeType = getMimeType(source);
+        const signedRes = await client.get("/v1/media/upload/signedurl", {
+          params: { isVideo, filename, mimeType }
+        });
+        const signedData = signedRes.data?.data;
+        const uploadUrl = signedData?.signedUrl ?? signedData?.url;
+        if (!uploadUrl) {
+          printError("Could not get signed upload URL");
+          process.exit(1);
+        }
+        process.stdout.write("Uploading...");
+        const fileBuffer = fs3.readFileSync(source);
+        const axios2 = (await import("axios")).default;
+        await axios2.put(uploadUrl, fileBuffer, {
+          headers: { "Content-Type": mimeType },
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity
+        });
+        console.log(" done");
+        const createBody = {
+          name: opts.name ?? filename,
+          url: uploadUrl.split("?")[0],
+          mediaType,
+          sourceLanguage: opts.language
+        };
+        if (opts.folder) createBody.folderId = opts.folder;
+        if (opts.tags) createBody.tags = opts.tags;
+        const res = await client.post("/v1/media/upload", createBody);
+        const data = res.data?.data;
+        mediaId = data?.mediaId;
+        state = data?.state;
+      } else {
+        const body = {
+          name: opts.name ?? source.split("/").pop()?.split("?")[0] ?? "Upload",
+          url: source,
+          mediaType: opts.type ?? "audio",
+          sourceLanguage: opts.language
+        };
+        if (opts.folder) body.folderId = opts.folder;
+        if (opts.tags) body.tags = opts.tags;
+        const res = await client.post("/v1/media/upload", body);
+        const data = res.data?.data;
+        if (opts.json && !opts.wait) {
+          printJson(data);
+          return;
+        }
+        mediaId = data?.mediaId;
+        state = data?.state;
       }
-      const mediaId = data?.mediaId;
-      printSuccess(`Uploaded: ${mediaId} (state: ${data?.state})`);
+      printSuccess(`Uploaded: ${mediaId} (state: ${state})`);
       if (opts.wait && mediaId) {
         process.stdout.write("Processing");
-        let status = data?.state;
-        while (status !== "processed" && status !== "failed") {
+        let attempts = 0;
+        const maxAttempts = 120;
+        while (state !== "processed" && state !== "failed" && attempts < maxAttempts) {
           await new Promise((r) => setTimeout(r, 5e3));
           process.stdout.write(".");
           const statusRes = await client.get(`/v1/media/status/${mediaId}`);
-          status = statusRes.data?.data?.state;
+          state = statusRes.data?.data?.state;
+          attempts++;
         }
         console.log();
-        if (status === "processed") {
+        if (state === "processed") {
           printSuccess(`Done! Media ${mediaId} is ready.`);
-        } else {
+        } else if (state === "failed") {
           printError(`Processing failed for ${mediaId}`);
+          process.exit(1);
+        } else {
+          printError(`Timeout: ${mediaId} still processing (state: ${state}). Check with: speakai-mcp status ${mediaId}`);
           process.exit(1);
         }
       }
@@ -2201,21 +3369,286 @@ function createCli() {
       process.exit(1);
     }
   });
-  program.command("ask").description("Ask an AI question about a media file").argument("<mediaId>", "Media file ID").argument("<prompt>", "Your question").option("--assistant <type>", "Assistant type (general, researcher, marketer, sales, recruiter)", "general").option("--json", "Output raw JSON").action(async (mediaId, prompt, opts) => {
+  program.command("ask").description("Ask an AI question about media files, folders, or your entire workspace").argument("<prompt>", "Your question").argument("[mediaId]", "Optional media file ID (shorthand for -m <id>)").option("-m, --media <ids...>", "Media file IDs to query (space-separated)").option("-f, --folder <ids...>", "Folder IDs to scope the query to").option("--assistant <type>", "Assistant type (general, researcher, marketer, sales, recruiter)", "general").option("--speakers <ids...>", "Filter by speaker IDs").option("--tags <tags...>", "Filter by tags").option("--from <date>", "Start date (ISO 8601)").option("--to <date>", "End date (ISO 8601)").option("--individual", "Process each media file separately").option("--continue <promptId>", "Continue an existing conversation").option("--json", "Output raw JSON").action(async (prompt, mediaId, opts) => {
     requireApiKey();
     const client = await getClient();
     try {
-      const res = await client.post("/v1/prompt", {
-        mediaIds: [mediaId],
+      const body = {
         prompt,
         assistantType: opts.assistant
-      });
+      };
+      if (mediaId) body.mediaIds = [mediaId];
+      if (opts.media) body.mediaIds = opts.media;
+      if (opts.folder) body.folderIds = opts.folder;
+      if (opts.speakers) body.speakers = opts.speakers;
+      if (opts.tags) body.tags = opts.tags;
+      if (opts.from) body.startDate = opts.from;
+      if (opts.to) body.endDate = opts.to;
+      if (opts.individual) body.isIndividualPrompt = true;
+      if (opts.continue) body.promptId = opts.continue;
+      const res = await client.post("/v1/prompt", body);
       const data = res.data?.data;
       if (opts.json) {
         printJson(data);
       } else {
         console.log(data?.answer ?? data?.message ?? JSON.stringify(data, null, 2));
+        if (data?.promptId) {
+          console.log(`
+(conversation: ${data.promptId} \u2014 use --continue to follow up)`);
+        }
       }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("chat-history").description("List past Magic Prompt conversations").option("--json", "Output raw JSON").action(async (opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.get("/v1/prompt/history");
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      const items = Array.isArray(data) ? data : data?.prompts ?? data?.history ?? [];
+      printTable(items, [
+        { key: "_id", label: "ID", width: 26 },
+        { key: "title", label: "Title", width: 40 },
+        { key: "createdAt", label: "Created", width: 20 }
+      ]);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("search").description("Search across all media transcripts, insights, and metadata").argument("<query>", "Search query").option("--from <date>", "Start date (ISO 8601, defaults to start of month)").option("--to <date>", "End date (ISO 8601, defaults to now)").option("--json", "Output raw JSON").action(async (query, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const body = { query };
+      if (opts.from) body.startDate = opts.from;
+      if (opts.to) body.endDate = opts.to;
+      const res = await client.post("/v1/analytics/search", body);
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      const items = Array.isArray(data) ? data : data?.results ?? data?.mediaNodes ?? [];
+      if (Array.isArray(items) && items.length > 0) {
+        console.log(`Found ${items.length} result(s)
+`);
+        printTable(items, [
+          { key: "_id", label: "ID", width: 14 },
+          { key: "name", label: "Name", width: 35 },
+          { key: "mediaType", label: "Type", width: 6 },
+          { key: "tags", label: "Tags", width: 20 }
+        ]);
+      } else {
+        printJson(data);
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("clips").description("List clips, optionally for a specific media file").option("-m, --media <ids...>", "Filter by source media IDs").option("-f, --folder <id>", "Filter by folder ID").option("--json", "Output raw JSON").action(async (opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const params = {};
+      if (opts.media) params.mediaIds = opts.media;
+      if (opts.folder) params.folderId = opts.folder;
+      const res = await client.get("/v1/clips", { params });
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      const items = Array.isArray(data) ? data : data?.clips ?? [];
+      printTable(items, [
+        { key: "clipId", label: "ID", width: 14 },
+        { key: "title", label: "Title", width: 30 },
+        { key: "state", label: "Status", width: 12 },
+        { key: "duration", label: "Duration", width: 10 },
+        { key: "createdAt", label: "Created", width: 20 }
+      ]);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("clip").description("Create a clip from a media file").argument("<mediaId>", "Source media file ID").requiredOption("--start <seconds>", "Start time in seconds").requiredOption("--end <seconds>", "End time in seconds").option("-n, --name <title>", "Clip title", "Clip").option("-t, --type <type>", "Media type (audio or video)", "audio").option("--description <text>", "Clip description").option("--tags <tags...>", "Tags for the clip").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const body = {
+        title: opts.name,
+        mediaType: opts.type,
+        timeRanges: [
+          {
+            mediaId,
+            startTime: parseFloat(opts.start),
+            endTime: parseFloat(opts.end)
+          }
+        ]
+      };
+      if (opts.description) body.description = opts.description;
+      if (opts.tags) body.tags = opts.tags;
+      const res = await client.post("/v1/clips", body);
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+      } else {
+        printSuccess(`Clip created: ${data?.clipId ?? data?._id ?? "OK"} (processing...)`);
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("delete").description("Delete a media file").argument("<mediaId>", "Media file ID to delete").action(async (mediaId) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      await client.delete(`/v1/media/${mediaId}`);
+      printSuccess(`Deleted: ${mediaId}`);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("update").description("Update media metadata").argument("<mediaId>", "Media file ID to update").option("-n, --name <name>", "New display name").option("-d, --description <text>", "New description").option("--tags <tags...>", "New tags").option("-f, --folder <id>", "Move to folder ID").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const body = {};
+      if (opts.name) body.name = opts.name;
+      if (opts.description) body.description = opts.description;
+      if (opts.tags) body.tags = opts.tags;
+      if (opts.folder) body.folderId = opts.folder;
+      if (Object.keys(body).length === 0) {
+        printError("Provide at least one field to update (--name, --description, --tags, --folder)");
+        process.exit(1);
+      }
+      const res = await client.put(`/v1/media/${mediaId}`, body);
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+      } else {
+        printSuccess(`Updated: ${mediaId}`);
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("create-folder").description("Create a new folder").argument("<name>", "Folder name").option("--json", "Output raw JSON").action(async (name, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.post("/v1/folder", { name });
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+      } else {
+        printSuccess(`Folder created: ${data?._id ?? "OK"} \u2014 ${name}`);
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("favorites").description("Toggle favorite status for a media file").argument("<mediaId>", "Media file ID").action(async (mediaId) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.post("/v1/media/favorites", { mediaId });
+      const data = res.data?.data;
+      printSuccess(data?.message ?? `Favorite toggled for ${mediaId}`);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("stats").description("Show workspace media statistics").option("--json", "Output raw JSON").action(async (opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.get("/v1/media/statistics");
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      const total = data?.totalCount ?? data?.total ?? "\u2014";
+      const audio = data?.audioCount ?? data?.audio ?? "\u2014";
+      const video = data?.videoCount ?? data?.video ?? "\u2014";
+      const text = data?.textCount ?? data?.text ?? "\u2014";
+      console.log(`Total media:  ${total}`);
+      console.log(`  Audio:      ${audio}`);
+      console.log(`  Video:      ${video}`);
+      console.log(`  Text:       ${text}`);
+      if (data?.totalDuration) {
+        const hrs = Math.round(data.totalDuration / 3600 * 10) / 10;
+        console.log(`Duration:     ${hrs}h total`);
+      }
+      if (data?.totalSize) {
+        const gb = Math.round(data.totalSize / (1024 * 1024 * 1024) * 100) / 100;
+        console.log(`Storage:      ${gb} GB`);
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("languages").description("List supported transcription languages").option("--json", "Output raw JSON").action(async (opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.get("/v1/media/supportedLanguages");
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+      } else {
+        const langs = Array.isArray(data) ? data : data?.languages ?? [];
+        for (const lang of langs) {
+          const name = typeof lang === "string" ? lang : lang.name ?? lang.code ?? JSON.stringify(lang);
+          console.log(`  ${name}`);
+        }
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("captions").description("Get captions for a media file").argument("<mediaId>", "Media file ID").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.get(`/v1/media/caption/${mediaId}`);
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+      } else {
+        const captions = Array.isArray(data) ? data : data?.captions ?? [];
+        for (const cap of captions) {
+          console.log(cap.text ?? cap);
+        }
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("reanalyze").description("Re-run AI analysis on a media file with latest models").argument("<mediaId>", "Media file ID").action(async (mediaId) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      await client.get(`/v1/media/reanalyze/${mediaId}`);
+      printSuccess(`Re-analysis started for ${mediaId}`);
     } catch (err) {
       printError(err.response?.data?.message ?? err.message);
       process.exit(1);
@@ -2257,6 +3690,7 @@ var init_cli = __esm({
     import_readline = require("readline");
     init_config();
     init_format();
+    init_media_utils();
   }
 });
 
@@ -2265,14 +3699,19 @@ var index_exports = {};
 __export(index_exports, {
   createSpeakClient: () => createSpeakClient,
   formatAxiosError: () => formatAxiosError,
-  registerAllTools: () => registerAllTools
+  registerAllTools: () => registerAllTools,
+  registerPrompts: () => registerPrompts,
+  registerResources: () => registerResources
 });
 module.exports = __toCommonJS(index_exports);
 init_tools();
+init_resources();
+init_prompts();
 init_client();
 var args = process.argv.slice(2);
 var cliCommands = [
   "config",
+  "init",
   "list-media",
   "ls",
   "get-transcript",
@@ -2286,6 +3725,18 @@ var cliCommands = [
   "list-folders",
   "folders",
   "ask",
+  "chat-history",
+  "search",
+  "delete",
+  "update",
+  "create-folder",
+  "favorites",
+  "stats",
+  "languages",
+  "captions",
+  "reanalyze",
+  "clips",
+  "clip",
   "schedule-meeting",
   "help"
 ];
@@ -2306,12 +3757,18 @@ if (isCliMode) {
   import("@modelcontextprotocol/sdk/server/mcp.js").then(({ McpServer }) => {
     import("@modelcontextprotocol/sdk/server/stdio.js").then(
       ({ StdioServerTransport }) => {
-        Promise.resolve().then(() => (init_tools(), tools_exports)).then(({ registerAllTools: registerAllTools2 }) => {
+        Promise.all([
+          Promise.resolve().then(() => (init_tools(), tools_exports)),
+          Promise.resolve().then(() => (init_resources(), resources_exports)),
+          Promise.resolve().then(() => (init_prompts(), prompts_exports))
+        ]).then(([{ registerAllTools: registerAllTools2 }, { registerResources: registerResources2 }, { registerPrompts: registerPrompts2 }]) => {
           const server = new McpServer({
             name: "speak-ai",
             version: "1.0.0"
           });
           registerAllTools2(server);
+          registerResources2(server);
+          registerPrompts2(server);
           const transport = new StdioServerTransport();
           server.connect(transport).then(() => {
             process.stderr.write(
@@ -2327,5 +3784,7 @@ if (isCliMode) {
 0 && (module.exports = {
   createSpeakClient,
   formatAxiosError,
-  registerAllTools
+  registerAllTools,
+  registerPrompts,
+  registerResources
 });

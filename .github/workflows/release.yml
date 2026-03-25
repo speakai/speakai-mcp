@@ -31,10 +31,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test (smoke test)
-        run: |
-          echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0.0"}}}' | timeout 5 node dist/index.js 2>/dev/null | grep -q '"speak-ai"'
-          echo "Smoke test passed"
+      - name: Run tests
+        run: npm test
 
       - name: Determine version bump
         id: bump
