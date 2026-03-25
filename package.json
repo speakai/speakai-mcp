@@ -25,6 +25,9 @@
   ],
   "author": "Speak AI",
   "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "files": [
     "dist"
   ],
