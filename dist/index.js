@@ -1471,11 +1471,11 @@ function register7(server, client) {
   );
   server.tool(
     "list_prompts",
-    "List all available Magic Prompt templates and commonly used prompts. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
+    "List all available Magic Prompt templates. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
     {},
     async () => {
       try {
-        const result = await api.get("/v1/prompt/list");
+        const result = await api.get("/v1/prompt");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2238,6 +2238,40 @@ var init_clips = __esm({
   }
 });
 
+// src/media-utils.ts
+function isVideoFile(filePath) {
+  return VIDEO_EXTENSIONS.includes(path.extname(filePath).toLowerCase());
+}
+function getMimeType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const isVideo = isVideoFile(filePath);
+  if (ext === ".mp4") return isVideo ? "video/mp4" : "audio/mp4";
+  if (ext === ".webm") return isVideo ? "video/webm" : "audio/webm";
+  return MIME_TYPES[ext] ?? (isVideo ? "video/mp4" : "audio/mpeg");
+}
+function detectMediaType(filePath) {
+  return isVideoFile(filePath) ? "video" : "audio";
+}
+var path, VIDEO_EXTENSIONS, MIME_TYPES;
+var init_media_utils = __esm({
+  "src/media-utils.ts"() {
+    "use strict";
+    path = __toESM(require("path"));
+    VIDEO_EXTENSIONS = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
+    MIME_TYPES = {
+      ".mp3": "audio/mpeg",
+      ".m4a": "audio/mp4",
+      ".wav": "audio/wav",
+      ".ogg": "audio/ogg",
+      ".flac": "audio/flac",
+      ".mov": "video/quicktime",
+      ".avi": "video/x-msvideo",
+      ".mkv": "video/x-matroska",
+      ".wmv": "video/x-ms-wmv"
+    };
+  }
+});
+
 // src/tools/workflows.ts
 var workflows_exports = {};
 __export(workflows_exports, {
@@ -2346,25 +2380,10 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
             isError: true
           };
         }
-        const filename = path.basename(filePath);
-        const ext = path.extname(filePath).toLowerCase();
-        const videoExts = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
-        const isVideo = videoExts.includes(ext);
-        const mediaType = params.mediaType ?? (isVideo ? "video" : "audio");
-        const mimeMap = {
-          ".mp3": "audio/mpeg",
-          ".mp4": isVideo ? "video/mp4" : "audio/mp4",
-          ".m4a": "audio/mp4",
-          ".wav": "audio/wav",
-          ".ogg": "audio/ogg",
-          ".flac": "audio/flac",
-          ".webm": isVideo ? "video/webm" : "audio/webm",
-          ".mov": "video/quicktime",
-          ".avi": "video/x-msvideo",
-          ".mkv": "video/x-matroska",
-          ".wmv": "video/x-ms-wmv"
-        };
-        const mimeType = mimeMap[ext] ?? (isVideo ? "video/mp4" : "audio/mpeg");
+        const filename = path2.basename(filePath);
+        const isVideo = isVideoFile(filePath);
+        const mediaType = params.mediaType ?? detectMediaType(filePath);
+        const mimeType = getMimeType(filePath);
         const signedRes = await api.get("/v1/media/upload/signedurl", {
           params: { isVideo, filename, mimeType }
         });
@@ -2424,7 +2443,7 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
     }
   );
 }
-var import_zod14, import_shared5, fs, path, POLL_INTERVAL_MS, MAX_POLL_ATTEMPTS;
+var import_zod14, import_shared5, fs, path2, POLL_INTERVAL_MS, MAX_POLL_ATTEMPTS;
 var init_workflows = __esm({
   "src/tools/workflows.ts"() {
     "use strict";
@@ -2432,7 +2451,8 @@ var init_workflows = __esm({
     init_client();
     import_shared5 = require("@speakai/shared");
     fs = __toESM(require("fs"));
-    path = __toESM(require("path"));
+    path2 = __toESM(require("path"));
+    init_media_utils();
     POLL_INTERVAL_MS = 5e3;
     MAX_POLL_ATTEMPTS = 120;
   }
@@ -2861,7 +2881,7 @@ function createCli() {
   const program = new import_commander.Command();
   program.name("speakai-mcp").description(
     "Speak AI CLI & MCP Server \u2014 transcribe, analyze, and manage media from the command line"
-  ).version("1.0.0");
+  ).version("2.0.0");
   const config = program.command("config").description("Manage configuration");
   config.command("set-key").description("Set your Speak AI API key").argument("[key]", "API key (omit for interactive prompt)").action(async (key) => {
     if (!key) {
@@ -3036,7 +3056,7 @@ function createCli() {
       }
     }
     console.log("\n  For Claude Code, run:");
-    console.log(`    export SPEAK_API_KEY="${key}"`);
+    console.log(`    export SPEAK_API_KEY="your-api-key"`);
     console.log("    claude mcp add speak-ai -- npx -y @speakai/mcp-server\n");
     rl.close();
     printSuccess("Setup complete! You're ready to go.");
@@ -3167,24 +3187,9 @@ function createCli() {
       let state;
       if (isLocalFile) {
         const filename = pathMod.basename(source);
-        const ext = pathMod.extname(source).toLowerCase();
-        const videoExts = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
-        const isVideo = videoExts.includes(ext);
-        const mediaType = opts.type ?? (isVideo ? "video" : "audio");
-        const mimeMap = {
-          ".mp3": "audio/mpeg",
-          ".mp4": isVideo ? "video/mp4" : "audio/mp4",
-          ".m4a": "audio/mp4",
-          ".wav": "audio/wav",
-          ".ogg": "audio/ogg",
-          ".flac": "audio/flac",
-          ".webm": isVideo ? "video/webm" : "audio/webm",
-          ".mov": "video/quicktime",
-          ".avi": "video/x-msvideo",
-          ".mkv": "video/x-matroska",
-          ".wmv": "video/x-ms-wmv"
-        };
-        const mimeType = mimeMap[ext] ?? (isVideo ? "video/mp4" : "audio/mpeg");
+        const isVideo = isVideoFile(source);
+        const mediaType = opts.type ?? detectMediaType(source);
+        const mimeType = getMimeType(source);
         const signedRes = await client.get("/v1/media/upload/signedurl", {
           params: { isVideo, filename, mimeType }
         });
@@ -3236,17 +3241,23 @@ function createCli() {
       printSuccess(`Uploaded: ${mediaId} (state: ${state})`);
       if (opts.wait && mediaId) {
         process.stdout.write("Processing");
-        while (state !== "processed" && state !== "failed") {
+        let attempts = 0;
+        const maxAttempts = 120;
+        while (state !== "processed" && state !== "failed" && attempts < maxAttempts) {
           await new Promise((r) => setTimeout(r, 5e3));
           process.stdout.write(".");
           const statusRes = await client.get(`/v1/media/status/${mediaId}`);
           state = statusRes.data?.data?.state;
+          attempts++;
         }
         console.log();
         if (state === "processed") {
           printSuccess(`Done! Media ${mediaId} is ready.`);
-        } else {
+        } else if (state === "failed") {
           printError(`Processing failed for ${mediaId}`);
+          process.exit(1);
+        } else {
+          printError(`Timeout: ${mediaId} still processing (state: ${state}). Check with: speakai-mcp status ${mediaId}`);
           process.exit(1);
         }
       }
@@ -3358,7 +3369,7 @@ function createCli() {
       process.exit(1);
     }
   });
-  program.command("ask").description("Ask an AI question about media files, folders, or your entire workspace").argument("<prompt>", "Your question").option("-m, --media <ids...>", "Media file IDs to query (space-separated)").option("-f, --folder <ids...>", "Folder IDs to scope the query to").option("--assistant <type>", "Assistant type (general, researcher, marketer, sales, recruiter)", "general").option("--speakers <ids...>", "Filter by speaker IDs").option("--tags <tags...>", "Filter by tags").option("--from <date>", "Start date (ISO 8601)").option("--to <date>", "End date (ISO 8601)").option("--individual", "Process each media file separately").option("--continue <promptId>", "Continue an existing conversation").option("--json", "Output raw JSON").action(async (prompt, opts) => {
+  program.command("ask").description("Ask an AI question about media files, folders, or your entire workspace").argument("<prompt>", "Your question").argument("[mediaId]", "Optional media file ID (shorthand for -m <id>)").option("-m, --media <ids...>", "Media file IDs to query (space-separated)").option("-f, --folder <ids...>", "Folder IDs to scope the query to").option("--assistant <type>", "Assistant type (general, researcher, marketer, sales, recruiter)", "general").option("--speakers <ids...>", "Filter by speaker IDs").option("--tags <tags...>", "Filter by tags").option("--from <date>", "Start date (ISO 8601)").option("--to <date>", "End date (ISO 8601)").option("--individual", "Process each media file separately").option("--continue <promptId>", "Continue an existing conversation").option("--json", "Output raw JSON").action(async (prompt, mediaId, opts) => {
     requireApiKey();
     const client = await getClient();
     try {
@@ -3366,6 +3377,7 @@ function createCli() {
         prompt,
         assistantType: opts.assistant
       };
+      if (mediaId) body.mediaIds = [mediaId];
       if (opts.media) body.mediaIds = opts.media;
       if (opts.folder) body.folderIds = opts.folder;
       if (opts.speakers) body.speakers = opts.speakers;
@@ -3422,6 +3434,18 @@ function createCli() {
       const data = res.data?.data;
       if (opts.json) {
         printJson(data);
+        return;
+      }
+      const items = Array.isArray(data) ? data : data?.results ?? data?.mediaNodes ?? [];
+      if (Array.isArray(items) && items.length > 0) {
+        console.log(`Found ${items.length} result(s)
+`);
+        printTable(items, [
+          { key: "_id", label: "ID", width: 14 },
+          { key: "name", label: "Name", width: 35 },
+          { key: "mediaType", label: "Type", width: 6 },
+          { key: "tags", label: "Tags", width: 20 }
+        ]);
       } else {
         printJson(data);
       }
@@ -3557,8 +3581,23 @@ function createCli() {
       const data = res.data?.data;
       if (opts.json) {
         printJson(data);
-      } else {
-        printJson(data);
+        return;
+      }
+      const total = data?.totalCount ?? data?.total ?? "\u2014";
+      const audio = data?.audioCount ?? data?.audio ?? "\u2014";
+      const video = data?.videoCount ?? data?.video ?? "\u2014";
+      const text = data?.textCount ?? data?.text ?? "\u2014";
+      console.log(`Total media:  ${total}`);
+      console.log(`  Audio:      ${audio}`);
+      console.log(`  Video:      ${video}`);
+      console.log(`  Text:       ${text}`);
+      if (data?.totalDuration) {
+        const hrs = Math.round(data.totalDuration / 3600 * 10) / 10;
+        console.log(`Duration:     ${hrs}h total`);
+      }
+      if (data?.totalSize) {
+        const gb = Math.round(data.totalSize / (1024 * 1024 * 1024) * 100) / 100;
+        console.log(`Storage:      ${gb} GB`);
       }
     } catch (err) {
       printError(err.response?.data?.message ?? err.message);
@@ -3651,6 +3690,7 @@ var init_cli = __esm({
     import_readline = require("readline");
     init_config();
     init_format();
+    init_media_utils();
   }
 });
 
@@ -3717,18 +3757,18 @@ if (isCliMode) {
   import("@modelcontextprotocol/sdk/server/mcp.js").then(({ McpServer }) => {
     import("@modelcontextprotocol/sdk/server/stdio.js").then(
       ({ StdioServerTransport }) => {
-        Promise.resolve().then(() => (init_tools(), tools_exports)).then(({ registerAllTools: registerAllTools2 }) => {
+        Promise.all([
+          Promise.resolve().then(() => (init_tools(), tools_exports)),
+          Promise.resolve().then(() => (init_resources(), resources_exports)),
+          Promise.resolve().then(() => (init_prompts(), prompts_exports))
+        ]).then(([{ registerAllTools: registerAllTools2 }, { registerResources: registerResources2 }, { registerPrompts: registerPrompts2 }]) => {
           const server = new McpServer({
             name: "speak-ai",
             version: "1.0.0"
           });
           registerAllTools2(server);
-          Promise.resolve().then(() => (init_resources(), resources_exports)).then(({ registerResources: registerResources2 }) => {
-            registerResources2(server);
-          });
-          Promise.resolve().then(() => (init_prompts(), prompts_exports)).then(({ registerPrompts: registerPrompts2 }) => {
-            registerPrompts2(server);
-          });
+          registerResources2(server);
+          registerPrompts2(server);
           const transport = new StdioServerTransport();
           server.connect(transport).then(() => {
             process.stderr.write(

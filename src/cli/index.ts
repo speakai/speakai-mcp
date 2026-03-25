@@ -8,6 +8,7 @@ import {
   getConfigPath,
 } from "./config.js";
 import { printJson, printTable, printError, printSuccess } from "./format.js";
+import { getMimeType, isVideoFile, detectMediaType } from "../media-utils.js";
 
 /**
  * Lazily load the speakClient — must be called AFTER resolveApiKey()
@@ -37,7 +38,7 @@ export function createCli(): Command {
     .description(
       "Speak AI CLI & MCP Server — transcribe, analyze, and manage media from the command line"
     )
-    .version("1.0.0");
+    .version("2.0.0");
 
   // ── Config commands ────────────────────────────────────────────────
 
@@ -260,7 +261,7 @@ export function createCli(): Command {
 
       // 5. Claude Code hint
       console.log("\n  For Claude Code, run:");
-      console.log(`    export SPEAK_API_KEY="${key}"`);
+      console.log(`    export SPEAK_API_KEY="your-api-key"`);
       console.log("    claude mcp add speak-ai -- npx -y @speakai/mcp-server\n");
 
       rl.close();
@@ -446,19 +447,9 @@ export function createCli(): Command {
         if (isLocalFile) {
           // Local file upload via signed URL
           const filename = pathMod.basename(source);
-          const ext = pathMod.extname(source).toLowerCase();
-          const videoExts = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
-          const isVideo = videoExts.includes(ext);
-          const mediaType = opts.type ?? (isVideo ? "video" : "audio");
-
-          const mimeMap: Record<string, string> = {
-            ".mp3": "audio/mpeg", ".mp4": isVideo ? "video/mp4" : "audio/mp4",
-            ".m4a": "audio/mp4", ".wav": "audio/wav", ".ogg": "audio/ogg",
-            ".flac": "audio/flac", ".webm": isVideo ? "video/webm" : "audio/webm",
-            ".mov": "video/quicktime", ".avi": "video/x-msvideo",
-            ".mkv": "video/x-matroska", ".wmv": "video/x-ms-wmv",
-          };
-          const mimeType = mimeMap[ext] ?? (isVideo ? "video/mp4" : "audio/mpeg");
+          const isVideo = isVideoFile(source);
+          const mediaType = opts.type ?? detectMediaType(source);
+          const mimeType = getMimeType(source);
 
           // Get signed URL
           const signedRes = await client.get("/v1/media/upload/signedurl", {
@@ -524,17 +515,23 @@ export function createCli(): Command {
 
         if (opts.wait && mediaId) {
           process.stdout.write("Processing");
-          while (state !== "processed" && state !== "failed") {
+          let attempts = 0;
+          const maxAttempts = 120; // 10 minutes max
+          while (state !== "processed" && state !== "failed" && attempts < maxAttempts) {
             await new Promise((r) => setTimeout(r, 5000));
             process.stdout.write(".");
             const statusRes = await client.get(`/v1/media/status/${mediaId}`);
             state = statusRes.data?.data?.state;
+            attempts++;
           }
           console.log();
           if (state === "processed") {
             printSuccess(`Done! Media ${mediaId} is ready.`);
-          } else {
+          } else if (state === "failed") {
             printError(`Processing failed for ${mediaId}`);
+            process.exit(1);
+          } else {
+            printError(`Timeout: ${mediaId} still processing (state: ${state}). Check with: speakai-mcp status ${mediaId}`);
             process.exit(1);
           }
         }
@@ -699,6 +696,7 @@ export function createCli(): Command {
     .command("ask")
     .description("Ask an AI question about media files, folders, or your entire workspace")
     .argument("<prompt>", "Your question")
+    .argument("[mediaId]", "Optional media file ID (shorthand for -m <id>)")
     .option("-m, --media <ids...>", "Media file IDs to query (space-separated)")
     .option("-f, --folder <ids...>", "Folder IDs to scope the query to")
     .option("--assistant <type>", "Assistant type (general, researcher, marketer, sales, recruiter)", "general")
@@ -709,7 +707,7 @@ export function createCli(): Command {
     .option("--individual", "Process each media file separately")
     .option("--continue <promptId>", "Continue an existing conversation")
     .option("--json", "Output raw JSON")
-    .action(async (prompt: string, opts) => {
+    .action(async (prompt: string, mediaId: string | undefined, opts) => {
       requireApiKey();
       const client = await getClient();
       try {
@@ -717,6 +715,8 @@ export function createCli(): Command {
           prompt,
           assistantType: opts.assistant,
         };
+        // Support both `ask <prompt> <mediaId>` and `ask <prompt> -m <ids...>`
+        if (mediaId) body.mediaIds = [mediaId];
         if (opts.media) body.mediaIds = opts.media;
         if (opts.folder) body.folderIds = opts.folder;
         if (opts.speakers) body.speakers = opts.speakers;
@@ -793,6 +793,19 @@ export function createCli(): Command {
 
         if (opts.json) {
           printJson(data);
+          return;
+        }
+
+        // Attempt to display results as a table
+        const items = Array.isArray(data) ? data : data?.results ?? data?.mediaNodes ?? [];
+        if (Array.isArray(items) && items.length > 0) {
+          console.log(`Found ${items.length} result(s)\n`);
+          printTable(items, [
+            { key: "_id", label: "ID", width: 14 },
+            { key: "name", label: "Name", width: 35 },
+            { key: "mediaType", label: "Type", width: 6 },
+            { key: "tags", label: "Tags", width: 20 },
+          ]);
         } else {
           printJson(data);
         }
@@ -992,8 +1005,25 @@ export function createCli(): Command {
 
         if (opts.json) {
           printJson(data);
-        } else {
-          printJson(data);
+          return;
+        }
+
+        // Human-readable stats
+        const total = data?.totalCount ?? data?.total ?? "—";
+        const audio = data?.audioCount ?? data?.audio ?? "—";
+        const video = data?.videoCount ?? data?.video ?? "—";
+        const text = data?.textCount ?? data?.text ?? "—";
+        console.log(`Total media:  ${total}`);
+        console.log(`  Audio:      ${audio}`);
+        console.log(`  Video:      ${video}`);
+        console.log(`  Text:       ${text}`);
+        if (data?.totalDuration) {
+          const hrs = Math.round((data.totalDuration / 3600) * 10) / 10;
+          console.log(`Duration:     ${hrs}h total`);
+        }
+        if (data?.totalSize) {
+          const gb = Math.round((data.totalSize / (1024 * 1024 * 1024)) * 100) / 100;
+          console.log(`Storage:      ${gb} GB`);
         }
       } catch (err: any) {
         printError(err.response?.data?.message ?? err.message);

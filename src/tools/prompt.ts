@@ -204,11 +204,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   server.tool(
     "list_prompts",
-    "List all available Magic Prompt templates and commonly used prompts. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
+    "List all available Magic Prompt templates. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
     {},
     async () => {
       try {
-        const result = await api.get("/v1/prompt/list");
+        const result = await api.get("/v1/prompt");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };

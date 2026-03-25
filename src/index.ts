@@ -71,21 +71,19 @@ if (isCliMode) {
   import("@modelcontextprotocol/sdk/server/mcp.js").then(({ McpServer }) => {
     import("@modelcontextprotocol/sdk/server/stdio.js").then(
       ({ StdioServerTransport }) => {
-        import("./tools/index.js").then(({ registerAllTools }) => {
+        Promise.all([
+          import("./tools/index.js"),
+          import("./resources.js"),
+          import("./prompts.js"),
+        ]).then(([{ registerAllTools }, { registerResources }, { registerPrompts }]) => {
           const server = new McpServer({
             name: "speak-ai",
             version: "1.0.0",
           });
 
           registerAllTools(server);
-
-          // Register resources and prompts
-          import("./resources.js").then(({ registerResources }) => {
-            registerResources(server);
-          });
-          import("./prompts.js").then(({ registerPrompts }) => {
-            registerPrompts(server);
-          });
+          registerResources(server);
+          registerPrompts(server);
 
           const transport = new StdioServerTransport();
           server.connect(transport).then(() => {

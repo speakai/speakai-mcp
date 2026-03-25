@@ -5,6 +5,7 @@ import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 import * as fs from "fs";
 import * as path from "path";
+import { getMimeType, isVideoFile, detectMediaType } from "../media-utils.js";
 
 const POLL_INTERVAL_MS = 5_000;
 const MAX_POLL_ATTEMPTS = 120; // 10 minutes max
@@ -126,25 +127,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         }
 
         const filename = path.basename(filePath);
-        const ext = path.extname(filePath).toLowerCase();
-        const videoExts = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
-        const isVideo = videoExts.includes(ext);
-        const mediaType = params.mediaType ?? (isVideo ? "video" : "audio");
-
-        const mimeMap: Record<string, string> = {
-          ".mp3": "audio/mpeg",
-          ".mp4": isVideo ? "video/mp4" : "audio/mp4",
-          ".m4a": "audio/mp4",
-          ".wav": "audio/wav",
-          ".ogg": "audio/ogg",
-          ".flac": "audio/flac",
-          ".webm": isVideo ? "video/webm" : "audio/webm",
-          ".mov": "video/quicktime",
-          ".avi": "video/x-msvideo",
-          ".mkv": "video/x-matroska",
-          ".wmv": "video/x-ms-wmv",
-        };
-        const mimeType = mimeMap[ext] ?? (isVideo ? "video/mp4" : "audio/mpeg");
+        const isVideo = isVideoFile(filePath);
+        const mediaType = params.mediaType ?? detectMediaType(filePath);
+        const mimeType = getMimeType(filePath);
 
         // 1. Get signed upload URL
         const signedRes = await api.get("/v1/media/upload/signedurl", {
