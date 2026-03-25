@@ -2,6 +2,8 @@
 
 // Public API — for use as a library (e.g., from speak-server)
 export { registerAllTools } from "./tools/index.js";
+export { registerResources } from "./resources.js";
+export { registerPrompts } from "./prompts.js";
 export { createSpeakClient, formatAxiosError } from "./client.js";
 
 /**
@@ -17,6 +19,7 @@ const args = process.argv.slice(2);
 // Known CLI subcommands — if first arg matches one of these, run CLI mode
 const cliCommands = [
   "config",
+  "init",
   "list-media",
   "ls",
   "get-transcript",
@@ -30,6 +33,18 @@ const cliCommands = [
   "list-folders",
   "folders",
   "ask",
+  "chat-history",
+  "search",
+  "delete",
+  "update",
+  "create-folder",
+  "favorites",
+  "stats",
+  "languages",
+  "captions",
+  "reanalyze",
+  "clips",
+  "clip",
   "schedule-meeting",
   "help",
 ];
@@ -63,6 +78,14 @@ if (isCliMode) {
           });
 
           registerAllTools(server);
+
+          // Register resources and prompts
+          import("./resources.js").then(({ registerResources }) => {
+            registerResources(server);
+          });
+          import("./prompts.js").then(({ registerPrompts }) => {
+            registerPrompts(server);
+          });
 
           const transport = new StdioServerTransport();
           server.connect(transport).then(() => {

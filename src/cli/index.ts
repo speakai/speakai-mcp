@@ -91,6 +91,36 @@ export function createCli(): Command {
     });
 
   config
+    .command("test")
+    .description("Validate your API key and test connectivity")
+    .action(async () => {
+      const key = resolveApiKey();
+      resolveBaseUrl();
+      if (!key) {
+        printError('No API key configured. Run "speakai-mcp config set-key" or set SPEAK_API_KEY.');
+        process.exit(1);
+      }
+      try {
+        const axios = (await import("axios")).default;
+        const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
+        const res = await axios.post(
+          `${baseUrl}/v1/auth/accessToken`,
+          {},
+          { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
+        );
+        if (res.data?.data?.accessToken) {
+          printSuccess("API key is valid. Connection successful.");
+        } else {
+          printError("Unexpected response — key may be invalid.");
+          process.exit(1);
+        }
+      } catch (err: any) {
+        printError(`Authentication failed: ${err.response?.data?.message ?? err.message}`);
+        process.exit(1);
+      }
+    });
+
+  config
     .command("set-url")
     .description("Set custom API base URL")
     .argument("<url>", "Base URL (e.g. https://api.speakai.co)")
@@ -99,6 +129,142 @@ export function createCli(): Command {
       cfg.baseUrl = url;
       saveConfig(cfg);
       printSuccess(`Base URL set to ${url}`);
+    });
+
+  // ── Init (onboarding) ────────────────────────────────────────────
+
+  program
+    .command("init")
+    .description("Interactive setup — configure API key and auto-detect MCP clients")
+    .action(async () => {
+      const rl = createInterface({ input: process.stdin, output: process.stdout });
+      const ask = (q: string) =>
+        new Promise<string>((resolve) => rl.question(q, (a) => resolve(a.trim())));
+
+      console.log("\n  Speak AI MCP Server — Setup\n");
+
+      // 1. API key
+      const existingKey = resolveApiKey();
+      let key = existingKey;
+      if (existingKey) {
+        console.log(`  API key: ${existingKey.slice(0, 8)}... (already configured)`);
+        const change = await ask("  Change it? (y/N) ");
+        if (change.toLowerCase() === "y") key = "";
+      }
+      if (!key) {
+        key = await ask("  Enter your Speak AI API key: ");
+        if (!key) {
+          printError("No key provided.");
+          rl.close();
+          process.exit(1);
+        }
+      }
+
+      // 2. Validate
+      process.stdout.write("  Validating...");
+      try {
+        const axios = (await import("axios")).default;
+        const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
+        const res = await axios.post(
+          `${baseUrl}/v1/auth/accessToken`,
+          {},
+          { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
+        );
+        if (!res.data?.data?.accessToken) throw new Error("Invalid response");
+        console.log(" valid!\n");
+      } catch {
+        console.log(" failed!");
+        printError("API key is invalid. Get your key at https://app.speakai.co/developers/apikeys");
+        rl.close();
+        process.exit(1);
+      }
+
+      // 3. Save
+      const cfg = loadConfig();
+      cfg.apiKey = key;
+      saveConfig(cfg);
+      printSuccess(`API key saved to ${getConfigPath()}`);
+
+      // 4. Auto-detect MCP clients
+      const os = await import("os");
+      const fs = await import("fs");
+      const pathMod = await import("path");
+      const home = os.homedir();
+
+      const clients: { name: string; configPath: string; exists: boolean }[] = [
+        {
+          name: "Claude Desktop",
+          configPath: process.platform === "darwin"
+            ? pathMod.join(home, "Library/Application Support/Claude/claude_desktop_config.json")
+            : pathMod.join(home, "AppData/Roaming/Claude/claude_desktop_config.json"),
+          exists: false,
+        },
+        {
+          name: "Cursor",
+          configPath: pathMod.join(home, ".cursor/mcp.json"),
+          exists: false,
+        },
+        {
+          name: "Windsurf",
+          configPath: pathMod.join(home, ".windsurf/mcp.json"),
+          exists: false,
+        },
+        {
+          name: "VS Code",
+          configPath: pathMod.join(home, ".vscode/mcp.json"),
+          exists: false,
+        },
+      ];
+
+      // Check which config dirs exist
+      for (const c of clients) {
+        const dir = pathMod.dirname(c.configPath);
+        c.exists = fs.existsSync(dir);
+      }
+
+      const detected = clients.filter((c) => c.exists);
+      if (detected.length > 0) {
+        console.log("\n  Detected MCP clients:");
+        for (const c of detected) {
+          console.log(`    - ${c.name}`);
+        }
+
+        const configure = await ask("\n  Auto-configure MCP server in these clients? (Y/n) ");
+        if (configure.toLowerCase() !== "n") {
+          const mcpEntry = {
+            command: "npx",
+            args: ["-y", "@speakai/mcp-server"],
+            env: { SPEAK_API_KEY: key },
+          };
+
+          for (const c of detected) {
+            try {
+              let config: Record<string, unknown> = {};
+              if (fs.existsSync(c.configPath)) {
+                config = JSON.parse(fs.readFileSync(c.configPath, "utf-8"));
+              }
+              const servers = (config.mcpServers ?? {}) as Record<string, unknown>;
+              servers["speak-ai"] = mcpEntry;
+              config.mcpServers = servers;
+
+              const dir = pathMod.dirname(c.configPath);
+              if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+              fs.writeFileSync(c.configPath, JSON.stringify(config, null, 2) + "\n");
+              printSuccess(`Configured ${c.name}: ${c.configPath}`);
+            } catch (err: any) {
+              printError(`Failed to configure ${c.name}: ${err.message}`);
+            }
+          }
+        }
+      }
+
+      // 5. Claude Code hint
+      console.log("\n  For Claude Code, run:");
+      console.log(`    export SPEAK_API_KEY="${key}"`);
+      console.log("    claude mcp add speak-ai -- npx -y @speakai/mcp-server\n");
+
+      rl.close();
+      printSuccess("Setup complete! You're ready to go.");
     });
 
   // ── Media commands ─────────────────────────────────────────────────
@@ -257,50 +423,115 @@ export function createCli(): Command {
 
   program
     .command("upload")
-    .description("Upload media from a URL")
-    .argument("<url>", "Publicly accessible media URL")
+    .description("Upload media from a URL or local file")
+    .argument("<source>", "Media URL or local file path")
     .option("-n, --name <name>", "Display name")
-    .option("-t, --type <type>", "Media type (audio or video)", "audio")
+    .option("-t, --type <type>", "Media type (audio or video)")
     .option("-l, --language <lang>", "Source language (BCP-47)", "en-US")
     .option("-f, --folder <id>", "Destination folder ID")
     .option("--tags <tags>", "Comma-separated tags")
     .option("--wait", "Wait for processing to complete")
     .option("--json", "Output raw JSON")
-    .action(async (url: string, opts) => {
+    .action(async (source: string, opts) => {
       requireApiKey();
       const client = await getClient();
       try {
-        const body: Record<string, unknown> = {
-          name: opts.name ?? url.split("/").pop()?.split("?")[0] ?? "Upload",
-          url,
-          mediaType: opts.type,
-          sourceLanguage: opts.language,
-        };
-        if (opts.folder) body.folderId = opts.folder;
-        if (opts.tags) body.tags = opts.tags;
+        const fs = await import("fs");
+        const pathMod = await import("path");
+        const isLocalFile = fs.existsSync(source);
 
-        const res = await client.post("/v1/media/upload", body);
-        const data = res.data?.data;
+        let mediaId: string | undefined;
+        let state: string | undefined;
 
-        if (opts.json && !opts.wait) {
-          printJson(data);
-          return;
+        if (isLocalFile) {
+          // Local file upload via signed URL
+          const filename = pathMod.basename(source);
+          const ext = pathMod.extname(source).toLowerCase();
+          const videoExts = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
+          const isVideo = videoExts.includes(ext);
+          const mediaType = opts.type ?? (isVideo ? "video" : "audio");
+
+          const mimeMap: Record<string, string> = {
+            ".mp3": "audio/mpeg", ".mp4": isVideo ? "video/mp4" : "audio/mp4",
+            ".m4a": "audio/mp4", ".wav": "audio/wav", ".ogg": "audio/ogg",
+            ".flac": "audio/flac", ".webm": isVideo ? "video/webm" : "audio/webm",
+            ".mov": "video/quicktime", ".avi": "video/x-msvideo",
+            ".mkv": "video/x-matroska", ".wmv": "video/x-ms-wmv",
+          };
+          const mimeType = mimeMap[ext] ?? (isVideo ? "video/mp4" : "audio/mpeg");
+
+          // Get signed URL
+          const signedRes = await client.get("/v1/media/upload/signedurl", {
+            params: { isVideo, filename, mimeType },
+          });
+          const signedData = signedRes.data?.data;
+          const uploadUrl = signedData?.signedUrl ?? signedData?.url;
+
+          if (!uploadUrl) {
+            printError("Could not get signed upload URL");
+            process.exit(1);
+          }
+
+          // Upload to S3
+          process.stdout.write("Uploading...");
+          const fileBuffer = fs.readFileSync(source);
+          const axios = (await import("axios")).default;
+          await axios.put(uploadUrl, fileBuffer, {
+            headers: { "Content-Type": mimeType },
+            maxBodyLength: Infinity,
+            maxContentLength: Infinity,
+          });
+          console.log(" done");
+
+          // Create media entry
+          const createBody: Record<string, unknown> = {
+            name: opts.name ?? filename,
+            url: uploadUrl.split("?")[0],
+            mediaType,
+            sourceLanguage: opts.language,
+          };
+          if (opts.folder) createBody.folderId = opts.folder;
+          if (opts.tags) createBody.tags = opts.tags;
+
+          const res = await client.post("/v1/media/upload", createBody);
+          const data = res.data?.data;
+          mediaId = data?.mediaId;
+          state = data?.state;
+        } else {
+          // URL upload
+          const body: Record<string, unknown> = {
+            name: opts.name ?? source.split("/").pop()?.split("?")[0] ?? "Upload",
+            url: source,
+            mediaType: opts.type ?? "audio",
+            sourceLanguage: opts.language,
+          };
+          if (opts.folder) body.folderId = opts.folder;
+          if (opts.tags) body.tags = opts.tags;
+
+          const res = await client.post("/v1/media/upload", body);
+          const data = res.data?.data;
+
+          if (opts.json && !opts.wait) {
+            printJson(data);
+            return;
+          }
+
+          mediaId = data?.mediaId;
+          state = data?.state;
         }
 
-        const mediaId = data?.mediaId;
-        printSuccess(`Uploaded: ${mediaId} (state: ${data?.state})`);
+        printSuccess(`Uploaded: ${mediaId} (state: ${state})`);
 
         if (opts.wait && mediaId) {
           process.stdout.write("Processing");
-          let status = data?.state;
-          while (status !== "processed" && status !== "failed") {
+          while (state !== "processed" && state !== "failed") {
             await new Promise((r) => setTimeout(r, 5000));
             process.stdout.write(".");
             const statusRes = await client.get(`/v1/media/status/${mediaId}`);
-            status = statusRes.data?.data?.state;
+            state = statusRes.data?.data?.state;
           }
           console.log();
-          if (status === "processed") {
+          if (state === "processed") {
             printSuccess(`Done! Media ${mediaId} is ready.`);
           } else {
             printError(`Processing failed for ${mediaId}`);
@@ -466,27 +697,372 @@ export function createCli(): Command {
 
   program
     .command("ask")
-    .description("Ask an AI question about a media file")
-    .argument("<mediaId>", "Media file ID")
+    .description("Ask an AI question about media files, folders, or your entire workspace")
     .argument("<prompt>", "Your question")
+    .option("-m, --media <ids...>", "Media file IDs to query (space-separated)")
+    .option("-f, --folder <ids...>", "Folder IDs to scope the query to")
     .option("--assistant <type>", "Assistant type (general, researcher, marketer, sales, recruiter)", "general")
+    .option("--speakers <ids...>", "Filter by speaker IDs")
+    .option("--tags <tags...>", "Filter by tags")
+    .option("--from <date>", "Start date (ISO 8601)")
+    .option("--to <date>", "End date (ISO 8601)")
+    .option("--individual", "Process each media file separately")
+    .option("--continue <promptId>", "Continue an existing conversation")
     .option("--json", "Output raw JSON")
-    .action(async (mediaId: string, prompt: string, opts) => {
+    .action(async (prompt: string, opts) => {
       requireApiKey();
       const client = await getClient();
       try {
-        const res = await client.post("/v1/prompt", {
-          mediaIds: [mediaId],
+        const body: Record<string, unknown> = {
           prompt,
           assistantType: opts.assistant,
-        });
+        };
+        if (opts.media) body.mediaIds = opts.media;
+        if (opts.folder) body.folderIds = opts.folder;
+        if (opts.speakers) body.speakers = opts.speakers;
+        if (opts.tags) body.tags = opts.tags;
+        if (opts.from) body.startDate = opts.from;
+        if (opts.to) body.endDate = opts.to;
+        if (opts.individual) body.isIndividualPrompt = true;
+        if (opts.continue) body.promptId = opts.continue;
+
+        const res = await client.post("/v1/prompt", body);
         const data = res.data?.data;
 
         if (opts.json) {
           printJson(data);
         } else {
           console.log(data?.answer ?? data?.message ?? JSON.stringify(data, null, 2));
+          if (data?.promptId) {
+            console.log(`\n(conversation: ${data.promptId} — use --continue to follow up)`);
+          }
         }
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("chat-history")
+    .description("List past Magic Prompt conversations")
+    .option("--json", "Output raw JSON")
+    .action(async (opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const res = await client.get("/v1/prompt/history");
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+          return;
+        }
+
+        const items = Array.isArray(data) ? data : data?.prompts ?? data?.history ?? [];
+        printTable(items, [
+          { key: "_id", label: "ID", width: 26 },
+          { key: "title", label: "Title", width: 40 },
+          { key: "createdAt", label: "Created", width: 20 },
+        ]);
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  // ── Search ───────────────────────────────────────────────────────────
+
+  program
+    .command("search")
+    .description("Search across all media transcripts, insights, and metadata")
+    .argument("<query>", "Search query")
+    .option("--from <date>", "Start date (ISO 8601, defaults to start of month)")
+    .option("--to <date>", "End date (ISO 8601, defaults to now)")
+    .option("--json", "Output raw JSON")
+    .action(async (query: string, opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const body: Record<string, unknown> = { query };
+        if (opts.from) body.startDate = opts.from;
+        if (opts.to) body.endDate = opts.to;
+
+        const res = await client.post("/v1/analytics/search", body);
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+        } else {
+          printJson(data);
+        }
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  // ── Clips ───────────────────────────────────────────────────────────
+
+  program
+    .command("clips")
+    .description("List clips, optionally for a specific media file")
+    .option("-m, --media <ids...>", "Filter by source media IDs")
+    .option("-f, --folder <id>", "Filter by folder ID")
+    .option("--json", "Output raw JSON")
+    .action(async (opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const params: Record<string, unknown> = {};
+        if (opts.media) params.mediaIds = opts.media;
+        if (opts.folder) params.folderId = opts.folder;
+
+        const res = await client.get("/v1/clips", { params });
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+          return;
+        }
+
+        const items = Array.isArray(data) ? data : data?.clips ?? [];
+        printTable(items, [
+          { key: "clipId", label: "ID", width: 14 },
+          { key: "title", label: "Title", width: 30 },
+          { key: "state", label: "Status", width: 12 },
+          { key: "duration", label: "Duration", width: 10 },
+          { key: "createdAt", label: "Created", width: 20 },
+        ]);
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("clip")
+    .description("Create a clip from a media file")
+    .argument("<mediaId>", "Source media file ID")
+    .requiredOption("--start <seconds>", "Start time in seconds")
+    .requiredOption("--end <seconds>", "End time in seconds")
+    .option("-n, --name <title>", "Clip title", "Clip")
+    .option("-t, --type <type>", "Media type (audio or video)", "audio")
+    .option("--description <text>", "Clip description")
+    .option("--tags <tags...>", "Tags for the clip")
+    .option("--json", "Output raw JSON")
+    .action(async (mediaId: string, opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const body: Record<string, unknown> = {
+          title: opts.name,
+          mediaType: opts.type,
+          timeRanges: [
+            {
+              mediaId,
+              startTime: parseFloat(opts.start),
+              endTime: parseFloat(opts.end),
+            },
+          ],
+        };
+        if (opts.description) body.description = opts.description;
+        if (opts.tags) body.tags = opts.tags;
+
+        const res = await client.post("/v1/clips", body);
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+        } else {
+          printSuccess(`Clip created: ${data?.clipId ?? data?._id ?? "OK"} (processing...)`);
+        }
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  // ── Media CRUD ──────────────────────────────────────────────────────
+
+  program
+    .command("delete")
+    .description("Delete a media file")
+    .argument("<mediaId>", "Media file ID to delete")
+    .action(async (mediaId: string) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        await client.delete(`/v1/media/${mediaId}`);
+        printSuccess(`Deleted: ${mediaId}`);
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("update")
+    .description("Update media metadata")
+    .argument("<mediaId>", "Media file ID to update")
+    .option("-n, --name <name>", "New display name")
+    .option("-d, --description <text>", "New description")
+    .option("--tags <tags...>", "New tags")
+    .option("-f, --folder <id>", "Move to folder ID")
+    .option("--json", "Output raw JSON")
+    .action(async (mediaId: string, opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const body: Record<string, unknown> = {};
+        if (opts.name) body.name = opts.name;
+        if (opts.description) body.description = opts.description;
+        if (opts.tags) body.tags = opts.tags;
+        if (opts.folder) body.folderId = opts.folder;
+
+        if (Object.keys(body).length === 0) {
+          printError("Provide at least one field to update (--name, --description, --tags, --folder)");
+          process.exit(1);
+        }
+
+        const res = await client.put(`/v1/media/${mediaId}`, body);
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+        } else {
+          printSuccess(`Updated: ${mediaId}`);
+        }
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("create-folder")
+    .description("Create a new folder")
+    .argument("<name>", "Folder name")
+    .option("--json", "Output raw JSON")
+    .action(async (name: string, opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const res = await client.post("/v1/folder", { name });
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+        } else {
+          printSuccess(`Folder created: ${data?._id ?? "OK"} — ${name}`);
+        }
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("favorites")
+    .description("Toggle favorite status for a media file")
+    .argument("<mediaId>", "Media file ID")
+    .action(async (mediaId: string) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const res = await client.post("/v1/media/favorites", { mediaId });
+        const data = res.data?.data;
+        printSuccess(data?.message ?? `Favorite toggled for ${mediaId}`);
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("stats")
+    .description("Show workspace media statistics")
+    .option("--json", "Output raw JSON")
+    .action(async (opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const res = await client.get("/v1/media/statistics");
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+        } else {
+          printJson(data);
+        }
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("languages")
+    .description("List supported transcription languages")
+    .option("--json", "Output raw JSON")
+    .action(async (opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const res = await client.get("/v1/media/supportedLanguages");
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+        } else {
+          const langs = Array.isArray(data) ? data : data?.languages ?? [];
+          for (const lang of langs) {
+            const name = typeof lang === "string" ? lang : lang.name ?? lang.code ?? JSON.stringify(lang);
+            console.log(`  ${name}`);
+          }
+        }
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("captions")
+    .description("Get captions for a media file")
+    .argument("<mediaId>", "Media file ID")
+    .option("--json", "Output raw JSON")
+    .action(async (mediaId: string, opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const res = await client.get(`/v1/media/caption/${mediaId}`);
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+        } else {
+          const captions = Array.isArray(data) ? data : data?.captions ?? [];
+          for (const cap of captions) {
+            console.log(cap.text ?? cap);
+          }
+        }
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("reanalyze")
+    .description("Re-run AI analysis on a media file with latest models")
+    .argument("<mediaId>", "Media file ID")
+    .action(async (mediaId: string) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        await client.get(`/v1/media/reanalyze/${mediaId}`);
+        printSuccess(`Re-analysis started for ${mediaId}`);
       } catch (err: any) {
         printError(err.response?.data?.message ?? err.message);
         process.exit(1);

@@ -12,6 +12,9 @@ import * as meeting from "./meeting.js";
 import * as fields from "./fields.js";
 import * as automations from "./automations.js";
 import * as webhooks from "./webhooks.js";
+import * as analytics from "./analytics.js";
+import * as clips from "./clips.js";
+import * as workflows from "./workflows.js";
 
 const modules = [
   media,
@@ -25,10 +28,13 @@ const modules = [
   fields,
   automations,
   webhooks,
+  analytics,
+  clips,
+  workflows,
 ];
 
 /**
- * Register all 45 MCP tools on a server instance.
+ * Register all MCP tools on a server instance.
  * @param server - McpServer instance
  * @param client - Optional custom axios client (for server-side use with per-request auth).
  *                 If omitted, uses the default client from env vars (STDIO mode).
