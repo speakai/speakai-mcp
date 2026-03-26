@@ -1,24 +1,15 @@
-name: Release to npm
+name: Publish Package
 
 on:
   push:
     branches: [main]
 
-permissions:
-  contents: write
-
 jobs:
-  release:
+  publish:
     runs-on: ubuntu-latest
-
-    # Skip if commit message contains [skip ci] or is a version bump commit
-    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, 'chore: release')"
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -34,34 +25,23 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Determine version bump
-        id: bump
+      - name: Check if version already published
+        id: check
         run: |
-          # Check commit messages since last tag for conventional commits
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-
-          if [ -z "$LAST_TAG" ]; then
-            COMMITS=$(git log --oneline)
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Version ${PACKAGE_VERSION} already published, skipping."
           else
-            COMMITS=$(git log ${LAST_TAG}..HEAD --oneline)
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Version ${PACKAGE_VERSION} not found, will publish."
           fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-          if echo "$COMMITS" | grep -qiE "BREAKING CHANGE|^.*!:"; then
-            echo "bump=major" >> $GITHUB_OUTPUT
-          elif echo "$COMMITS" | grep -qiE "^feat"; then
-            echo "bump=minor" >> $GITHUB_OUTPUT
-          else
-            echo "bump=patch" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Bump version
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          npm version ${{ steps.bump.outputs.bump }} -m "chore: release v%s [skip ci]"
-          git push --follow-tags
-
-      - name: Publish to npm
+      - name: Publish
+        if: steps.check.outputs.exists == 'false'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
