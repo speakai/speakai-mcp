@@ -6,7 +6,7 @@
 
 <p align="center">
   Connect Claude, Cursor, Windsurf, and other AI assistants to your <a href="https://speakai.co">Speak AI</a> workspace.<br/>
-  81 tools, 5 resources, 3 prompts, 26 CLI commands — transcribe, analyze, search, and manage media at scale.
+  82 tools, 5 resources, 3 prompts, 28 CLI commands — transcribe, analyze, search, and manage media at scale.
 </p>
 
 <p align="center">
@@ -160,10 +160,10 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 
 ---
 
-## MCP Tools (81)
+## MCP Tools (82)
 
 <details>
-<summary>Media (14 tools)</summary>
+<summary>Media (15 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -181,6 +181,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `delete_media` | Permanently delete a media file |
 | `toggle_media_favorite` | Mark or unmark media as a favorite |
 | `reanalyze_media` | Re-run AI analysis with latest models |
+| `bulk_move_media` | Move multiple media files to a folder in one call |
 
 </details>
 
@@ -331,7 +332,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 
 | Tool | Description |
 |---|---|
-| `export_media` | Export as PDF, DOCX, SRT, VTT, TXT, CSV, or Markdown |
+| `export_media` | Export as PDF, DOCX, SRT, VTT, TXT, or CSV |
 | `export_multiple_media` | Batch export with optional merge into one file |
 
 </details>
@@ -407,7 +408,7 @@ Parameters: days (optional, default: 7), folder (optional)
 
 ---
 
-## CLI (26 Commands)
+## CLI (28 Commands)
 
 Install globally and configure once:
 
@@ -436,12 +437,12 @@ npx @speakai/mcp-server config set-key
 
 | Command | Description |
 |---|---|
-| `list-media` / `ls` | List media files with filtering and pagination |
+| `list-media` / `ls` | List media files with filtering, date ranges, and pagination |
 | `upload <source>` | Upload media from URL or local file (`--wait` to poll) |
 | `get-transcript` / `transcript <id>` | Get transcript (`--plain` or `--json`) |
 | `get-insights` / `insights <id>` | Get AI insights (topics, sentiment, keywords) |
 | `status <id>` | Check media processing status |
-| `export <id>` | Export transcript (`-f pdf\|docx\|srt\|vtt\|txt\|csv\|md`) |
+| `export <id>` | Export transcript (`-f pdf\|docx\|srt\|vtt\|txt\|csv`) |
 | `update <id>` | Update media metadata (name, description, tags, folder) |
 | `delete <id>` | Delete a media file |
 | `favorites <id>` | Toggle favorite status |
@@ -461,6 +462,7 @@ npx @speakai/mcp-server config set-key
 | Command | Description |
 |---|---|
 | `list-folders` / `folders` | List all folders |
+| `move <folderId> <mediaIds...>` | Move media files to a folder |
 | `create-folder <name>` | Create a new folder |
 | `clips` | List clips (filter by media or folder) |
 | `clip <mediaId>` | Create a clip (`--start` and `--end` in seconds) |
@@ -515,6 +517,12 @@ speakai-mcp schedule-meeting "https://zoom.us/j/123456" -t "Weekly Standup"
 
 # List videos as JSON for scripting
 speakai-mcp ls --type video --json | jq '.mediaList[].name'
+
+# List media from the last week
+speakai-mcp ls --from 2026-03-19 --to 2026-03-26
+
+# Move 3 files to a folder
+speakai-mcp move folder123 media1 media2 media3
 ```
 
 ---
@@ -589,14 +597,67 @@ AI: -> list_media(from: "2026-03-18", mediaType: "audio")
 
 ### Authentication
 
-All requests require `x-speakai-key` (API key) and `x-access-token` (JWT) headers. The MCP server handles token management automatically. Access tokens expire — the client refreshes them via `POST /v1/auth/accessToken`.
+The MCP server and CLI handle token management automatically. If you're calling the REST API directly, here's the full auth flow:
+
+**Step 1 — Get an access token:**
+
+```bash
+curl -X POST https://api.speakai.co/v1/auth/accessToken \
+  -H "Content-Type: application/json" \
+  -H "x-speakai-key: YOUR_API_KEY"
+```
+
+Response:
+```json
+{
+  "data": {
+    "email": "you@example.com",
+    "accessToken": "eyJhbG...",
+    "refreshToken": "eyJhbG..."
+  }
+}
+```
+
+**Step 2 — Use the token on all subsequent requests:**
+
+```bash
+curl https://api.speakai.co/v1/media \
+  -H "x-speakai-key: YOUR_API_KEY" \
+  -H "x-access-token: ACCESS_TOKEN_FROM_STEP_1"
+```
+
+**Step 3 — Refresh before expiry:**
+
+```bash
+curl -X POST https://api.speakai.co/v1/auth/refreshToken \
+  -H "Content-Type: application/json" \
+  -H "x-speakai-key: YOUR_API_KEY" \
+  -H "x-access-token: CURRENT_ACCESS_TOKEN" \
+  -d '{"refreshToken": "REFRESH_TOKEN_FROM_STEP_1"}'
+```
+
+**Token Lifetimes:**
+
+| Token | Expiry | How to Renew |
+|---|---|---|
+| Access token | 80 minutes | Refresh endpoint or re-authenticate |
+| Refresh token | 24 hours | Re-authenticate with API key |
+
+**Auth Rate Limits:** 5 requests per 60 seconds on both `/v1/auth/accessToken` and `/v1/auth/refreshToken`.
+
+### Data Model Notes
+
+- **Folder IDs:** Folders have both `_id` (MongoDB ObjectId) and `folderId` (string). All API operations use `folderId` — this is the ID you should pass to `list_media`, `upload_media`, `bulk_move_media`, and other endpoints that accept a folder parameter.
+- **Media IDs:** Media items use `mediaId` (returned in list responses as `_id`).
 
 ### Rate Limits
 
-- Implement exponential backoff on `429` responses
+- The MCP client automatically retries on `429` with exponential backoff
+- For direct API usage, implement exponential backoff and respect `Retry-After` headers
 - Cache stable data (folder lists, field definitions, supported languages)
 - Use `export_multiple_media` over individual exports for batch operations
 - Use `upload_and_analyze` instead of manual upload + poll + fetch loops
+- Use `bulk_move_media` to move multiple items at once instead of updating one by one
 
 ### Error Format
 

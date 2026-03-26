@@ -455,4 +455,32 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       }
     }
   );
+
+  // 15. Bulk move media to folder
+  server.tool(
+    "bulk_move_media",
+    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
+    {
+      folderId: z.string().min(1).describe("Target folder ID to move media into"),
+      mediaIds: z
+        .array(z.string().min(1))
+        .min(1)
+        .describe("Array of media IDs to move"),
+    },
+    async (body) => {
+      try {
+        const result = await api.put("/v1/media/move", body);
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) },
+          ],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
 }

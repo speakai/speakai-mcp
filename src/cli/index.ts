@@ -280,6 +280,8 @@ export function createCli(): Command {
     .option("--sort <field>", "Sort field", "createdAt:desc")
     .option("-f, --folder <id>", "Filter by folder ID")
     .option("-n, --name <filter>", "Filter by name")
+    .option("--from <date>", "Start date filter (ISO 8601, e.g. 2026-01-01)")
+    .option("--to <date>", "End date filter (ISO 8601)")
     .option("--favorites", "Show only favorites")
     .option("--json", "Output raw JSON")
     .action(async (opts) => {
@@ -295,6 +297,8 @@ export function createCli(): Command {
         if (opts.type) params.mediaType = opts.type;
         if (opts.folder) params.folderId = opts.folder;
         if (opts.name) params.filterName = opts.name;
+        if (opts.from) params.from = opts.from;
+        if (opts.to) params.to = opts.to;
         if (opts.favorites) params.isFavorites = true;
 
         const res = await client.get("/v1/media", { params });
@@ -547,7 +551,7 @@ export function createCli(): Command {
     .argument("<mediaId>", "Media file ID")
     .option(
       "-f, --format <type>",
-      "Export format (pdf, docx, srt, vtt, txt, csv, md)",
+      "Export format (pdf, docx, srt, vtt, txt, csv)",
       "txt"
     )
     .option("--speakers", "Include speaker names")
@@ -558,15 +562,14 @@ export function createCli(): Command {
       requireApiKey();
       const client = await getClient();
       try {
-        const params: Record<string, boolean> = {};
-        if (opts.speakers) params.isSpeakerNames = true;
-        if (opts.timestamps) params.isTimeStamps = true;
-        if (opts.redacted) params.isRedacted = true;
+        const body: Record<string, boolean> = {};
+        if (opts.speakers) body.isSpeakerNames = true;
+        if (opts.timestamps) body.isTimeStamps = true;
+        if (opts.redacted) body.isRedacted = true;
 
         const res = await client.post(
           `/v1/media/export/${mediaId}/${opts.format}`,
-          null,
-          { params }
+          body
         );
 
         if (opts.json) {
@@ -680,8 +683,8 @@ export function createCli(): Command {
 
         const folders = Array.isArray(data) ? data : data?.folderList ?? data?.folders ?? [];
         printTable(folders, [
-          { key: "_id", label: "ID", width: 14 },
-          { key: "name", label: "Name", width: 40 },
+          { key: "folderId", label: "Folder ID", width: 20 },
+          { key: "name", label: "Name", width: 34 },
           { key: "createdAt", label: "Created", width: 20 },
         ]);
       } catch (err: any) {
@@ -953,6 +956,30 @@ export function createCli(): Command {
     });
 
   program
+    .command("move")
+    .description("Move one or more media files to a folder")
+    .argument("<folderId>", "Target folder ID")
+    .argument("<mediaIds...>", "Media file IDs to move")
+    .option("--json", "Output raw JSON")
+    .action(async (folderId: string, mediaIds: string[], opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const res = await client.put("/v1/media/move", { folderId, mediaIds });
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+        } else {
+          printSuccess(`Moved ${mediaIds.length} item(s) to folder ${folderId}`);
+        }
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  program
     .command("create-folder")
     .description("Create a new folder")
     .argument("<name>", "Folder name")
@@ -967,7 +994,7 @@ export function createCli(): Command {
         if (opts.json) {
           printJson(data);
         } else {
-          printSuccess(`Folder created: ${data?._id ?? "OK"} — ${name}`);
+          printSuccess(`Folder created: ${data?.folderId ?? data?._id ?? "OK"} — ${name}`);
         }
       } catch (err: any) {
         printError(err.response?.data?.message ?? err.message);
@@ -1008,22 +1035,24 @@ export function createCli(): Command {
           return;
         }
 
-        // Human-readable stats
-        const total = data?.totalCount ?? data?.total ?? "—";
-        const audio = data?.audioCount ?? data?.audio ?? "—";
-        const video = data?.videoCount ?? data?.video ?? "—";
-        const text = data?.textCount ?? data?.text ?? "—";
-        console.log(`Total media:  ${total}`);
-        console.log(`  Audio:      ${audio}`);
-        console.log(`  Video:      ${video}`);
-        console.log(`  Text:       ${text}`);
-        if (data?.totalDuration) {
-          const hrs = Math.round((data.totalDuration / 3600) * 10) / 10;
-          console.log(`Duration:     ${hrs}h total`);
+        // Human-readable stats (server returns: totalMedia, analyzedMedia, notAnalyzedMedia, duration, fileSize, analyzedMinutes)
+        const total = data?.totalMedia ?? "—";
+        const analyzed = data?.analyzedMedia ?? "—";
+        const notAnalyzed = data?.notAnalyzedMedia ?? "—";
+        console.log(`Total media:     ${total}`);
+        console.log(`  Analyzed:      ${analyzed}`);
+        console.log(`  Not analyzed:  ${notAnalyzed}`);
+        if (data?.duration) {
+          const hrs = Math.round((data.duration / 3600) * 10) / 10;
+          console.log(`Duration:        ${hrs}h total`);
         }
-        if (data?.totalSize) {
-          const gb = Math.round((data.totalSize / (1024 * 1024 * 1024)) * 100) / 100;
-          console.log(`Storage:      ${gb} GB`);
+        if (data?.analyzedMinutes) {
+          const hrs = Math.round(data.analyzedMinutes / 60 * 10) / 10;
+          console.log(`Analyzed:        ${hrs}h (${data.analyzedMinutes} min)`);
+        }
+        if (data?.fileSize) {
+          const gb = Math.round((data.fileSize / (1024 * 1024 * 1024)) * 100) / 100;
+          console.log(`Storage:         ${gb} GB`);
         }
       } catch (err: any) {
         printError(err.response?.data?.message ?? err.message);

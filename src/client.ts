@@ -114,7 +114,7 @@ speakClient.interceptors.request.use(
   }
 );
 
-// Interceptor: auto-retry on 401 (token expired mid-flight), max 2 retries
+// Interceptor: auto-retry on 401 (token expired) and 429 (rate limit), max 3 retries
 speakClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -124,6 +124,7 @@ speakClient.interceptors.response.use(
     }
     const retryCount = originalRequest._retryCount ?? 0;
 
+    // 401 — token expired mid-flight, refresh and retry
     if (error.response?.status === 401 && retryCount < 2) {
       originalRequest._retryCount = retryCount + 1;
       tokenExpiresAt = 0;
@@ -132,6 +133,18 @@ speakClient.interceptors.response.use(
       originalRequest.headers["x-access-token"] = accessToken;
       return speakClient(originalRequest);
     }
+
+    // 429 — rate limited, exponential backoff with Retry-After support
+    if (error.response?.status === 429 && retryCount < 3) {
+      const retryAfter = error.response.headers["retry-after"];
+      const delaySeconds = retryAfter ? parseInt(retryAfter, 10) : Math.pow(2, retryCount + 1);
+      const delayMs = (Number.isFinite(delaySeconds) ? delaySeconds : 2) * 1000;
+      process.stderr.write(`[speakai-mcp] Rate limited, retrying in ${delayMs / 1000}s...\n`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      originalRequest._retryCount = retryCount + 1;
+      return speakClient(originalRequest);
+    }
+
     return Promise.reject(error);
   }
 );

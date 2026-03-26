@@ -7,11 +7,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   server.tool(
     "export_media",
-    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv, md).",
+    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
       fileType: z
-        .enum(["pdf", "docx", "srt", "vtt", "txt", "csv", "md"])
+        .enum(["pdf", "docx", "srt", "vtt", "txt", "csv"])
         .describe("Desired export format"),
       isSpeakerNames: z
         .boolean()
@@ -38,12 +38,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Specific categories to redact"),
     },
-    async ({ mediaId, fileType, ...query }) => {
+    async ({ mediaId, fileType, ...body }) => {
       try {
         const result = await api.post(
           `/v1/media/export/${mediaId}/${fileType}`,
-          null,
-          { params: query }
+          body
         );
         return {
           content: [
@@ -67,7 +66,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .array(z.string())
         .describe("Array of media IDs to export"),
       fileType: z
-        .enum(["pdf", "docx", "srt", "vtt", "txt", "csv", "md"])
+        .enum(["pdf", "docx", "srt", "vtt", "txt", "csv"])
         .describe("Desired export format"),
       isSpeakerNames: z
         .boolean()

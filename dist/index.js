@@ -166,6 +166,16 @@ var init_client = __esm({
           originalRequest.headers["x-access-token"] = accessToken;
           return speakClient(originalRequest);
         }
+        if (error.response?.status === 429 && retryCount < 3) {
+          const retryAfter = error.response.headers["retry-after"];
+          const delaySeconds = retryAfter ? parseInt(retryAfter, 10) : Math.pow(2, retryCount + 1);
+          const delayMs = (Number.isFinite(delaySeconds) ? delaySeconds : 2) * 1e3;
+          process.stderr.write(`[speakai-mcp] Rate limited, retrying in ${delayMs / 1e3}s...
+`);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          originalRequest._retryCount = retryCount + 1;
+          return speakClient(originalRequest);
+        }
         return Promise.reject(error);
       }
     );
@@ -1418,6 +1428,29 @@ function register(server, client) {
       }
     }
   );
+  server.tool(
+    "bulk_move_media",
+    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
+    {
+      folderId: import_zod.z.string().min(1).describe("Target folder ID to move media into"),
+      mediaIds: import_zod.z.array(import_zod.z.string().min(1)).min(1).describe("Array of media IDs to move")
+    },
+    async (body) => {
+      try {
+        const result = await api.put("/v1/media/move", body);
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
 }
 var import_zod;
 var init_media3 = __esm({
@@ -1562,10 +1595,10 @@ function register3(server, client) {
   const api = client ?? speakClient;
   server.tool(
     "export_media",
-    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv, md).",
+    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
     {
       mediaId: import_zod3.z.string().min(1).describe("Unique identifier of the media file"),
-      fileType: import_zod3.z.enum(["pdf", "docx", "srt", "vtt", "txt", "csv", "md"]).describe("Desired export format"),
+      fileType: import_zod3.z.enum(["pdf", "docx", "srt", "vtt", "txt", "csv"]).describe("Desired export format"),
       isSpeakerNames: import_zod3.z.boolean().optional().describe("Include speaker names in export"),
       isSpeakerEmail: import_zod3.z.boolean().optional().describe("Include speaker emails in export"),
       isTimeStamps: import_zod3.z.boolean().optional().describe("Include timestamps in export"),
@@ -1573,12 +1606,11 @@ function register3(server, client) {
       isRedacted: import_zod3.z.boolean().optional().describe("Apply PII redaction to export"),
       redactedCategories: import_zod3.z.array(import_zod3.z.string()).optional().describe("Specific categories to redact")
     },
-    async ({ mediaId, fileType, ...query }) => {
+    async ({ mediaId, fileType, ...body }) => {
       try {
         const result = await api.post(
           `/v1/media/export/${mediaId}/${fileType}`,
-          null,
-          { params: query }
+          body
         );
         return {
           content: [
@@ -1598,7 +1630,7 @@ function register3(server, client) {
     "Export multiple media files at once, optionally merged into a single file.",
     {
       mediaIds: import_zod3.z.array(import_zod3.z.string()).describe("Array of media IDs to export"),
-      fileType: import_zod3.z.enum(["pdf", "docx", "srt", "vtt", "txt", "csv", "md"]).describe("Desired export format"),
+      fileType: import_zod3.z.enum(["pdf", "docx", "srt", "vtt", "txt", "csv"]).describe("Desired export format"),
       isSpeakerNames: import_zod3.z.boolean().optional().describe("Include speaker names in export"),
       isSpeakerEmail: import_zod3.z.boolean().optional().describe("Include speaker emails in export"),
       isTimeStamps: import_zod3.z.boolean().optional().describe("Include timestamps in export"),
@@ -3957,7 +3989,7 @@ function createCli() {
     rl.close();
     printSuccess("Setup complete! You're ready to go.");
   });
-  program.command("list-media").alias("ls").description("List media files").option("-t, --type <type>", "Filter by type (audio, video, text)").option("-p, --page <n>", "Page number (0-based)", "0").option("-s, --page-size <n>", "Results per page", "20").option("--sort <field>", "Sort field", "createdAt:desc").option("-f, --folder <id>", "Filter by folder ID").option("-n, --name <filter>", "Filter by name").option("--favorites", "Show only favorites").option("--json", "Output raw JSON").action(async (opts) => {
+  program.command("list-media").alias("ls").description("List media files").option("-t, --type <type>", "Filter by type (audio, video, text)").option("-p, --page <n>", "Page number (0-based)", "0").option("-s, --page-size <n>", "Results per page", "20").option("--sort <field>", "Sort field", "createdAt:desc").option("-f, --folder <id>", "Filter by folder ID").option("-n, --name <filter>", "Filter by name").option("--from <date>", "Start date filter (ISO 8601, e.g. 2026-01-01)").option("--to <date>", "End date filter (ISO 8601)").option("--favorites", "Show only favorites").option("--json", "Output raw JSON").action(async (opts) => {
     requireApiKey();
     const client = await getClient();
     try {
@@ -3971,6 +4003,8 @@ function createCli() {
       if (opts.type) params.mediaType = opts.type;
       if (opts.folder) params.folderId = opts.folder;
       if (opts.name) params.filterName = opts.name;
+      if (opts.from) params.from = opts.from;
+      if (opts.to) params.to = opts.to;
       if (opts.favorites) params.isFavorites = true;
       const res = await client.get("/v1/media", { params });
       const data = res.data?.data;
@@ -4164,20 +4198,19 @@ function createCli() {
   });
   program.command("export").description("Export media transcript/insights").argument("<mediaId>", "Media file ID").option(
     "-f, --format <type>",
-    "Export format (pdf, docx, srt, vtt, txt, csv, md)",
+    "Export format (pdf, docx, srt, vtt, txt, csv)",
     "txt"
   ).option("--speakers", "Include speaker names").option("--timestamps", "Include timestamps").option("--redacted", "Apply PII redaction").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
     requireApiKey();
     const client = await getClient();
     try {
-      const params = {};
-      if (opts.speakers) params.isSpeakerNames = true;
-      if (opts.timestamps) params.isTimeStamps = true;
-      if (opts.redacted) params.isRedacted = true;
+      const body = {};
+      if (opts.speakers) body.isSpeakerNames = true;
+      if (opts.timestamps) body.isTimeStamps = true;
+      if (opts.redacted) body.isRedacted = true;
       const res = await client.post(
         `/v1/media/export/${mediaId}/${opts.format}`,
-        null,
-        { params }
+        body
       );
       if (opts.json) {
         printJson(res.data);
@@ -4256,8 +4289,8 @@ function createCli() {
       }
       const folders = Array.isArray(data) ? data : data?.folderList ?? data?.folders ?? [];
       printTable(folders, [
-        { key: "_id", label: "ID", width: 14 },
-        { key: "name", label: "Name", width: 40 },
+        { key: "folderId", label: "Folder ID", width: 20 },
+        { key: "name", label: "Name", width: 34 },
         { key: "createdAt", label: "Created", width: 20 }
       ]);
     } catch (err) {
@@ -4441,6 +4474,22 @@ function createCli() {
       process.exit(1);
     }
   });
+  program.command("move").description("Move one or more media files to a folder").argument("<folderId>", "Target folder ID").argument("<mediaIds...>", "Media file IDs to move").option("--json", "Output raw JSON").action(async (folderId, mediaIds, opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const res = await client.put("/v1/media/move", { folderId, mediaIds });
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+      } else {
+        printSuccess(`Moved ${mediaIds.length} item(s) to folder ${folderId}`);
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
   program.command("create-folder").description("Create a new folder").argument("<name>", "Folder name").option("--json", "Output raw JSON").action(async (name, opts) => {
     requireApiKey();
     const client = await getClient();
@@ -4450,7 +4499,7 @@ function createCli() {
       if (opts.json) {
         printJson(data);
       } else {
-        printSuccess(`Folder created: ${data?._id ?? "OK"} \u2014 ${name}`);
+        printSuccess(`Folder created: ${data?.folderId ?? data?._id ?? "OK"} \u2014 ${name}`);
       }
     } catch (err) {
       printError(err.response?.data?.message ?? err.message);
@@ -4479,21 +4528,23 @@ function createCli() {
         printJson(data);
         return;
       }
-      const total = data?.totalCount ?? data?.total ?? "\u2014";
-      const audio = data?.audioCount ?? data?.audio ?? "\u2014";
-      const video = data?.videoCount ?? data?.video ?? "\u2014";
-      const text = data?.textCount ?? data?.text ?? "\u2014";
-      console.log(`Total media:  ${total}`);
-      console.log(`  Audio:      ${audio}`);
-      console.log(`  Video:      ${video}`);
-      console.log(`  Text:       ${text}`);
-      if (data?.totalDuration) {
-        const hrs = Math.round(data.totalDuration / 3600 * 10) / 10;
-        console.log(`Duration:     ${hrs}h total`);
+      const total = data?.totalMedia ?? "\u2014";
+      const analyzed = data?.analyzedMedia ?? "\u2014";
+      const notAnalyzed = data?.notAnalyzedMedia ?? "\u2014";
+      console.log(`Total media:     ${total}`);
+      console.log(`  Analyzed:      ${analyzed}`);
+      console.log(`  Not analyzed:  ${notAnalyzed}`);
+      if (data?.duration) {
+        const hrs = Math.round(data.duration / 3600 * 10) / 10;
+        console.log(`Duration:        ${hrs}h total`);
       }
-      if (data?.totalSize) {
-        const gb = Math.round(data.totalSize / (1024 * 1024 * 1024) * 100) / 100;
-        console.log(`Storage:      ${gb} GB`);
+      if (data?.analyzedMinutes) {
+        const hrs = Math.round(data.analyzedMinutes / 60 * 10) / 10;
+        console.log(`Analyzed:        ${hrs}h (${data.analyzedMinutes} min)`);
+      }
+      if (data?.fileSize) {
+        const gb = Math.round(data.fileSize / (1024 * 1024 * 1024) * 100) / 100;
+        console.log(`Storage:         ${gb} GB`);
       }
     } catch (err) {
       printError(err.response?.data?.message ?? err.message);

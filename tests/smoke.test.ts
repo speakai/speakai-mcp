@@ -36,7 +36,7 @@ describe("MCP Server Smoke Tests", () => {
 
     const tools = getRegisteredTools(server);
     const toolNames = Object.keys(tools);
-    expect(toolNames).toHaveLength(81);
+    expect(toolNames).toHaveLength(82);
   });
 
   it("registers all tools with unique names", async () => {
