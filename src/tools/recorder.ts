@@ -53,8 +53,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "list_recorders",
     "List all recorders/surveys in the workspace.",
     {
-      page: z.number().int().optional().describe("Page number (0-based)"),
-      pageSize: z.number().int().optional().describe("Results per page"),
+      page: z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
+      pageSize: z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
       sortBy: z.string().optional().describe('Sort field, e.g. "createdAt:desc"'),
     },
     async (params) => {

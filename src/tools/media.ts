@@ -106,15 +106,16 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       page: z
         .number()
         .int()
-        .positive()
+        .min(0)
         .optional()
-        .describe("Page number for pagination (default: 1)"),
+        .describe("Page number for pagination (0-based, default: 0)"),
       pageSize: z
         .number()
         .int()
-        .positive()
+        .min(1)
+        .max(500)
         .optional()
-        .describe("Number of results per page (default: 20)"),
+        .describe("Number of results per page (default: 20, max: 500)"),
       sortBy: z
         .string()
         .optional()
@@ -229,7 +230,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       try {
         const result = await api.put(
           `/v1/media/speakers/${mediaId}`,
-          speakers
+          { speakers }
         );
         return {
           content: [
@@ -440,7 +441,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async ({ mediaId }) => {
       try {
-        const result = await api.get(`/v1/media/reanalyze/${mediaId}`);
+        const result = await api.post(`/v1/media/reanalyze/${mediaId}`, {});
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },

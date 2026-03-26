@@ -67,10 +67,10 @@ async function authenticate() {
       process.stderr.write("[speakai-mcp] Authenticated successfully\n");
     }
   } catch (err) {
-    process.stderr.write(
-      `[speakai-mcp] Authentication failed: ${err instanceof Error ? err.message : err}
-`
-    );
+    const message = err instanceof Error ? err.message : String(err);
+    process.stderr.write(`[speakai-mcp] Authentication failed: ${message}
+`);
+    throw new Error(`Authentication failed: ${message}`);
   }
 }
 async function refreshAccessToken() {
@@ -154,6 +154,9 @@ var init_client = __esm({
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
+        if (!originalRequest) {
+          return Promise.reject(error);
+        }
         const retryCount = originalRequest._retryCount ?? 0;
         if (error.response?.status === 401 && retryCount < 2) {
           originalRequest._retryCount = retryCount + 1;
@@ -166,6 +169,899 @@ var init_client = __esm({
         return Promise.reject(error);
       }
     );
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/activities.js
+var ActivityType;
+var init_activities = __esm({
+  "node_modules/@speakai/shared/dist/enums/activities.js"() {
+    "use strict";
+    (function(ActivityType2) {
+      ActivityType2["MEDIA_ANALYSIS"] = "mediaAnalysis";
+      ActivityType2["MEDIA_TRANSCRIPTION"] = "mediaTranscription";
+      ActivityType2["TEXT_NOTE_ANALYZED"] = "textNoteAnalyzed";
+      ActivityType2["RECORDING_RECEIVED"] = "recordingReceived";
+      ActivityType2["RECORDER_CREATED"] = "recorderCreated";
+      ActivityType2["MEETING_ASSISTANT"] = "meetingAssistant";
+    })(ActivityType || (ActivityType = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/auth.js
+var SSOType, DevicePlatform;
+var init_auth = __esm({
+  "node_modules/@speakai/shared/dist/enums/auth.js"() {
+    "use strict";
+    (function(SSOType2) {
+      SSOType2["GOOGLE"] = "google";
+      SSOType2["MICROSOFT"] = "microsoft";
+      SSOType2["APPLE"] = "apple";
+      SSOType2["FACEBOOK"] = "facebook";
+    })(SSOType || (SSOType = {}));
+    (function(DevicePlatform2) {
+      DevicePlatform2["IOS"] = "ios";
+      DevicePlatform2["ANDROID"] = "android";
+      DevicePlatform2["WEB"] = "web";
+      DevicePlatform2["ELECTRON"] = "electron";
+      DevicePlatform2["API"] = "api";
+    })(DevicePlatform || (DevicePlatform = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/automation.js
+var AutomationTrigger, AutomationAction, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
+var init_automation = __esm({
+  "node_modules/@speakai/shared/dist/enums/automation.js"() {
+    "use strict";
+    (function(AutomationTrigger2) {
+      AutomationTrigger2["FOLDERS"] = "folders";
+      AutomationTrigger2["TAGS"] = "tags";
+      AutomationTrigger2["KEYWORDS"] = "keywords";
+    })(AutomationTrigger || (AutomationTrigger = {}));
+    (function(AutomationAction2) {
+      AutomationAction2["MAGIC_PROMPT"] = "magic-prompt";
+      AutomationAction2["TRANSLATION"] = "translation";
+    })(AutomationAction || (AutomationAction = {}));
+    (function(AutomationRunType2) {
+      AutomationRunType2["INSTANT"] = "instant";
+      AutomationRunType2["SCHEDULE"] = "schedule";
+    })(AutomationRunType || (AutomationRunType = {}));
+    (function(AutomationScheduleTimePeriod2) {
+      AutomationScheduleTimePeriod2["TODAY"] = "today";
+      AutomationScheduleTimePeriod2["YESTERDAY"] = "yesterday";
+      AutomationScheduleTimePeriod2["LAST_7_DAYS"] = "last7days";
+      AutomationScheduleTimePeriod2["LAST_14_DAYS"] = "last14days";
+      AutomationScheduleTimePeriod2["THIS_WEEK"] = "thisWeek";
+    })(AutomationScheduleTimePeriod || (AutomationScheduleTimePeriod = {}));
+    (function(AssistantType2) {
+      AssistantType2["RESEARCHER"] = "researcher";
+      AssistantType2["MARKETER"] = "marketer";
+      AssistantType2["SALES"] = "sales";
+      AssistantType2["GENERAL"] = "general";
+      AssistantType2["RECRUITER"] = "recruiter";
+      AssistantType2["CUSTOM"] = "custom";
+    })(AssistantType || (AssistantType = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/calendar.js
+var CalendarType, EventStatus, AutoJoinStatus;
+var init_calendar = __esm({
+  "node_modules/@speakai/shared/dist/enums/calendar.js"() {
+    "use strict";
+    (function(CalendarType2) {
+      CalendarType2["GOOGLE"] = "google";
+      CalendarType2["OUTLOOK"] = "outlook";
+    })(CalendarType || (CalendarType = {}));
+    (function(EventStatus2) {
+      EventStatus2["CONFIRMED"] = "confirmed";
+      EventStatus2["CANCELLED"] = "cancelled";
+    })(EventStatus || (EventStatus = {}));
+    (function(AutoJoinStatus2) {
+      AutoJoinStatus2["NONE"] = "none";
+      AutoJoinStatus2["INVITE_ASSISTANT"] = "inviteAssistant";
+      AutoJoinStatus2["ALL_MEETINGS"] = "allMeetings";
+      AutoJoinStatus2["HOST"] = "host";
+      AutoJoinStatus2["SPEAK_TEAM_MEMBERS_NOT_HOST"] = "speakTeamMembersNotHost";
+    })(AutoJoinStatus || (AutoJoinStatus = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/clip.js
+var ClipState, ClipGenerationSource;
+var init_clip = __esm({
+  "node_modules/@speakai/shared/dist/enums/clip.js"() {
+    "use strict";
+    (function(ClipState2) {
+      ClipState2["QUEUED"] = "queued";
+      ClipState2["PROCESSING"] = "processing";
+      ClipState2["COMPLETED"] = "completed";
+      ClipState2["FAILED"] = "failed";
+    })(ClipState || (ClipState = {}));
+    (function(ClipGenerationSource2) {
+      ClipGenerationSource2["MANUAL"] = "manual";
+      ClipGenerationSource2["CHAT"] = "chat";
+      ClipGenerationSource2["AI"] = "ai";
+    })(ClipGenerationSource || (ClipGenerationSource = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/domain.js
+var ServiceType, VerificationStatus;
+var init_domain = __esm({
+  "node_modules/@speakai/shared/dist/enums/domain.js"() {
+    "use strict";
+    (function(ServiceType2) {
+      ServiceType2["RECORDER"] = "recorder";
+      ServiceType2["PLAYER"] = "player";
+      ServiceType2["LIBRARY"] = "library";
+    })(ServiceType || (ServiceType = {}));
+    (function(VerificationStatus2) {
+      VerificationStatus2["PENDING"] = "pending";
+      VerificationStatus2["VERIFIED"] = "verified";
+      VerificationStatus2["FAILED"] = "failed";
+      VerificationStatus2["ACTIVE"] = "active";
+    })(VerificationStatus || (VerificationStatus = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/embed.js
+var EmbedType, ImageSelectionType;
+var init_embed = __esm({
+  "node_modules/@speakai/shared/dist/enums/embed.js"() {
+    "use strict";
+    (function(EmbedType2) {
+      EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
+      EmbedType2["REPOSITORY"] = "repository";
+    })(EmbedType || (EmbedType = {}));
+    (function(ImageSelectionType2) {
+      ImageSelectionType2["LOGO"] = "logo";
+      ImageSelectionType2["BACKGROUND_IMG"] = "backgroundImg";
+      ImageSelectionType2["MEETING_ASSISTANT"] = "meetingAssistant";
+    })(ImageSelectionType || (ImageSelectionType = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/export.js
+var ExportFormatType;
+var init_export = __esm({
+  "node_modules/@speakai/shared/dist/enums/export.js"() {
+    "use strict";
+    (function(ExportFormatType2) {
+      ExportFormatType2["CSV"] = "csv";
+      ExportFormatType2["CSV_INSIGHTS"] = "csv-insights";
+      ExportFormatType2["CSV_TRANSCRIPT"] = "csv-transcript";
+      ExportFormatType2["CSV_TRANSCRIPT_WITH_SENTIMENT"] = "csv-transcript-sentiment";
+      ExportFormatType2["CSV_TEXT_WITH_SENTIMENT"] = "csv-text-sentiment";
+      ExportFormatType2["DOCX"] = "docx";
+      ExportFormatType2["HTML"] = "html";
+      ExportFormatType2["JSON"] = "json";
+      ExportFormatType2["PDF"] = "pdf";
+      ExportFormatType2["SOURCEFILE"] = "sourceFile";
+      ExportFormatType2["SRT"] = "srt";
+      ExportFormatType2["TTML"] = "ttml";
+      ExportFormatType2["TXT"] = "txt";
+      ExportFormatType2["VTT"] = "vtt";
+      ExportFormatType2["MP4"] = "mp4";
+    })(ExportFormatType || (ExportFormatType = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/fields.js
+var FieldType, AllowedValuesMode, DefaultViewColumn;
+var init_fields = __esm({
+  "node_modules/@speakai/shared/dist/enums/fields.js"() {
+    "use strict";
+    (function(FieldType2) {
+      FieldType2["TEXT"] = "text";
+      FieldType2["URL"] = "url";
+      FieldType2["BOOLEAN"] = "boolean";
+      FieldType2["DATE"] = "date";
+      FieldType2["DATETIME"] = "datetime";
+      FieldType2["NUMBER"] = "number";
+      FieldType2["CURRENCY"] = "currency";
+    })(FieldType || (FieldType = {}));
+    (function(AllowedValuesMode2) {
+      AllowedValuesMode2["SINGLE"] = "single";
+      AllowedValuesMode2["MULTIPLE"] = "multiple";
+    })(AllowedValuesMode || (AllowedValuesMode = {}));
+    (function(DefaultViewColumn2) {
+      DefaultViewColumn2["NAME"] = "name";
+      DefaultViewColumn2["DURATION"] = "duration";
+      DefaultViewColumn2["TAGS"] = "tags";
+      DefaultViewColumn2["SENTIMENT"] = "sentiment";
+      DefaultViewColumn2["DATETIME"] = "datetime";
+      DefaultViewColumn2["SIZE"] = "size";
+      DefaultViewColumn2["MEDIA_TYPE"] = "mediaType";
+      DefaultViewColumn2["CREATED_AT"] = "createdAt";
+      DefaultViewColumn2["UPDATED_AT"] = "updatedAt";
+    })(DefaultViewColumn || (DefaultViewColumn = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/filter.js
+var FilterFieldName, FilterOperator, FilterCondition;
+var init_filter = __esm({
+  "node_modules/@speakai/shared/dist/enums/filter.js"() {
+    "use strict";
+    (function(FilterFieldName2) {
+      FilterFieldName2["CATEGORY"] = "category";
+      FilterFieldName2["FOLDER_ID"] = "folderId";
+      FilterFieldName2["MEDIA_ID"] = "mediaId";
+      FilterFieldName2["MEDIA_TYPE"] = "mediaType";
+      FilterFieldName2["SENTIMENT_NEGATIVE"] = "sentimentNegative";
+      FilterFieldName2["SENTIMENT_POSITIVE"] = "sentimentPositive";
+      FilterFieldName2["SPEAKER"] = "speaker";
+      FilterFieldName2["TAGS"] = "tags";
+      FilterFieldName2["RECORDER_ID"] = "recorderId";
+      FilterFieldName2["FIELDS"] = "fields";
+    })(FilterFieldName || (FilterFieldName = {}));
+    (function(FilterOperator2) {
+      FilterOperator2["INCLUDE"] = "include";
+      FilterOperator2["NOT_INCLUDE"] = "notInclude";
+      FilterOperator2["CONTAIN"] = "contain";
+      FilterOperator2["NOT_CONTAIN"] = "notContain";
+      FilterOperator2["GREATER_THAN"] = "greaterThan";
+      FilterOperator2["LESS_THAN"] = "lessThan";
+    })(FilterOperator || (FilterOperator = {}));
+    (function(FilterCondition2) {
+      FilterCondition2["AND"] = "and";
+      FilterCondition2["OR"] = "or";
+    })(FilterCondition || (FilterCondition = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/media.js
+var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType;
+var init_media = __esm({
+  "node_modules/@speakai/shared/dist/enums/media.js"() {
+    "use strict";
+    (function(MediaType2) {
+      MediaType2["AUDIO"] = "audio";
+      MediaType2["VIDEO"] = "video";
+      MediaType2["TEXT"] = "text";
+      MediaType2["MEDIA"] = "media";
+      MediaType2["CSV"] = "csv";
+    })(MediaType || (MediaType = {}));
+    (function(MediaState3) {
+      MediaState3["NOT_UPLOADED"] = "notUploaded";
+      MediaState3["UPLOADED"] = "uploaded";
+      MediaState3["QUEUED"] = "queued";
+      MediaState3["PENDING_PAYMENT"] = "pendingPayment";
+      MediaState3["PREPARING"] = "preparing";
+      MediaState3["PREPARING_TRANSCRIPTION"] = "preparingTranscription";
+      MediaState3["PROCESSING"] = "processing";
+      MediaState3["TRANSLATION"] = "translation";
+      MediaState3["PREPARING_ANALYSIS"] = "preparingAnalysis";
+      MediaState3["PROCESSED"] = "processed";
+      MediaState3["DUBBING"] = "dubbing";
+      MediaState3["FAILED"] = "failed";
+      MediaState3["COMPLETE"] = "complete";
+      MediaState3["LIVE_TRANSCRIPT"] = "liveTranscript";
+    })(MediaState || (MediaState = {}));
+    (function(MediaPrivacyMode2) {
+      MediaPrivacyMode2["PUBLIC"] = "public";
+      MediaPrivacyMode2["PRIVATE"] = "private";
+    })(MediaPrivacyMode || (MediaPrivacyMode = {}));
+    (function(MediaInsightType2) {
+      MediaInsightType2["Arts"] = "arts";
+      MediaInsightType2["Brands"] = "brands";
+      MediaInsightType2["Cardinals"] = "cardinals";
+      MediaInsightType2["Dates"] = "dates";
+      MediaInsightType2["Events"] = "events";
+      MediaInsightType2["Geopolitical"] = "geopolitical";
+      MediaInsightType2["Keywords"] = "keywords";
+      MediaInsightType2["Languages"] = "languages";
+      MediaInsightType2["Laws"] = "laws";
+      MediaInsightType2["Locations"] = "locations";
+      MediaInsightType2["Money"] = "money";
+      MediaInsightType2["Nationalities"] = "nationalities";
+      MediaInsightType2["Ordinals"] = "ordinals";
+      MediaInsightType2["People"] = "people";
+      MediaInsightType2["Percentages"] = "percentages";
+      MediaInsightType2["Products"] = "products";
+      MediaInsightType2["Quantities"] = "quantities";
+      MediaInsightType2["Times"] = "times";
+      MediaInsightType2["Topics"] = "topics";
+      MediaInsightType2["Transcript"] = "transcript";
+      MediaInsightType2["Addresses"] = "addresses";
+    })(MediaInsightType || (MediaInsightType = {}));
+    (function(MediaInsightStatus2) {
+      MediaInsightStatus2["PENDING"] = "pending";
+      MediaInsightStatus2["PROCESSING"] = "processing";
+      MediaInsightStatus2["COMPLETED"] = "completed";
+      MediaInsightStatus2["FAILED"] = "failed";
+      MediaInsightStatus2["KILLED"] = "killed";
+    })(MediaInsightStatus || (MediaInsightStatus = {}));
+    (function(MediaProcessType2) {
+      MediaProcessType2["TRANSCRIPTION"] = "transcription";
+      MediaProcessType2["DUBBING"] = "dubbing";
+      MediaProcessType2["TRANSLATION"] = "translation";
+    })(MediaProcessType || (MediaProcessType = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/meeting.js
+var MeetingPlatform, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource;
+var init_meeting = __esm({
+  "node_modules/@speakai/shared/dist/enums/meeting.js"() {
+    "use strict";
+    (function(MeetingPlatform2) {
+      MeetingPlatform2["GOOGLE_MEET"] = "googleMeet";
+      MeetingPlatform2["ZOOM"] = "zoom";
+      MeetingPlatform2["MICROSOFT_TEAMS"] = "microsoftTeams";
+      MeetingPlatform2["WEBEX"] = "webex";
+    })(MeetingPlatform || (MeetingPlatform = {}));
+    (function(MeetingStatus2) {
+      MeetingStatus2["WILL_JOIN"] = "willJoin";
+      MeetingStatus2["SCHEDULED"] = "scheduled";
+      MeetingStatus2["READY"] = "ready";
+      MeetingStatus2["JOINING_CALL"] = "joiningCall";
+      MeetingStatus2["IN_WAITING_ROOM"] = "inWaitingRoom";
+      MeetingStatus2["IN_CALL_NOT_RECORDING"] = "inCallNotRecording";
+      MeetingStatus2["RECORDING_PERMISSION_DENIED"] = "recordingPermissionDenied";
+      MeetingStatus2["IN_CALL_RECORDING"] = "inCallRecording";
+      MeetingStatus2["CALL_ENDED"] = "callEnded";
+      MeetingStatus2["DONE"] = "done";
+      MeetingStatus2["FATAL"] = "fatal";
+      MeetingStatus2["ANALYSIS_DONE"] = "analysisDone";
+      MeetingStatus2["PAUSED"] = "paused";
+      MeetingStatus2["RESUMED"] = "resumed";
+      MeetingStatus2["CANCELLED"] = "cancelled";
+      MeetingStatus2["NOT_INVITED"] = "notInvited";
+    })(MeetingStatus || (MeetingStatus = {}));
+    (function(MeetingRecordingMode2) {
+      MeetingRecordingMode2["SPEAKER_VIEW"] = "speakerView";
+      MeetingRecordingMode2["GALLERY_VIEW"] = "galleryView";
+      MeetingRecordingMode2["GALLERY_VIEW_V2"] = "galleryViewV2";
+      MeetingRecordingMode2["AUDIO_ONLY"] = "audioOnly";
+    })(MeetingRecordingMode || (MeetingRecordingMode = {}));
+    (function(ScreenShareRecordingMode2) {
+      ScreenShareRecordingMode2["HIDE"] = "hide";
+      ScreenShareRecordingMode2["BESIDE"] = "beside";
+      ScreenShareRecordingMode2["OVERLAP"] = "overlap";
+    })(ScreenShareRecordingMode || (ScreenShareRecordingMode = {}));
+    (function(MeetingSummarySettings2) {
+      MeetingSummarySettings2["SELF"] = "self";
+      MeetingSummarySettings2["ALL_ATTENDEES"] = "allAttendees";
+      MeetingSummarySettings2["NONE"] = "none";
+    })(MeetingSummarySettings || (MeetingSummarySettings = {}));
+    (function(MediaPlayerSettings2) {
+      MediaPlayerSettings2["ALL_ATTENDEES"] = "allAttendees";
+      MediaPlayerSettings2["TEAM_MEMBERS"] = "teamMembers";
+      MediaPlayerSettings2["FOLDER_TEAM_MEMBERS"] = "folderTeamMembers";
+      MediaPlayerSettings2["SELF"] = "self";
+      MediaPlayerSettings2["NONE"] = "none";
+    })(MediaPlayerSettings || (MediaPlayerSettings = {}));
+    (function(MeetingFilterEventCondition2) {
+      MeetingFilterEventCondition2["CONTAINS"] = "contains";
+      MeetingFilterEventCondition2["EQUALS"] = "equals";
+    })(MeetingFilterEventCondition || (MeetingFilterEventCondition = {}));
+    (function(MeetingAttendeeType2) {
+      MeetingAttendeeType2["HOST"] = "host";
+      MeetingAttendeeType2["ASSISTANT"] = "assistant";
+      MeetingAttendeeType2["SELF"] = "self";
+      MeetingAttendeeType2["GUEST"] = "guest";
+    })(MeetingAttendeeType || (MeetingAttendeeType = {}));
+    (function(MeetingAssistantEventSource2) {
+      MeetingAssistantEventSource2["INSTANT"] = "instant";
+      MeetingAssistantEventSource2["ASSISTANT"] = "assistant";
+    })(MeetingAssistantEventSource || (MeetingAssistantEventSource = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/notification.js
+var NotificationType, NotificationAction;
+var init_notification = __esm({
+  "node_modules/@speakai/shared/dist/enums/notification.js"() {
+    "use strict";
+    (function(NotificationType2) {
+      NotificationType2["CLIP"] = "clip";
+      NotificationType2["AUDIO"] = "audio";
+      NotificationType2["ACCOUNT"] = "account";
+      NotificationType2["AUTOMATION"] = "automation";
+      NotificationType2["EMBED"] = "embed";
+      NotificationType2["INTEGRATION"] = "integration";
+      NotificationType2["MAGIC_PROMPT"] = "magic prompt";
+      NotificationType2["MEDIA"] = "media";
+      NotificationType2["PAYMENT"] = "payment";
+      NotificationType2["PRESENTATION"] = "presentation";
+      NotificationType2["RECORDER"] = "recorder";
+      NotificationType2["SURVEY"] = "survey";
+      NotificationType2["SUBSCRIPTION"] = "subscription";
+      NotificationType2["TEAM"] = "team";
+      NotificationType2["TEXT"] = "text";
+      NotificationType2["TRANSCRIPTION"] = "transcription";
+      NotificationType2["TRANSLATE"] = "translate";
+      NotificationType2["VIDEO"] = "video";
+      NotificationType2["ZAPIER"] = "zapier";
+      NotificationType2["MEETING_ASSISTANT"] = "meeting assistant";
+      NotificationType2["GOOGLE_CALENDAR"] = "google calendar";
+      NotificationType2["OUTLOOK_CALENDAR"] = "outlook calendar";
+      NotificationType2["AUTO_RELOAD"] = "auto reload";
+      NotificationType2["FOLDER"] = "folder";
+      NotificationType2["FIELDS"] = "fields";
+      NotificationType2["ASSISTANT_TEMPLATE"] = "assistant template";
+    })(NotificationType || (NotificationType = {}));
+    (function(NotificationAction2) {
+      NotificationAction2["ANALYZED"] = "analyzed";
+      NotificationAction2["CREATED"] = "created";
+      NotificationAction2["CREDIT"] = "credit";
+      NotificationAction2["DEBIT"] = "debit";
+      NotificationAction2["DELETED"] = "deleted";
+      NotificationAction2["EXPORT"] = "export";
+      NotificationAction2["PAID"] = "paid";
+      NotificationAction2["UPDATED"] = "updated";
+      NotificationAction2["UPLOADED"] = "uploaded";
+      NotificationAction2["ERROR"] = "error";
+      NotificationAction2["FAILED"] = "failed";
+      NotificationAction2["CLONED"] = "cloned";
+    })(NotificationAction || (NotificationAction = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/prompt.js
+var PromptState, MessageRole, PromptSource, ToolName, FileType;
+var init_prompt = __esm({
+  "node_modules/@speakai/shared/dist/enums/prompt.js"() {
+    "use strict";
+    (function(PromptState2) {
+      PromptState2["INITIATED"] = "initiated";
+      PromptState2["PREPARING"] = "preparing";
+      PromptState2["PROCESSING"] = "processing";
+      PromptState2["FAILED"] = "failed";
+      PromptState2["PENDING_PAYMENT"] = "pendingPayment";
+      PromptState2["COMPLETED"] = "completed";
+      PromptState2["CANCELLED"] = "cancelled";
+      PromptState2["EXPIRED"] = "expired";
+      PromptState2["IN_PROGRESS"] = "inProgress";
+      PromptState2["STREAMING"] = "streaming";
+    })(PromptState || (PromptState = {}));
+    (function(MessageRole2) {
+      MessageRole2["SYSTEM"] = "system";
+      MessageRole2["USER"] = "user";
+      MessageRole2["ASSISTANT"] = "assistant";
+    })(MessageRole || (MessageRole = {}));
+    (function(PromptSource2) {
+      PromptSource2["FOLDER"] = "folder";
+      PromptSource2["MEDIA_FILES"] = "mediaFiles";
+      PromptSource2["CSV_FILE"] = "csvFile";
+      PromptSource2["KNOWLEDGE_BASE"] = "knowledgeBase";
+      PromptSource2["EXPLORE_ANALYTICS"] = "exploreAnalytics";
+    })(PromptSource || (PromptSource = {}));
+    (function(ToolName2) {
+      ToolName2["OPEN_SUPPORT"] = "open_support";
+      ToolName2["CREATE_CLIP"] = "create_clip";
+      ToolName2["UPDATE_SPEAKERS"] = "update_speakers";
+      ToolName2["UPDATE_TRANSCRIPTION"] = "update_transcription";
+      ToolName2["SEARCH_MEDIA"] = "search_media";
+      ToolName2["GENERATE_CHART"] = "generate_chart";
+      ToolName2["EXPORT_TRANSCRIPTION"] = "export_transcription";
+      ToolName2["COMPARE_MEDIA"] = "compare_media";
+    })(ToolName || (ToolName = {}));
+    (function(FileType2) {
+      FileType2["IMAGE"] = "image";
+      FileType2["CSV"] = "csv";
+      FileType2["PDF"] = "pdf";
+      FileType2["DOCX"] = "docx";
+      FileType2["TXT"] = "txt";
+      FileType2["ZIP"] = "zip";
+    })(FileType || (FileType = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/recorder.js
+var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating;
+var init_recorder = __esm({
+  "node_modules/@speakai/shared/dist/enums/recorder.js"() {
+    "use strict";
+    (function(RecorderAnswerType2) {
+      RecorderAnswerType2["Single"] = "single";
+      RecorderAnswerType2["Multiple"] = "multiple";
+      RecorderAnswerType2["Checkbox"] = "checkbox";
+      RecorderAnswerType2["Radiobutton"] = "radiobutton";
+      RecorderAnswerType2["Dropdownlist"] = "dropdownlist";
+      RecorderAnswerType2["Date"] = "date";
+      RecorderAnswerType2["Time"] = "time";
+      RecorderAnswerType2["Datetime"] = "datetime";
+    })(RecorderAnswerType || (RecorderAnswerType = {}));
+    (function(RecorderUploadType2) {
+      RecorderUploadType2["RECORD"] = "record";
+      RecorderUploadType2["FILE"] = "file";
+      RecorderUploadType2["YOUTUBE"] = "youtube";
+      RecorderUploadType2["LIVE_RECORD"] = "live-record";
+    })(RecorderUploadType || (RecorderUploadType = {}));
+    (function(RecordingFeedbackRating2) {
+      RecordingFeedbackRating2["POSITIVE"] = "positive";
+      RecordingFeedbackRating2["NEGATIVE"] = "negative";
+    })(RecordingFeedbackRating || (RecordingFeedbackRating = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/subscription.js
+var SubscriptionStatus, SubscriptionDuration;
+var init_subscription = __esm({
+  "node_modules/@speakai/shared/dist/enums/subscription.js"() {
+    "use strict";
+    (function(SubscriptionStatus2) {
+      SubscriptionStatus2["Active"] = "active";
+      SubscriptionStatus2["Paused"] = "paused";
+      SubscriptionStatus2["PendingReview"] = "pendingReview";
+      SubscriptionStatus2["PendingCancellation"] = "pendingCancellation";
+      SubscriptionStatus2["Cancelled"] = "cancelled";
+      SubscriptionStatus2["PendingPayment"] = "pendingPayment";
+    })(SubscriptionStatus || (SubscriptionStatus = {}));
+    (function(SubscriptionDuration2) {
+      SubscriptionDuration2["Monthly"] = "monthly";
+      SubscriptionDuration2["2Months"] = "2months";
+      SubscriptionDuration2["3Months"] = "3months";
+      SubscriptionDuration2["6Months"] = "6months";
+      SubscriptionDuration2["9Months"] = "9months";
+      SubscriptionDuration2["Yearly"] = "yearly";
+    })(SubscriptionDuration || (SubscriptionDuration = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/team.js
+var TeamInviteStatus;
+var init_team = __esm({
+  "node_modules/@speakai/shared/dist/enums/team.js"() {
+    "use strict";
+    (function(TeamInviteStatus2) {
+      TeamInviteStatus2["ACTIVE"] = "active";
+      TeamInviteStatus2["EXPIRED"] = "expired";
+      TeamInviteStatus2["REVOKED"] = "revoked";
+      TeamInviteStatus2["EXHAUSTED"] = "exhausted";
+    })(TeamInviteStatus || (TeamInviteStatus = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/transcription.js
+var TranscriptionEngine, TranscriptionJobState, TranscriptionJobRevisionState;
+var init_transcription = __esm({
+  "node_modules/@speakai/shared/dist/enums/transcription.js"() {
+    "use strict";
+    (function(TranscriptionEngine2) {
+      TranscriptionEngine2["AZURE"] = "azure";
+      TranscriptionEngine2["ASSEMBLY"] = "assembly";
+      TranscriptionEngine2["DEEPGRAM"] = "deepgram";
+      TranscriptionEngine2["AWS"] = "aws";
+    })(TranscriptionEngine || (TranscriptionEngine = {}));
+    (function(TranscriptionJobState2) {
+      TranscriptionJobState2["Initiate"] = "initiate";
+      TranscriptionJobState2["PendingPayment"] = "pendingPayment";
+      TranscriptionJobState2["InQueue"] = "inQueue";
+      TranscriptionJobState2["PendingEdition"] = "pendingEdition";
+      TranscriptionJobState2["PendingQAReview"] = "pendingQAReview";
+      TranscriptionJobState2["PendingUserReview"] = "pendingUserReview";
+      TranscriptionJobState2["Complete"] = "complete";
+      TranscriptionJobState2["Failed"] = "failed";
+    })(TranscriptionJobState || (TranscriptionJobState = {}));
+    (function(TranscriptionJobRevisionState2) {
+      TranscriptionJobRevisionState2["Approved"] = "approved";
+      TranscriptionJobRevisionState2["BeingEdited"] = "beingEdited";
+      TranscriptionJobRevisionState2["BeingQAReviewed"] = "beingQAReviewed";
+      TranscriptionJobRevisionState2["PendingQAReview"] = "pendingQAReview";
+      TranscriptionJobRevisionState2["PendingUserReview"] = "pendingUserReview";
+      TranscriptionJobRevisionState2["Rejected"] = "rejected";
+    })(TranscriptionJobRevisionState || (TranscriptionJobRevisionState = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/transaction.js
+var TransactionSource, TransactionType, TransactionStatus;
+var init_transaction = __esm({
+  "node_modules/@speakai/shared/dist/enums/transaction.js"() {
+    "use strict";
+    (function(TransactionSource2) {
+      TransactionSource2["STRIPE"] = "stripe";
+      TransactionSource2["PADDLE"] = "paddle";
+      TransactionSource2["REVENUECAT_IOS"] = "ios";
+      TransactionSource2["REVENUECAT_ANDROID"] = "android";
+      TransactionSource2["REVENUECAT_STRIPE"] = "revenuecat_stripe";
+      TransactionSource2["BALANCE"] = "balance";
+      TransactionSource2["MANUAL"] = "manual";
+    })(TransactionSource || (TransactionSource = {}));
+    (function(TransactionType2) {
+      TransactionType2["SUBSCRIPTION"] = "subscription";
+      TransactionType2["ONE_TIME"] = "one_time";
+      TransactionType2["USAGE"] = "usage";
+      TransactionType2["REFUND"] = "refund";
+      TransactionType2["BALANCE_ADD"] = "balance_add";
+      TransactionType2["AUTO_RELOAD"] = "auto_reload";
+    })(TransactionType || (TransactionType = {}));
+    (function(TransactionStatus2) {
+      TransactionStatus2["PENDING"] = "pending";
+      TransactionStatus2["PROCESSING"] = "processing";
+      TransactionStatus2["SUCCEEDED"] = "succeeded";
+      TransactionStatus2["FAILED"] = "failed";
+      TransactionStatus2["REFUNDED"] = "refunded";
+      TransactionStatus2["CANCELLED"] = "cancelled";
+    })(TransactionStatus || (TransactionStatus = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/translation.js
+var TranslationState, DubbingState;
+var init_translation = __esm({
+  "node_modules/@speakai/shared/dist/enums/translation.js"() {
+    "use strict";
+    (function(TranslationState2) {
+      TranslationState2["NOTFOUND"] = "notFound";
+      TranslationState2["INITIATE"] = "initiate";
+      TranslationState2["PENDING_TRANSCRIPTION"] = "pendingTranscription";
+      TranslationState2["PENDING_PAYMENT"] = "pendingPayment";
+      TranslationState2["PROCESSING"] = "processing";
+      TranslationState2["DUBBING"] = "dubbing";
+      TranslationState2["COMPLETE"] = "complete";
+      TranslationState2["FAILED"] = "failed";
+    })(TranslationState || (TranslationState = {}));
+    (function(DubbingState2) {
+      DubbingState2["DUBBING"] = "dubbing";
+      DubbingState2["UPLOADING"] = "uploading";
+      DubbingState2["COMPLETE"] = "complete";
+      DubbingState2["FAILED"] = "failed";
+    })(DubbingState || (DubbingState = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/user.js
+var UserRole, UserPermissionType, UserActionType;
+var init_user = __esm({
+  "node_modules/@speakai/shared/dist/enums/user.js"() {
+    "use strict";
+    (function(UserRole2) {
+      UserRole2["ADMIN"] = "admin";
+      UserRole2["OWNER"] = "owner";
+      UserRole2["MEMBER"] = "member";
+    })(UserRole || (UserRole = {}));
+    (function(UserPermissionType2) {
+      UserPermissionType2["FOLDER"] = "folder";
+      UserPermissionType2["RECORDER"] = "recorder";
+      UserPermissionType2["MEDIA"] = "media";
+      UserPermissionType2["PAYMENT"] = "payment";
+      UserPermissionType2["TEAM_MANAGEMENT"] = "teamManagement";
+      UserPermissionType2["DEVELOPER"] = "developer";
+      UserPermissionType2["PROFILE_SETTINGS"] = "profileSettings";
+      UserPermissionType2["MEETING_ASSISTANT"] = "meetingAssistant";
+    })(UserPermissionType || (UserPermissionType = {}));
+    (function(UserActionType2) {
+      UserActionType2["CREATE"] = "create";
+      UserActionType2["DOWNLOAD"] = "download";
+      UserActionType2["UPDATE"] = "update";
+      UserActionType2["EDIT"] = "edit";
+      UserActionType2["DELETE"] = "delete";
+      UserActionType2["SHARE"] = "share";
+      UserActionType2["ASSIGN"] = "assign";
+      UserActionType2["MANAGE_CARDS"] = "manageCards";
+      UserActionType2["MANAGE_INVOICES"] = "manageInvoices";
+      UserActionType2["MANAGE_MEMBERS"] = "manageMembers";
+      UserActionType2["MANAGE_GROUPS"] = "manageGroups";
+      UserActionType2["ACCESS_KEYS"] = "accessKeys";
+      UserActionType2["ACCOUNT_PREFERENCES"] = "accountPreferences";
+      UserActionType2["ACCOUNT_CUSTOMIZATION"] = "accountCustomization";
+      UserActionType2["DATA_MANAGEMENT"] = "dataManagement";
+      UserActionType2["CUSTOMIZE_ASSISTANT"] = "customizeAssistant";
+      UserActionType2["SHARE_MEETINGS"] = "shareMeetings";
+      UserActionType2["ROUTE_MEETINGS"] = "routeMeetings";
+      UserActionType2["EXCLUDE_MEETINGS"] = "excludeMeetings";
+      UserActionType2["GLOBAL_SETTINGS"] = "globalSettings";
+      UserActionType2["ACCESS_ALL"] = "accessAll";
+    })(UserActionType || (UserActionType = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/webhook.js
+var WebhookEvent, WebhookEventSource;
+var init_webhook = __esm({
+  "node_modules/@speakai/shared/dist/enums/webhook.js"() {
+    "use strict";
+    (function(WebhookEvent2) {
+      WebhookEvent2["embed_recorder.created"] = "embed_recorder.created";
+      WebhookEvent2["embed_recorder.deleted"] = "embed_recorder.deleted";
+      WebhookEvent2["embed_recorder.recording_received"] = "embed_recorder.recording_received";
+      WebhookEvent2["media.analyzed"] = "media.analyzed";
+      WebhookEvent2["media.created"] = "media.created";
+      WebhookEvent2["media.deleted"] = "media.deleted";
+      WebhookEvent2["media.failed"] = "media.failed";
+      WebhookEvent2["media.reanalyzed"] = "media.reanalyzed";
+      WebhookEvent2["media.updated"] = "media.updated";
+      WebhookEvent2["text.analyzed"] = "text.analyzed";
+      WebhookEvent2["text.created"] = "text.created";
+      WebhookEvent2["text.deleted"] = "text.deleted";
+      WebhookEvent2["text.failed"] = "text.failed";
+      WebhookEvent2["text.reanalyzed"] = "text.reanalyzed";
+      WebhookEvent2["meeting_assistant.status"] = "meeting_assistant.status";
+      WebhookEvent2["chat.status"] = "chat.status";
+      WebhookEvent2["csv.uploaded"] = "csv.uploaded";
+      WebhookEvent2["csv.failed"] = "csv.failed";
+    })(WebhookEvent || (WebhookEvent = {}));
+    (function(WebhookEventSource2) {
+      WebhookEventSource2["SPEAK"] = "speak";
+      WebhookEventSource2["ZAPIER"] = "zapier";
+    })(WebhookEventSource || (WebhookEventSource = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/index.js
+var init_enums = __esm({
+  "node_modules/@speakai/shared/dist/enums/index.js"() {
+    "use strict";
+    init_activities();
+    init_auth();
+    init_automation();
+    init_calendar();
+    init_clip();
+    init_domain();
+    init_embed();
+    init_export();
+    init_fields();
+    init_filter();
+    init_media();
+    init_meeting();
+    init_notification();
+    init_prompt();
+    init_recorder();
+    init_subscription();
+    init_team();
+    init_transcription();
+    init_transaction();
+    init_translation();
+    init_user();
+    init_webhook();
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/api.js
+var init_api = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/api.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/media.js
+var init_media2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/media.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/transcript.js
+var init_transcript = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/text.js
+var init_text = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/text.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/folder.js
+var init_folder = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/recorder.js
+var init_recorder2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/embed.js
+var init_embed2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/embed.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/automation.js
+var init_automation2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/automation.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/webhook.js
+var init_webhook2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/field.js
+var init_field = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/field.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/meeting.js
+var init_meeting2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/export.js
+var init_export2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/export.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/prompt.js
+var init_prompt2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/user.js
+var init_user2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/user.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/subscription.js
+var init_subscription2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/calendar.js
+var init_calendar2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/category.js
+var init_category = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/category.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/index.js
+var init_interfaces = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/index.js"() {
+    "use strict";
+    init_api();
+    init_media2();
+    init_transcript();
+    init_text();
+    init_folder();
+    init_recorder2();
+    init_embed2();
+    init_automation2();
+    init_webhook2();
+    init_field();
+    init_meeting2();
+    init_export2();
+    init_prompt2();
+    init_user2();
+    init_subscription2();
+    init_calendar2();
+    init_category();
+  }
+});
+
+// node_modules/@speakai/shared/dist/index.js
+var init_dist = __esm({
+  "node_modules/@speakai/shared/dist/index.js"() {
+    "use strict";
+    init_enums();
+    init_interfaces();
   }
 });
 
@@ -208,7 +1104,7 @@ function register(server, client) {
     {
       name: import_zod.z.string().min(1).describe("Display name for the media file"),
       url: import_zod.z.string().describe("Publicly accessible URL of the media file (or pre-signed S3 URL)"),
-      mediaType: import_zod.z.enum([import_shared.MediaType.AUDIO, import_shared.MediaType.VIDEO]).describe('Type of media: "audio" or "video"'),
+      mediaType: import_zod.z.enum([MediaType.AUDIO, MediaType.VIDEO]).describe('Type of media: "audio" or "video"'),
       description: import_zod.z.string().optional().describe("Description of the media file"),
       sourceLanguage: import_zod.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
       tags: import_zod.z.string().optional().describe("Comma-separated tags for the media"),
@@ -241,9 +1137,9 @@ function register(server, client) {
     "list_media",
     "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_magic_prompt. For deep full-text search across transcripts, use search_media instead.",
     {
-      mediaType: import_zod.z.enum([import_shared.MediaType.AUDIO, import_shared.MediaType.VIDEO, import_shared.MediaType.TEXT]).optional().describe('Filter by media type: "audio", "video", or "text"'),
-      page: import_zod.z.number().int().positive().optional().describe("Page number for pagination (default: 1)"),
-      pageSize: import_zod.z.number().int().positive().optional().describe("Number of results per page (default: 20)"),
+      mediaType: import_zod.z.enum([MediaType.AUDIO, MediaType.VIDEO, MediaType.TEXT]).optional().describe('Filter by media type: "audio", "video", or "text"'),
+      page: import_zod.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
+      pageSize: import_zod.z.number().int().min(1).max(500).optional().describe("Number of results per page (default: 20, max: 500)"),
       sortBy: import_zod.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc" or "name:asc"'),
       filterMedia: import_zod.z.number().int().optional().describe("Filter: 0=Uploaded, 1=Assigned, 2=Both (default: 2)"),
       filterName: import_zod.z.string().optional().describe("Filter media by partial name match"),
@@ -328,7 +1224,7 @@ function register(server, client) {
       try {
         const result = await api.put(
           `/v1/media/speakers/${mediaId}`,
-          speakers
+          { speakers }
         );
         return {
           content: [
@@ -508,7 +1404,7 @@ function register(server, client) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await api.get(`/v1/media/reanalyze/${mediaId}`);
+        const result = await api.post(`/v1/media/reanalyze/${mediaId}`, {});
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -523,13 +1419,13 @@ function register(server, client) {
     }
   );
 }
-var import_zod, import_shared;
-var init_media = __esm({
+var import_zod;
+var init_media3 = __esm({
   "src/tools/media.ts"() {
     "use strict";
     import_zod = require("zod");
     init_client();
-    import_shared = require("@speakai/shared");
+    init_dist();
   }
 });
 
@@ -649,7 +1545,7 @@ function register2(server, client) {
   );
 }
 var import_zod2;
-var init_text = __esm({
+var init_text2 = __esm({
   "src/tools/text.ts"() {
     "use strict";
     import_zod2 = require("zod");
@@ -870,8 +1766,8 @@ function register4(server, client) {
     "list_folders",
     "List all folders in the workspace with pagination and sorting.",
     {
-      page: import_zod4.z.number().int().optional().describe("Page number (0-based)"),
-      pageSize: import_zod4.z.number().int().optional().describe("Results per page"),
+      page: import_zod4.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
+      pageSize: import_zod4.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
       sortBy: import_zod4.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc"')
     },
     async (params) => {
@@ -1065,8 +1961,8 @@ function register5(server, client) {
     "list_recorders",
     "List all recorders/surveys in the workspace.",
     {
-      page: import_zod5.z.number().int().optional().describe("Page number (0-based)"),
-      pageSize: import_zod5.z.number().int().optional().describe("Results per page"),
+      page: import_zod5.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
+      pageSize: import_zod5.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
       sortBy: import_zod5.z.string().optional().describe('Sort field, e.g. "createdAt:desc"')
     },
     async (params) => {
@@ -1227,7 +2123,7 @@ function register5(server, client) {
   );
 }
 var import_zod5;
-var init_recorder = __esm({
+var init_recorder3 = __esm({
   "src/tools/recorder.ts"() {
     "use strict";
     import_zod5 = require("zod");
@@ -1328,7 +2224,7 @@ function register6(server, client) {
   );
 }
 var import_zod6;
-var init_embed = __esm({
+var init_embed3 = __esm({
   "src/tools/embed.ts"() {
     "use strict";
     import_zod6 = require("zod");
@@ -1358,7 +2254,7 @@ function register7(server, client) {
       mediaIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Array of media IDs to query. Omit along with folderIds to search across all media in your workspace."),
       folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Array of folder IDs to scope the query to. Omit along with mediaIds to search across all media."),
       folderId: import_zod7.z.string().optional().describe("Single folder ID to scope the query to. Use folderIds for multiple folders."),
-      assistantType: import_zod7.z.enum(Object.values(import_shared2.AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
+      assistantType: import_zod7.z.enum(Object.values(AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
       assistantTemplateId: import_zod7.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
       promptId: import_zod7.z.string().optional().describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
       speakers: import_zod7.z.array(import_zod7.z.string()).optional().describe("Filter to specific speaker IDs from the transcript"),
@@ -1432,8 +2328,8 @@ function register7(server, client) {
       folderId: import_zod7.z.string().optional().describe("Filter messages by folder ID"),
       mediaIds: import_zod7.z.string().optional().describe("Filter by media IDs (comma-separated)"),
       query: import_zod7.z.string().optional().describe("Search text in prompts and answers"),
-      page: import_zod7.z.number().int().optional().describe("Page number for pagination (default: 0)"),
-      pageSize: import_zod7.z.number().int().optional().describe("Results per page (default: 25)")
+      page: import_zod7.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
+      pageSize: import_zod7.z.number().int().min(1).max(500).optional().describe("Results per page (default: 25, max: 500)")
     },
     async (params) => {
       try {
@@ -1613,13 +2509,13 @@ function register7(server, client) {
     }
   );
 }
-var import_zod7, import_shared2;
-var init_prompt = __esm({
+var import_zod7;
+var init_prompt3 = __esm({
   "src/tools/prompt.ts"() {
     "use strict";
     import_zod7 = require("zod");
     init_client();
-    import_shared2 = require("@speakai/shared");
+    init_dist();
   }
 });
 
@@ -1636,8 +2532,8 @@ function register8(server, client) {
     {
       platformType: import_zod8.z.string().optional().describe("Filter by platform (e.g. zoom, teams, meet)"),
       meetingStatus: import_zod8.z.string().optional().describe("Filter by status (e.g. scheduled, completed, cancelled)"),
-      page: import_zod8.z.number().int().optional().describe("Page number (0-based)"),
-      pageSize: import_zod8.z.number().int().optional().describe("Results per page")
+      page: import_zod8.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
+      pageSize: import_zod8.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)")
     },
     async (params) => {
       try {
@@ -1729,7 +2625,7 @@ function register8(server, client) {
   );
 }
 var import_zod8;
-var init_meeting = __esm({
+var init_meeting3 = __esm({
   "src/tools/meeting.ts"() {
     "use strict";
     import_zod8 = require("zod");
@@ -1829,7 +2725,7 @@ function register9(server, client) {
   );
 }
 var import_zod9;
-var init_fields = __esm({
+var init_fields2 = __esm({
   "src/tools/fields.ts"() {
     "use strict";
     import_zod9 = require("zod");
@@ -2086,10 +2982,10 @@ function register12(server, client) {
       endDate: import_zod12.z.string().optional().describe("End date for search range (ISO 8601). Defaults to now."),
       filterList: import_zod12.z.array(
         import_zod12.z.object({
-          fieldName: import_zod12.z.enum(Object.values(import_shared3.FilterFieldName)).describe("Field to filter on"),
-          fieldOperator: import_zod12.z.enum(Object.values(import_shared3.FilterOperator)).describe("Filter operator"),
+          fieldName: import_zod12.z.enum(Object.values(FilterFieldName)).describe("Field to filter on"),
+          fieldOperator: import_zod12.z.enum(Object.values(FilterOperator)).describe("Filter operator"),
           fieldValue: import_zod12.z.array(import_zod12.z.string()).describe("Values to filter by"),
-          fieldCondition: import_zod12.z.enum(Object.values(import_shared3.FilterCondition)).describe("Condition linking multiple filters")
+          fieldCondition: import_zod12.z.enum(Object.values(FilterCondition)).describe("Condition linking multiple filters")
         })
       ).optional().describe("Advanced filters for narrowing search results by tags, speakers, media type, sentiment, folder, etc.")
     },
@@ -2108,13 +3004,13 @@ function register12(server, client) {
     }
   );
 }
-var import_zod12, import_shared3;
+var import_zod12;
 var init_analytics = __esm({
   "src/tools/analytics.ts"() {
     "use strict";
     import_zod12 = require("zod");
     init_client();
-    import_shared3 = require("@speakai/shared");
+    init_dist();
   }
 });
 
@@ -2129,18 +3025,18 @@ function register13(server, client) {
     "create_clip",
     [
       "Create a highlight clip from one or more media files by specifying time ranges.",
-      `Clips are processed asynchronously (states: ${Object.values(import_shared4.ClipState).join(", ")}) \u2014 use get_clips to check status.`,
+      `Clips are processed asynchronously (states: ${Object.values(ClipState).join(", ")}) \u2014 use get_clips to check status.`,
       "Maximum total clip duration is 30 minutes.",
       "Use multiple timeRanges to stitch segments from different media files together."
     ].join(" "),
     {
       title: import_zod13.z.string().min(1).describe("Title for the clip"),
-      mediaType: import_zod13.z.enum([import_shared4.MediaType.AUDIO, import_shared4.MediaType.VIDEO]).describe("Output media type"),
+      mediaType: import_zod13.z.enum([MediaType.AUDIO, MediaType.VIDEO]).describe("Output media type"),
       timeRanges: import_zod13.z.array(
         import_zod13.z.object({
           mediaId: import_zod13.z.string().min(1).describe("Source media file ID"),
           startTime: import_zod13.z.number().min(0).describe("Start time in seconds"),
-          endTime: import_zod13.z.number().describe("End time in seconds (must be > startTime)")
+          endTime: import_zod13.z.number().min(0).describe("End time in seconds (must be > startTime)")
         })
       ).min(1).describe("Array of time ranges to include in the clip. Each specifies a source media and start/end times."),
       description: import_zod13.z.string().optional().describe("Description of the clip"),
@@ -2228,13 +3124,13 @@ function register13(server, client) {
     }
   );
 }
-var import_zod13, import_shared4;
+var import_zod13;
 var init_clips = __esm({
   "src/tools/clips.ts"() {
     "use strict";
     import_zod13 = require("zod");
     init_client();
-    import_shared4 = require("@speakai/shared");
+    init_dist();
   }
 });
 
@@ -2290,7 +3186,7 @@ function register14(server, client) {
     {
       url: import_zod14.z.string().describe("Publicly accessible URL of the media file"),
       name: import_zod14.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
-      mediaType: import_zod14.z.enum([import_shared5.MediaType.AUDIO, import_shared5.MediaType.VIDEO]).optional().describe("Media type (default: audio)"),
+      mediaType: import_zod14.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (default: audio)"),
       sourceLanguage: import_zod14.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: import_zod14.z.string().optional().describe("Folder ID to place the media in"),
       tags: import_zod14.z.string().optional().describe("Comma-separated tags")
@@ -2316,19 +3212,19 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
         }
         let state = uploadRes.data?.data?.state;
         let attempts = 0;
-        while (state !== import_shared5.MediaState.PROCESSED && state !== import_shared5.MediaState.FAILED && attempts < MAX_POLL_ATTEMPTS) {
+        while (state !== MediaState.PROCESSED && state !== MediaState.FAILED && attempts < MAX_POLL_ATTEMPTS) {
           await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
           const statusRes = await api.get(`/v1/media/status/${mediaId}`);
           state = statusRes.data?.data?.state;
           attempts++;
         }
-        if (state === import_shared5.MediaState.FAILED) {
+        if (state === MediaState.FAILED) {
           return {
             content: [{ type: "text", text: `Error: Processing failed for media ${mediaId}` }],
             isError: true
           };
         }
-        if (state !== import_shared5.MediaState.PROCESSED) {
+        if (state !== MediaState.PROCESSED) {
           return {
             content: [{ type: "text", text: `Timeout: Media ${mediaId} is still processing (state: ${state}). Use get_media_status to check later.` }],
             isError: true
@@ -2366,7 +3262,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     {
       filePath: import_zod14.z.string().describe("Absolute path to the local audio or video file"),
       name: import_zod14.z.string().optional().describe("Display name (defaults to filename)"),
-      mediaType: import_zod14.z.enum([import_shared5.MediaType.AUDIO, import_shared5.MediaType.VIDEO]).optional().describe("Media type (auto-detected from extension if omitted)"),
+      mediaType: import_zod14.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (auto-detected from extension if omitted)"),
       sourceLanguage: import_zod14.z.string().optional().describe("BCP-47 language code (e.g., 'en-US')"),
       folderId: import_zod14.z.string().optional().describe("Folder ID to place the media in"),
       tags: import_zod14.z.string().optional().describe("Comma-separated tags")
@@ -2443,13 +3339,13 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
     }
   );
 }
-var import_zod14, import_shared5, fs, path2, POLL_INTERVAL_MS, MAX_POLL_ATTEMPTS;
+var import_zod14, fs, path2, POLL_INTERVAL_MS, MAX_POLL_ATTEMPTS;
 var init_workflows = __esm({
   "src/tools/workflows.ts"() {
     "use strict";
     import_zod14 = require("zod");
     init_client();
-    import_shared5 = require("@speakai/shared");
+    init_dist();
     fs = __toESM(require("fs"));
     path2 = __toESM(require("path"));
     init_media_utils();
@@ -2472,15 +3368,15 @@ var modules;
 var init_tools = __esm({
   "src/tools/index.ts"() {
     "use strict";
-    init_media();
-    init_text();
+    init_media3();
+    init_text2();
     init_exports();
     init_folders();
-    init_recorder();
-    init_embed();
-    init_prompt();
-    init_meeting();
-    init_fields();
+    init_recorder3();
+    init_embed3();
+    init_prompt3();
+    init_meeting3();
+    init_fields2();
     init_automations();
     init_webhooks();
     init_analytics();

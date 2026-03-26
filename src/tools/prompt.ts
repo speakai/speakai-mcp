@@ -156,13 +156,16 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       page: z
         .number()
         .int()
+        .min(0)
         .optional()
-        .describe("Page number for pagination (default: 0)"),
+        .describe("Page number for pagination (0-based, default: 0)"),
       pageSize: z
         .number()
         .int()
+        .min(1)
+        .max(500)
         .optional()
-        .describe("Results per page (default: 25)"),
+        .describe("Results per page (default: 25, max: 500)"),
     },
     async (params) => {
       try {

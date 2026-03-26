@@ -42,10 +42,10 @@ async function authenticate(): Promise<void> {
       tokenExpiresAt = Date.now() + 50 * 60 * 1000;
       process.stderr.write("[speakai-mcp] Authenticated successfully\n");
     }
-  } catch (err) {
-    process.stderr.write(
-      `[speakai-mcp] Authentication failed: ${err instanceof Error ? err.message : err}\n`
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    process.stderr.write(`[speakai-mcp] Authentication failed: ${message}\n`);
+    throw new Error(`Authentication failed: ${message}`);
   }
 }
 
@@ -119,6 +119,9 @@ speakClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
     const retryCount = originalRequest._retryCount ?? 0;
 
     if (error.response?.status === 401 && retryCount < 2) {

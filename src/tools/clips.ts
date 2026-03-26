@@ -23,7 +23,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           z.object({
             mediaId: z.string().min(1).describe("Source media file ID"),
             startTime: z.number().min(0).describe("Start time in seconds"),
-            endTime: z.number().describe("End time in seconds (must be > startTime)"),
+            endTime: z.number().min(0).describe("End time in seconds (must be > startTime)"),
           })
         )
         .min(1)
