@@ -1,15 +1,23 @@
-name: Publish Package
+name: Release
 
 on:
   push:
     branches: [main]
 
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  models: read
+
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -22,26 +30,126 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests with coverage gate
+        run: npm run test:coverage
 
-      - name: Check if version already published
-        id: check
+      - name: Get commits since last release
+        id: commits
         run: |
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version 2>/dev/null; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Version ${PACKAGE_VERSION} already published, skipping."
+          # Find the last version tag (v* format), or use all history
+          LAST_TAG=$(git tag -l 'v*' --sort=-v:refname | head -1)
+          if [ -z "$LAST_TAG" ]; then
+            COMMIT_LOG=$(git log --oneline --no-decorate -50)
           else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Version ${PACKAGE_VERSION} not found, will publish."
+            COMMIT_LOG=$(git log "${LAST_TAG}..HEAD" --oneline --no-decorate)
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish
-        if: steps.check.outputs.exists == 'false'
+          if [ -z "$COMMIT_LOG" ]; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No new commits since last release."
+            exit 0
+          fi
+
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          CURRENT=$(node -p "require('./package.json').version")
+          echo "current_version=$CURRENT" >> "$GITHUB_OUTPUT"
+
+          # Use heredoc for multiline output
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "log<<$EOF" >> "$GITHUB_OUTPUT"
+          echo "$COMMIT_LOG" >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+          echo "Commits since last release:"
+          echo "$COMMIT_LOG"
+
+      - name: Analyze changes with AI
+        if: steps.commits.outputs.has_changes == 'true'
+        id: ai
+        uses: actions/ai-inference@v1
+        with:
+          model: openai/gpt-4o-mini
+          temperature: 0
+          max-completion-tokens: 512
+          system-prompt: |
+            You are a release manager for an npm package. Analyze git commits and determine the semver bump type and write a changelog entry.
+
+            Rules:
+            - "fix:", bug fixes, typo fixes, error handling improvements → patch
+            - "feat:", new features, new tools, new commands, new endpoints → minor
+            - "BREAKING CHANGE", removed features, changed API signatures → major
+            - "chore:", "docs:", "ci:", "test:", "refactor:" with no user-facing change → none
+            - Multiple changes: pick the highest bump level across all commits.
+            - When unsure between patch and minor, choose patch.
+
+            You MUST respond in EXACTLY this format — two lines, no markdown, no extra text:
+            bump: patch
+            changelog: Added input validation tests and coverage gating
+          prompt: |
+            Package: @speakai/mcp-server (current version: ${{ steps.commits.outputs.current_version }})
+
+            Commits since last release:
+            ${{ steps.commits.outputs.log }}
+
+      - name: Parse AI response and bump version
+        if: steps.commits.outputs.has_changes == 'true'
+        id: bump
+        env:
+          AI_RESPONSE: ${{ steps.ai.outputs.response }}
+        run: |
+          echo "AI response: $AI_RESPONSE"
+
+          BUMP=$(echo "$AI_RESPONSE" | grep -oP 'bump:\s*\K\w+' | head -1)
+          CHANGELOG=$(echo "$AI_RESPONSE" | grep -oP 'changelog:\s*\K.+' | head -1)
+
+          echo "Detected bump: $BUMP"
+          echo "Changelog: $CHANGELOG"
+
+          if [ "$BUMP" = "none" ] || [ -z "$BUMP" ]; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "No user-facing changes — skipping release."
+            exit 0
+          fi
+
+          # Validate bump is a valid semver keyword
+          if [[ "$BUMP" != "patch" && "$BUMP" != "minor" && "$BUMP" != "major" ]]; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "Invalid bump type: $BUMP — skipping release."
+            exit 0
+          fi
+
+          echo "should_release=true" >> "$GITHUB_OUTPUT"
+          echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
+
+          # Bump version in package.json (no git tag yet)
+          NEW_VERSION=$(npm version "$BUMP" --no-git-tag-version)
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Bumped to $NEW_VERSION"
+
+          # Update CHANGELOG.md
+          DATE=$(date +%Y-%m-%d)
+          if [ -f CHANGELOG.md ]; then
+            EXISTING=$(cat CHANGELOG.md)
+            printf "# Changelog\n\n## %s (%s)\n\n- %s\n%s" \
+              "$NEW_VERSION" "$DATE" "$CHANGELOG" \
+              "$(echo "$EXISTING" | tail -n +2)" > CHANGELOG.md
+          else
+            printf "# Changelog\n\n## %s (%s)\n\n- %s\n" \
+              "$NEW_VERSION" "$DATE" "$CHANGELOG" > CHANGELOG.md
+          fi
+
+      - name: Commit and tag release
+        if: steps.bump.outputs.should_release == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json CHANGELOG.md
+          git commit -m "chore: release ${{ steps.bump.outputs.new_version }} [skip ci]"
+          git tag "${{ steps.bump.outputs.new_version }}"
+          git push origin main --tags
+
+      - name: Publish to npm
+        if: steps.bump.outputs.should_release == 'true'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

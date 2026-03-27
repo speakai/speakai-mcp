@@ -13,7 +13,8 @@
     "dev": "tsx src/index.ts",
     "prepare": "npm run build",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "mcp",
@@ -41,6 +42,7 @@
   "devDependencies": {
     "@speakai/shared": "^1.5.1",
     "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^4.1.2",
     "tsup": "^8.5.1",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
