@@ -6,23 +6,26 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     labels:
       - dependencies
-    groups:
-      dev-dependencies:
-        dependency-type: development
+    # Only open PRs for security fixes and major version bumps
+    # Minor/patch updates are handled by ^ ranges in package.json automatically
+    ignore:
+      - dependency-name: "*"
         update-types:
-          - minor
-          - patch
-      production-dependencies:
-        dependency-type: production
-        update-types:
-          - patch
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     labels:
       - ci
+    # Only major action version bumps
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
