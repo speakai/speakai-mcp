@@ -4,7 +4,7 @@
   "title": "Speak AI",
   "description": "Connect AI assistants to Speak AI for transcription, AI insights, and media management",
   "version": "1.2.0",
-  "websiteUrl": "https://speakai.co/connect",
+  "websiteUrl": "https://mcp.speakai.co",
   "repository": {
     "url": "https://github.com/speakai/speakai-mcp",
     "source": "github",
@@ -22,7 +22,7 @@
       "environmentVariables": [
         {
           "name": "SPEAK_API_KEY",
-          "description": "Your Speak AI API key. Generate one at https://speakai.co/connect.",
+          "description": "Your Speak AI API key. Generate one at https://app.speakai.co/developers/apikeys.",
           "isRequired": true,
           "isSecret": true,
           "format": "string"

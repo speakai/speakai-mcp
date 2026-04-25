@@ -174,7 +174,7 @@ A: Yes. See the developer reference at the bottom of the README. The `@speakai/m
 ## Links
 
 - Repository: https://github.com/speakai/speakai-mcp
-- Installation guide: https://speakai.co/connect
+- Installation guide: https://mcp.speakai.co
 - Support: accounts@speakai.co
 - Privacy: https://speakai.co/privacy
 - Speak AI main product: https://speakai.co

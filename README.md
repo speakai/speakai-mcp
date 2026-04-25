@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://speakai.co/connect"><strong>Installation guide at speakai.co/connect →</strong></a>
+  <a href="https://mcp.speakai.co"><strong>Installation guide at mcp.speakai.co →</strong></a>
 </p>
 
 <p align="center">
@@ -848,7 +848,7 @@ npm run build  # Production build
 
 ## Resources
 
-- [speakai.co/connect](https://speakai.co/connect) — installation walkthrough with screenshots and video
+- [mcp.speakai.co](https://mcp.speakai.co) — installation walkthrough with screenshots and video
 - [Speak AI](https://speakai.co) — main product
 - [API Documentation](https://docs.speakai.co)
 - [MCP Protocol](https://modelcontextprotocol.io)
