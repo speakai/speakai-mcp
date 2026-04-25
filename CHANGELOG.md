@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.0 (2026-04-25)
+
+- Launch OAuth one-click and bearer install paths
+
 ## v1.2.0 (2026-03-29)
 
 - Added bulk speaker update tool and list_media include
