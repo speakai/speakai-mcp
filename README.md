@@ -155,7 +155,6 @@ When you click **Allow** on the permission popup (or paste your Speak AI API key
 - Your recordings stay in your Speak AI workspace. They are not copied or stored by Anthropic or OpenAI.
 - Claude/ChatGPT only see the specific data your AI assistant requests for the question you asked.
 - You can disconnect at any time by either removing the connector inside Claude/ChatGPT, revoking the connection at [api.speakai.co/v1/oauth/connections](https://api.speakai.co/v1/oauth/connections), or rotating/revoking your API key at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
-- **Important for therapists, coaches, and researchers handling sensitive content:** transcripts contain participant PII — names, voice content, sometimes clinical detail. When you grant this connector access, that content gets sent to Anthropic / OpenAI as part of the AI's reasoning. If your work is HIPAA-regulated or otherwise PII-sensitive, review your participant consent practices before installing.
 
 For questions about data handling, see [speakai.co/privacy](https://speakai.co/privacy) or email [privacy@speakai.co](mailto:privacy@speakai.co).
 
