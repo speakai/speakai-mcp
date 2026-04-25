@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect Speak AI to Claude or ChatGPT in 60 seconds</title>
+  <meta name="description" content="Install the Speak AI MCP connector for Claude.ai, Claude Desktop, Claude Code, ChatGPT, Cursor, and VS Code in 60 seconds. OAuth one-click or Bearer token — both live today." />
+  <meta property="og:title" content="Connect Speak AI to Claude or ChatGPT in 60 seconds" />
+  <meta property="og:description" content="For coaches, therapists, and qualitative researchers. No Terminal, no npm, no JSON config." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://speakai.co/connect" />
+  <link rel="alternate" type="text/plain" title="LLM-friendly summary" href="https://github.com/speakai/speakai-mcp/blob/main/llms.txt" />
+  <link rel="canonical" href="https://speakai.co/connect" />
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #0d0d0d;
+      --surface-2: #1a1a1a;
+      --border: #262626;
+      --text: #ffffff;
+      --text-dim: #b3b3b3;
+      --text-muted: #737373;
+      --radius: 12px;
+      --max-width: 1080px;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #ffffff;
+        --surface: #fafafa;
+        --surface-2: #f2f2f2;
+        --border: #e5e5e5;
+        --text: #000000;
+        --text-dim: #525252;
+        --text-muted: #8a8a8a;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "SF Pro Text", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--text); text-decoration: underline; text-decoration-color: var(--text-muted); text-underline-offset: 3px; }
+    a:hover { text-decoration-color: var(--text); }
+    code, pre {
+      font-family: "SF Mono", Menlo, Monaco, "Courier New", monospace;
+      font-size: 0.92em;
+    }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    /* ─── Header ─────────────────────────────────────────────────────────── */
+    header {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    header .container { display: flex; align-items: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 1.1rem; }
+    .logo img { height: 28px; }
+    nav { display: flex; gap: 24px; font-size: 0.95rem; }
+    nav a { color: var(--text-dim); text-decoration: none; }
+    nav a:hover { color: var(--text); }
+
+    /* ─── Hero ───────────────────────────────────────────────────────────── */
+    .hero { padding: 80px 0 60px; text-align: center; }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .hero .subtitle {
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      color: var(--text-dim);
+      max-width: 640px;
+      margin: 0 auto 36px;
+    }
+    .hero .url-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 1rem;
+      max-width: 100%;
+    }
+    .hero .url-box code {
+      color: var(--text);
+      user-select: all;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .copy-btn {
+      cursor: pointer;
+      background: var(--text);
+      border: 1px solid var(--text);
+      color: var(--bg);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .copy-btn:hover { background: var(--text-dim); border-color: var(--text-dim); }
+    .copy-btn.copied { background: var(--surface-2); color: var(--text); border-color: var(--text); }
+
+    /* ─── Install grid ────────────────────────────────────────────────────── */
+    .install-section { padding: 60px 0; }
+    .install-section h2 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .install-section .lead {
+      color: var(--text-dim);
+      margin-bottom: 36px;
+    }
+    .install-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .install-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      transition: border-color 0.15s ease;
+    }
+    .install-card:hover { border-color: var(--text); }
+    .install-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .install-card .meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px; }
+    .install-card ol {
+      margin: 0 0 16px 18px;
+      font-size: 0.92rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .install-card .install-btn {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      padding: 10px 16px;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+    .install-card .install-btn:hover { background: var(--text-dim); text-decoration: none; }
+    .install-card pre {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+    .install-card .heads-up {
+      background: var(--surface-2);
+      border-left: 3px solid var(--text);
+      padding: 10px 12px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+    }
+
+    /* ─── What you can do ────────────────────────────────────────────────── */
+    .examples-section { padding: 60px 0; }
+    .examples-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .example {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    .example .ask {
+      color: var(--text-dim);
+      font-style: italic;
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+    }
+    .example .ask::before { content: '"'; }
+    .example .ask::after { content: '"'; }
+
+    /* ─── Non-tech help ──────────────────────────────────────────────────── */
+    .help-section { padding: 60px 0; }
+    .help-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+    }
+    .help-card h2 { font-size: 1.4rem; margin-bottom: 12px; }
+    .help-card p { color: var(--text-dim); margin-bottom: 16px; }
+    .help-card .help-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .help-card .help-actions a {
+      padding: 10px 18px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+    .help-card .help-actions a:hover { border-color: var(--text); text-decoration: none; }
+
+    /* ─── Works with ─────────────────────────────────────────────────────── */
+    .compat-section { padding: 40px 0; text-align: center; border-top: 1px solid var(--border); }
+    .compat-section .lead {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+    }
+    .compat-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+      justify-content: center;
+      align-items: center;
+      color: var(--text-dim);
+    }
+    .compat-list span { font-weight: 500; opacity: 0.7; }
+
+    /* ─── FAQ ────────────────────────────────────────────────────────────── */
+    .faq-section { padding: 60px 0; }
+    details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      margin-bottom: 12px;
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 500;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::after { content: "+"; color: var(--text-muted); font-size: 1.4rem; line-height: 1; }
+    details[open] summary::after { content: "−"; }
+    details > p, details > div { margin-top: 14px; color: var(--text-dim); font-size: 0.95rem; }
+
+    /* ─── Footer ─────────────────────────────────────────────────────────── */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+    footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+    footer a { color: var(--text-dim); margin-right: 18px; }
+
+    /* ─── Toast ──────────────────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ─── EU/UK/CH heads up ───────────────────────────────────────────────── */
+    /* Hide ChatGPT install steps for EU/UK/CH visitors and surface a redirect
+       to Claude instead (OpenAI restricts custom MCP connectors there). */
+    .chatgpt-eea-warning { display: none; }
+    .chatgpt-eea-redirect { display: none; }
+    body.is-eea .chatgpt-card .chatgpt-eea-warning { display: block; }
+    body.is-eea .chatgpt-card .chatgpt-eea-redirect { display: inline-block; }
+    body.is-eea .chatgpt-card .chatgpt-default-steps { display: none; }
+    body.is-eea .chatgpt-card .chatgpt-default-btn { display: none; }
+
+    section { scroll-margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">
+        <img src="../assets/logo.png" alt="Speak AI" onerror="this.style.display='none'" />
+        <span>Speak AI for Claude &amp; ChatGPT</span>
+      </div>
+      <nav>
+        <a href="#install">Install</a>
+        <a href="#examples">What it does</a>
+        <a href="#help">Help</a>
+        <a href="https://github.com/speakai/speakai-mcp">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Connect Speak AI to Claude or ChatGPT in 60 seconds</h1>
+      <p class="subtitle">For coaches, therapists, and qualitative researchers.<br/>No Terminal, no npm, no JSON config.</p>
+      <div class="url-box">
+        <code id="mcp-url">https://api.speakai.co/v1/mcp</code>
+        <button class="copy-btn" onclick="copyUrl()">Copy URL</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="install-section" id="install">
+    <div class="container">
+      <h2>Install (pick your tool)</h2>
+      <div class="heads-up" style="margin-bottom: 18px;">
+        <strong>Two paths to install — both live.</strong> OAuth one-click for the easiest install (recommended for coaches and non-developers). Bearer token for any client that prefers manual setup.
+      </div>
+      <p class="lead">For OAuth one-click: just paste the URL from the top of this page. For the Bearer-token alternative: also generate an API key at <a href="https://app.speakai.co/developers/apikeys" target="_blank" rel="noopener">app.speakai.co/developers/apikeys</a> and add it as an <code>Authorization</code> header.</p>
+
+      <div class="install-grid">
+
+        <div class="install-card" id="card-claude-web">
+          <h3>Claude.ai (web)</h3>
+          <div class="meta">Pro · Max · Team · Enterprise</div>
+          <ol>
+            <li>Open <a href="https://claude.ai/settings/connectors" target="_blank" rel="noopener">claude.ai/settings/connectors</a></li>
+            <li>Click <strong>Add custom connector</strong></li>
+            <li>Paste the URL above</li>
+            <li>Click <strong>Add</strong>, sign in to Speak AI, click <strong>Allow</strong> on the consent popup</li>
+          </ol>
+          <a class="install-btn" href="https://claude.ai/settings/connectors" target="_blank" rel="noopener" onclick="copyUrl(true)">Install in Claude.ai →</a>
+        </div>
+
+        <div class="install-card" id="card-claude-desktop">
+          <h3>Claude Desktop</h3>
+          <div class="meta">Mac · Windows app</div>
+          <ol>
+            <li>Open Claude Desktop → Settings → Connectors → <strong>Add custom connector</strong></li>
+            <li>Paste the URL from the top of this page</li>
+            <li>Click <strong>Add</strong>, sign in to Speak AI, click <strong>Allow</strong> on the consent popup</li>
+            <li><em>Prefer manual setup?</em> Also expand <strong>Custom headers</strong> and add <code>Authorization</code> = <code>Bearer &lt;your-key&gt;</code> (get a key at <a href="https://app.speakai.co/developers/apikeys" target="_blank" rel="noopener">app.speakai.co/developers/apikeys</a>) before clicking Add.</li>
+          </ol>
+          <a class="install-btn" href="https://claude.ai/download" target="_blank" rel="noopener" onclick="copyUrl(true)">Open Claude Desktop →</a>
+        </div>
+
+        <div class="install-card chatgpt-card">
+          <h3>ChatGPT (Developer Mode)</h3>
+          <div class="meta">Plus · Pro · Business · Enterprise · Edu</div>
+          <div class="chatgpt-eea-warning heads-up">
+            Note: ChatGPT custom connectors are not available in the EU, UK, or Switzerland (OpenAI restriction). Use Claude.ai or Claude Desktop instead — both support OAuth one-click install today.
+          </div>
+          <ol class="chatgpt-default-steps">
+            <li>Open ChatGPT → Settings → Connectors → <strong>Advanced</strong></li>
+            <li>Toggle <strong>Developer Mode</strong> ON</li>
+            <li>Click <strong>Create</strong>, paste the URL above, choose <strong>OAuth</strong></li>
+            <li>Sign in to Speak AI, click <strong>Allow</strong></li>
+            <li><strong>Per-chat:</strong> open a chat, click the connector menu, enable Speak AI for that chat</li>
+          </ol>
+          <a class="install-btn chatgpt-default-btn" href="https://chatgpt.com" target="_blank" rel="noopener" onclick="copyUrl(true)">Open ChatGPT →</a>
+          <a class="install-btn chatgpt-eea-redirect" href="#card-claude-web">Use Claude.ai instead →</a>
+        </div>
+
+        <div class="install-card">
+          <h3>Cursor</h3>
+          <div class="meta">Editor · OAuth via DCR</div>
+          <ol>
+            <li>Click the button — Cursor registers and opens the consent popup</li>
+            <li>Sign in to Speak AI and click <strong>Allow</strong></li>
+          </ol>
+          <a class="install-btn" href="cursor://anysphere.cursor-deeplink/mcp/install?name=speakai&config=eyJ1cmwiOiJodHRwczovL2FwaS5zcGVha2FpLmNvL3YxL21jcCJ9">Install in Cursor →</a>
+        </div>
+
+        <div class="install-card">
+          <h3>VS Code</h3>
+          <div class="meta">Editor + GitHub Copilot · OAuth via DCR</div>
+          <ol>
+            <li>Click the button — VS Code registers and opens the consent popup</li>
+            <li>Sign in to Speak AI and click <strong>Allow</strong></li>
+          </ol>
+          <a class="install-btn" href="https://vscode.dev/redirect/mcp/install?name=speakai&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fapi.speakai.co%2Fv1%2Fmcp%22%7D">Install in VS Code →</a>
+        </div>
+
+        <div class="install-card">
+          <h3>ChatGPT API / Responses</h3>
+          <div class="meta">Developers · Bearer in tool config</div>
+          <ol>
+            <li>Pass the bearer token in the tool config of your Responses API call:</li>
+          </ol>
+          <pre><code>{
+  "type": "mcp",
+  "server_url": "https://api.speakai.co/v1/mcp",
+  "authorization": "Bearer YOUR_KEY"
+}</code></pre>
+        </div>
+
+        <div class="install-card">
+          <h3>Claude Code</h3>
+          <div class="meta">Terminal CLI · OAuth or Bearer</div>
+          <pre><code id="claude-code-cmd">claude mcp add --transport http speakai https://api.speakai.co/v1/mcp --header "Authorization: Bearer $SPEAKAI_KEY"</code></pre>
+          <button class="copy-btn" style="width:100%;padding:10px;font-size:0.95rem;" onclick="copyClaudeCode()">Copy command</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="examples-section" id="examples">
+    <div class="container">
+      <h2>What you can ask once installed</h2>
+      <p class="lead">Speak AI ships 83 tools. You don't memorize them — Claude and ChatGPT pick the right ones based on what you ask.</p>
+      <div class="examples-grid">
+        <div class="example"><div class="ask">Show me every coaching call this month where my client mentioned imposter syndrome.</div></div>
+        <div class="example"><div class="ask">Summarize the action items from yesterday's standup.</div></div>
+        <div class="example"><div class="ask">What themes have come up across my last 30 customer interviews?</div></div>
+        <div class="example"><div class="ask">Pull every quote from Sarah's recordings about pricing.</div></div>
+        <div class="example"><div class="ask">Schedule the AI to join my 2pm Zoom and summarize it after.</div></div>
+        <div class="example"><div class="ask">Write a follow-up email based on yesterday's discovery call.</div></div>
+        <div class="example"><div class="ask">Make a 30-second clip of the moment Sarah said "this changes everything."</div></div>
+        <div class="example"><div class="ask">Compare the feedback in last quarter's interviews vs this quarter's.</div></div>
+        <div class="example"><div class="ask">Export the transcript from this morning's call as a PDF.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="help-section" id="help">
+    <div class="container">
+      <div class="help-card">
+        <h2>Need help installing? You shouldn't have to be technical to use this.</h2>
+        <p>If anything feels confusing or doesn't work, we'll get you set up. Most coaches click the OAuth one-click install above and approve the consent popup in under a minute. If you'd rather paste an API key into a header, the Bearer-token method also works in every client. Either way, you don't need Terminal, you don't need to install anything on your computer, and you definitely don't need to hire a Virtual Assistant.</p>
+        <div class="help-actions">
+          <a href="mailto:accounts@speakai.co">Email accounts@speakai.co</a>
+          <a href="https://speakai.co/help">Book 15 minutes with us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="compat-section">
+    <div class="container">
+      <p class="lead">Works with</p>
+      <div class="compat-list">
+        <span>Claude.ai</span>
+        <span>Claude Desktop</span>
+        <span>Claude Code</span>
+        <span>ChatGPT</span>
+        <span>Cursor</span>
+        <span>VS Code</span>
+        <span>Windsurf</span>
+        <span>Zed</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq-section">
+    <div class="container">
+      <h2 style="margin-bottom: 24px;">Common questions</h2>
+
+      <details>
+        <summary>What does clicking "Allow" (or pasting my API key) actually grant Claude or ChatGPT access to?</summary>
+        <p>Either method grants the AI assistant read AND write access to your full Speak AI workspace — including the ability to view, modify, and delete recordings, folders, and clips. Claude/ChatGPT only access specific data when your AI assistant calls a tool to answer a question you asked. Your recordings stay in your Speak AI workspace; they are not copied or stored by Anthropic or OpenAI.</p>
+      </details>
+
+      <details>
+        <summary>Will Claude be able to delete my recordings?</summary>
+        <p>Yes — write access includes delete operations. We recommend always asking your AI assistant to confirm before deleting. The MCP protocol marks delete tools as destructive, and most clients (including Claude) prompt you before invoking them.</p>
+      </details>
+
+      <details>
+        <summary>I'm a therapist — is this HIPAA-compliant?</summary>
+        <p>This depends on your specific situation, your existing Business Associate Agreements, and the contents of your recordings. When you grant the connector access, transcript content (including participant names and clinical detail) gets sent to Anthropic / OpenAI as part of the AI's reasoning. If your work is HIPAA-regulated, please review your participant consent practices before installing, and check whether your existing BAAs cover this use. Email <a href="mailto:privacy@speakai.co">privacy@speakai.co</a> with specific compliance questions.</p>
+      </details>
+
+      <details>
+        <summary>How do I disconnect Claude/ChatGPT from my Speak AI account?</summary>
+        <p>Three options, all live today: (1) remove the connector inside Claude/ChatGPT itself, (2) for OAuth installs, revoke the grant at <a href="https://api.speakai.co/v1/oauth/connections">api.speakai.co/v1/oauth/connections</a>, or (3) for Bearer installs, rotate or revoke the API key at <a href="https://app.speakai.co/developers/apikeys">app.speakai.co/developers/apikeys</a> — any tool using that key loses access immediately.</p>
+      </details>
+
+      <details>
+        <summary>I'm in the EU, UK, or Switzerland — can I install this?</summary>
+        <p>Yes for Claude (.ai web, Desktop, Code) and Cursor / VS Code — all of those work everywhere. ChatGPT custom MCP connectors are not available in those regions (an OpenAI restriction, not ours). If you want ChatGPT specifically, you'll need to use the API / Responses path with a bearer token; otherwise we recommend Claude.ai or Claude Desktop, which install with one OAuth click.</p>
+      </details>
+
+      <details>
+        <summary>What's the difference between this and the Speak AI app's built-in AI chat?</summary>
+        <p>Speak AI's built-in Magic Prompt is great for asking questions inside Speak. This connector lets you ask the same kinds of questions inside Claude or ChatGPT, where you might already be doing other work — drafting emails, planning content, debugging code. Use whichever feels more natural for the task.</p>
+      </details>
+
+      <details>
+        <summary>Do I need to install something on my computer?</summary>
+        <p>No new app required — the MCP server is hosted by Speak AI; Claude/ChatGPT contact it directly. The OAuth one-click install runs entirely in your browser (paste a URL, click Allow on the popup). The Bearer-token alternative is also paste-only — one URL plus one <code>Authorization: Bearer &lt;your-key&gt;</code> header, no local install. The npm package (<code>@speakai/mcp-server</code>) exists for developers who want to self-host or use a CLI — that's not the path for the average customer.</p>
+      </details>
+
+      <details>
+        <summary>I'm a developer — where's the CLI / API documentation?</summary>
+        <p>See the <a href="https://github.com/speakai/speakai-mcp/blob/main/README.md">README on GitHub</a> — the developer reference is collapsed at the bottom and includes the CLI commands, environment variables, REST API auth flow, and stdio-mode setup for clients that don't speak remote HTTP.</p>
+      </details>
+
+      <details>
+        <summary>I keep getting "connection failed" errors mid-conversation.</summary>
+        <p>Single-attempt failures are usually transient — try the same prompt again. If it persists, the connector may need to be reinstalled: for OAuth installs, revoke at <a href="https://api.speakai.co/v1/oauth/connections">api.speakai.co/v1/oauth/connections</a> then reinstall; for Bearer installs, regenerate your key at <a href="https://app.speakai.co/developers/apikeys">app.speakai.co/developers/apikeys</a> and update the connector. If still broken, email <a href="mailto:accounts@speakai.co">accounts@speakai.co</a>.</p>
+      </details>
+
+      <details>
+        <summary>My company's IT department is blocking custom MCP connectors.</summary>
+        <p>Some Claude Team / Enterprise workspaces restrict custom connectors via admin policies. Ask your workspace admin to allow <code>https://api.speakai.co/v1/mcp</code> in <strong>Organization Settings → Connectors</strong>.</p>
+      </details>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div>
+        <a href="https://speakai.co">Speak AI</a>
+        <a href="https://github.com/speakai/speakai-mcp">GitHub</a>
+        <a href="https://docs.speakai.co">API docs</a>
+        <a href="https://speakai.co/privacy">Privacy</a>
+      </div>
+      <div>© Speak AI</div>
+    </div>
+  </footer>
+
+  <div id="toast">URL copied to clipboard — switch to your AI tool and paste it</div>
+
+  <script>
+    const MCP_URL = 'https://api.speakai.co/v1/mcp';
+    const CLAUDE_CODE_CMD = 'claude mcp add --transport http speakai https://api.speakai.co/v1/mcp --header "Authorization: Bearer $SPEAKAI_KEY"';
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      if (msg) t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function copyUrl(silent) {
+      navigator.clipboard.writeText(MCP_URL).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        if (btn && !silent) {
+          btn.textContent = 'Copied ✓';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = 'Copy URL'; btn.classList.remove('copied'); }, 2000);
+        }
+        showToast('URL copied — switch to your AI tool tab and paste it');
+      });
+    }
+
+    function copyClaudeCode() {
+      navigator.clipboard.writeText(CLAUDE_CODE_CMD).then(() => {
+        showToast('Command copied — paste it in your terminal');
+      });
+    }
+
+    // Best-effort EU/UK/CH detection — hides ChatGPT install since
+    // OpenAI restricts custom connectors in those regions.
+    (function detectEEA() {
+      const eeaLocales = [
+        'en-GB','en-IE','de-DE','de-AT','de-CH','fr-FR','fr-BE','fr-CH',
+        'it-IT','it-CH','es-ES','pt-PT','nl-NL','nl-BE','sv-SE','no-NO',
+        'da-DK','fi-FI','pl-PL','cs-CZ','hu-HU','ro-RO','el-GR','bg-BG',
+        'sk-SK','sl-SI','lt-LT','lv-LV','et-EE','hr-HR','mt-MT','ga-IE',
+      ];
+      const lang = (navigator.language || '').toLowerCase();
+      if (eeaLocales.some(l => lang.startsWith(l.toLowerCase()))) {
+        document.body.classList.add('is-eea');
+      }
+    })();
+  </script>
+</body>
+</html>

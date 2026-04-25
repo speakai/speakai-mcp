@@ -34,6 +34,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Custom field values to attach to the text note"),
     },
+    {
+      title: "Create Text Note",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/text/create", body);
@@ -56,6 +63,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Retrieve AI-generated insights for a text note, including topics, sentiment, summaries, and action items.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the text note"),
+    },
+    {
+      title: "Get Text Note Insights",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ mediaId }) => {
       try {
@@ -81,6 +95,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       mediaId: z
         .string()
         .describe("Unique identifier of the text note to reanalyze"),
+    },
+    {
+      title: "Re-analyze Text Note",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async ({ mediaId }) => {
       try {
@@ -115,6 +136,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .string()
         .optional()
         .describe("Updated comma-separated tags"),
+    },
+    {
+      title: "Update Text Note",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ mediaId, ...body }) => {
       try {

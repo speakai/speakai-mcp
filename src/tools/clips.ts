@@ -35,6 +35,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("How to merge multiple segments (default: CONCATENATE)"),
     },
+    {
+      title: "Create Highlight Clip",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/clips", body);
@@ -61,6 +68,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Filter clips by source media file IDs"),
     },
+    {
+      title: "List Clips",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ clipId, ...params }) => {
       try {
         const url = clipId ? `/v1/clips/${clipId}` : "/v1/clips";
@@ -86,6 +100,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       description: z.string().optional().describe("New description"),
       tags: z.array(z.string()).optional().describe("New tags"),
     },
+    {
+      title: "Update Clip",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ clipId, ...body }) => {
       try {
         const result = await api.put(`/v1/clips/${clipId}`, body);
@@ -106,6 +127,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Permanently delete a clip and its associated media file.",
     {
       clipId: z.string().min(1).describe("ID of the clip to delete"),
+    },
+    {
+      title: "Delete Clip",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ clipId }) => {
       try {

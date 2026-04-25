@@ -10,6 +10,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "get_all_folder_views",
     "Retrieve all saved views across all folders.",
     {},
+    {
+      title: "Get All Folder Views",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async () => {
       try {
         const result = await api.get("/v1/folders/views");
@@ -32,6 +39,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Retrieve all saved views for a specific folder.",
     {
       folderId: z.string().min(1).describe("Unique identifier of the folder"),
+    },
+    {
+      title: "Get Folder Views",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ folderId }) => {
       try {
@@ -60,6 +74,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .record(z.unknown())
         .optional()
         .describe("Filter configuration object"),
+    },
+    {
+      title: "Create Folder View",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async ({ folderId, ...body }) => {
       try {
@@ -93,6 +114,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Updated filter configuration"),
     },
+    {
+      title: "Update Folder View",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ folderId, viewId, ...body }) => {
       try {
         const result = await api.put(
@@ -118,6 +146,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Duplicate an existing folder view.",
     {
       viewId: z.string().min(1).describe("Unique identifier of the view to clone"),
+    },
+    {
+      title: "Clone Folder View",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -148,6 +183,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe('Sort field and direction, e.g. "createdAt:desc"'),
     },
+    {
+      title: "List Folders",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async (params) => {
       try {
         const result = await api.get("/v1/folder", { params });
@@ -170,6 +212,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Get detailed information about a specific folder including its contents.",
     {
       folderId: z.string().min(1).describe("Unique identifier of the folder"),
+    },
+    {
+      title: "Get Folder Info",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ folderId }) => {
       try {
@@ -198,6 +247,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("ID of the parent folder for nesting"),
     },
+    {
+      title: "Create Folder",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/folder", body);
@@ -220,6 +276,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Duplicate an existing folder and all of its contents.",
     {
       folderId: z.string().min(1).describe("ID of the folder to clone"),
+    },
+    {
+      title: "Clone Folder",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -245,6 +308,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       folderId: z.string().min(1).describe("Unique identifier of the folder"),
       name: z.string().optional().describe("New display name for the folder"),
     },
+    {
+      title: "Update Folder",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ folderId, ...body }) => {
       try {
         const result = await api.put(`/v1/folder/${folderId}`, body);
@@ -267,6 +337,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Permanently delete a folder. Media within the folder will be moved, not deleted.",
     {
       folderId: z.string().min(1).describe("Unique identifier of the folder to delete"),
+    },
+    {
+      title: "Delete Folder",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ folderId }) => {
       try {

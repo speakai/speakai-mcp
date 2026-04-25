@@ -2,25 +2,17 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { speakClient, formatAxiosError } from "../client.js";
-import { MediaType, MediaState } from "@speakai/shared";
+import { MediaType } from "@speakai/shared";
 import * as fs from "fs";
 import * as path from "path";
 import { getMimeType, isVideoFile, detectMediaType } from "../media-utils.js";
-
-const POLL_INTERVAL_MS = 5_000;
-const MAX_POLL_ATTEMPTS = 120; // 10 minutes max
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
 
   server.tool(
     "upload_and_analyze",
-    [
-      "Upload media from a URL, wait for processing to complete, then return the transcript and AI insights — all in one call.",
-      "This is a convenience tool that combines upload_media + polling get_media_status + get_transcript + get_media_insights.",
-      "Processing typically takes 1-3 minutes for audio under 60 minutes.",
-      "Use this when you want the full analysis result without managing the polling loop yourself.",
-    ].join(" "),
+    "Upload media and return media_id immediately. After this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
     {
       url: z.string().describe("Publicly accessible URL of the media file"),
       name: z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
@@ -29,9 +21,20 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       folderId: z.string().optional().describe("Folder ID to place the media in"),
       tags: z.string().optional().describe("Comma-separated tags"),
     },
+    {
+      title: "Upload and Analyze Media",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (params) => {
       try {
-        // 1. Upload
+        // Upload only — do not block on processing.
+        // Remote MCP transports (Claude.ai web, ChatGPT) sit behind proxies
+        // (CloudFront / ALB / Anthropic edge) whose idle timeouts kill long
+        // synchronous calls before processing finishes. Return media_id and
+        // let the caller poll get_media_status.
         const uploadBody: Record<string, unknown> = {
           name: params.name ?? params.url.split("/").pop()?.split("?")[0] ?? "Upload",
           url: params.url,
@@ -43,6 +46,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
         const uploadRes = await api.post("/v1/media/upload", uploadBody);
         const mediaId = uploadRes.data?.data?.mediaId;
+        const state = uploadRes.data?.data?.state ?? "pending";
 
         if (!mediaId) {
           return {
@@ -51,41 +55,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           };
         }
 
-        // 2. Poll until processed
-        let state = uploadRes.data?.data?.state;
-        let attempts = 0;
-        while (state !== MediaState.PROCESSED && state !== MediaState.FAILED && attempts < MAX_POLL_ATTEMPTS) {
-          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-          const statusRes = await api.get(`/v1/media/status/${mediaId}`);
-          state = statusRes.data?.data?.state;
-          attempts++;
-        }
-
-        if (state === MediaState.FAILED) {
-          return {
-            content: [{ type: "text", text: `Error: Processing failed for media ${mediaId}` }],
-            isError: true,
-          };
-        }
-
-        if (state !== MediaState.PROCESSED) {
-          return {
-            content: [{ type: "text", text: `Timeout: Media ${mediaId} is still processing (state: ${state}). Use get_media_status to check later.` }],
-            isError: true,
-          };
-        }
-
-        // 3. Fetch transcript + insights in parallel
-        const [transcriptRes, insightsRes] = await Promise.all([
-          api.get(`/v1/media/transcript/${mediaId}`),
-          api.get(`/v1/media/insight/${mediaId}`),
-        ]);
-
         const result = {
           mediaId,
-          state: "processed",
-          transcript: transcriptRes.data?.data,
-          insights: insightsRes.data?.data,
+          state,
+          message: "Upload accepted. Processing has started in the background.",
+          nextSteps: [
+            `1. Poll get_media_status with mediaId="${mediaId}" every 10-30 seconds.`,
+            `2. When state is "processed" (typically 1-3 min for audio under 60 min), call get_media_insights for the AI summary and get_transcript for the full transcript.`,
+            `3. If state becomes "failed", processing did not complete — surface the error to the user.`,
+          ],
         };
 
         return {
@@ -115,6 +93,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       sourceLanguage: z.string().optional().describe("BCP-47 language code (e.g., 'en-US')"),
       folderId: z.string().optional().describe("Folder ID to place the media in"),
       tags: z.string().optional().describe("Comma-separated tags"),
+    },
+    {
+      title: "Upload Local File",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async (params) => {
       try {

@@ -12,6 +12,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
       settings: z.record(z.unknown()).optional().describe("Embed configuration settings"),
     },
+    {
+      title: "Create Embed Widget",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/embed", body);
@@ -34,6 +41,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       embedId: z.string().min(1).describe("Unique identifier of the embed"),
       settings: z.record(z.unknown()).optional().describe("Updated embed settings"),
     },
+    {
+      title: "Update Embed Widget",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ embedId, ...body }) => {
       try {
         const result = await api.put(`/v1/embed/${embedId}`, body);
@@ -55,6 +69,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },
+    {
+      title: "Check Embed Exists",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ mediaId }) => {
       try {
         const result = await api.get(`/v1/embed/${mediaId}`);
@@ -75,6 +96,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Get the iframe URL for embedding a media player/transcript on a webpage.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
+    },
+    {
+      title: "Get Embed Iframe URL",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ mediaId }) => {
       try {

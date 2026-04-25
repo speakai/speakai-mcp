@@ -19,6 +19,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .string()
         .describe('MIME type of the file, e.g. "audio/mp4" or "video/mp4"'),
     },
+    {
+      title: "Get Signed Upload URL",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async ({ isVideo, filename, mimeType }) => {
       try {
         const result = await api.get("/v1/media/upload/signedurl", {
@@ -76,6 +83,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         )
         .optional()
         .describe("Custom field values to attach to the media"),
+    },
+    {
+      title: "Upload Media from URL",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -161,6 +175,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           "Additional data to include with each media item. Without this, only metadata is returned. Use 'transcription' to include full transcripts inline, 'speakers' for speaker details, 'keywords' for extracted keywords, etc. Avoids N+1 API calls when you need data for multiple files."
         ),
     },
+    {
+      title: "List Media Files",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ include, ...params }) => {
       try {
         const queryParams: Record<string, unknown> = { ...params };
@@ -189,6 +210,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },
+    {
+      title: "Get Media Insights",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ mediaId }) => {
       try {
         const result = await api.get(`/v1/media/insight/${mediaId}`);
@@ -212,6 +240,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Retrieve the full transcript for a processed media file with speaker labels and timestamps. The media must be in 'processed' state. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
+    },
+    {
+      title: "Get Transcript",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ mediaId }) => {
       try {
@@ -245,6 +280,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         )
         .describe("Array of speaker ID to name mappings"),
     },
+    {
+      title: "Rename Transcript Speakers",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ mediaId, speakers }) => {
       try {
         const result = await api.put(
@@ -271,6 +313,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Check the processing status of a media file. States: pending → transcribing → analyzing → processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
+    },
+    {
+      title: "Get Media Status",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ mediaId }) => {
       try {
@@ -318,6 +367,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("User ID to assign management of this media to"),
     },
+    {
+      title: "Update Media Metadata",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ mediaId, ...body }) => {
       try {
         const result = await api.put(`/v1/media/${mediaId}`, body);
@@ -341,6 +397,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Permanently delete a media file and all associated transcripts and insights.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file to delete"),
+    },
+    {
+      title: "Delete Media File",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ mediaId }) => {
       try {
@@ -366,6 +429,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },
+    {
+      title: "Get Captions",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ mediaId }) => {
       try {
         const result = await api.get(`/v1/media/caption/${mediaId}`);
@@ -388,6 +458,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "list_supported_languages",
     "List all languages supported for transcription. Use the language codes when uploading media with a specific sourceLanguage.",
     {},
+    {
+      title: "List Supported Languages",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async () => {
       try {
         const result = await api.get("/v1/media/supportedLanguages");
@@ -410,6 +487,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "get_media_statistics",
     "Get workspace-level media statistics — total counts, processing status breakdown, storage usage, etc.",
     {},
+    {
+      title: "Get Media Statistics",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async () => {
       try {
         const result = await api.get("/v1/media/statistics");
@@ -434,6 +518,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },
+    {
+      title: "Toggle Media Favorite",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/media/favorites", body);
@@ -457,6 +548,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Re-run AI analysis on a media file using the latest models. Use this after Speak AI has updated its analysis capabilities or if the original analysis was incomplete.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
+    },
+    {
+      title: "Re-analyze Media",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async ({ mediaId }) => {
       try {
@@ -493,6 +591,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           })
         )
         .describe("Array of speaker ID to name mappings to apply to all specified media files"),
+    },
+    {
+      title: "Bulk Rename Speakers Across Files",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ mediaIds, speakers }) => {
       const results: { mediaId: string; success: boolean; error?: string }[] = [];
@@ -535,6 +640,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .array(z.string().min(1))
         .min(1)
         .describe("Array of media IDs to move"),
+    },
+    {
+      title: "Bulk Move Media Files",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {

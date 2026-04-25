@@ -38,6 +38,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Specific categories to redact"),
     },
+    {
+      title: "Export Media Transcript",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ mediaId, fileType, ...body }) => {
       try {
         const result = await api.post(
@@ -96,6 +103,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .string()
         .optional()
         .describe("Folder ID for the merged export"),
+    },
+    {
+      title: "Export Multiple Media Files",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async (body) => {
       try {

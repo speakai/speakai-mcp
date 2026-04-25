@@ -509,26 +509,9 @@ describe("Workflows tools (upload_and_analyze)", () => {
     register(server, mockClient);
   });
 
-  it("upload_and_analyze uploads then polls then fetches results", async () => {
-    // 1. Upload returns mediaId
+  it("upload_and_analyze returns media_id immediately without polling", async () => {
     mockPost.mockResolvedValueOnce({
       data: { data: { mediaId: "m1", state: "pending" } },
-    });
-    // 2. First poll: still processing
-    mockGet.mockResolvedValueOnce({
-      data: { data: { state: "transcribing" } },
-    });
-    // 3. Second poll: processed
-    mockGet.mockResolvedValueOnce({
-      data: { data: { state: "processed" } },
-    });
-    // 4. Transcript fetch
-    mockGet.mockResolvedValueOnce({
-      data: { data: { text: "Hello world" } },
-    });
-    // 5. Insights fetch
-    mockGet.mockResolvedValueOnce({
-      data: { data: { topics: ["greeting"] } },
     });
 
     const cb = getToolCallback(server, "upload_and_analyze");
@@ -537,15 +520,19 @@ describe("Workflows tools (upload_and_analyze)", () => {
     expect(result.isError).toBeUndefined();
     const parsed = JSON.parse(result.content[0].text);
     expect(parsed.mediaId).toBe("m1");
-    expect(parsed.state).toBe("processed");
-    expect(parsed.transcript.text).toBe("Hello world");
-    expect(parsed.insights.topics).toEqual(["greeting"]);
+    expect(parsed.state).toBe("pending");
+    expect(parsed.message).toMatch(/Upload accepted/i);
+    expect(Array.isArray(parsed.nextSteps)).toBe(true);
+    expect(parsed.nextSteps.join(" ")).toMatch(/get_media_status/);
 
     // Verify upload was called correctly
     expect(mockPost).toHaveBeenCalledWith("/v1/media/upload", expect.objectContaining({
       url: "https://example.com/audio.mp3",
       mediaType: "audio",
     }));
+
+    // Critically: no polling, no transcript/insights fetch.
+    expect(mockGet).not.toHaveBeenCalled();
   });
 
   it("upload_and_analyze returns error when upload has no mediaId", async () => {
@@ -558,27 +545,24 @@ describe("Workflows tools (upload_and_analyze)", () => {
     expect(result.content[0].text).toContain("no mediaId");
   });
 
-  it("upload_and_analyze returns error when processing fails", async () => {
+  it("upload_and_analyze defaults state to pending when not returned", async () => {
     mockPost.mockResolvedValueOnce({
-      data: { data: { mediaId: "m1", state: "pending" } },
-    });
-    mockGet.mockResolvedValueOnce({
-      data: { data: { state: "failed" } },
+      data: { data: { mediaId: "m2" } },
     });
 
     const cb = getToolCallback(server, "upload_and_analyze");
     const result = await cb({ url: "https://example.com/audio.mp3" });
 
-    expect(result.isError).toBe(true);
-    expect(result.content[0].text).toContain("Processing failed");
+    expect(result.isError).toBeUndefined();
+    const parsed = JSON.parse(result.content[0].text);
+    expect(parsed.mediaId).toBe("m2");
+    expect(parsed.state).toBe("pending");
   });
 
   it("upload_and_analyze uses custom name and mediaType", async () => {
     mockPost.mockResolvedValueOnce({
-      data: { data: { mediaId: "m1", state: "processed" } },
+      data: { data: { mediaId: "m1", state: "pending" } },
     });
-    mockGet.mockResolvedValueOnce({ data: { data: {} } });
-    mockGet.mockResolvedValueOnce({ data: { data: {} } });
 
     const cb = getToolCallback(server, "upload_and_analyze");
     await cb({

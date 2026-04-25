@@ -9,6 +9,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "list_fields",
     "List all custom fields defined in the workspace.",
     {},
+    {
+      title: "List Custom Fields",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async () => {
       try {
         const result = await api.get("/v1/fields");
@@ -35,6 +42,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Options for select/multi-select field types"),
     },
+    {
+      title: "Create Custom Field",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/fields", body);
@@ -57,6 +71,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       fields: z
         .array(z.record(z.unknown()))
         .describe("Array of field objects to update"),
+    },
+    {
+      title: "Bulk Update Custom Fields",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ fields }) => {
       try {
@@ -84,6 +105,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .array(z.string())
         .optional()
         .describe("Updated options for select types"),
+    },
+    {
+      title: "Update Custom Field",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ id, ...body }) => {
       try {

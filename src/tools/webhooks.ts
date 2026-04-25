@@ -15,6 +15,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Array of event types to subscribe to"),
     },
+    {
+      title: "Create Webhook",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/webhook", body);
@@ -34,6 +41,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "list_webhooks",
     "List all configured webhooks in the workspace.",
     {},
+    {
+      title: "List Webhooks",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async () => {
       try {
         const result = await api.get("/v1/webhook");
@@ -60,6 +74,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Updated array of event types"),
     },
+    {
+      title: "Update Webhook",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ webhookId, ...body }) => {
       try {
         const result = await api.put(`/v1/webhook/${webhookId}`, body);
@@ -80,6 +101,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Delete a webhook and stop receiving notifications at its endpoint.",
     {
       webhookId: z.string().min(1).describe("Unique identifier of the webhook to delete"),
+    },
+    {
+      title: "Delete Webhook",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ webhookId }) => {
       try {

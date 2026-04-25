@@ -9,6 +9,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "list_automations",
     "List all automation rules configured in the workspace.",
     {},
+    {
+      title: "List Automations",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async () => {
       try {
         const result = await api.get("/v1/automations");
@@ -29,6 +36,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Get detailed information about a specific automation rule.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
+    },
+    {
+      title: "Get Automation Details",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ automationId }) => {
       try {
@@ -56,6 +70,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Array of action configurations"),
       config: z.record(z.unknown()).optional().describe("Full automation configuration object"),
+    },
+    {
+      title: "Create Automation",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -85,6 +106,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .describe("Updated action configurations"),
       config: z.record(z.unknown()).optional().describe("Full updated configuration object"),
     },
+    {
+      title: "Update Automation",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ automationId, ...body }) => {
       try {
         const result = await api.put(
@@ -109,6 +137,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
       enabled: z.boolean().describe("Set to true to enable, false to disable"),
+    },
+    {
+      title: "Enable or Disable Automation",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ automationId, enabled }) => {
       try {

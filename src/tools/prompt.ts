@@ -66,6 +66,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
     },
+    {
+      title: "Ask AI About Your Recordings",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (params) => {
       try {
         const result = await api.post("/v1/prompt", params);
@@ -87,6 +94,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       promptId: z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: z.string().min(1).describe("ID of the specific message to retry"),
+    },
+    {
+      title: "Retry AI Question",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -115,6 +129,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .positive()
         .optional()
         .describe("Number of recent conversations to return (default: 10)"),
+    },
+    {
+      title: "Get Chat History",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ limit }) => {
       try {
@@ -167,6 +188,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Results per page (default: 25, max: 500)"),
     },
+    {
+      title: "Get Chat Messages",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async (params) => {
       try {
         const result = await api.get("/v1/prompt/messages", { params });
@@ -187,6 +215,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Delete a specific chat message from conversation history.",
     {
       promptId: z.string().min(1).describe("ID of the message to delete"),
+    },
+    {
+      title: "Delete Chat Message",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ promptId }) => {
       try {
@@ -209,6 +244,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "list_prompts",
     "List all available Magic Prompt templates. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
     {},
+    {
+      title: "List Prompt Templates",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async () => {
       try {
         const result = await api.get("/v1/prompt");
@@ -228,6 +270,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "get_favorite_prompts",
     "Get all prompts and answers that have been marked as favorites. Useful for finding saved insights and important AI-generated analysis.",
     {},
+    {
+      title: "Get Favorite Prompts",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async () => {
       try {
         const result = await api.get("/v1/prompt/favorites");
@@ -251,6 +300,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       messageId: z.string().min(1).describe("ID of the specific message to favorite/unfavorite"),
       isFavorite: z.boolean().describe("true to mark as favorite, false to remove"),
     },
+    {
+      title: "Toggle Prompt Favorite",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/prompt/favorites", body);
@@ -272,6 +328,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       promptId: z.string().min(1).describe("ID of the conversation to rename"),
       title: z.string().min(1).describe("New title for the conversation"),
+    },
+    {
+      title: "Rename Chat",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ promptId, title }) => {
       try {
@@ -299,6 +362,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       score: z.number().describe("Feedback score: 1 for thumbs up, -1 for thumbs down"),
       reason: z.string().optional().describe("Optional explanation for the feedback"),
     },
+    {
+      title: "Submit Chat Feedback",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/prompt/feedback", body);
@@ -321,6 +391,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       startDate: z.string().optional().describe("Start date for stats (ISO 8601)"),
       endDate: z.string().optional().describe("End date for stats (ISO 8601)"),
     },
+    {
+      title: "Get Chat Statistics",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async (params) => {
       try {
         const result = await api.get("/v1/prompt/statistics", { params });
@@ -341,6 +418,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Export a Magic Prompt conversation or answer. Useful for saving AI-generated summaries, reports, or analysis results.",
     {
       promptId: z.string().min(1).describe("ID of the conversation to export"),
+    },
+    {
+      title: "Export Chat Answer",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async (body) => {
       try {

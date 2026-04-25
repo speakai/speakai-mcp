@@ -38,6 +38,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("Advanced filters for narrowing search results by tags, speakers, media type, sentiment, folder, etc."),
     },
+    {
+      title: "Search Media Library",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async (params) => {
       try {
         const result = await api.post("/v1/analytics/search", params);

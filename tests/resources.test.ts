@@ -78,13 +78,11 @@ describe("Resources", () => {
       expect(parsed.items[0].id).toBe("m1");
     });
 
-    it("returns empty contents on error", async () => {
+    it("throws an error so MCP clients can distinguish failure from empty workspace", async () => {
       mockGet.mockRejectedValueOnce(new Error("fail"));
 
       const cb = getResourceCallback(server, "speakai://media");
-      const result = await cb(new URL("speakai://media"), {});
-
-      expect(result.contents).toEqual([]);
+      await expect(cb(new URL("speakai://media"), {})).rejects.toThrow(/media-library/);
     });
   });
 
@@ -105,13 +103,11 @@ describe("Resources", () => {
       expect(result.contents[0].mimeType).toBe("application/json");
     });
 
-    it("returns empty contents on error", async () => {
+    it("throws an error so MCP clients can distinguish failure from empty workspace", async () => {
       mockGet.mockRejectedValueOnce(new Error("fail"));
 
       const cb = getResourceCallback(server, "speakai://folders");
-      const result = await cb(new URL("speakai://folders"), {});
-
-      expect(result.contents).toEqual([]);
+      await expect(cb(new URL("speakai://folders"), {})).rejects.toThrow(/folders/);
     });
   });
 
@@ -130,13 +126,11 @@ describe("Resources", () => {
       expect(result.contents[0].mimeType).toBe("application/json");
     });
 
-    it("returns empty contents on error", async () => {
+    it("throws an error so MCP clients can distinguish failure from empty workspace", async () => {
       mockGet.mockRejectedValueOnce(new Error("fail"));
 
       const cb = getResourceCallback(server, "speakai://languages");
-      const result = await cb(new URL("speakai://languages"), {});
-
-      expect(result.contents).toEqual([]);
+      await expect(cb(new URL("speakai://languages"), {})).rejects.toThrow(/supported-languages/);
     });
   });
 
@@ -161,13 +155,11 @@ describe("Resources", () => {
       expect(parsed.text).toBe("Hello world");
     });
 
-    it("returns empty contents on error", async () => {
+    it("throws an error so MCP clients can distinguish failure from missing transcript", async () => {
       mockGet.mockRejectedValueOnce(new Error("fail"));
 
       const cb = getResourceCallback(server, "transcript");
-      const result = await cb(new URL("speakai://media/m1/transcript"), { mediaId: "m1" });
-
-      expect(result.contents).toEqual([]);
+      await expect(cb(new URL("speakai://media/m1/transcript"), { mediaId: "m1" })).rejects.toThrow(/transcript\(m1\)/);
     });
   });
 
@@ -190,13 +182,11 @@ describe("Resources", () => {
       expect(parsed.topics).toEqual(["AI"]);
     });
 
-    it("returns empty contents on error", async () => {
+    it("throws an error so MCP clients can distinguish failure from missing insights", async () => {
       mockGet.mockRejectedValueOnce(new Error("fail"));
 
       const cb = getResourceCallback(server, "insights");
-      const result = await cb(new URL("speakai://media/m1/insights"), { mediaId: "m1" });
-
-      expect(result.contents).toEqual([]);
+      await expect(cb(new URL("speakai://media/m1/insights"), { mediaId: "m1" })).rejects.toThrow(/insights\(m1\)/);
     });
   });
 });

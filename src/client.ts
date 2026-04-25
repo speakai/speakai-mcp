@@ -170,15 +170,43 @@ export function createSpeakClient(options: {
 
 /**
  * Formats an Axios error into a human-readable string.
+ *
+ * Sensitive auth material (tokens, cookies, API keys) is redacted before
+ * the message reaches MCP tool output — that text lands in the model's
+ * context window and may be visible to the user, so it must never carry
+ * Authorization headers, Set-Cookie values, or anything matching
+ * common secret patterns.
  */
+const SENSITIVE_KEY_PATTERN = /(token|secret|password|cookie|authorization|jwt|apikey|api[_-]?key|bearer|signature)/i;
+const MAX_STRING_LEN = 500;
+
+function redactValue(value: unknown, depth = 0): unknown {
+  if (depth > 4) return "[truncated]";
+  if (typeof value === "string") {
+    return value.length > MAX_STRING_LEN ? value.slice(0, MAX_STRING_LEN) + "…" : value;
+  }
+  if (Array.isArray(value)) {
+    return value.slice(0, 20).map((v) => redactValue(v, depth + 1));
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = SENSITIVE_KEY_PATTERN.test(k) ? "[redacted]" : redactValue(v, depth + 1);
+    }
+    return out;
+  }
+  return value;
+}
+
 export function formatAxiosError(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const status = error.response?.status;
     const data = error.response?.data;
+    const safe = redactValue(data);
     const message =
-      typeof data === "object" && data !== null
-        ? JSON.stringify(data, null, 2)
-        : String(data ?? error.message);
+      typeof safe === "object" && safe !== null
+        ? JSON.stringify(safe, null, 2)
+        : String(safe ?? error.message);
     return status ? `HTTP ${status}: ${message}` : `Request failed: ${message}`;
   }
   if (error instanceof Error) return error.message;

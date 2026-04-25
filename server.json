@@ -1,0 +1,47 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.speakai/mcp-server",
+  "title": "Speak AI",
+  "description": "Connect AI assistants to Speak AI for transcription, AI insights, and media management",
+  "version": "1.2.0",
+  "websiteUrl": "https://speakai.co/connect",
+  "repository": {
+    "url": "https://github.com/speakai/speakai-mcp",
+    "source": "github",
+    "id": "1189683999"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@speakai/mcp-server",
+      "version": "1.2.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "SPEAK_API_KEY",
+          "description": "Your Speak AI API key. Generate one at https://speakai.co/connect.",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "SPEAK_BASE_URL",
+          "description": "Override the Speak AI API base URL. Defaults to https://api.speakai.co.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string",
+          "default": "https://api.speakai.co"
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.speakai.co/v1/mcp"
+    }
+  ]
+}

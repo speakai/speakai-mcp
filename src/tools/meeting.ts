@@ -20,6 +20,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       page: z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
       pageSize: z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
     },
+    {
+      title: "List Meeting Events",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async (params) => {
       try {
         const result = await api.get("/v1/meeting-assistant/events", {
@@ -48,6 +55,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe("ISO 8601 datetime for when the meeting starts"),
     },
+    {
+      title: "Schedule AI Meeting Assistant",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
     async (body) => {
       try {
         const result = await api.post(
@@ -73,6 +87,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       meetingAssistantEventId: z
         .string()
         .describe("Unique identifier of the meeting assistant event"),
+    },
+    {
+      title: "Remove Assistant from Meeting",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ meetingAssistantEventId }) => {
       try {
@@ -100,6 +121,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       meetingAssistantEventId: z
         .string()
         .describe("Unique identifier of the meeting assistant event to cancel"),
+    },
+    {
+      title: "Cancel Scheduled Meeting Assistant",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ meetingAssistantEventId }) => {
       try {

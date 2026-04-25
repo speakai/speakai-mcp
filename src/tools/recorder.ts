@@ -11,6 +11,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       token: z.string().min(1).describe("Unique token identifying the recorder"),
     },
+    {
+      title: "Check Recorder Status",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ token }) => {
       try {
         const result = await api.get(`/v1/recorder/status/${token}`);
@@ -33,6 +40,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       name: z.string().optional().describe("Display name for the recorder"),
       folderId: z.string().optional().describe("Folder to store recordings in"),
       settings: z.record(z.unknown()).optional().describe("Recorder configuration settings"),
+    },
+    {
+      title: "Create Recorder",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -57,6 +71,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       pageSize: z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
       sortBy: z.string().optional().describe('Sort field, e.g. "createdAt:desc"'),
     },
+    {
+      title: "List Recorders",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async (params) => {
       try {
         const result = await api.get("/v1/recorder", { params });
@@ -77,6 +98,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Duplicate an existing recorder including all its settings and questions.",
     {
       recorderId: z.string().min(1).describe("ID of the recorder to clone"),
+    },
+    {
+      title: "Clone Recorder",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -99,6 +127,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder"),
     },
+    {
+      title: "Get Recorder Info",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ recorderId }) => {
       try {
         const result = await api.get(`/v1/recorder/${recorderId}`);
@@ -119,6 +154,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "List all submissions/recordings collected by a specific recorder.",
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder"),
+    },
+    {
+      title: "Get Recorder Submissions",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ recorderId }) => {
       try {
@@ -141,6 +183,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder"),
     },
+    {
+      title: "Generate Recorder Share URL",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ recorderId }) => {
       try {
         const result = await api.get(`/v1/recorder/url/${recorderId}`);
@@ -162,6 +211,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder"),
       settings: z.record(z.unknown()).describe("Settings object with updated values"),
+    },
+    {
+      title: "Update Recorder Settings",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ recorderId, settings }) => {
       try {
@@ -187,6 +243,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .array(z.record(z.unknown()))
         .describe("Array of question objects"),
     },
+    {
+      title: "Update Recorder Questions",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
     async ({ recorderId, questions }) => {
       try {
         const result = await api.put(`/v1/recorder/questions/${recorderId}`, { questions });
@@ -207,6 +270,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Permanently delete a recorder/survey. Existing recordings are preserved.",
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder to delete"),
+    },
+    {
+      title: "Delete Recorder",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
     },
     async ({ recorderId }) => {
       try {
