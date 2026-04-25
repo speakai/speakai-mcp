@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.1 (2026-04-25)
+
+- Fixed logo path, added vendor prefix, improved dev-alt collapse, and updated hero copy.
+
 ## v1.3.0 (2026-04-25)
 
 - Launch OAuth one-click and bearer install paths
