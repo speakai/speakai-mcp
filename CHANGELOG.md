@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.1 (2026-04-26)
+
+- Fix Content, LLM File and README
+
 ## v1.4.0 (2026-04-25)
 
 - Added Capabilities section to the landing page and moved Privacy to the bottom.
