@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.2 (2026-04-26)
+
+- Fix dates for analytics tool
+
 ## v1.5.1 (2026-04-26)
 
 - Fix home page
