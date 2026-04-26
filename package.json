@@ -3,6 +3,14 @@
   "version": "1.5.2",
   "mcpName": "io.github.speakai/mcp-server",
   "description": "Official Speak AI MCP Server — connect Claude and other AI assistants to Speak AI's transcription, insights, and media management API",
+  "homepage": "https://mcp.speakai.co",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/speakai/speakai-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/speakai/speakai-mcp/issues"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
@@ -25,7 +33,7 @@
     "claude",
     "model-context-protocol"
   ],
-  "author": "Speak AI",
+  "author": "Vatsal Shah",
   "license": "MIT",
   "engines": {
     "node": ">=22"

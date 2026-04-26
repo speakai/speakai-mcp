@@ -1,0 +1,40 @@
+{
+  "name": "speakai",
+  "owner": {
+    "name": "Vatsal Shah",
+    "email": "accounts@speakai.co"
+  },
+  "metadata": {
+    "description": "Claude Code plugins for connecting to Speak AI transcription, insights, and media tools.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "speakai-mcp",
+      "source": "./plugins/speakai-mcp",
+      "description": "Connect Claude Code to Speak AI's MCP server for transcription, insights, and media management.",
+      "version": "1.5.2",
+      "author": {
+        "name": "Vatsal Shah",
+        "email": "accounts@speakai.co"
+      },
+      "homepage": "https://mcp.speakai.co",
+      "repository": "https://github.com/speakai/speakai-mcp",
+      "license": "MIT",
+      "keywords": [
+        "mcp",
+        "transcription",
+        "media",
+        "insights",
+        "speak-ai"
+      ],
+      "category": "productivity",
+      "tags": [
+        "mcp",
+        "transcription",
+        "research",
+        "media"
+      ]
+    }
+  ]
+}

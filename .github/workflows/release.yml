@@ -8,6 +8,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
   contents: write
+  id-token: write
   models: read
 
 jobs:
@@ -126,6 +127,9 @@ jobs:
           echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           echo "Bumped to $NEW_VERSION"
 
+          # Keep distribution metadata in lockstep with the npm package.
+          node -e "const fs=require('fs'); const v='${NEW_VERSION#v}'; const write=(p,o)=>fs.writeFileSync(p, JSON.stringify(o, null, 2)+'\n'); const server=JSON.parse(fs.readFileSync('server.json','utf8')); server.version=v; for (const pkg of server.packages || []) { if (pkg.identifier === '@speakai/mcp-server') pkg.version=v; } write('server.json', server); const marketplace=JSON.parse(fs.readFileSync('.claude-plugin/marketplace.json','utf8')); for (const plugin of marketplace.plugins || []) { if (plugin.name === 'speakai-mcp') plugin.version=v; } write('.claude-plugin/marketplace.json', marketplace); const claudePlugin=JSON.parse(fs.readFileSync('plugins/speakai-mcp/.claude-plugin/plugin.json','utf8')); claudePlugin.version=v; write('plugins/speakai-mcp/.claude-plugin/plugin.json', claudePlugin); const mcp=JSON.parse(fs.readFileSync('plugins/speakai-mcp/.mcp.json','utf8')); const args=mcp.mcpServers?.speakai?.args || []; const i=args.findIndex((arg)=>arg.startsWith('@speakai/mcp-server')); if (i >= 0) args[i]='@speakai/mcp-server@'+v; write('plugins/speakai-mcp/.mcp.json', mcp);"
+
           # Update CHANGELOG.md
           DATE=$(date +%Y-%m-%d)
           if [ -f CHANGELOG.md ]; then
@@ -143,7 +147,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json CHANGELOG.md
+          git add package.json package-lock.json CHANGELOG.md server.json .claude-plugin/marketplace.json plugins/speakai-mcp/.claude-plugin/plugin.json plugins/speakai-mcp/.mcp.json
           git commit -m "chore: release ${{ steps.bump.outputs.new_version }} [skip ci]"
           git tag "${{ steps.bump.outputs.new_version }}"
           git push origin main --tags
@@ -153,3 +157,16 @@ jobs:
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Install mcp-publisher
+        if: steps.bump.outputs.should_release == 'true'
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Authenticate to MCP Registry
+        if: steps.bump.outputs.should_release == 'true'
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        if: steps.bump.outputs.should_release == 'true'
+        run: ./mcp-publisher publish

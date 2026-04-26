@@ -1,0 +1,35 @@
+{
+  "name": "speakai-mcp",
+  "description": "Connect Claude Code to Speak AI for transcription, insights, and media management.",
+  "version": "1.5.2",
+  "author": {
+    "name": "Vatsal Shah",
+    "email": "accounts@speakai.co",
+    "url": "https://speakai.co"
+  },
+  "homepage": "https://mcp.speakai.co",
+  "repository": "https://github.com/speakai/speakai-mcp",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "speak-ai",
+    "transcription",
+    "media",
+    "insights"
+  ],
+  "mcpServers": "./.mcp.json",
+  "userConfig": {
+    "speak_api_key": {
+      "type": "string",
+      "title": "Speak AI API key",
+      "description": "Generate an API key at https://app.speakai.co/developers/apikeys.",
+      "sensitive": true
+    },
+    "speak_base_url": {
+      "type": "string",
+      "title": "Speak AI API base URL",
+      "description": "Leave as https://api.speakai.co unless Speak AI support gave you a different endpoint.",
+      "default": "https://api.speakai.co"
+    }
+  }
+}
