@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.0 (2026-04-25)
+
+- Added Capabilities section to the landing page and moved Privacy to the bottom.
+
 ## v1.3.1 (2026-04-25)
 
 - Fixed logo path, added vendor prefix, improved dev-alt collapse, and updated hero copy.
