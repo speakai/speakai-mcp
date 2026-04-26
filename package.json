@@ -1,6 +1,6 @@
 {
   "name": "@speakai/mcp-server",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "mcpName": "io.github.speakai/mcp-server",
   "description": "Official Speak AI MCP Server — connect Claude and other AI assistants to Speak AI's transcription, insights, and media management API",
   "homepage": "https://mcp.speakai.co",

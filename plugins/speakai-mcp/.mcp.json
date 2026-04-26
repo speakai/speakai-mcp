@@ -4,7 +4,7 @@
       "command": "npx",
       "args": [
         "-y",
-        "@speakai/mcp-server@1.5.2"
+        "@speakai/mcp-server@1.6.0"
       ],
       "env": {
         "SPEAK_API_KEY": "${user_config.speak_api_key}",

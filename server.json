@@ -3,7 +3,7 @@
   "name": "io.github.speakai/mcp-server",
   "title": "Speak AI",
   "description": "Connect AI assistants to Speak AI for transcription, AI insights, and media management",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "websiteUrl": "https://mcp.speakai.co",
   "repository": {
     "url": "https://github.com/speakai/speakai-mcp",
@@ -15,7 +15,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@speakai/mcp-server",
-      "version": "1.5.2",
+      "version": "1.6.0",
       "transport": {
         "type": "stdio"
       },

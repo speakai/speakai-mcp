@@ -13,7 +13,7 @@
       "name": "speakai-mcp",
       "source": "./plugins/speakai-mcp",
       "description": "Search transcripts, summarize meetings, extract quotes, create clips, and manage Speak AI media through MCP.",
-      "version": "1.5.2",
+      "version": "1.6.0",
       "author": {
         "name": "Vatsal Shah",
         "email": "accounts@speakai.co"

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.6.0 (2026-04-26)
+
+- Improved Codex and Claude plugin functionality and released the package to Claude
+
 ## v1.5.2 (2026-04-26)
 
 - Fix dates for analytics tool
