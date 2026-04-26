@@ -119,17 +119,35 @@ function createSpeakClient(options) {
     timeout: 6e4
   });
 }
+function redactValue(value, depth = 0) {
+  if (depth > 4) return "[truncated]";
+  if (typeof value === "string") {
+    return value.length > MAX_STRING_LEN ? value.slice(0, MAX_STRING_LEN) + "\u2026" : value;
+  }
+  if (Array.isArray(value)) {
+    return value.slice(0, 20).map((v) => redactValue(v, depth + 1));
+  }
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) {
+      out[k] = SENSITIVE_KEY_PATTERN.test(k) ? "[redacted]" : redactValue(v, depth + 1);
+    }
+    return out;
+  }
+  return value;
+}
 function formatAxiosError(error) {
   if (import_axios.default.isAxiosError(error)) {
     const status = error.response?.status;
     const data = error.response?.data;
-    const message = typeof data === "object" && data !== null ? JSON.stringify(data, null, 2) : String(data ?? error.message);
+    const safe = redactValue(data);
+    const message = typeof safe === "object" && safe !== null ? JSON.stringify(safe, null, 2) : String(safe ?? error.message);
     return status ? `HTTP ${status}: ${message}` : `Request failed: ${message}`;
   }
   if (error instanceof Error) return error.message;
   return String(error);
 }
-var import_axios, accessToken, refreshToken, tokenExpiresAt, speakClient;
+var import_axios, accessToken, refreshToken, tokenExpiresAt, speakClient, SENSITIVE_KEY_PATTERN, MAX_STRING_LEN;
 var init_client = __esm({
   "src/client.ts"() {
     "use strict";
@@ -179,6 +197,8 @@ var init_client = __esm({
         return Promise.reject(error);
       }
     );
+    SENSITIVE_KEY_PATTERN = /(token|secret|password|cookie|authorization|jwt|apikey|api[_-]?key|bearer|signature)/i;
+    MAX_STRING_LEN = 500;
   }
 });
 
@@ -1090,6 +1110,13 @@ function register(server, client) {
       filename: import_zod.z.string().min(1).describe("Original filename including extension"),
       mimeType: import_zod.z.string().describe('MIME type of the file, e.g. "audio/mp4" or "video/mp4"')
     },
+    {
+      title: "Get Signed Upload URL",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async ({ isVideo, filename, mimeType }) => {
       try {
         const result = await api.get("/v1/media/upload/signedurl", {
@@ -1126,6 +1153,13 @@ function register(server, client) {
           value: import_zod.z.string().min(1).describe("Custom field value")
         })
       ).optional().describe("Custom field values to attach to the media")
+    },
+    {
+      title: "Upload Media from URL",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -1170,6 +1204,13 @@ function register(server, client) {
         "Additional data to include with each media item. Without this, only metadata is returned. Use 'transcription' to include full transcripts inline, 'speakers' for speaker details, 'keywords' for extracted keywords, etc. Avoids N+1 API calls when you need data for multiple files."
       )
     },
+    {
+      title: "List Media Files",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ include, ...params }) => {
       try {
         const queryParams = { ...params };
@@ -1196,6 +1237,13 @@ function register(server, client) {
     {
       mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
     },
+    {
+      title: "Get Media Insights",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ mediaId }) => {
       try {
         const result = await api.get(`/v1/media/insight/${mediaId}`);
@@ -1217,6 +1265,13 @@ function register(server, client) {
     "Retrieve the full transcript for a processed media file with speaker labels and timestamps. The media must be in 'processed' state. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
     {
       mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
+    },
+    {
+      title: "Get Transcript",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ mediaId }) => {
       try {
@@ -1246,6 +1301,13 @@ function register(server, client) {
         })
       ).describe("Array of speaker ID to name mappings")
     },
+    {
+      title: "Rename Transcript Speakers",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ mediaId, speakers }) => {
       try {
         const result = await api.put(
@@ -1270,6 +1332,13 @@ function register(server, client) {
     "Check the processing status of a media file. States: pending \u2192 transcribing \u2192 analyzing \u2192 processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
     {
       mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
+    },
+    {
+      title: "Get Media Status",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ mediaId }) => {
       try {
@@ -1300,6 +1369,13 @@ function register(server, client) {
       remark: import_zod.z.string().optional().describe("Internal remark or note"),
       manageBy: import_zod.z.string().optional().describe("User ID to assign management of this media to")
     },
+    {
+      title: "Update Media Metadata",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ mediaId, ...body }) => {
       try {
         const result = await api.put(`/v1/media/${mediaId}`, body);
@@ -1321,6 +1397,13 @@ function register(server, client) {
     "Permanently delete a media file and all associated transcripts and insights.",
     {
       mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file to delete")
+    },
+    {
+      title: "Delete Media File",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ mediaId }) => {
       try {
@@ -1344,6 +1427,13 @@ function register(server, client) {
     {
       mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
     },
+    {
+      title: "Get Captions",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ mediaId }) => {
       try {
         const result = await api.get(`/v1/media/caption/${mediaId}`);
@@ -1364,6 +1454,13 @@ function register(server, client) {
     "list_supported_languages",
     "List all languages supported for transcription. Use the language codes when uploading media with a specific sourceLanguage.",
     {},
+    {
+      title: "List Supported Languages",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async () => {
       try {
         const result = await api.get("/v1/media/supportedLanguages");
@@ -1384,6 +1481,13 @@ function register(server, client) {
     "get_media_statistics",
     "Get workspace-level media statistics \u2014 total counts, processing status breakdown, storage usage, etc.",
     {},
+    {
+      title: "Get Media Statistics",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async () => {
       try {
         const result = await api.get("/v1/media/statistics");
@@ -1406,6 +1510,13 @@ function register(server, client) {
     {
       mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
     },
+    {
+      title: "Toggle Media Favorite",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/media/favorites", body);
@@ -1427,6 +1538,13 @@ function register(server, client) {
     "Re-run AI analysis on a media file using the latest models. Use this after Speak AI has updated its analysis capabilities or if the original analysis was incomplete.",
     {
       mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file to re-analyze")
+    },
+    {
+      title: "Re-analyze Media",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async ({ mediaId }) => {
       try {
@@ -1455,6 +1573,13 @@ function register(server, client) {
           name: import_zod.z.string().min(1).describe("Display name to assign to the speaker")
         })
       ).describe("Array of speaker ID to name mappings to apply to all specified media files")
+    },
+    {
+      title: "Bulk Rename Speakers Across Files",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ mediaIds, speakers }) => {
       const results = [];
@@ -1489,6 +1614,13 @@ function register(server, client) {
     {
       folderId: import_zod.z.string().min(1).describe("Target folder ID to move media into"),
       mediaIds: import_zod.z.array(import_zod.z.string().min(1)).min(1).describe("Array of media IDs to move")
+    },
+    {
+      title: "Bulk Move Media Files",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -1541,6 +1673,13 @@ function register2(server, client) {
         })
       ).optional().describe("Custom field values to attach to the text note")
     },
+    {
+      title: "Create Text Note",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/text/create", body);
@@ -1563,6 +1702,13 @@ function register2(server, client) {
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the text note")
     },
+    {
+      title: "Get Text Note Insights",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ mediaId }) => {
       try {
         const result = await api.get(`/v1/text/insight/${mediaId}`);
@@ -1584,6 +1730,13 @@ function register2(server, client) {
     "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models.",
     {
       mediaId: import_zod2.z.string().describe("Unique identifier of the text note to reanalyze")
+    },
+    {
+      title: "Re-analyze Text Note",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async ({ mediaId }) => {
       try {
@@ -1611,6 +1764,13 @@ function register2(server, client) {
       description: import_zod2.z.string().optional().describe("Updated description"),
       folderId: import_zod2.z.string().optional().describe("Move to a different folder"),
       tags: import_zod2.z.string().optional().describe("Updated comma-separated tags")
+    },
+    {
+      title: "Update Text Note",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ mediaId, ...body }) => {
       try {
@@ -1661,6 +1821,13 @@ function register3(server, client) {
       isRedacted: import_zod3.z.boolean().optional().describe("Apply PII redaction to export"),
       redactedCategories: import_zod3.z.array(import_zod3.z.string()).optional().describe("Specific categories to redact")
     },
+    {
+      title: "Export Media Transcript",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ mediaId, fileType, ...body }) => {
       try {
         const result = await api.post(
@@ -1693,6 +1860,13 @@ function register3(server, client) {
       isRedacted: import_zod3.z.boolean().optional().describe("Apply PII redaction to export"),
       isMerged: import_zod3.z.boolean().optional().describe("Merge all exports into a single file"),
       folderId: import_zod3.z.string().optional().describe("Folder ID for the merged export")
+    },
+    {
+      title: "Export Multiple Media Files",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -1734,6 +1908,13 @@ function register4(server, client) {
     "get_all_folder_views",
     "Retrieve all saved views across all folders.",
     {},
+    {
+      title: "Get All Folder Views",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async () => {
       try {
         const result = await api.get("/v1/folders/views");
@@ -1755,6 +1936,13 @@ function register4(server, client) {
     "Retrieve all saved views for a specific folder.",
     {
       folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder")
+    },
+    {
+      title: "Get Folder Views",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ folderId }) => {
       try {
@@ -1779,6 +1967,13 @@ function register4(server, client) {
       folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder"),
       name: import_zod4.z.string().optional().describe("Display name for the view"),
       filters: import_zod4.z.record(import_zod4.z.unknown()).optional().describe("Filter configuration object")
+    },
+    {
+      title: "Create Folder View",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async ({ folderId, ...body }) => {
       try {
@@ -1808,6 +2003,13 @@ function register4(server, client) {
       name: import_zod4.z.string().optional().describe("New display name for the view"),
       filters: import_zod4.z.record(import_zod4.z.unknown()).optional().describe("Updated filter configuration")
     },
+    {
+      title: "Update Folder View",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ folderId, viewId, ...body }) => {
       try {
         const result = await api.put(
@@ -1833,6 +2035,13 @@ function register4(server, client) {
     {
       viewId: import_zod4.z.string().min(1).describe("Unique identifier of the view to clone")
     },
+    {
+      title: "Clone Folder View",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/folders/views/clone", body);
@@ -1857,6 +2066,13 @@ function register4(server, client) {
       pageSize: import_zod4.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
       sortBy: import_zod4.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc"')
     },
+    {
+      title: "List Folders",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async (params) => {
       try {
         const result = await api.get("/v1/folder", { params });
@@ -1878,6 +2094,13 @@ function register4(server, client) {
     "Get detailed information about a specific folder including its contents.",
     {
       folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder")
+    },
+    {
+      title: "Get Folder Info",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ folderId }) => {
       try {
@@ -1902,6 +2125,13 @@ function register4(server, client) {
       name: import_zod4.z.string().min(1).describe("Display name for the new folder"),
       parentFolderId: import_zod4.z.string().optional().describe("ID of the parent folder for nesting")
     },
+    {
+      title: "Create Folder",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/folder", body);
@@ -1923,6 +2153,13 @@ function register4(server, client) {
     "Duplicate an existing folder and all of its contents.",
     {
       folderId: import_zod4.z.string().min(1).describe("ID of the folder to clone")
+    },
+    {
+      title: "Clone Folder",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -1947,6 +2184,13 @@ function register4(server, client) {
       folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder"),
       name: import_zod4.z.string().optional().describe("New display name for the folder")
     },
+    {
+      title: "Update Folder",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ folderId, ...body }) => {
       try {
         const result = await api.put(`/v1/folder/${folderId}`, body);
@@ -1968,6 +2212,13 @@ function register4(server, client) {
     "Permanently delete a folder. Media within the folder will be moved, not deleted.",
     {
       folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder to delete")
+    },
+    {
+      title: "Delete Folder",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ folderId }) => {
       try {
@@ -2008,6 +2259,13 @@ function register5(server, client) {
     {
       token: import_zod5.z.string().min(1).describe("Unique token identifying the recorder")
     },
+    {
+      title: "Check Recorder Status",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ token }) => {
       try {
         const result = await api.get(`/v1/recorder/status/${token}`);
@@ -2029,6 +2287,13 @@ function register5(server, client) {
       name: import_zod5.z.string().optional().describe("Display name for the recorder"),
       folderId: import_zod5.z.string().optional().describe("Folder to store recordings in"),
       settings: import_zod5.z.record(import_zod5.z.unknown()).optional().describe("Recorder configuration settings")
+    },
+    {
+      title: "Create Recorder",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2052,6 +2317,13 @@ function register5(server, client) {
       pageSize: import_zod5.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
       sortBy: import_zod5.z.string().optional().describe('Sort field, e.g. "createdAt:desc"')
     },
+    {
+      title: "List Recorders",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async (params) => {
       try {
         const result = await api.get("/v1/recorder", { params });
@@ -2071,6 +2343,13 @@ function register5(server, client) {
     "Duplicate an existing recorder including all its settings and questions.",
     {
       recorderId: import_zod5.z.string().min(1).describe("ID of the recorder to clone")
+    },
+    {
+      title: "Clone Recorder",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2092,6 +2371,13 @@ function register5(server, client) {
     {
       recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder")
     },
+    {
+      title: "Get Recorder Info",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ recorderId }) => {
       try {
         const result = await api.get(`/v1/recorder/${recorderId}`);
@@ -2112,6 +2398,13 @@ function register5(server, client) {
     {
       recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder")
     },
+    {
+      title: "Get Recorder Submissions",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ recorderId }) => {
       try {
         const result = await api.get(`/v1/recorder/recordings/${recorderId}`);
@@ -2131,6 +2424,13 @@ function register5(server, client) {
     "Generate a shareable public URL for a recorder/survey.",
     {
       recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder")
+    },
+    {
+      title: "Generate Recorder Share URL",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ recorderId }) => {
       try {
@@ -2153,6 +2453,13 @@ function register5(server, client) {
       recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder"),
       settings: import_zod5.z.record(import_zod5.z.unknown()).describe("Settings object with updated values")
     },
+    {
+      title: "Update Recorder Settings",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ recorderId, settings }) => {
       try {
         const result = await api.put(`/v1/recorder/settings/${recorderId}`, settings);
@@ -2174,6 +2481,13 @@ function register5(server, client) {
       recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder"),
       questions: import_zod5.z.array(import_zod5.z.record(import_zod5.z.unknown())).describe("Array of question objects")
     },
+    {
+      title: "Update Recorder Questions",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ recorderId, questions }) => {
       try {
         const result = await api.put(`/v1/recorder/questions/${recorderId}`, { questions });
@@ -2193,6 +2507,13 @@ function register5(server, client) {
     "Permanently delete a recorder/survey. Existing recordings are preserved.",
     {
       recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder to delete")
+    },
+    {
+      title: "Delete Recorder",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ recorderId }) => {
       try {
@@ -2232,6 +2553,13 @@ function register6(server, client) {
       mediaId: import_zod6.z.string().min(1).describe("Unique identifier of the media file"),
       settings: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Embed configuration settings")
     },
+    {
+      title: "Create Embed Widget",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/embed", body);
@@ -2253,6 +2581,13 @@ function register6(server, client) {
       embedId: import_zod6.z.string().min(1).describe("Unique identifier of the embed"),
       settings: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Updated embed settings")
     },
+    {
+      title: "Update Embed Widget",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ embedId, ...body }) => {
       try {
         const result = await api.put(`/v1/embed/${embedId}`, body);
@@ -2273,6 +2608,13 @@ function register6(server, client) {
     {
       mediaId: import_zod6.z.string().min(1).describe("Unique identifier of the media file")
     },
+    {
+      title: "Check Embed Exists",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ mediaId }) => {
       try {
         const result = await api.get(`/v1/embed/${mediaId}`);
@@ -2292,6 +2634,13 @@ function register6(server, client) {
     "Get the iframe URL for embedding a media player/transcript on a webpage.",
     {
       mediaId: import_zod6.z.string().min(1).describe("Unique identifier of the media file")
+    },
+    {
+      title: "Get Embed Iframe URL",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ mediaId }) => {
       try {
@@ -2350,6 +2699,13 @@ function register7(server, client) {
       endDate: import_zod7.z.string().optional().describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
       isIndividualPrompt: import_zod7.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files.")
     },
+    {
+      title: "Ask AI About Your Recordings",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (params) => {
       try {
         const result = await api.post("/v1/prompt", params);
@@ -2371,6 +2727,13 @@ function register7(server, client) {
       promptId: import_zod7.z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: import_zod7.z.string().min(1).describe("ID of the specific message to retry")
     },
+    {
+      title: "Retry AI Question",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/prompt/retry", body);
@@ -2390,6 +2753,13 @@ function register7(server, client) {
     "Get a list of recent Magic Prompt conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_magic_prompt or retrieve full messages via get_chat_messages.",
     {
       limit: import_zod7.z.number().int().positive().optional().describe("Number of recent conversations to return (default: 10)")
+    },
+    {
+      title: "Get Chat History",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ limit }) => {
       try {
@@ -2418,6 +2788,13 @@ function register7(server, client) {
       page: import_zod7.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
       pageSize: import_zod7.z.number().int().min(1).max(500).optional().describe("Results per page (default: 25, max: 500)")
     },
+    {
+      title: "Get Chat Messages",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async (params) => {
       try {
         const result = await api.get("/v1/prompt/messages", { params });
@@ -2438,6 +2815,13 @@ function register7(server, client) {
     {
       promptId: import_zod7.z.string().min(1).describe("ID of the message to delete")
     },
+    {
+      title: "Delete Chat Message",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ promptId }) => {
       try {
         const result = await api.delete(`/v1/prompt/message/${promptId}`);
@@ -2456,6 +2840,13 @@ function register7(server, client) {
     "list_prompts",
     "List all available Magic Prompt templates. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
     {},
+    {
+      title: "List Prompt Templates",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async () => {
       try {
         const result = await api.get("/v1/prompt");
@@ -2474,6 +2865,13 @@ function register7(server, client) {
     "get_favorite_prompts",
     "Get all prompts and answers that have been marked as favorites. Useful for finding saved insights and important AI-generated analysis.",
     {},
+    {
+      title: "Get Favorite Prompts",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async () => {
       try {
         const result = await api.get("/v1/prompt/favorites");
@@ -2496,6 +2894,13 @@ function register7(server, client) {
       messageId: import_zod7.z.string().min(1).describe("ID of the specific message to favorite/unfavorite"),
       isFavorite: import_zod7.z.boolean().describe("true to mark as favorite, false to remove")
     },
+    {
+      title: "Toggle Prompt Favorite",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/prompt/favorites", body);
@@ -2516,6 +2921,13 @@ function register7(server, client) {
     {
       promptId: import_zod7.z.string().min(1).describe("ID of the conversation to rename"),
       title: import_zod7.z.string().min(1).describe("New title for the conversation")
+    },
+    {
+      title: "Rename Chat",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ promptId, title }) => {
       try {
@@ -2540,6 +2952,13 @@ function register7(server, client) {
       score: import_zod7.z.number().describe("Feedback score: 1 for thumbs up, -1 for thumbs down"),
       reason: import_zod7.z.string().optional().describe("Optional explanation for the feedback")
     },
+    {
+      title: "Submit Chat Feedback",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/prompt/feedback", body);
@@ -2561,6 +2980,13 @@ function register7(server, client) {
       startDate: import_zod7.z.string().optional().describe("Start date for stats (ISO 8601)"),
       endDate: import_zod7.z.string().optional().describe("End date for stats (ISO 8601)")
     },
+    {
+      title: "Get Chat Statistics",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async (params) => {
       try {
         const result = await api.get("/v1/prompt/statistics", { params });
@@ -2580,6 +3006,13 @@ function register7(server, client) {
     "Export a Magic Prompt conversation or answer. Useful for saving AI-generated summaries, reports, or analysis results.",
     {
       promptId: import_zod7.z.string().min(1).describe("ID of the conversation to export")
+    },
+    {
+      title: "Export Chat Answer",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2622,6 +3055,13 @@ function register8(server, client) {
       page: import_zod8.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
       pageSize: import_zod8.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)")
     },
+    {
+      title: "List Meeting Events",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async (params) => {
       try {
         const result = await api.get("/v1/meeting-assistant/events", {
@@ -2646,6 +3086,13 @@ function register8(server, client) {
       title: import_zod8.z.string().optional().describe("Display title for the event"),
       scheduledAt: import_zod8.z.string().optional().describe("ISO 8601 datetime for when the meeting starts")
     },
+    {
+      title: "Schedule AI Meeting Assistant",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post(
@@ -2668,6 +3115,13 @@ function register8(server, client) {
     "Remove the Speak AI assistant from an active or scheduled meeting.",
     {
       meetingAssistantEventId: import_zod8.z.string().describe("Unique identifier of the meeting assistant event")
+    },
+    {
+      title: "Remove Assistant from Meeting",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ meetingAssistantEventId }) => {
       try {
@@ -2692,6 +3146,13 @@ function register8(server, client) {
     "Cancel and delete a scheduled meeting assistant event.",
     {
       meetingAssistantEventId: import_zod8.z.string().describe("Unique identifier of the meeting assistant event to cancel")
+    },
+    {
+      title: "Cancel Scheduled Meeting Assistant",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ meetingAssistantEventId }) => {
       try {
@@ -2731,6 +3192,13 @@ function register9(server, client) {
     "list_fields",
     "List all custom fields defined in the workspace.",
     {},
+    {
+      title: "List Custom Fields",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async () => {
       try {
         const result = await api.get("/v1/fields");
@@ -2753,6 +3221,13 @@ function register9(server, client) {
       type: import_zod9.z.string().optional().describe("Field type (text, number, select, etc.)"),
       options: import_zod9.z.array(import_zod9.z.string()).optional().describe("Options for select/multi-select field types")
     },
+    {
+      title: "Create Custom Field",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/fields", body);
@@ -2772,6 +3247,13 @@ function register9(server, client) {
     "Update multiple custom fields in a single batch operation.",
     {
       fields: import_zod9.z.array(import_zod9.z.record(import_zod9.z.unknown())).describe("Array of field objects to update")
+    },
+    {
+      title: "Bulk Update Custom Fields",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ fields }) => {
       try {
@@ -2795,6 +3277,13 @@ function register9(server, client) {
       name: import_zod9.z.string().optional().describe("New display name"),
       type: import_zod9.z.string().optional().describe("New field type"),
       options: import_zod9.z.array(import_zod9.z.string()).optional().describe("Updated options for select types")
+    },
+    {
+      title: "Update Custom Field",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ id, ...body }) => {
       try {
@@ -2831,6 +3320,13 @@ function register10(server, client) {
     "list_automations",
     "List all automation rules configured in the workspace.",
     {},
+    {
+      title: "List Automations",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async () => {
       try {
         const result = await api.get("/v1/automations");
@@ -2850,6 +3346,13 @@ function register10(server, client) {
     "Get detailed information about a specific automation rule.",
     {
       automationId: import_zod10.z.string().min(1).describe("Unique identifier of the automation")
+    },
+    {
+      title: "Get Automation Details",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ automationId }) => {
       try {
@@ -2873,6 +3376,13 @@ function register10(server, client) {
       trigger: import_zod10.z.record(import_zod10.z.unknown()).optional().describe("Trigger configuration"),
       actions: import_zod10.z.array(import_zod10.z.record(import_zod10.z.unknown())).optional().describe("Array of action configurations"),
       config: import_zod10.z.record(import_zod10.z.unknown()).optional().describe("Full automation configuration object")
+    },
+    {
+      title: "Create Automation",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2898,6 +3408,13 @@ function register10(server, client) {
       actions: import_zod10.z.array(import_zod10.z.record(import_zod10.z.unknown())).optional().describe("Updated action configurations"),
       config: import_zod10.z.record(import_zod10.z.unknown()).optional().describe("Full updated configuration object")
     },
+    {
+      title: "Update Automation",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ automationId, ...body }) => {
       try {
         const result = await api.put(
@@ -2921,6 +3438,13 @@ function register10(server, client) {
     {
       automationId: import_zod10.z.string().min(1).describe("Unique identifier of the automation"),
       enabled: import_zod10.z.boolean().describe("Set to true to enable, false to disable")
+    },
+    {
+      title: "Enable or Disable Automation",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ automationId, enabled }) => {
       try {
@@ -2963,6 +3487,13 @@ function register11(server, client) {
       url: import_zod11.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
       events: import_zod11.z.array(import_zod11.z.string()).optional().describe("Array of event types to subscribe to")
     },
+    {
+      title: "Create Webhook",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/webhook", body);
@@ -2981,6 +3512,13 @@ function register11(server, client) {
     "list_webhooks",
     "List all configured webhooks in the workspace.",
     {},
+    {
+      title: "List Webhooks",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async () => {
       try {
         const result = await api.get("/v1/webhook");
@@ -3003,6 +3541,13 @@ function register11(server, client) {
       url: import_zod11.z.string().url().optional().describe("New endpoint URL"),
       events: import_zod11.z.array(import_zod11.z.string()).optional().describe("Updated array of event types")
     },
+    {
+      title: "Update Webhook",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ webhookId, ...body }) => {
       try {
         const result = await api.put(`/v1/webhook/${webhookId}`, body);
@@ -3022,6 +3567,13 @@ function register11(server, client) {
     "Delete a webhook and stop receiving notifications at its endpoint.",
     {
       webhookId: import_zod11.z.string().min(1).describe("Unique identifier of the webhook to delete")
+    },
+    {
+      title: "Delete Webhook",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ webhookId }) => {
       try {
@@ -3075,6 +3627,13 @@ function register12(server, client) {
           fieldCondition: import_zod12.z.enum(Object.values(FilterCondition)).describe("Condition linking multiple filters")
         })
       ).optional().describe("Advanced filters for narrowing search results by tags, speakers, media type, sentiment, folder, etc.")
+    },
+    {
+      title: "Search Media Library",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async (params) => {
       try {
@@ -3130,6 +3689,13 @@ function register13(server, client) {
       tags: import_zod13.z.array(import_zod13.z.string()).optional().describe("Tags for the clip"),
       mergeStrategy: import_zod13.z.enum(["CONCATENATE"]).optional().describe("How to merge multiple segments (default: CONCATENATE)")
     },
+    {
+      title: "Create Highlight Clip",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
     async (body) => {
       try {
         const result = await api.post("/v1/clips", body);
@@ -3151,6 +3717,13 @@ function register13(server, client) {
       clipId: import_zod13.z.string().optional().describe("Get a specific clip by ID"),
       folderId: import_zod13.z.string().optional().describe("Filter clips by folder ID"),
       mediaIds: import_zod13.z.array(import_zod13.z.string()).optional().describe("Filter clips by source media file IDs")
+    },
+    {
+      title: "List Clips",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ clipId, ...params }) => {
       try {
@@ -3176,6 +3749,13 @@ function register13(server, client) {
       description: import_zod13.z.string().optional().describe("New description"),
       tags: import_zod13.z.array(import_zod13.z.string()).optional().describe("New tags")
     },
+    {
+      title: "Update Clip",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
     async ({ clipId, ...body }) => {
       try {
         const result = await api.put(`/v1/clips/${clipId}`, body);
@@ -3195,6 +3775,13 @@ function register13(server, client) {
     "Permanently delete a clip and its associated media file.",
     {
       clipId: import_zod13.z.string().min(1).describe("ID of the clip to delete")
+    },
+    {
+      title: "Delete Clip",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
     },
     async ({ clipId }) => {
       try {
@@ -3264,12 +3851,7 @@ function register14(server, client) {
   const api = client ?? speakClient;
   server.tool(
     "upload_and_analyze",
-    [
-      "Upload media from a URL, wait for processing to complete, then return the transcript and AI insights \u2014 all in one call.",
-      "This is a convenience tool that combines upload_media + polling get_media_status + get_transcript + get_media_insights.",
-      "Processing typically takes 1-3 minutes for audio under 60 minutes.",
-      "Use this when you want the full analysis result without managing the polling loop yourself."
-    ].join(" "),
+    "Upload media and return media_id immediately. After this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.",
     {
       url: import_zod14.z.string().describe("Publicly accessible URL of the media file"),
       name: import_zod14.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
@@ -3277,6 +3859,13 @@ function register14(server, client) {
       sourceLanguage: import_zod14.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: import_zod14.z.string().optional().describe("Folder ID to place the media in"),
       tags: import_zod14.z.string().optional().describe("Comma-separated tags")
+    },
+    {
+      title: "Upload and Analyze Media",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async (params) => {
       try {
@@ -3290,6 +3879,7 @@ function register14(server, client) {
         if (params.tags) uploadBody.tags = params.tags;
         const uploadRes = await api.post("/v1/media/upload", uploadBody);
         const mediaId = uploadRes.data?.data?.mediaId;
+        const state = uploadRes.data?.data?.state ?? "pending";
         if (!mediaId) {
           return {
             content: [{ type: "text", text: `Error: Upload succeeded but no mediaId returned.
@@ -3297,35 +3887,15 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
             isError: true
           };
         }
-        let state = uploadRes.data?.data?.state;
-        let attempts = 0;
-        while (state !== MediaState.PROCESSED && state !== MediaState.FAILED && attempts < MAX_POLL_ATTEMPTS) {
-          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
-          const statusRes = await api.get(`/v1/media/status/${mediaId}`);
-          state = statusRes.data?.data?.state;
-          attempts++;
-        }
-        if (state === MediaState.FAILED) {
-          return {
-            content: [{ type: "text", text: `Error: Processing failed for media ${mediaId}` }],
-            isError: true
-          };
-        }
-        if (state !== MediaState.PROCESSED) {
-          return {
-            content: [{ type: "text", text: `Timeout: Media ${mediaId} is still processing (state: ${state}). Use get_media_status to check later.` }],
-            isError: true
-          };
-        }
-        const [transcriptRes, insightsRes] = await Promise.all([
-          api.get(`/v1/media/transcript/${mediaId}`),
-          api.get(`/v1/media/insight/${mediaId}`)
-        ]);
         const result = {
           mediaId,
-          state: "processed",
-          transcript: transcriptRes.data?.data,
-          insights: insightsRes.data?.data
+          state,
+          message: "Upload accepted. Processing has started in the background.",
+          nextSteps: [
+            `1. Poll get_media_status with mediaId="${mediaId}" every 10-30 seconds.`,
+            `2. When state is "processed" (typically 1-3 min for audio under 60 min), call get_media_insights for the AI summary and get_transcript for the full transcript.`,
+            `3. If state becomes "failed", processing did not complete \u2014 surface the error to the user.`
+          ]
         };
         return {
           content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
@@ -3353,6 +3923,13 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       sourceLanguage: import_zod14.z.string().optional().describe("BCP-47 language code (e.g., 'en-US')"),
       folderId: import_zod14.z.string().optional().describe("Folder ID to place the media in"),
       tags: import_zod14.z.string().optional().describe("Comma-separated tags")
+    },
+    {
+      title: "Upload Local File",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
     },
     async (params) => {
       try {
@@ -3426,7 +4003,7 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
     }
   );
 }
-var import_zod14, fs, path2, POLL_INTERVAL_MS, MAX_POLL_ATTEMPTS;
+var import_zod14, fs, path2;
 var init_workflows = __esm({
   "src/tools/workflows.ts"() {
     "use strict";
@@ -3436,8 +4013,6 @@ var init_workflows = __esm({
     fs = __toESM(require("fs"));
     path2 = __toESM(require("path"));
     init_media_utils();
-    POLL_INTERVAL_MS = 5e3;
-    MAX_POLL_ATTEMPTS = 120;
   }
 });
 
@@ -3493,6 +4068,21 @@ var resources_exports = {};
 __export(resources_exports, {
   registerResources: () => registerResources
 });
+function asJsonContent(uri, data) {
+  return {
+    contents: [
+      {
+        uri,
+        mimeType: "application/json",
+        text: JSON.stringify(data, null, 2)
+      }
+    ]
+  };
+}
+function reportError(label, err) {
+  const detail = formatAxiosError(err);
+  throw new Error(`Speak AI resource '${label}' failed: ${detail}`);
+}
 function registerResources(server, client) {
   const api = client ?? speakClient;
   server.resource(
@@ -3504,17 +4094,9 @@ function registerResources(server, client) {
         const result = await api.get("/v1/media", {
           params: { page: 0, pageSize: 50, sortBy: "createdAt:desc", filterMedia: 2 }
         });
-        return {
-          contents: [
-            {
-              uri: "speakai://media",
-              mimeType: "application/json",
-              text: JSON.stringify(result.data?.data, null, 2)
-            }
-          ]
-        };
-      } catch {
-        return { contents: [] };
+        return asJsonContent("speakai://media", result.data?.data);
+      } catch (err) {
+        reportError("media-library", err);
       }
     }
   );
@@ -3527,17 +4109,9 @@ function registerResources(server, client) {
         const result = await api.get("/v1/folder", {
           params: { page: 0, pageSize: 100, sortBy: "createdAt:desc" }
         });
-        return {
-          contents: [
-            {
-              uri: "speakai://folders",
-              mimeType: "application/json",
-              text: JSON.stringify(result.data?.data, null, 2)
-            }
-          ]
-        };
-      } catch {
-        return { contents: [] };
+        return asJsonContent("speakai://folders", result.data?.data);
+      } catch (err) {
+        reportError("folders", err);
       }
     }
   );
@@ -3548,17 +4122,9 @@ function registerResources(server, client) {
     async () => {
       try {
         const result = await api.get("/v1/media/supportedLanguages");
-        return {
-          contents: [
-            {
-              uri: "speakai://languages",
-              mimeType: "application/json",
-              text: JSON.stringify(result.data?.data, null, 2)
-            }
-          ]
-        };
-      } catch {
-        return { contents: [] };
+        return asJsonContent("speakai://languages", result.data?.data);
+      } catch (err) {
+        reportError("supported-languages", err);
       }
     }
   );
@@ -3569,17 +4135,9 @@ function registerResources(server, client) {
     async (uri, { mediaId }) => {
       try {
         const result = await api.get(`/v1/media/transcript/${mediaId}`);
-        return {
-          contents: [
-            {
-              uri: uri.href,
-              mimeType: "application/json",
-              text: JSON.stringify(result.data?.data, null, 2)
-            }
-          ]
-        };
-      } catch {
-        return { contents: [] };
+        return asJsonContent(uri.href, result.data?.data);
+      } catch (err) {
+        reportError(`transcript(${mediaId})`, err);
       }
     }
   );
@@ -3590,17 +4148,9 @@ function registerResources(server, client) {
     async (uri, { mediaId }) => {
       try {
         const result = await api.get(`/v1/media/insight/${mediaId}`);
-        return {
-          contents: [
-            {
-              uri: uri.href,
-              mimeType: "application/json",
-              text: JSON.stringify(result.data?.data, null, 2)
-            }
-          ]
-        };
-      } catch {
-        return { contents: [] };
+        return asJsonContent(uri.href, result.data?.data);
+      } catch (err) {
+        reportError(`insights(${mediaId})`, err);
       }
     }
   );
@@ -3610,6 +4160,7 @@ var init_resources = __esm({
   "src/resources.ts"() {
     "use strict";
     import_mcp = require("@modelcontextprotocol/sdk/server/mcp.js");
+    init_client();
     init_client();
   }
 });
