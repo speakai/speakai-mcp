@@ -1,13 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { ClipState, MediaType } from "@speakai/shared";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
 
-  server.tool(
+  registerSpeakTool(server, 
     "create_clip",
     [
       "Create a highlight clip from one or more media files by specifying time ranges.",
@@ -57,7 +58,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_clips",
     "List clips, optionally filtered by folder or media files. If clipId is provided, returns a single clip with its download URL (when processed).",
     {
@@ -91,7 +92,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_clip",
     "Update a clip's title, description, or tags.",
     {
@@ -122,7 +123,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "delete_clip",
     "Permanently delete a clip and its associated media file.",
     {

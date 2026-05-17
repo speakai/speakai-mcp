@@ -1,11 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(server, 
     "check_recorder_status",
     "Check whether a recorder/survey is active and accepting submissions.",
     {
@@ -33,7 +34,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "create_recorder",
     "Create a new recorder or survey for collecting audio/video submissions.",
     {
@@ -63,7 +64,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "list_recorders",
     "List all recorders/surveys in the workspace.",
     {
@@ -93,7 +94,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "clone_recorder",
     "Duplicate an existing recorder including all its settings and questions.",
     {
@@ -121,7 +122,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_recorder_info",
     "Get detailed information about a specific recorder including its settings and questions.",
     {
@@ -149,7 +150,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_recorder_recordings",
     "List all submissions/recordings collected by a specific recorder.",
     {
@@ -177,7 +178,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "generate_recorder_url",
     "Generate a shareable public URL for a recorder/survey.",
     {
@@ -205,7 +206,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_recorder_settings",
     "Update configuration settings for a recorder (branding, permissions, etc.).",
     {
@@ -234,7 +235,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_recorder_questions",
     "Update the survey questions for a recorder.",
     {
@@ -265,7 +266,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "delete_recorder",
     "Permanently delete a recorder/survey. Existing recordings are preserved.",
     {

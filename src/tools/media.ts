@@ -1,13 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   // 1. Get signed upload URL
-  server.tool(
+  registerSpeakTool(server, 
     "get_signed_upload_url",
     "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
@@ -46,7 +47,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 2. Upload media
-  server.tool(
+  registerSpeakTool(server, 
     "upload_media",
     "Upload media from a publicly accessible URL. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
     {
@@ -89,7 +90,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true,
+      openWorldHint: false,
     },
     async (body) => {
       try {
@@ -109,7 +110,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 3. List media
-  server.tool(
+  registerSpeakTool(server, 
     "list_media",
     "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_magic_prompt. For deep full-text search across transcripts, use search_media instead.",
     {
@@ -204,7 +205,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 4. Get media insights
-  server.tool(
+  registerSpeakTool(server, 
     "get_media_insights",
     "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_magic_prompt instead.",
     {
@@ -235,7 +236,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 5. Get transcript
-  server.tool(
+  registerSpeakTool(server, 
     "get_transcript",
     "Retrieve the full transcript for a processed media file with speaker labels and timestamps. The media must be in 'processed' state. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
     {
@@ -266,7 +267,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 6. Update transcript speakers
-  server.tool(
+  registerSpeakTool(server, 
     "update_transcript_speakers",
     "Update or rename speaker labels in a media transcript.",
     {
@@ -308,7 +309,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 7. Get media status
-  server.tool(
+  registerSpeakTool(server, 
     "get_media_status",
     "Check the processing status of a media file. States: pending → transcribing → analyzing → processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
     {
@@ -339,7 +340,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 8. Update media metadata
-  server.tool(
+  registerSpeakTool(server, 
     "update_media_metadata",
     "Update metadata fields (name, description, tags, status) for an existing media file.",
     {
@@ -392,7 +393,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 9. Delete media
-  server.tool(
+  registerSpeakTool(server, 
     "delete_media",
     "Permanently delete a media file and all associated transcripts and insights.",
     {
@@ -423,7 +424,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 10. Get captions
-  server.tool(
+  registerSpeakTool(server, 
     "get_captions",
     "Get captions for a media file. Captions are separate from full transcripts and are formatted for display/subtitles.",
     {
@@ -454,7 +455,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 11. List supported languages
-  server.tool(
+  registerSpeakTool(server, 
     "list_supported_languages",
     "List all languages supported for transcription. Use the language codes when uploading media with a specific sourceLanguage.",
     {},
@@ -483,7 +484,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 12. Get media statistics
-  server.tool(
+  registerSpeakTool(server, 
     "get_media_statistics",
     "Get workspace-level media statistics — total counts, processing status breakdown, storage usage, etc.",
     {},
@@ -512,7 +513,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 13. Toggle favorite
-  server.tool(
+  registerSpeakTool(server, 
     "toggle_media_favorite",
     "Mark or unmark a media file as a favorite for quick access.",
     {
@@ -543,7 +544,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 14. Re-analyze media
-  server.tool(
+  registerSpeakTool(server, 
     "reanalyze_media",
     "Re-run AI analysis on a media file using the latest models. Use this after Speak AI has updated its analysis capabilities or if the original analysis was incomplete.",
     {
@@ -574,7 +575,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 15. Bulk update transcript speakers across multiple media
-  server.tool(
+  registerSpeakTool(server, 
     "bulk_update_transcript_speakers",
     "Update or rename speaker labels across multiple media files in a single operation. Applies the same speaker mappings to every specified media file. Use this instead of calling update_transcript_speakers repeatedly when renaming speakers across a project or folder.",
     {
@@ -631,7 +632,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 16. Bulk move media to folder
-  server.tool(
+  registerSpeakTool(server, 
     "bulk_move_media",
     "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
     {

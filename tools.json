@@ -25,7 +25,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "upload_local_file",

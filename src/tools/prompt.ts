@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { AssistantType } from "@speakai/shared";
 
@@ -9,7 +10,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   // ── Chat (Magic Prompt) ─────────────────────────────────────────────
 
-  server.tool(
+  registerSpeakTool(server, 
     "ask_magic_prompt",
     [
       "Ask an AI-powered question about your media using Speak AI's Magic Prompt.",
@@ -88,7 +89,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "retry_magic_prompt",
     "Retry a failed or incomplete Magic Prompt response. Use when a previous ask_magic_prompt call returned an error or incomplete answer.",
     {
@@ -119,7 +120,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   // ── Chat History & Messages ─────────────────────────────────────────
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_chat_history",
     "Get a list of recent Magic Prompt conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_magic_prompt or retrieve full messages via get_chat_messages.",
     {
@@ -154,7 +155,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_chat_messages",
     "Get full message history for conversations. Can filter by promptId for a specific conversation, by media/folder, or search across all chat messages. Returns questions, answers, references, and metadata.",
     {
@@ -210,7 +211,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "delete_chat_message",
     "Delete a specific chat message from conversation history.",
     {
@@ -240,7 +241,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   // ── Prompt Templates & Favorites ────────────────────────────────────
 
-  server.tool(
+  registerSpeakTool(server, 
     "list_prompts",
     "List all available Magic Prompt templates. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
     {},
@@ -266,7 +267,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_favorite_prompts",
     "Get all prompts and answers that have been marked as favorites. Useful for finding saved insights and important AI-generated analysis.",
     {},
@@ -292,7 +293,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "toggle_prompt_favorite",
     "Mark or unmark a chat message as a favorite for easy retrieval later.",
     {
@@ -322,7 +323,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_chat_title",
     "Update the title of a chat conversation for easier identification in history.",
     {
@@ -353,7 +354,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   // ── Chat Feedback & Stats ───────────────────────────────────────────
 
-  server.tool(
+  registerSpeakTool(server, 
     "submit_chat_feedback",
     "Submit feedback on a chat response (thumbs up/down). Helps improve AI answer quality.",
     {
@@ -384,7 +385,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_chat_statistics",
     "Get usage statistics for Magic Prompt / chat. Returns metrics on prompt usage, optionally filtered by date range.",
     {
@@ -413,7 +414,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "export_chat_answer",
     "Export a Magic Prompt conversation or answer. Useful for saving AI-generated summaries, reports, or analysis results.",
     {

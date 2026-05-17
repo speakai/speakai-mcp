@@ -1,11 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(server, 
     "create_webhook",
     "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
     {
@@ -37,7 +38,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "list_webhooks",
     "List all configured webhooks in the workspace.",
     {},
@@ -63,7 +64,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_webhook",
     "Update an existing webhook's URL or subscribed events.",
     {
@@ -96,7 +97,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "delete_webhook",
     "Delete a webhook and stop receiving notifications at its endpoint.",
     {

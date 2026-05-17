@@ -1,11 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(server, 
     "export_media",
     "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
     {
@@ -65,7 +66,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "export_multiple_media",
     "Export multiple media files at once, optionally merged into a single file.",
     {
