@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.8.0 (2026-05-17)
+
+- Updated SDK version in the package
+
 ## v1.7.11 (2026-05-17)
 
 - No user-facing changes made
