@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.7.11 (2026-05-17)
+
+- No user-facing changes made
+
 ## v1.7.10 (2026-05-05)
 
 - No changes made since the last release.
