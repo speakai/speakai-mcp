@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType } from "@speakai/shared";
 import * as fs from "fs";
@@ -10,7 +11,7 @@ import { getMimeType, isVideoFile, detectMediaType } from "../media-utils.js";
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
 
-  server.tool(
+  registerSpeakTool(server, 
     "upload_and_analyze",
     "Upload media and return media_id immediately. After this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
     {
@@ -78,7 +79,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "upload_local_file",
     [
       "Upload a local file to Speak AI for transcription and analysis.",

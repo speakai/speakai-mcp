@@ -1,12 +1,13 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   // Folder Views
-  server.tool(
+  registerSpeakTool(server, 
     "get_all_folder_views",
     "Retrieve all saved views across all folders.",
     {},
@@ -34,7 +35,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_folder_views",
     "Retrieve all saved views for a specific folder.",
     {
@@ -64,7 +65,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "create_folder_view",
     "Create a new saved view for a folder with custom filters and display settings.",
     {
@@ -102,7 +103,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_folder_view",
     "Update an existing saved view's name, filters, or display settings.",
     {
@@ -141,7 +142,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "clone_folder_view",
     "Duplicate an existing folder view.",
     {
@@ -172,7 +173,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // Folders CRUD
-  server.tool(
+  registerSpeakTool(server, 
     "list_folders",
     "List all folders in the workspace with pagination and sorting.",
     {
@@ -207,7 +208,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_folder_info",
     "Get detailed information about a specific folder including its contents.",
     {
@@ -237,7 +238,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "create_folder",
     "Create a new folder in the workspace.",
     {
@@ -271,7 +272,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "clone_folder",
     "Duplicate an existing folder and all of its contents.",
     {
@@ -301,7 +302,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_folder",
     "Update a folder's name or other properties.",
     {
@@ -332,7 +333,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "delete_folder",
     "Permanently delete a folder. Media within the folder will be moved, not deleted.",
     {

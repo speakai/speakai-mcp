@@ -1,0 +1,1084 @@
+{
+  "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
+  "schema_version": 1,
+  "app_info": {
+    "display_name": "Speak AI",
+    "subtitle": "Transcribe and analyze media",
+    "description": "Speak AI transcribes and analyzes your interviews, sales calls, research sessions, webinars, podcasts, and team meetings.\n\nThis connector brings your Speak AI library into your AI assistant, so instead of scrubbing through hours of audio, you can simply ask questions and get answers.\n\nCapture\n\nMeeting assistant\nSend a bot to your Zoom, Google Meet, or Microsoft Teams calls to record, transcribe, and analyze them. Schedule ahead, join a live call, or remove it whenever needed.\n\nUpload anything\nUpload audio, video, or text. Get a transcript and AI insights back in the same thread.\n\nAsync surveys\nSet up voice and video recorders with custom questions, share a link, and collect responses for research, candidate screens, customer feedback, or team check-ins.\n\nAnalyze\n\nMulti-file analysis\nSearch and reason across thousands of recordings at once. Group customer feedback by theme, compare answers across interviews, or pull every mention of a topic with citations back to the source.\n\nAI chat with your library\nAsk follow-up questions, save favorite prompts, and keep a full chat history per recording or across your whole workspace.\n\nSummarize and extract\nExtract decisions, action items, owners, risks, sentiment, themes, and exact quotes from any conversation.\n\nAct\n\nCreate\nCreate clips, highlights, captions, text notes, folders, custom fields, and embeds directly from chat.\n\nMulti-step workflows\nChain actions together with automations and webhooks. Auto-tag new recordings, route insights to other tools, trigger follow-ups when a meeting ends, or run a custom prompt against every new upload.\n\nShare & Organize\n\nShare\nExport answers, transcripts, captions, and clips. Generate embed links and shareable views to send insights to teammates or stakeholders without giving them access to your whole workspace.\n\nOrganize at scale\nBulk move media, update transcripts and speakers, manage folders and views, and clone setups across teams.\n\nWho It's For\n\nSpeak AI is built for researchers, customer-success teams, meeting-heavy operators, and media and content workflows - anyone who records conversations and wants to stop re-listening to find what matters.\n\nPrivacy\n\nYour recordings stay in your Speak AI workspace. The connector only queries them with the permissions you allow.",
+    "category": "COLLABORATION"
+  },
+  "tools": {
+    "get_signed_upload_url": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Signed Upload URL only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Signed Upload URL only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Signed Upload URL does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "upload_media": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Upload Media from URL creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Upload Media from URL creates a private media record in the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Upload Media from URL does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "upload_local_file": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Upload Local File creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Upload Local File only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Upload Local File does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "upload_and_analyze": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Upload and Analyze Media creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Upload and Analyze Media only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Upload and Analyze Media does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "list_media": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "List Media Files only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "List Media Files only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "List Media Files does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_media_insights": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Media Insights only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Media Insights only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Media Insights does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_transcript": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Transcript only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Transcript only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Transcript does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_captions": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Captions only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Captions only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Captions does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_transcript_speakers": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Rename Transcript Speakers changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Rename Transcript Speakers only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Rename Transcript Speakers can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "bulk_update_transcript_speakers": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Bulk Rename Speakers Across Files changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Bulk Rename Speakers Across Files only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Bulk Rename Speakers Across Files can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "get_media_status": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Media Status only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Media Status only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Media Status does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_media_metadata": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Update Media Metadata creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Media Metadata only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Update Media Metadata does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "delete_media": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Delete Media File changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Delete Media File only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Delete Media File can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "toggle_media_favorite": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Toggle Media Favorite creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Toggle Media Favorite only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Toggle Media Favorite does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "reanalyze_media": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Re-analyze Media creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Re-analyze Media only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Re-analyze Media does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "bulk_move_media": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Bulk Move Media Files changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Bulk Move Media Files only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Bulk Move Media Files can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "ask_magic_prompt": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Ask AI About Your Recordings only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Ask AI About Your Recordings only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Ask AI About Your Recordings does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "retry_magic_prompt": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Retry AI Question only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Retry AI Question only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Retry AI Question does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_chat_history": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Chat History only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Chat History only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Chat History does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_chat_messages": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Chat Messages only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Chat Messages only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Chat Messages does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "delete_chat_message": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Delete Chat Message changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Delete Chat Message only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Delete Chat Message can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "list_prompts": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "List Prompt Templates only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "List Prompt Templates only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "List Prompt Templates does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_favorite_prompts": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Favorite Prompts only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Favorite Prompts only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Favorite Prompts does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "toggle_prompt_favorite": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Toggle Prompt Favorite creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Toggle Prompt Favorite only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Toggle Prompt Favorite does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_chat_title": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Rename Chat creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Rename Chat only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Rename Chat does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "submit_chat_feedback": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Submit Chat Feedback creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Submit Chat Feedback only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Submit Chat Feedback does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_chat_statistics": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Chat Statistics only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Chat Statistics only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Chat Statistics does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "export_chat_answer": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Export Chat Answer only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Export Chat Answer only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Export Chat Answer does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "search_media": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Search Media Library only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Search Media Library only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Search Media Library does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_media_statistics": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Media Statistics only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Media Statistics only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Media Statistics does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "list_supported_languages": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "List Supported Languages only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "List Supported Languages only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "List Supported Languages does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "list_folders": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "List Folders only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "List Folders only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "List Folders does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_folder_info": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Folder Info only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Folder Info only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Folder Info does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "create_folder": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Create Folder creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Create Folder only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Create Folder does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "clone_folder": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Clone Folder creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Clone Folder only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Clone Folder does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_folder": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Update Folder creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Folder only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Update Folder does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "delete_folder": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Delete Folder changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Delete Folder only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Delete Folder can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "get_all_folder_views": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get All Folder Views only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get All Folder Views only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get All Folder Views does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_folder_views": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Folder Views only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Folder Views only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Folder Views does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "create_folder_view": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Create Folder View creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Create Folder View only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Create Folder View does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_folder_view": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Update Folder View creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Folder View only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Update Folder View does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "clone_folder_view": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Clone Folder View creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Clone Folder View only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Clone Folder View does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "create_recorder": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Create Recorder creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Create Recorder can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Create Recorder does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "list_recorders": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "List Recorders only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "List Recorders only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "List Recorders does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_recorder_info": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Recorder Info only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Recorder Info only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Recorder Info does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "clone_recorder": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Clone Recorder creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Clone Recorder can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Clone Recorder does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_recorder_recordings": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Recorder Submissions only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Recorder Submissions only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Recorder Submissions does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "generate_recorder_url": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Generate Recorder Share URL only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Generate Recorder Share URL can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Generate Recorder Share URL does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_recorder_settings": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Update Recorder Settings creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Recorder Settings can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Update Recorder Settings does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_recorder_questions": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Update Recorder Questions changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Recorder Questions can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Update Recorder Questions can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "check_recorder_status": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Check Recorder Status only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Check Recorder Status only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Check Recorder Status does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "delete_recorder": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Delete Recorder changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Delete Recorder can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Delete Recorder can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "create_clip": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Create Highlight Clip creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Create Highlight Clip only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Create Highlight Clip does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_clips": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "List Clips only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "List Clips only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "List Clips does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_clip": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Update Clip creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Clip only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Update Clip does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "delete_clip": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Delete Clip changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Delete Clip only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Delete Clip can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "export_media": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Export Media Transcript only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Export Media Transcript only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Export Media Transcript does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "export_multiple_media": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Export Multiple Media Files only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Export Multiple Media Files only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Export Multiple Media Files does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "list_meeting_events": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "List Meeting Events only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "List Meeting Events only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "List Meeting Events does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "schedule_meeting_event": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Schedule AI Meeting Assistant creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Schedule AI Meeting Assistant can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Schedule AI Meeting Assistant does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "remove_assistant_from_meeting": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Remove Assistant from Meeting creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Remove Assistant from Meeting can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Remove Assistant from Meeting does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "delete_scheduled_assistant": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Cancel Scheduled Meeting Assistant changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Cancel Scheduled Meeting Assistant can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Cancel Scheduled Meeting Assistant can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "list_automations": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "List Automations only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "List Automations only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "List Automations does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_automation": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Automation Details only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Automation Details only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Automation Details does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "create_automation": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Create Automation creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Create Automation only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Create Automation does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_automation": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Update Automation creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Automation only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Update Automation does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "toggle_automation_status": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Enable or Disable Automation creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Enable or Disable Automation only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Enable or Disable Automation does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "create_webhook": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Create Webhook creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Create Webhook can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Create Webhook does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "list_webhooks": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "List Webhooks only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "List Webhooks only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "List Webhooks does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_webhook": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Update Webhook creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Webhook can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Update Webhook does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "delete_webhook": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Delete Webhook changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Delete Webhook can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Delete Webhook can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "create_text_note": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Create Text Note creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Create Text Note only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Create Text Note does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_text_insight": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Text Note Insights only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Text Note Insights only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Text Note Insights does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "reanalyze_text": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Re-analyze Text Note creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Re-analyze Text Note only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Re-analyze Text Note does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_text_note": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": true
+      },
+      "justifications": {
+        "read_only_justification": "Update Text Note changes existing Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Text Note only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Update Text Note can delete, overwrite, cancel, remove, or otherwise irreversibly change existing workspace data."
+      }
+    },
+    "list_fields": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "List Custom Fields only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "List Custom Fields only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "List Custom Fields does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "create_field": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Create Custom Field creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Create Custom Field only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Create Custom Field does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_field": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Update Custom Field creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Custom Field only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Update Custom Field does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_multiple_fields": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Bulk Update Custom Fields creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Bulk Update Custom Fields only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Bulk Update Custom Fields does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "create_embed": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Create Embed Widget creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Create Embed Widget can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Create Embed Widget does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "update_embed": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": true,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Update Embed Widget creates or updates Speak AI workspace data and is not read-only.",
+        "open_world_justification": "Update Embed Widget can affect externally accessible Speak AI resources or connected third-party endpoints.",
+        "destructive_justification": "Update Embed Widget does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "check_embed": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Check Embed Exists only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Check Embed Exists only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Check Embed Exists does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    },
+    "get_embed_iframe_url": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Get Embed Iframe URL only retrieves or computes data from the user's Speak AI workspace and does not create, update, or delete records.",
+        "open_world_justification": "Get Embed Iframe URL only operates within the user's Speak AI workspace and does not publish to public internet state.",
+        "destructive_justification": "Get Embed Iframe URL does not delete, overwrite, revoke access, or perform irreversible actions."
+      }
+    }
+  },
+  "test_cases": [
+    {
+      "description": "List recent media in the Speak AI workspace.",
+      "user_prompt": "Use Speak AI to list my 10 most recent media files with each file name, media ID, media type, processing state, and created date.",
+      "file_attachment_urls": null,
+      "tools_triggered": "list_media",
+      "expected_output": "Returns up to 10 recent Speak AI media records with names, media IDs, media types, processing states, and created dates, or clearly states that no matching media was found.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Search recordings and transcripts for pricing feedback.",
+      "user_prompt": "Use Speak AI to search my media library for recordings or transcripts that mention pricing feedback. Return the most relevant matches with media IDs and short snippets or summaries.",
+      "file_attachment_urls": null,
+      "tools_triggered": "search_media",
+      "expected_output": "Returns relevant Speak AI search results for pricing feedback with enough source detail, such as media IDs, names, snippets, or summaries, for the user to open the recordings.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Check processing status for a known media file.",
+      "user_prompt": "Use Speak AI to check the processing status for media ID 8ab98de8cf13.",
+      "file_attachment_urls": null,
+      "tools_triggered": "get_media_status",
+      "expected_output": "Returns the current processing state for media ID 8ab98de8cf13, such as pending, transcribing, analyzing, processed, or failed, and does not invent transcript content.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Retrieve a transcript for a known processed media file.",
+      "user_prompt": "Use Speak AI to get the transcript for media ID 8ab98de8cf13. Include speaker labels and timestamps if Speak AI returns them.",
+      "file_attachment_urls": null,
+      "tools_triggered": "get_transcript",
+      "expected_output": "Returns the transcript data for media ID 8ab98de8cf13 with speaker and timestamp information when available, or reports the exact Speak AI processing/error state if the transcript is not available.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Ask a focused AI question about one recording.",
+      "user_prompt": "Use Speak AI to answer this question about media ID 8ab98de8cf13: What are the key decisions, action items, owners, risks, and notable quotes?",
+      "file_attachment_urls": null,
+      "tools_triggered": "ask_magic_prompt",
+      "expected_output": "Returns an AI answer grounded in media ID 8ab98de8cf13, organized around decisions, action items, owners, risks, and notable quotes, with source references when Speak AI provides them.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Create a text note for analysis from user-provided text.",
+      "user_prompt": "Use Speak AI to create a text note named OpenAI Review Test Note with this content: Customer A said onboarding was smooth, Customer B asked for clearer pricing, and Customer C wanted faster export workflows. Tag it openai-review-test.",
+      "file_attachment_urls": null,
+      "tools_triggered": "create_text_note",
+      "expected_output": "Creates a Speak AI text note from the provided text, returns the created media or note ID and initial analysis state, and explains that any AI analysis may complete asynchronously.",
+      "expected_output_url": null
+    }
+  ],
+  "negative_test_cases": [
+    {
+      "description": "Do not invoke Speak AI for general web news.",
+      "user_prompt": "Search the web for the latest OpenAI news and summarize the top stories.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The Speak AI app should not be invoked because the request is a general web search unrelated to the user's Speak AI workspace.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not invoke Speak AI for calendar scheduling without meeting-assistant intent.",
+      "user_prompt": "Put a dentist appointment on my Google Calendar tomorrow at 2 PM.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The Speak AI app should not be invoked because the request is ordinary calendar scheduling and does not ask for a Speak AI meeting assistant.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Do not invoke Speak AI to directly transcribe unsupported external media.",
+      "user_prompt": "Transcribe this YouTube video directly and give me the full transcript: https://www.youtube.com/watch?v=dQw4w9WgXcQ.",
+      "file_attachment_urls": null,
+      "tools_triggered": null,
+      "expected_output": "The Speak AI app should not be invoked unless the user asks to upload supported media to their Speak AI workspace; it should not claim to directly transcribe YouTube content outside Speak AI.",
+      "expected_output_url": null
+    }
+  ]
+}

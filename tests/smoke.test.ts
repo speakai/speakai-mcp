@@ -30,7 +30,7 @@ describe("MCP Server Smoke Tests", () => {
     server = new McpServer({ name: "speak-ai-test", version: "1.0.0" });
   });
 
-  it("registers all 82 MCP tools without errors", async () => {
+  it("registers all 83 MCP tools without errors", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
     expect(() => registerAllTools(server)).not.toThrow();
 
@@ -58,6 +58,46 @@ describe("MCP Server Smoke Tests", () => {
       expect(tool.description, `Tool ${name} missing description`).toBeTruthy();
       expect(tool.description.length).toBeGreaterThan(10);
     }
+  });
+
+  it("every tool declares Apps SDK annotations and an output schema", async () => {
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server);
+
+    const tools = getRegisteredTools(server);
+    for (const [name, tool] of Object.entries(tools)) {
+      expect(tool.outputSchema, `Tool ${name} missing outputSchema`).toBeTruthy();
+      expect(
+        tool.annotations?.readOnlyHint,
+        `Tool ${name} missing readOnlyHint`
+      ).toBeTypeOf("boolean");
+      expect(
+        tool.annotations?.openWorldHint,
+        `Tool ${name} missing openWorldHint`
+      ).toBeTypeOf("boolean");
+      expect(
+        tool.annotations?.destructiveHint,
+        `Tool ${name} missing destructiveHint`
+      ).toBeTypeOf("boolean");
+    }
+  });
+
+  it("adds structuredContent to tool responses", async () => {
+    const mockClient = {
+      get: vi.fn().mockResolvedValue({ data: { data: [{ id: "media-1" }] } }),
+      post: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
+    };
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server, mockClient as any);
+
+    const tools = getRegisteredTools(server);
+    const result = await tools.list_media.handler({}, {});
+
+    expect(result.structuredContent).toEqual({
+      data: { data: [{ id: "media-1" }] },
+    });
   });
 
   it("registers all 5 MCP resources without errors", async () => {
