@@ -66,7 +66,7 @@
         {
           "name": "get_transcript",
           "title": "Get Transcript",
-          "description": "Retrieve the full transcript for a processed media file with speaker labels and timestamps. The media must be in 'processed' state. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
+          "description": "Retrieve the full transcript for a media file with speaker labels and timestamps. Works on processed media and also returns the partial, in-progress transcript while a meeting bot is still recording (LIVE_TRANSCRIPT state). To fetch only the new sentences added since your previous call during a live meeting, use get_live_meeting_transcript instead. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -613,6 +613,15 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
+          "openWorldHint": true
+        },
+        {
+          "name": "get_live_meeting_transcript",
+          "title": "Get Live Meeting Transcript",
+          "description": "Pull the transcript for an in-progress (or just-ended) meeting and receive only the sentences added since your last call. Pass meetingAssistantEventId from list_meeting_events (preferred) or mediaId directly. Pass sinceEndInSec from the previous response's nextCursor to skip already-seen sentences; omit it on the first call. Returns newSentences, nextCursor (pass back on the next call), isLive (true while the bot is recording), and meetingStatus. Works while the meeting is live and after it ends.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": false,
           "openWorldHint": true
         }
       ]

@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 83 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 84 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -250,6 +250,7 @@ Speak AI ships 83 tools your AI assistant can call. You don't memorize them — 
 | "Summarize this week's meetings into decisions, owners, and risks" | `list_media`, `get_media_insights` |
 | "Pull action items from yesterday's call" | `get_media_insights`, `ask_magic_prompt` |
 | "Schedule the AI to join my 2pm Zoom" | `schedule_meeting_event` |
+| "Pull the live transcript from my current MS Teams meeting since last fetch" | `list_meeting_events`, `get_live_meeting_transcript` |
 | "Find a 30-second webinar highlight and export captions" | `create_clip`, `export_media` |
 | "Export the transcript as a PDF and captions as SRT" | `export_media` |
 | "Compare Q1 sales calls against Q2 sales calls and summarize changed objections" | `search_media`, `ask_magic_prompt` |
@@ -526,7 +527,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Meeting Assistant (4 tools)</summary>
+<summary>Meeting Assistant (5 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -534,6 +535,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `schedule_meeting_event` | Schedule AI assistant to join a meeting |
 | `remove_assistant_from_meeting` | Remove assistant from active meeting |
 | `delete_scheduled_assistant` | Cancel a scheduled meeting assistant |
+| `get_live_meeting_transcript` | Pull only the new sentences added to a live (or just-ended) meeting transcript since your previous call. Works on Zoom / Google Meet / MS Teams while the bot is recording. |
 
 </details>
 

@@ -1,6 +1,6 @@
 ---
 name: speakai
-description: Capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows with Speak AI through MCP. 83 tools across media, transcripts, AI insights, folders, recorders, automations, and exports.
+description: Capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows with Speak AI through MCP. 84 tools across media, transcripts, AI insights, folders, recorders, automations, and exports.
 version: 1.8.0
 metadata:
   openclaw:
@@ -10,7 +10,7 @@ metadata:
 
 # Speak AI
 
-Connect your agent to Speak AI — transcribe and analyze interviews, sales calls, research sessions, meetings, podcasts, webinars, and videos. The skill exposes **83 MCP tools, 5 resources, and 3 multi-step prompts** for searching, summarizing, clipping, exporting, and automating across a Speak AI workspace.
+Connect your agent to Speak AI — transcribe and analyze interviews, sales calls, research sessions, meetings, podcasts, webinars, and videos. The skill exposes **84 MCP tools, 5 resources, and 3 multi-step prompts** for searching, summarizing, clipping, exporting, and automating across a Speak AI workspace.
 
 Recordings stay in the user's Speak AI workspace. The agent only queries them with the permissions the user allows.
 
@@ -108,7 +108,7 @@ Use the Speak AI tools when the user wants to:
 - Ask Magic Prompt questions across one file, a folder, or the whole workspace.
 - Run async voice or video surveys via recorders.
 
-## Tool catalog (83 tools)
+## Tool catalog (84 tools)
 
 Pick the narrowest tool that satisfies the user's request. Categories:
 
@@ -118,7 +118,7 @@ Pick the narrowest tool that satisfies the user's request. Categories:
 | Magic Prompt / AI Chat (12) | ask, retry, history, prompt templates, favorites, feedback, export, stats | `ask_magic_prompt`, `list_prompts`, `export_chat_answer` |
 | Folders & Views (11) | list, create, update, clone, delete, saved views | `list_folders`, `create_folder`, `create_folder_view` |
 | Recorders / Surveys (10) | create, list, update questions, generate URL, recordings, status, delete | `create_recorder`, `generate_recorder_url`, `get_recorder_recordings` |
-| Meeting Assistant (4) | schedule, list events, remove, cancel | `schedule_meeting_event`, `list_meeting_events` |
+| Meeting Assistant (5) | schedule, list events, remove, cancel, pull live transcript incrementally | `schedule_meeting_event`, `list_meeting_events`, `get_live_meeting_transcript` |
 | Clips (4) | create, list, update, delete | `create_clip`, `get_clips` |
 | Custom Fields (4) | list, create, update, batch update | `list_fields`, `update_multiple_fields` |
 | Webhooks (4) | create, list, update, delete | `create_webhook` |

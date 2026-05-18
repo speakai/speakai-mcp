@@ -147,4 +147,110 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       }
     }
   );
+
+  registerSpeakTool(server,
+    "get_live_meeting_transcript",
+    "Pull the transcript for an in-progress (or just-ended) meeting and receive only the sentences added since your last call. Pass meetingAssistantEventId from list_meeting_events (preferred) or mediaId directly. Pass sinceEndInSec from the previous response's nextCursor to skip already-seen sentences; omit it on the first call. Returns newSentences, nextCursor (pass back on the next call), isLive (true while the bot is recording), and meetingStatus. Works while the meeting is live and after it ends.",
+    {
+      meetingAssistantEventId: z
+        .string()
+        .optional()
+        .describe("Meeting assistant event id from list_meeting_events. Either this or mediaId is required."),
+      mediaId: z
+        .string()
+        .optional()
+        .describe("Media id of the live meeting. Either this or meetingAssistantEventId is required."),
+      sinceEndInSec: z
+        .number()
+        .min(0)
+        .optional()
+        .describe("Pass the nextCursor value from your previous response to skip already-seen sentences. Omit on the first call."),
+    },
+    {
+      title: "Get Live Meeting Transcript",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+    async ({ meetingAssistantEventId, mediaId, sinceEndInSec }) => {
+      if (!meetingAssistantEventId && !mediaId) {
+        return {
+          content: [{ type: "text", text: "Error: provide either meetingAssistantEventId or mediaId." }],
+          isError: true,
+        };
+      }
+
+      try {
+        let resolvedMediaId = mediaId;
+        let meetingStatus: string | null = null;
+        let meetingName: string | undefined;
+
+        if (meetingAssistantEventId) {
+          const eventsRes = await api.get("/v1/meeting-assistant/events", {
+            params: { pageSize: 500 },
+          });
+          const events = (eventsRes.data?.data?.events ?? eventsRes.data?.events ?? []) as Array<{
+            meetingAssistantEventId?: string;
+            currentStatus?: string;
+            title?: string;
+            mediaId?: { mediaId?: string } | string | null;
+          }>;
+          const event = events.find((e) => e.meetingAssistantEventId === meetingAssistantEventId);
+          if (!event) {
+            return {
+              content: [{ type: "text", text: JSON.stringify({ status: "not_found", meetingAssistantEventId }, null, 2) }],
+              structuredContent: { data: { status: "not_found", meetingAssistantEventId } },
+            };
+          }
+          meetingStatus = event.currentStatus ?? null;
+          meetingName = event.title;
+          const mediaRef = event.mediaId;
+          const linkedMediaId = typeof mediaRef === "string" ? mediaRef : mediaRef?.mediaId;
+          if (!linkedMediaId) {
+            const payload = {
+              status: "not_started",
+              meetingAssistantEventId,
+              meetingStatus,
+              message: "Meeting has no linked media yet — the bot may not have joined or started recording.",
+            };
+            return {
+              content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+              structuredContent: { data: payload },
+            };
+          }
+          resolvedMediaId = linkedMediaId;
+        }
+
+        const transcriptRes = await api.get(`/v1/media/transcript/${resolvedMediaId}`, {
+          params: Number.isFinite(sinceEndInSec) ? { sinceEndInSec } : undefined,
+        });
+        const data = transcriptRes.data?.data ?? transcriptRes.data ?? {};
+        const sentences = (data?.insight?.transcript ?? []) as Array<{
+          instances?: Array<{ endInSec?: number }>;
+        }>;
+        const maxEnd = sentences.reduce((m, s) => Math.max(m, s.instances?.[0]?.endInSec ?? 0), 0);
+        const nextCursor = sentences.length > 0 ? maxEnd : (sinceEndInSec ?? 0);
+
+        const payload = {
+          mediaId: resolvedMediaId,
+          name: data?.name ?? meetingName ?? null,
+          meetingStatus,
+          isLive: meetingStatus === "inCallRecording",
+          newSentences: sentences,
+          nextCursor,
+        };
+
+        return {
+          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+          structuredContent: { data: payload },
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
 }

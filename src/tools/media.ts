@@ -238,7 +238,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 5. Get transcript
   registerSpeakTool(server, 
     "get_transcript",
-    "Retrieve the full transcript for a processed media file with speaker labels and timestamps. The media must be in 'processed' state. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
+    "Retrieve the full transcript for a media file with speaker labels and timestamps. Works on processed media and also returns the partial, in-progress transcript while a meeting bot is still recording (LIVE_TRANSCRIPT state). To fetch only the new sentences added since your previous call during a live meeting, use get_live_meeting_transcript instead. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },

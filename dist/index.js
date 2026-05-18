@@ -1335,7 +1335,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "get_transcript",
-    "Retrieve the full transcript for a processed media file with speaker labels and timestamps. The media must be in 'processed' state. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
+    "Retrieve the full transcript for a media file with speaker labels and timestamps. Works on processed media and also returns the partial, in-progress transcript while a meeting bot is still recording (LIVE_TRANSCRIPT state). To fetch only the new sentences added since your previous call during a live meeting, use get_live_meeting_transcript instead. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
     },
@@ -3300,6 +3300,90 @@ function register8(server, client) {
         );
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_live_meeting_transcript",
+    "Pull the transcript for an in-progress (or just-ended) meeting and receive only the sentences added since your last call. Pass meetingAssistantEventId from list_meeting_events (preferred) or mediaId directly. Pass sinceEndInSec from the previous response's nextCursor to skip already-seen sentences; omit it on the first call. Returns newSentences, nextCursor (pass back on the next call), isLive (true while the bot is recording), and meetingStatus. Works while the meeting is live and after it ends.",
+    {
+      meetingAssistantEventId: import_zod9.z.string().optional().describe("Meeting assistant event id from list_meeting_events. Either this or mediaId is required."),
+      mediaId: import_zod9.z.string().optional().describe("Media id of the live meeting. Either this or meetingAssistantEventId is required."),
+      sinceEndInSec: import_zod9.z.number().min(0).optional().describe("Pass the nextCursor value from your previous response to skip already-seen sentences. Omit on the first call.")
+    },
+    {
+      title: "Get Live Meeting Transcript",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async ({ meetingAssistantEventId, mediaId, sinceEndInSec }) => {
+      if (!meetingAssistantEventId && !mediaId) {
+        return {
+          content: [{ type: "text", text: "Error: provide either meetingAssistantEventId or mediaId." }],
+          isError: true
+        };
+      }
+      try {
+        let resolvedMediaId = mediaId;
+        let meetingStatus = null;
+        let meetingName;
+        if (meetingAssistantEventId) {
+          const eventsRes = await api.get("/v1/meeting-assistant/events", {
+            params: { pageSize: 500 }
+          });
+          const events = eventsRes.data?.data?.events ?? eventsRes.data?.events ?? [];
+          const event = events.find((e) => e.meetingAssistantEventId === meetingAssistantEventId);
+          if (!event) {
+            return {
+              content: [{ type: "text", text: JSON.stringify({ status: "not_found", meetingAssistantEventId }, null, 2) }],
+              structuredContent: { data: { status: "not_found", meetingAssistantEventId } }
+            };
+          }
+          meetingStatus = event.currentStatus ?? null;
+          meetingName = event.title;
+          const mediaRef = event.mediaId;
+          const linkedMediaId = typeof mediaRef === "string" ? mediaRef : mediaRef?.mediaId;
+          if (!linkedMediaId) {
+            const payload2 = {
+              status: "not_started",
+              meetingAssistantEventId,
+              meetingStatus,
+              message: "Meeting has no linked media yet \u2014 the bot may not have joined or started recording."
+            };
+            return {
+              content: [{ type: "text", text: JSON.stringify(payload2, null, 2) }],
+              structuredContent: { data: payload2 }
+            };
+          }
+          resolvedMediaId = linkedMediaId;
+        }
+        const transcriptRes = await api.get(`/v1/media/transcript/${resolvedMediaId}`, {
+          params: Number.isFinite(sinceEndInSec) ? { sinceEndInSec } : void 0
+        });
+        const data = transcriptRes.data?.data ?? transcriptRes.data ?? {};
+        const sentences = data?.insight?.transcript ?? [];
+        const maxEnd = sentences.reduce((m, s) => Math.max(m, s.instances?.[0]?.endInSec ?? 0), 0);
+        const nextCursor = sentences.length > 0 ? maxEnd : sinceEndInSec ?? 0;
+        const payload = {
+          mediaId: resolvedMediaId,
+          name: data?.name ?? meetingName ?? null,
+          meetingStatus,
+          isLive: meetingStatus === "inCallRecording",
+          newSentences: sentences,
+          nextCursor
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+          structuredContent: { data: payload }
         };
       } catch (err) {
         return {
