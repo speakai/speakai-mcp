@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.10.0 (2026-05-18)
+
+- Added live meeting transcription feature.
+
 ## v1.9.0 (2026-05-18)
 
 - Added Live Transcript workflow feature
