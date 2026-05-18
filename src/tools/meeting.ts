@@ -13,7 +13,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       platformType: z
         .string()
         .optional()
-        .describe("Filter by platform (e.g. zoom, teams, meet)"),
+        .describe("Filter by platform. Allowed values: zoom, googleMeet, microsoftTeams, webex. Comma-separate for multiple. Must match these exact strings — server validates strictly."),
       meetingStatus: z
         .string()
         .optional()
@@ -150,7 +150,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "get_live_meeting_transcript",
-    "Pull the transcript for an in-progress (or just-ended) meeting and receive only the sentences added since your last call. Pass meetingAssistantEventId from list_meeting_events (preferred) or mediaId directly. Pass sinceEndInSec from the previous response's nextCursor to skip already-seen sentences; omit it on the first call. Returns newSentences, nextCursor (pass back on the next call), isLive (true while the bot is recording), and meetingStatus. Works while the meeting is live and after it ends.",
+    "Fetch new sentences from an in-progress or just-ended meeting transcript. Identify the meeting via meetingAssistantEventId (preferred) or mediaId. Pass back the previous response's nextCursor as sinceEndInSec to receive only what's been added since.",
     {
       meetingAssistantEventId: z
         .string()
@@ -188,7 +188,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
         if (meetingAssistantEventId) {
           const eventsRes = await api.get("/v1/meeting-assistant/events", {
-            params: { pageSize: 500 },
+            params: { pageSize: 50, sortBy: "startTime:desc" },
           });
           const events = (eventsRes.data?.data?.events ?? eventsRes.data?.events ?? []) as Array<{
             meetingAssistantEventId?: string;

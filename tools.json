@@ -582,7 +582,7 @@
         {
           "name": "list_meeting_events",
           "title": "List Meeting Events",
-          "description": "List scheduled or completed meeting assistant events with filtering and pagination.",
+          "description": "List scheduled or completed meeting assistant events. Filter by platformType (zoom, googleMeet, microsoftTeams, webex) — comma-separate for multiple; values must match these exact enum strings. Supports pagination.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -618,7 +618,7 @@
         {
           "name": "get_live_meeting_transcript",
           "title": "Get Live Meeting Transcript",
-          "description": "Pull the transcript for an in-progress (or just-ended) meeting and receive only the sentences added since your last call. Pass meetingAssistantEventId from list_meeting_events (preferred) or mediaId directly. Pass sinceEndInSec from the previous response's nextCursor to skip already-seen sentences; omit it on the first call. Returns newSentences, nextCursor (pass back on the next call), isLive (true while the bot is recording), and meetingStatus. Works while the meeting is live and after it ends.",
+          "description": "Fetch new sentences from an in-progress or just-ended meeting transcript. Identify the meeting via meetingAssistantEventId (preferred) or mediaId. Pass back the previous response's nextCursor as sinceEndInSec to receive only what's been added since.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": false,

@@ -3185,7 +3185,7 @@ function register8(server, client) {
     "list_meeting_events",
     "List scheduled or completed meeting assistant events with filtering and pagination.",
     {
-      platformType: import_zod9.z.string().optional().describe("Filter by platform (e.g. zoom, teams, meet)"),
+      platformType: import_zod9.z.string().optional().describe("Filter by platform. Allowed values: zoom, googleMeet, microsoftTeams, webex. Comma-separate for multiple. Must match these exact strings \u2014 server validates strictly."),
       meetingStatus: import_zod9.z.string().optional().describe("Filter by status (e.g. scheduled, completed, cancelled)"),
       page: import_zod9.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
       pageSize: import_zod9.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)")
@@ -3312,7 +3312,7 @@ function register8(server, client) {
   registerSpeakTool(
     server,
     "get_live_meeting_transcript",
-    "Pull the transcript for an in-progress (or just-ended) meeting and receive only the sentences added since your last call. Pass meetingAssistantEventId from list_meeting_events (preferred) or mediaId directly. Pass sinceEndInSec from the previous response's nextCursor to skip already-seen sentences; omit it on the first call. Returns newSentences, nextCursor (pass back on the next call), isLive (true while the bot is recording), and meetingStatus. Works while the meeting is live and after it ends.",
+    "Fetch new sentences from an in-progress or just-ended meeting transcript. Identify the meeting via meetingAssistantEventId (preferred) or mediaId. Pass back the previous response's nextCursor as sinceEndInSec to receive only what's been added since.",
     {
       meetingAssistantEventId: import_zod9.z.string().optional().describe("Meeting assistant event id from list_meeting_events. Either this or mediaId is required."),
       mediaId: import_zod9.z.string().optional().describe("Media id of the live meeting. Either this or meetingAssistantEventId is required."),
@@ -3338,7 +3338,7 @@ function register8(server, client) {
         let meetingName;
         if (meetingAssistantEventId) {
           const eventsRes = await api.get("/v1/meeting-assistant/events", {
-            params: { pageSize: 500 }
+            params: { pageSize: 50, sortBy: "startTime:desc" }
           });
           const events = eventsRes.data?.data?.events ?? eventsRes.data?.events ?? [];
           const event = events.find((e) => e.meetingAssistantEventId === meetingAssistantEventId);
@@ -5464,6 +5464,38 @@ function createCli() {
       process.exit(1);
     }
   });
+  program.command("list-meeting-events").description("List scheduled or completed meeting assistant events").option("-P, --platform <type>", "Filter by platform: zoom, googleMeet, microsoftTeams, webex (comma-separate for multiple)").option("-S, --status <status>", "Filter by meeting status (comma-separate for multiple)").option("-p, --page <n>", "Page number (0-based)", "0").option("-s, --page-size <n>", "Results per page", "20").option("--sort <field>", "Sort field", "startTime:desc").option("--json", "Output raw JSON").action(async (opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const params = {
+        page: parseInt(opts.page),
+        pageSize: parseInt(opts.pageSize),
+        sortBy: opts.sort
+      };
+      if (opts.platform) params.platformType = opts.platform;
+      if (opts.status) params.meetingStatus = opts.status;
+      const res = await client.get("/v1/meeting-assistant/events", { params });
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      const events = data?.events ?? [];
+      console.log(`Total: ${data?.totalCount ?? events.length}
+`);
+      printTable(events, [
+        { key: "meetingAssistantEventId", label: "Event ID", width: 24 },
+        { key: "title", label: "Title", width: 32 },
+        { key: "platform", label: "Platform", width: 16 },
+        { key: "currentStatus", label: "Status", width: 18 },
+        { key: "startTime", label: "Start", width: 20 }
+      ]);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
   program.command("schedule-meeting").description("Schedule AI assistant to join a meeting").argument("<url>", "Meeting URL (Zoom, Meet, Teams)").option("-t, --title <title>", "Meeting title").option("-d, --date <datetime>", "Meeting date/time (ISO 8601, omit to join now)").option("-l, --language <lang>", "Meeting language", "en-US").option("--json", "Output raw JSON").action(async (url, opts) => {
     requireApiKey();
     const client = await getClient();
@@ -5484,6 +5516,66 @@ function createCli() {
       } else {
         printSuccess(`Meeting scheduled: ${data?._id ?? "OK"}`);
         if (!opts.date) console.log("Assistant will join immediately.");
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  program.command("live-transcript").description("Fetch new sentences from an in-progress or just-ended meeting").option("-e, --event-id <id>", "Meeting assistant event id (use `speakai-mcp list-meeting-events` to find it)").option("-m, --media-id <id>", "Media id (alternative to --event-id)").option("-s, --since-end-in-sec <seconds>", "nextCursor from previous call; omit on first call", parseFloat).option("--json", "Output raw JSON").action(async (opts) => {
+    requireApiKey();
+    const client = await getClient();
+    if (!opts.eventId && !opts.mediaId) {
+      printError("Provide --event-id or --media-id");
+      process.exit(1);
+    }
+    try {
+      let resolvedMediaId = opts.mediaId;
+      let meetingStatus = null;
+      let meetingName;
+      if (opts.eventId) {
+        const eventsRes = await client.get("/v1/meeting-assistant/events", {
+          params: { pageSize: 50, sortBy: "startTime:desc" }
+        });
+        const events = eventsRes.data?.data?.events ?? eventsRes.data?.events ?? [];
+        const event = events.find((e) => e.meetingAssistantEventId === opts.eventId);
+        if (!event) {
+          printError(`Meeting event not found: ${opts.eventId}`);
+          process.exit(1);
+        }
+        meetingStatus = event.currentStatus ?? null;
+        meetingName = event.title;
+        const mediaRef = event.mediaId;
+        resolvedMediaId = typeof mediaRef === "string" ? mediaRef : mediaRef?.mediaId;
+        if (!resolvedMediaId) {
+          printError("Meeting has no linked media yet \u2014 bot has not joined or started recording.");
+          process.exit(1);
+        }
+      }
+      const transcriptRes = await client.get(`/v1/media/transcript/${resolvedMediaId}`, {
+        params: Number.isFinite(opts.sinceEndInSec) ? { sinceEndInSec: opts.sinceEndInSec } : void 0
+      });
+      const data = transcriptRes.data?.data ?? transcriptRes.data ?? {};
+      const sentences = data?.insight?.transcript ?? [];
+      const maxEnd = sentences.reduce((m, s) => Math.max(m, s.instances?.[0]?.endInSec ?? 0), 0);
+      const nextCursor = sentences.length > 0 ? maxEnd : opts.sinceEndInSec ?? 0;
+      const payload = {
+        mediaId: resolvedMediaId,
+        name: data?.name ?? meetingName ?? null,
+        meetingStatus,
+        isLive: meetingStatus === "inCallRecording",
+        newSentences: sentences,
+        nextCursor
+      };
+      if (opts.json) {
+        printJson(payload);
+      } else {
+        console.log(`Meeting: ${payload.name ?? resolvedMediaId}`);
+        console.log(`Status: ${payload.meetingStatus ?? "unknown"} (isLive=${payload.isLive})`);
+        console.log(`New sentences: ${sentences.length} \u2022 nextCursor: ${nextCursor}`);
+        for (const s of sentences) {
+          console.log(`  [${s.speakerId ?? "?"}] ${s.text ?? ""}`);
+        }
       }
     } catch (err) {
       printError(err.response?.data?.message ?? err.message);

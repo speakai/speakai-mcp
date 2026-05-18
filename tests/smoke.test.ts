@@ -222,6 +222,10 @@ describe("MCP Server Smoke Tests", () => {
         "/v1/media/transcript/media_xyz",
         { params: { sinceEndInSec: 2.5 } },
       );
+      expect(mockClient.get).toHaveBeenCalledWith(
+        "/v1/meeting-assistant/events",
+        { params: { pageSize: 50, sortBy: "startTime:desc" } },
+      );
     });
 
     it("returns not_started when meeting has no linked media yet", async () => {

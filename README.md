@@ -272,7 +272,7 @@ Get a Speak AI API key at [app.speakai.co/developers/apikeys](https://app.speaka
 
 The `@speakai/mcp-server` npm package provides:
 
-- A CLI (`speakai-mcp`) for scripting and pipelines (28 commands).
+- A CLI (`speakai-mcp`) for scripting and pipelines (30 commands).
 - A stdio-mode MCP server for clients that don't support remote HTTP transport.
 - An auto-setup wizard that detects installed MCP clients and configures them.
 
@@ -638,7 +638,7 @@ Parameters: days (optional, default: 7), folder (optional)
 
 **Example:** "Use the meeting-brief prompt with days=14 to cover the last two weeks"
 
-### CLI (28 Commands)
+### CLI (30 Commands)
 
 Install globally and configure once:
 
@@ -703,7 +703,9 @@ npx @speakai/mcp-server config set-key
 |---|---|
 | `stats` | Show workspace media statistics |
 | `languages` | List supported transcription languages |
+| `list-meeting-events` | List scheduled/completed meeting events (`--platform`, `--status`, `--sort`) |
 | `schedule-meeting <url>` | Schedule AI assistant to join a meeting |
+| `live-transcript` | Fetch new sentences from an in-progress meeting (`--event-id` or `--media-id`, `--since-end-in-sec`) |
 | `create-text <name>` | Create a text note (`--text` or pipe via stdin) |
 
 #### CLI options
