@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.9.0 (2026-05-18)
+
+- Added Live Transcript workflow feature
+
 ## v1.8.0 (2026-05-17)
 
 - Updated SDK version in the package
