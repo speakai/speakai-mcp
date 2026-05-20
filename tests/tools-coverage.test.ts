@@ -87,10 +87,10 @@ describe("Automations tools", () => {
     expect(mockPut).toHaveBeenCalledWith("/v1/automations/auto1", { name: "Updated" });
   });
 
-  it("toggle_automation_status calls PUT /v1/automations/status/:id", async () => {
+  it("toggle_automation_status calls PUT /v1/automations/status/:id (no body — pure toggle)", async () => {
     const cb = getToolCallback(server, "toggle_automation_status");
-    await cb({ automationId: "auto1", enabled: false });
-    expect(mockPut).toHaveBeenCalledWith("/v1/automations/status/auto1", { enabled: false });
+    await cb({ automationId: "auto1" });
+    expect(mockPut).toHaveBeenCalledWith("/v1/automations/status/auto1");
   });
 
   it("handles error on list_automations", async () => {
@@ -116,23 +116,23 @@ describe("Embed tools", () => {
 
   it("create_embed calls POST /v1/embed", async () => {
     const cb = getToolCallback(server, "create_embed");
-    await cb({ mediaId: "m1", settings: { autoplay: true } });
+    await cb({ mediaId: "m1", folderIds: ["f1"] });
     expect(mockPost).toHaveBeenCalledWith("/v1/embed", {
       mediaId: "m1",
-      settings: { autoplay: true },
+      folderIds: ["f1"],
     });
   });
 
   it("update_embed calls PUT /v1/embed/:id", async () => {
     const cb = getToolCallback(server, "update_embed");
-    await cb({ embedId: "e1", settings: { theme: "dark" } });
-    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", { settings: { theme: "dark" } });
+    await cb({ embedId: "e1", meta: { primaryColor: "#000" } });
+    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", { meta: { primaryColor: "#000" } });
   });
 
-  it("check_embed calls GET /v1/embed/:mediaId", async () => {
+  it("check_embed calls GET /v1/embed with mediaId query param", async () => {
     const cb = getToolCallback(server, "check_embed");
     await cb({ mediaId: "m1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/embed/m1");
+    expect(mockGet).toHaveBeenCalledWith("/v1/embed", { params: { mediaId: "m1" } });
   });
 
   it("get_embed_iframe_url calls GET /v1/embed/iframe with params", async () => {
@@ -227,11 +227,12 @@ describe("Fields tools", () => {
     });
   });
 
-  it("update_multiple_fields calls POST /v1/fields/multi", async () => {
+  it("update_multiple_fields calls POST /v1/fields/batch", async () => {
     const cb = getToolCallback(server, "update_multiple_fields");
-    await cb({ fields: [{ id: "f1", name: "Updated" }] });
-    expect(mockPost).toHaveBeenCalledWith("/v1/fields/multi", {
-      fields: [{ id: "f1", name: "Updated" }],
+    await cb({ mediaIds: ["m1"], fields: [{ id: "f1", value: "Updated" }] });
+    expect(mockPost).toHaveBeenCalledWith("/v1/fields/batch", {
+      mediaIds: ["m1"],
+      fields: [{ id: "f1", value: "Updated" }],
     });
   });
 
@@ -280,13 +281,12 @@ describe("Meeting tools", () => {
     });
   });
 
-  it("remove_assistant_from_meeting calls PUT with params", async () => {
+  it("remove_assistant_from_meeting calls POST with body", async () => {
     const cb = getToolCallback(server, "remove_assistant_from_meeting");
     await cb({ meetingAssistantEventId: "evt1" });
-    expect(mockPut).toHaveBeenCalledWith(
+    expect(mockPost).toHaveBeenCalledWith(
       "/v1/meeting-assistant/events/remove",
-      null,
-      { params: { meetingAssistantEventId: "evt1" } }
+      { meetingAssistantEventId: "evt1" }
     );
   });
 
@@ -370,8 +370,11 @@ describe("Recorder tools", () => {
 
   it("update_recorder_settings calls PUT /v1/recorder/settings/:id", async () => {
     const cb = getToolCallback(server, "update_recorder_settings");
-    await cb({ recorderId: "r1", settings: { branding: true } });
-    expect(mockPut).toHaveBeenCalledWith("/v1/recorder/settings/r1", { branding: true });
+    await cb({ recorderId: "r1", name: "My Recorder", description: "desc" });
+    expect(mockPut).toHaveBeenCalledWith("/v1/recorder/settings/r1", {
+      name: "My Recorder",
+      description: "desc",
+    });
   });
 
   it("update_recorder_questions calls PUT /v1/recorder/questions/:id", async () => {
@@ -794,27 +797,49 @@ describe("Folder tools", () => {
     expect(mockDelete).toHaveBeenCalledWith("/v1/folder/f1");
   });
 
-  it("create_folder_view calls POST /v1/folders/:folderId/views", async () => {
+  it("create_folder_view calls POST /v1/folder/:folderId/views", async () => {
     const cb = getToolCallback(server, "create_folder_view");
-    await cb({ folderId: "f1", name: "My View", filters: { status: "active" } });
-    expect(mockPost).toHaveBeenCalledWith("/v1/folders/f1/views", {
+    await cb({
+      folderId: "f1",
       name: "My View",
-      filters: { status: "active" },
+      columns: [{ name: "Name", type: "name", order: 0 }],
+    });
+    expect(mockPost).toHaveBeenCalledWith("/v1/folder/f1/views", {
+      name: "My View",
+      columns: [{ name: "Name", type: "name", order: 0 }],
     });
   });
 
-  it("update_folder_view calls PUT /v1/folders/:folderId/views/:viewId", async () => {
+  it("update_folder_view calls PUT /v1/folder/:folderId/views/:viewId", async () => {
     const cb = getToolCallback(server, "update_folder_view");
-    await cb({ folderId: "f1", viewId: "v1", name: "Updated View" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/folders/f1/views/v1", {
+    await cb({
+      folderId: "f1",
+      viewId: "v1",
       name: "Updated View",
+      isDefault: true,
+      columns: [{ name: "Name", type: "name", order: 0 }],
+    });
+    expect(mockPut).toHaveBeenCalledWith("/v1/folder/f1/views/v1", {
+      name: "Updated View",
+      isDefault: true,
+      columns: [{ name: "Name", type: "name", order: 0 }],
     });
   });
 
-  it("clone_folder_view calls POST /v1/folders/views/clone", async () => {
+  it("clone_folder_view calls POST /v1/folder/views/clone", async () => {
     const cb = getToolCallback(server, "clone_folder_view");
-    await cb({ viewId: "v1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/folders/views/clone", { viewId: "v1" });
+    await cb({
+      sourceFolderId: "f1",
+      targetFolderId: "f2",
+      viewId: "v1",
+      name: "Cloned View",
+    });
+    expect(mockPost).toHaveBeenCalledWith("/v1/folder/views/clone", {
+      sourceFolderId: "f1",
+      targetFolderId: "f2",
+      viewId: "v1",
+      name: "Cloned View",
+    });
   });
 
   it("handles error on get_folder_info", async () => {
@@ -847,15 +872,15 @@ describe("Media tools — additional endpoints", () => {
     });
   });
 
-  it("update_transcript_speakers calls PUT /v1/media/speakers/:mediaId", async () => {
+  it("update_transcript_speakers calls PUT /v1/media/speakers/:mediaId with a bare array", async () => {
     const cb = getToolCallback(server, "update_transcript_speakers");
     await cb({
       mediaId: "m1",
       speakers: [{ id: "s1", name: "Alice" }],
     });
-    expect(mockPut).toHaveBeenCalledWith("/v1/media/speakers/m1", {
-      speakers: [{ id: "s1", name: "Alice" }],
-    });
+    expect(mockPut).toHaveBeenCalledWith("/v1/media/speakers/m1", [
+      { id: "s1", name: "Alice" },
+    ]);
   });
 
   it("update_media_metadata calls PUT /v1/media/:mediaId", async () => {
@@ -887,14 +912,17 @@ describe("Media tools — additional endpoints", () => {
 
   it("toggle_media_favorite calls POST /v1/media/favorites", async () => {
     const cb = getToolCallback(server, "toggle_media_favorite");
-    await cb({ mediaId: "m1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/media/favorites", { mediaId: "m1" });
+    await cb({ mediaIds: ["m1"], isFavorite: true });
+    expect(mockPost).toHaveBeenCalledWith("/v1/media/favorites", {
+      mediaIds: ["m1"],
+      isFavorite: true,
+    });
   });
 
-  it("reanalyze_media calls POST /v1/media/reanalyze/:mediaId", async () => {
+  it("reanalyze_media calls GET /v1/media/reanalyze/:mediaId", async () => {
     const cb = getToolCallback(server, "reanalyze_media");
     await cb({ mediaId: "m1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/media/reanalyze/m1", {});
+    expect(mockGet).toHaveBeenCalledWith("/v1/media/reanalyze/m1", { params: {} });
   });
 
   it("bulk_move_media calls PUT /v1/media/move", async () => {

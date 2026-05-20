@@ -410,6 +410,7 @@ var init_export = __esm({
       ExportFormatType2["DOCX"] = "docx";
       ExportFormatType2["HTML"] = "html";
       ExportFormatType2["JSON"] = "json";
+      ExportFormatType2["MD"] = "md";
       ExportFormatType2["PDF"] = "pdf";
       ExportFormatType2["SOURCEFILE"] = "sourceFile";
       ExportFormatType2["SRT"] = "srt";
@@ -1386,7 +1387,7 @@ function register(server, client) {
       try {
         const result = await api.put(
           `/v1/media/speakers/${mediaId}`,
-          { speakers }
+          speakers
         );
         return {
           content: [
@@ -1437,7 +1438,7 @@ function register(server, client) {
     "Update metadata fields (name, description, tags, status) for an existing media file.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file"),
-      name: import_zod2.z.string().optional().describe("New display name for the media"),
+      name: import_zod2.z.string().describe("Display name for the media (required \u2014 the server replaces the metadata)"),
       description: import_zod2.z.string().optional().describe("Description or notes for the media"),
       folderId: import_zod2.z.string().optional().describe("Move media to this folder ID"),
       tags: import_zod2.z.array(import_zod2.z.string()).optional().describe("Array of tags to assign to the media"),
@@ -1587,9 +1588,10 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "toggle_media_favorite",
-    "Mark or unmark a media file as a favorite for quick access.",
+    "Mark or unmark media files as favorites for quick access.",
     {
-      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
+      mediaIds: import_zod2.z.array(import_zod2.z.string().min(1)).min(1).describe("Media file IDs to update"),
+      isFavorite: import_zod2.z.boolean().describe("true to mark as favorite, false to unmark")
     },
     {
       title: "Toggle Media Favorite",
@@ -1617,9 +1619,13 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "reanalyze_media",
-    "Re-run AI analysis on a media file using the latest models. Use this after Speak AI has updated its analysis capabilities or if the original analysis was incomplete.",
+    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
     {
-      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file to re-analyze")
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
+      isInsights: import_zod2.z.boolean().optional().describe("Re-run insights analysis"),
+      isSentiment: import_zod2.z.boolean().optional().describe("Re-run sentiment analysis"),
+      isFillerWords: import_zod2.z.boolean().optional().describe("Re-run filler-word detection"),
+      isEmbeddings: import_zod2.z.boolean().optional().describe("Re-generate embeddings")
     },
     {
       title: "Re-analyze Media",
@@ -1628,9 +1634,9 @@ function register(server, client) {
       idempotentHint: false,
       openWorldHint: false
     },
-    async ({ mediaId }) => {
+    async ({ mediaId, ...params }) => {
       try {
-        const result = await api.post(`/v1/media/reanalyze/${mediaId}`, {});
+        const result = await api.get(`/v1/media/reanalyze/${mediaId}`, { params });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -1668,7 +1674,7 @@ function register(server, client) {
       const results = [];
       for (const mediaId of mediaIds) {
         try {
-          await api.put(`/v1/media/speakers/${mediaId}`, { speakers });
+          await api.put(`/v1/media/speakers/${mediaId}`, speakers);
           results.push({ mediaId, success: true });
         } catch (err) {
           results.push({ mediaId, success: false, error: formatAxiosError(err) });
@@ -1904,7 +1910,7 @@ function register3(server, client) {
     "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
     {
       mediaId: import_zod4.z.string().min(1).describe("Unique identifier of the media file"),
-      fileType: import_zod4.z.enum(["pdf", "docx", "srt", "vtt", "txt", "csv"]).describe("Desired export format"),
+      fileType: import_zod4.z.nativeEnum(ExportFormatType).describe("Desired export format"),
       isSpeakerNames: import_zod4.z.boolean().optional().describe("Include speaker names in export"),
       isSpeakerEmail: import_zod4.z.boolean().optional().describe("Include speaker emails in export"),
       isTimeStamps: import_zod4.z.boolean().optional().describe("Include timestamps in export"),
@@ -1944,7 +1950,7 @@ function register3(server, client) {
     "Export multiple media files at once, optionally merged into a single file.",
     {
       mediaIds: import_zod4.z.array(import_zod4.z.string()).describe("Array of media IDs to export"),
-      fileType: import_zod4.z.enum(["pdf", "docx", "srt", "vtt", "txt", "csv"]).describe("Desired export format"),
+      fileType: import_zod4.z.nativeEnum(ExportFormatType).describe("Desired export format"),
       isSpeakerNames: import_zod4.z.boolean().optional().describe("Include speaker names in export"),
       isSpeakerEmail: import_zod4.z.boolean().optional().describe("Include speaker emails in export"),
       isTimeStamps: import_zod4.z.boolean().optional().describe("Include timestamps in export"),
@@ -1987,6 +1993,7 @@ var init_exports = __esm({
     import_zod4 = require("zod");
     init_helpers();
     init_client();
+    init_dist();
   }
 });
 
@@ -2011,7 +2018,7 @@ function register4(server, client) {
     },
     async () => {
       try {
-        const result = await api.get("/v1/folders/views");
+        const result = await api.get("/v1/folder/views");
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -2041,7 +2048,7 @@ function register4(server, client) {
     },
     async ({ folderId }) => {
       try {
-        const result = await api.get(`/v1/folders/${folderId}/views`);
+        const result = await api.get(`/v1/folder/${folderId}/views`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -2058,11 +2065,20 @@ function register4(server, client) {
   registerSpeakTool(
     server,
     "create_folder_view",
-    "Create a new saved view for a folder with custom filters and display settings.",
+    "Create a new saved view for a folder with a custom set of display columns.",
     {
       folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder"),
-      name: import_zod5.z.string().optional().describe("Display name for the view"),
-      filters: import_zod5.z.record(import_zod5.z.unknown()).optional().describe("Filter configuration object")
+      name: import_zod5.z.string().describe("Display name for the view"),
+      isDefault: import_zod5.z.boolean().optional().describe("Whether this view is the folder's default view"),
+      columns: import_zod5.z.array(
+        import_zod5.z.object({
+          fieldId: import_zod5.z.string().optional().describe("Field ID this column maps to (omit for built-in columns)"),
+          name: import_zod5.z.string().describe("Column display name"),
+          type: import_zod5.z.string().describe("Column type \u2014 a FieldType or a default view column"),
+          definition: import_zod5.z.string().optional().describe("Optional column definition"),
+          order: import_zod5.z.number().describe("Column display order")
+        })
+      ).describe("Ordered list of columns shown in the view")
     },
     {
       title: "Create Folder View",
@@ -2074,7 +2090,7 @@ function register4(server, client) {
     async ({ folderId, ...body }) => {
       try {
         const result = await api.post(
-          `/v1/folders/${folderId}/views`,
+          `/v1/folder/${folderId}/views`,
           body
         );
         return {
@@ -2093,12 +2109,21 @@ function register4(server, client) {
   registerSpeakTool(
     server,
     "update_folder_view",
-    "Update an existing saved view's name, filters, or display settings.",
+    "Update an existing saved view. Replaces the whole view, so `name`, `isDefault` and `columns` must all be supplied.",
     {
       folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder"),
       viewId: import_zod5.z.string().min(1).describe("Unique identifier of the view to update"),
-      name: import_zod5.z.string().optional().describe("New display name for the view"),
-      filters: import_zod5.z.record(import_zod5.z.unknown()).optional().describe("Updated filter configuration")
+      name: import_zod5.z.string().describe("Display name for the view"),
+      isDefault: import_zod5.z.boolean().describe("Whether this view is the folder's default view"),
+      columns: import_zod5.z.array(
+        import_zod5.z.object({
+          fieldId: import_zod5.z.string().optional().describe("Field ID this column maps to (omit for built-in columns)"),
+          name: import_zod5.z.string().describe("Column display name"),
+          type: import_zod5.z.string().describe("Column type \u2014 a FieldType or a default view column"),
+          definition: import_zod5.z.string().optional().describe("Optional column definition"),
+          order: import_zod5.z.number().describe("Column display order")
+        })
+      ).describe("Ordered list of columns shown in the view")
     },
     {
       title: "Update Folder View",
@@ -2110,7 +2135,7 @@ function register4(server, client) {
     async ({ folderId, viewId, ...body }) => {
       try {
         const result = await api.put(
-          `/v1/folders/${folderId}/views/${viewId}`,
+          `/v1/folder/${folderId}/views/${viewId}`,
           body
         );
         return {
@@ -2129,9 +2154,13 @@ function register4(server, client) {
   registerSpeakTool(
     server,
     "clone_folder_view",
-    "Duplicate an existing folder view.",
+    "Duplicate an existing folder view into a target folder.",
     {
-      viewId: import_zod5.z.string().min(1).describe("Unique identifier of the view to clone")
+      sourceFolderId: import_zod5.z.string().min(1).describe("Folder that currently holds the view"),
+      targetFolderId: import_zod5.z.string().min(1).describe("Folder to copy the view into (must differ from sourceFolderId)"),
+      viewId: import_zod5.z.string().min(1).describe("Unique identifier of the view to clone"),
+      name: import_zod5.z.string().describe("Display name for the cloned view"),
+      isDefault: import_zod5.z.boolean().optional().describe("Whether the cloned view becomes the target folder's default")
     },
     {
       title: "Clone Folder View",
@@ -2142,7 +2171,7 @@ function register4(server, client) {
     },
     async (body) => {
       try {
-        const result = await api.post("/v1/folders/views/clone", body);
+        const result = await api.post("/v1/folder/views/clone", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -2224,7 +2253,7 @@ function register4(server, client) {
     "Create a new folder in the workspace.",
     {
       name: import_zod5.z.string().min(1).describe("Display name for the new folder"),
-      parentFolderId: import_zod5.z.string().optional().describe("ID of the parent folder for nesting")
+      description: import_zod5.z.string().optional().describe("Optional folder description")
     },
     {
       title: "Create Folder",
@@ -2254,7 +2283,11 @@ function register4(server, client) {
     "clone_folder",
     "Duplicate an existing folder and all of its contents.",
     {
-      folderId: import_zod5.z.string().min(1).describe("ID of the folder to clone")
+      folderId: import_zod5.z.string().min(1).describe("ID of the folder to clone"),
+      name: import_zod5.z.string().optional().describe("Name for the cloned folder"),
+      description: import_zod5.z.string().optional().describe("Description for the cloned folder"),
+      assignTo: import_zod5.z.array(import_zod5.z.string()).optional().describe("User IDs to assign the cloned folder to"),
+      isSaveDefaultView: import_zod5.z.boolean().optional().describe("Whether to copy the source folder's default view")
     },
     {
       title: "Clone Folder",
@@ -2282,10 +2315,11 @@ function register4(server, client) {
   registerSpeakTool(
     server,
     "update_folder",
-    "Update a folder's name or other properties.",
+    "Update a folder. `name` must always be supplied (the server replaces the folder config).",
     {
       folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder"),
-      name: import_zod5.z.string().optional().describe("New display name for the folder")
+      name: import_zod5.z.string().describe("Display name for the folder"),
+      description: import_zod5.z.string().optional().describe("Optional folder description")
     },
     {
       title: "Update Folder",
@@ -2391,9 +2425,11 @@ function register5(server, client) {
     "create_recorder",
     "Create a new recorder or survey for collecting audio/video submissions.",
     {
-      name: import_zod6.z.string().optional().describe("Display name for the recorder"),
-      folderId: import_zod6.z.string().optional().describe("Folder to store recordings in"),
-      settings: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Recorder configuration settings")
+      name: import_zod6.z.string().describe("Display name for the recorder"),
+      ...recorderConfigShape,
+      clientInformation: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+        "Respondent info & questions: { name:boolean, email:boolean, questions:[{ question, isRequired, answerType, options?, includeOther?, fieldId? }], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }"
+      )
     },
     {
       title: "Create Recorder",
@@ -2451,7 +2487,10 @@ function register5(server, client) {
     "clone_recorder",
     "Duplicate an existing recorder including all its settings and questions.",
     {
-      recorderId: import_zod6.z.string().min(1).describe("ID of the recorder to clone")
+      recorderId: import_zod6.z.string().min(1).describe("ID of the recorder to clone"),
+      name: import_zod6.z.string().optional().describe("Name for the cloned recorder"),
+      description: import_zod6.z.string().optional().describe("Description for the cloned recorder"),
+      folderId: import_zod6.z.string().optional().describe("Folder for the cloned recorder")
     },
     {
       title: "Clone Recorder",
@@ -2561,10 +2600,11 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "update_recorder_settings",
-    "Update configuration settings for a recorder (branding, permissions, etc.).",
+    "Update configuration settings for a recorder (branding, capture options, etc.). `name` must always be supplied.",
     {
       recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder"),
-      settings: import_zod6.z.record(import_zod6.z.unknown()).describe("Settings object with updated values")
+      name: import_zod6.z.string().describe("Display name for the recorder"),
+      ...recorderConfigShape
     },
     {
       title: "Update Recorder Settings",
@@ -2573,9 +2613,9 @@ function register5(server, client) {
       idempotentHint: true,
       openWorldHint: true
     },
-    async ({ recorderId, settings }) => {
+    async ({ recorderId, ...body }) => {
       try {
-        const result = await api.put(`/v1/recorder/settings/${recorderId}`, settings);
+        const result = await api.put(`/v1/recorder/settings/${recorderId}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2590,10 +2630,17 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "update_recorder_questions",
-    "Update the survey questions for a recorder.",
+    "Update the survey questions and respondent-info settings for a recorder.",
     {
       recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder"),
-      questions: import_zod6.z.array(import_zod6.z.record(import_zod6.z.unknown())).describe("Array of question objects")
+      name: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's name"),
+      email: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's email"),
+      questions: import_zod6.z.array(import_zod6.z.record(import_zod6.z.unknown())).describe(
+        "Survey questions. Each: { question, isRequired, answerType, options?, includeOther?, fieldId?, id? }"
+      ),
+      consent: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+        "Consent screen: { isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? }"
+      )
     },
     {
       title: "Update Recorder Questions",
@@ -2602,9 +2649,9 @@ function register5(server, client) {
       idempotentHint: true,
       openWorldHint: true
     },
-    async ({ recorderId, questions }) => {
+    async ({ recorderId, ...body }) => {
       try {
-        const result = await api.put(`/v1/recorder/questions/${recorderId}`, { questions });
+        const result = await api.put(`/v1/recorder/questions/${recorderId}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2645,13 +2692,28 @@ function register5(server, client) {
     }
   );
 }
-var import_zod6;
+var import_zod6, recorderConfigShape;
 var init_recorder3 = __esm({
   "src/tools/recorder.ts"() {
     "use strict";
     import_zod6 = require("zod");
     init_helpers();
     init_client();
+    recorderConfigShape = {
+      description: import_zod6.z.string().optional().describe("Recorder description"),
+      sourceLanguage: import_zod6.z.string().optional().describe("Transcription language code (e.g. en-US)"),
+      folderId: import_zod6.z.string().optional().describe("Folder to store recordings in"),
+      isAutoAnalyze: import_zod6.z.boolean().optional().describe("Whether to auto-analyze submissions"),
+      notifyUsers: import_zod6.z.array(import_zod6.z.string()).optional().describe("User IDs to notify on new submissions"),
+      duration: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Recording duration: { minDuration, maxDuration } in seconds"),
+      options: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+        "Capture options: { audio, video, screenShare, liveTranscription, upload:{ file, text, multiple, url } } \u2014 all booleans"
+      ),
+      notification: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client } \u2014 booleans"),
+      meta: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+        "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }"
+      )
+    };
   }
 });
 
@@ -2665,10 +2727,10 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "create_embed",
-    "Create an embeddable player/transcript widget for a media file.",
+    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed.",
     {
-      mediaId: import_zod7.z.string().min(1).describe("Unique identifier of the media file"),
-      settings: import_zod7.z.record(import_zod7.z.unknown()).optional().describe("Embed configuration settings")
+      mediaId: import_zod7.z.string().optional().describe("Media file to embed (for a single-media embed)"),
+      folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs to embed (for a folder/library embed)")
     },
     {
       title: "Create Embed Widget",
@@ -2694,10 +2756,16 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "update_embed",
-    "Update settings for an existing embed widget.",
+    "Update an existing embed widget \u2014 appearance/feature toggles via `meta`, plus scope and privacy.",
     {
       embedId: import_zod7.z.string().min(1).describe("Unique identifier of the embed"),
-      settings: import_zod7.z.record(import_zod7.z.unknown()).optional().describe("Updated embed settings")
+      mediaId: import_zod7.z.string().optional().describe("Media file the embed points to"),
+      folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs the embed covers"),
+      privacyMode: import_zod7.z.string().optional().describe("Privacy mode for the embed"),
+      embedType: import_zod7.z.string().optional().describe("Embed type"),
+      meta: import_zod7.z.record(import_zod7.z.unknown()).optional().describe(
+        "Embed appearance & feature toggles: { backgroundImg, logo, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }"
+      )
     },
     {
       title: "Update Embed Widget",
@@ -2736,7 +2804,7 @@ function register6(server, client) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await api.get(`/v1/embed/${mediaId}`);
+        const result = await api.get("/v1/embed", { params: { mediaId } });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2819,7 +2887,10 @@ function register7(server, client) {
       tags: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter media by tags"),
       startDate: import_zod8.z.string().optional().describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
       endDate: import_zod8.z.string().optional().describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
-      isIndividualPrompt: import_zod8.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files.")
+      isIndividualPrompt: import_zod8.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
+      fieldId: import_zod8.z.string().optional().describe("Scope the prompt to a single custom field"),
+      fieldIds: import_zod8.z.array(import_zod8.z.string()).max(10).optional().describe("Scope the prompt to multiple custom fields (max 10)"),
+      filters: import_zod8.z.record(import_zod8.z.unknown()).optional().describe("Advanced filter object to scope which media the prompt runs over")
     },
     {
       title: "Ask AI About Your Recordings",
@@ -3080,7 +3151,7 @@ function register7(server, client) {
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation"),
       messageId: import_zod8.z.string().min(1).describe("ID of the message to rate"),
-      score: import_zod8.z.number().describe("Feedback score: 1 for thumbs up, -1 for thumbs down"),
+      score: import_zod8.z.union([import_zod8.z.literal(1), import_zod8.z.literal(-1)]).describe("Feedback score: 1 for thumbs up, -1 for thumbs down"),
       reason: import_zod8.z.string().optional().describe("Optional explanation for the feedback")
     },
     {
@@ -3136,9 +3207,11 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "export_chat_answer",
-    "Export a Magic Prompt conversation or answer. Useful for saving AI-generated summaries, reports, or analysis results.",
+    "Export a specific Magic Prompt answer. Useful for saving AI-generated summaries, reports, or analysis results.",
     {
-      promptId: import_zod8.z.string().min(1).describe("ID of the conversation to export")
+      promptId: import_zod8.z.string().min(1).describe("ID of the conversation to export"),
+      messageId: import_zod8.z.string().min(1).describe("ID of the specific message/answer to export"),
+      fileType: import_zod8.z.enum(["txt", "docx", "pdf", "md"]).describe("Export file format")
     },
     {
       title: "Export Chat Answer",
@@ -3218,9 +3291,11 @@ function register8(server, client) {
     "schedule_meeting_event",
     "Schedule the Speak AI meeting assistant to join and record an upcoming meeting.",
     {
-      meetingUrl: import_zod9.z.string().min(1).describe("URL of the meeting to join"),
-      title: import_zod9.z.string().optional().describe("Display title for the event"),
-      scheduledAt: import_zod9.z.string().optional().describe("ISO 8601 datetime for when the meeting starts")
+      title: import_zod9.z.string().min(1).describe("Display title for the event"),
+      meetingURL: import_zod9.z.string().min(1).describe("URL of the meeting to join"),
+      meetingDate: import_zod9.z.string().optional().describe("ISO 8601 datetime for when the meeting starts"),
+      meetingLanguage: import_zod9.z.string().optional().describe("Transcription language code for the meeting (e.g. en-US)"),
+      folderId: import_zod9.z.string().optional().describe("Folder ID to store the recording in")
     },
     {
       title: "Schedule AI Meeting Assistant",
@@ -3262,10 +3337,9 @@ function register8(server, client) {
     },
     async ({ meetingAssistantEventId }) => {
       try {
-        const result = await api.put(
+        const result = await api.post(
           "/v1/meeting-assistant/events/remove",
-          null,
-          { params: { meetingAssistantEventId } }
+          { meetingAssistantEventId }
         );
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
@@ -3443,8 +3517,14 @@ function register9(server, client) {
     "Create a new custom field for categorizing and tagging media.",
     {
       name: import_zod10.z.string().min(1).describe("Display name for the field"),
-      type: import_zod10.z.string().optional().describe("Field type (text, number, select, etc.)"),
-      options: import_zod10.z.array(import_zod10.z.string()).optional().describe("Options for select/multi-select field types")
+      type: import_zod10.z.string().describe("Field type (text, number, select, etc.)"),
+      description: import_zod10.z.string().optional().describe("Optional description for the field"),
+      prompt: import_zod10.z.string().optional().describe("AI prompt used to auto-populate the field"),
+      allowedValues: import_zod10.z.array(import_zod10.z.string()).optional().describe("Allowed values for select/multi-select field types"),
+      allowedValuesMode: import_zod10.z.nativeEnum(AllowedValuesMode).optional().describe("Whether one or multiple allowed values can be selected"),
+      otherValues: import_zod10.z.boolean().optional().describe("Whether values outside allowedValues are permitted"),
+      notApplicableValues: import_zod10.z.string().optional().describe("Value(s) treated as not-applicable"),
+      privacyMode: import_zod10.z.string().optional().describe("Privacy mode for the field")
     },
     {
       title: "Create Custom Field",
@@ -3470,20 +3550,27 @@ function register9(server, client) {
   registerSpeakTool(
     server,
     "update_multiple_fields",
-    "Update multiple custom fields in a single batch operation.",
+    "Set custom field values across media in a single batch operation. Scope the update with `folderId` (all media in a folder) and/or `mediaIds`.",
     {
-      fields: import_zod10.z.array(import_zod10.z.record(import_zod10.z.unknown())).describe("Array of field objects to update")
+      folderId: import_zod10.z.string().optional().describe("Apply the field values to all media in this folder"),
+      mediaIds: import_zod10.z.array(import_zod10.z.string()).optional().describe("Apply the field values to these specific media files"),
+      fields: import_zod10.z.array(
+        import_zod10.z.object({
+          id: import_zod10.z.string().min(1).describe("Custom field ID"),
+          value: import_zod10.z.unknown().describe("Value to set for the field")
+        })
+      ).describe("Array of field id/value pairs to set")
     },
     {
-      title: "Bulk Update Custom Fields",
+      title: "Bulk Update Custom Field Values",
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
       openWorldHint: false
     },
-    async ({ fields }) => {
+    async (body) => {
       try {
-        const result = await api.post("/v1/fields/multi", { fields });
+        const result = await api.post("/v1/fields/batch", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -3498,12 +3585,18 @@ function register9(server, client) {
   registerSpeakTool(
     server,
     "update_field",
-    "Update a specific custom field by ID.",
+    "Update a specific custom field by ID. `name` must always be supplied (the server replaces the field config).",
     {
       id: import_zod10.z.string().min(1).describe("Unique identifier of the field"),
-      name: import_zod10.z.string().optional().describe("New display name"),
-      type: import_zod10.z.string().optional().describe("New field type"),
-      options: import_zod10.z.array(import_zod10.z.string()).optional().describe("Updated options for select types")
+      name: import_zod10.z.string().describe("Display name for the field"),
+      type: import_zod10.z.string().optional().describe("Field type"),
+      description: import_zod10.z.string().optional().describe("Optional description for the field"),
+      prompt: import_zod10.z.string().optional().describe("AI prompt used to auto-populate the field"),
+      allowedValues: import_zod10.z.array(import_zod10.z.string()).optional().describe("Allowed values for select/multi-select field types"),
+      allowedValuesMode: import_zod10.z.nativeEnum(AllowedValuesMode).optional().describe("Whether one or multiple allowed values can be selected"),
+      otherValues: import_zod10.z.boolean().optional().describe("Whether values outside allowedValues are permitted"),
+      notApplicableValues: import_zod10.z.string().optional().describe("Value(s) treated as not-applicable"),
+      privacyMode: import_zod10.z.string().optional().describe("Privacy mode for the field")
     },
     {
       title: "Update Custom Field",
@@ -3534,6 +3627,7 @@ var init_fields2 = __esm({
     import_zod10 = require("zod");
     init_helpers();
     init_client();
+    init_dist();
   }
 });
 
@@ -3603,10 +3697,17 @@ function register10(server, client) {
     "create_automation",
     "Create a new automation rule for automatic media processing workflows.",
     {
-      name: import_zod11.z.string().optional().describe("Display name for the automation"),
-      trigger: import_zod11.z.record(import_zod11.z.unknown()).optional().describe("Trigger configuration"),
-      actions: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).optional().describe("Array of action configurations"),
-      config: import_zod11.z.record(import_zod11.z.unknown()).optional().describe("Full automation configuration object")
+      name: import_zod11.z.string().min(1).describe("Display name for the automation"),
+      trigger: import_zod11.z.record(import_zod11.z.unknown()).describe(
+        'Trigger object. Keys: `type` (e.g. "folders") and `folderIds` (array of folder IDs).'
+      ),
+      action: import_zod11.z.record(import_zod11.z.unknown()).describe(
+        'Single action object (not an array). Keys: `type` ("magic-prompt" or "translation"). For magic-prompt, include a `magicPrompt` object ({ prompt, title?, assistantType?, fieldIds?, ... }). For translation, include a `translation` object ({ targetLanguage }).'
+      ),
+      description: import_zod11.z.string().optional().describe("Optional description"),
+      isActive: import_zod11.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
+      runType: import_zod11.z.string().optional().describe('Run type, e.g. "instant" (default) or "scheduled"'),
+      schedule: import_zod11.z.record(import_zod11.z.unknown()).optional().describe("Schedule object for scheduled automations: { timePeriod, repeatAt }")
     },
     {
       title: "Create Automation",
@@ -3632,13 +3733,20 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "update_automation",
-    "Update an existing automation rule's configuration.",
+    "Update an existing automation rule. This replaces the whole automation, so fetch the current values with get_automation first and pass them all back.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
-      name: import_zod11.z.string().optional().describe("New display name"),
-      trigger: import_zod11.z.record(import_zod11.z.unknown()).optional().describe("Updated trigger configuration"),
-      actions: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).optional().describe("Updated action configurations"),
-      config: import_zod11.z.record(import_zod11.z.unknown()).optional().describe("Full updated configuration object")
+      name: import_zod11.z.string().min(1).describe("Display name for the automation"),
+      trigger: import_zod11.z.record(import_zod11.z.unknown()).describe(
+        'Trigger object. Keys: `type` (e.g. "folders") and `folderIds` (array of folder IDs).'
+      ),
+      action: import_zod11.z.record(import_zod11.z.unknown()).describe(
+        'Single action object (not an array). Keys: `type` ("magic-prompt" or "translation"). For magic-prompt, include a `magicPrompt` object ({ prompt, title?, assistantType?, fieldIds?, ... }). For translation, include a `translation` object ({ targetLanguage }).'
+      ),
+      description: import_zod11.z.string().optional().describe("Optional description"),
+      isActive: import_zod11.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
+      runType: import_zod11.z.string().optional().describe('Run type, e.g. "instant" (default) or "scheduled"'),
+      schedule: import_zod11.z.record(import_zod11.z.unknown()).optional().describe("Schedule object for scheduled automations: { timePeriod, repeatAt }")
     },
     {
       title: "Update Automation",
@@ -3667,23 +3775,21 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "toggle_automation_status",
-    "Enable or disable an automation rule.",
+    "Toggle an automation rule between active and inactive. This flips the current state \u2014 call get_automation first if you need to know which way it will flip.",
     {
-      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
-      enabled: import_zod11.z.boolean().describe("Set to true to enable, false to disable")
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation")
     },
     {
-      title: "Enable or Disable Automation",
+      title: "Toggle Automation Status",
       readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false
     },
-    async ({ automationId, enabled }) => {
+    async ({ automationId }) => {
       try {
         const result = await api.put(
-          `/v1/automations/status/${automationId}`,
-          { enabled }
+          `/v1/automations/status/${automationId}`
         );
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
@@ -3719,8 +3825,9 @@ function register11(server, client) {
     "create_webhook",
     "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
     {
-      url: import_zod12.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
-      events: import_zod12.z.array(import_zod12.z.string()).optional().describe("Array of event types to subscribe to")
+      callbackUrl: import_zod12.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
+      events: import_zod12.z.array(import_zod12.z.string()).optional().describe("Array of event types to subscribe to"),
+      description: import_zod12.z.string().optional().describe("Optional description for the webhook")
     },
     {
       title: "Create Webhook",
@@ -3772,11 +3879,12 @@ function register11(server, client) {
   registerSpeakTool(
     server,
     "update_webhook",
-    "Update an existing webhook's URL or subscribed events.",
+    "Update an existing webhook. This replaces the webhook config, so `callbackUrl` must always be supplied.",
     {
       webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the webhook"),
-      url: import_zod12.z.string().url().optional().describe("New endpoint URL"),
-      events: import_zod12.z.array(import_zod12.z.string()).optional().describe("Updated array of event types")
+      callbackUrl: import_zod12.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
+      events: import_zod12.z.array(import_zod12.z.string()).optional().describe("Updated array of event types"),
+      description: import_zod12.z.string().optional().describe("Optional description for the webhook")
     },
     {
       title: "Update Webhook",
@@ -5312,7 +5420,7 @@ function createCli() {
       process.exit(1);
     }
   });
-  program.command("update").description("Update media metadata").argument("<mediaId>", "Media file ID to update").option("-n, --name <name>", "New display name").option("-d, --description <text>", "New description").option("--tags <tags...>", "New tags").option("-f, --folder <id>", "Move to folder ID").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
+  program.command("update").description("Update media metadata").argument("<mediaId>", "Media file ID to update").requiredOption("-n, --name <name>", "Display name (required by the API)").option("-d, --description <text>", "New description").option("--tags <tags...>", "New tags").option("-f, --folder <id>", "Move to folder ID").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
     requireApiKey();
     const client = await getClient();
     try {
@@ -5369,13 +5477,19 @@ function createCli() {
       process.exit(1);
     }
   });
-  program.command("favorites").description("Toggle favorite status for a media file").argument("<mediaId>", "Media file ID").action(async (mediaId) => {
+  program.command("favorites").description("Mark or unmark a media file as a favorite").argument("<mediaId>", "Media file ID").option("--off", "Unmark as favorite (default: mark as favorite)").action(async (mediaId, opts) => {
     requireApiKey();
     const client = await getClient();
     try {
-      const res = await client.post("/v1/media/favorites", { mediaId });
+      const isFavorite = !opts.off;
+      const res = await client.post("/v1/media/favorites", {
+        mediaIds: [mediaId],
+        isFavorite
+      });
       const data = res.data?.data;
-      printSuccess(data?.message ?? `Favorite toggled for ${mediaId}`);
+      printSuccess(
+        data?.message ?? `${isFavorite ? "Favorited" : "Unfavorited"} ${mediaId}`
+      );
     } catch (err) {
       printError(err.response?.data?.message ?? err.message);
       process.exit(1);

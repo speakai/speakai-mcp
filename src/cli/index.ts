@@ -921,7 +921,7 @@ export function createCli(): Command {
     .command("update")
     .description("Update media metadata")
     .argument("<mediaId>", "Media file ID to update")
-    .option("-n, --name <name>", "New display name")
+    .requiredOption("-n, --name <name>", "Display name (required by the API)")
     .option("-d, --description <text>", "New description")
     .option("--tags <tags...>", "New tags")
     .option("-f, --folder <id>", "Move to folder ID")
@@ -1004,15 +1004,22 @@ export function createCli(): Command {
 
   program
     .command("favorites")
-    .description("Toggle favorite status for a media file")
+    .description("Mark or unmark a media file as a favorite")
     .argument("<mediaId>", "Media file ID")
-    .action(async (mediaId: string) => {
+    .option("--off", "Unmark as favorite (default: mark as favorite)")
+    .action(async (mediaId: string, opts) => {
       requireApiKey();
       const client = await getClient();
       try {
-        const res = await client.post("/v1/media/favorites", { mediaId });
+        const isFavorite = !opts.off;
+        const res = await client.post("/v1/media/favorites", {
+          mediaIds: [mediaId],
+          isFavorite,
+        });
         const data = res.data?.data;
-        printSuccess(data?.message ?? `Favorite toggled for ${mediaId}`);
+        printSuccess(
+          data?.message ?? `${isFavorite ? "Favorited" : "Unfavorited"} ${mediaId}`,
+        );
       } catch (err: any) {
         printError(err.response?.data?.message ?? err.message);
         process.exit(1);

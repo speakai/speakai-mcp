@@ -292,7 +292,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       try {
         const result = await api.put(
           `/v1/media/speakers/${mediaId}`,
-          { speakers }
+          speakers
         );
         return {
           content: [
@@ -345,7 +345,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Update metadata fields (name, description, tags, status) for an existing media file.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
-      name: z.string().optional().describe("New display name for the media"),
+      name: z.string().describe("Display name for the media (required — the server replaces the metadata)"),
       description: z.string().optional().describe("Description or notes for the media"),
       folderId: z
         .string()
@@ -515,9 +515,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 13. Toggle favorite
   registerSpeakTool(server, 
     "toggle_media_favorite",
-    "Mark or unmark a media file as a favorite for quick access.",
+    "Mark or unmark media files as favorites for quick access.",
     {
-      mediaId: z.string().min(1).describe("Unique identifier of the media file"),
+      mediaIds: z
+        .array(z.string().min(1))
+        .min(1)
+        .describe("Media file IDs to update"),
+      isFavorite: z
+        .boolean()
+        .describe("true to mark as favorite, false to unmark"),
     },
     {
       title: "Toggle Media Favorite",
@@ -546,9 +552,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 14. Re-analyze media
   registerSpeakTool(server, 
     "reanalyze_media",
-    "Re-run AI analysis on a media file using the latest models. Use this after Speak AI has updated its analysis capabilities or if the original analysis was incomplete.",
+    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
+      isInsights: z.boolean().optional().describe("Re-run insights analysis"),
+      isSentiment: z.boolean().optional().describe("Re-run sentiment analysis"),
+      isFillerWords: z.boolean().optional().describe("Re-run filler-word detection"),
+      isEmbeddings: z.boolean().optional().describe("Re-generate embeddings"),
     },
     {
       title: "Re-analyze Media",
@@ -557,9 +567,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       idempotentHint: false,
       openWorldHint: false,
     },
-    async ({ mediaId }) => {
+    async ({ mediaId, ...params }) => {
       try {
-        const result = await api.post(`/v1/media/reanalyze/${mediaId}`, {});
+        const result = await api.get(`/v1/media/reanalyze/${mediaId}`, { params });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -605,7 +615,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
       for (const mediaId of mediaIds) {
         try {
-          await api.put(`/v1/media/speakers/${mediaId}`, { speakers });
+          await api.put(`/v1/media/speakers/${mediaId}`, speakers);
           results.push({ mediaId, success: true });
         } catch (err) {
           results.push({ mediaId, success: false, error: formatAxiosError(err) });

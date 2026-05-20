@@ -10,11 +10,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "create_webhook",
     "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
     {
-      url: z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
+      callbackUrl: z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
       events: z
         .array(z.string())
         .optional()
         .describe("Array of event types to subscribe to"),
+      description: z.string().optional().describe("Optional description for the webhook"),
     },
     {
       title: "Create Webhook",
@@ -66,14 +67,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_webhook",
-    "Update an existing webhook's URL or subscribed events.",
+    "Update an existing webhook. This replaces the webhook config, so `callbackUrl` must always be supplied.",
     {
       webhookId: z.string().min(1).describe("Unique identifier of the webhook"),
-      url: z.string().url().optional().describe("New endpoint URL"),
+      callbackUrl: z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
       events: z
         .array(z.string())
         .optional()
         .describe("Updated array of event types"),
+      description: z.string().optional().describe("Optional description for the webhook"),
     },
     {
       title: "Update Webhook",

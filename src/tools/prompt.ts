@@ -66,6 +66,19 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .boolean()
         .optional()
         .describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
+      fieldId: z
+        .string()
+        .optional()
+        .describe("Scope the prompt to a single custom field"),
+      fieldIds: z
+        .array(z.string())
+        .max(10)
+        .optional()
+        .describe("Scope the prompt to multiple custom fields (max 10)"),
+      filters: z
+        .record(z.unknown())
+        .optional()
+        .describe("Advanced filter object to scope which media the prompt runs over"),
     },
     {
       title: "Ask AI About Your Recordings",
@@ -360,7 +373,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       promptId: z.string().min(1).describe("ID of the conversation"),
       messageId: z.string().min(1).describe("ID of the message to rate"),
-      score: z.number().describe("Feedback score: 1 for thumbs up, -1 for thumbs down"),
+      score: z
+        .union([z.literal(1), z.literal(-1)])
+        .describe("Feedback score: 1 for thumbs up, -1 for thumbs down"),
       reason: z.string().optional().describe("Optional explanation for the feedback"),
     },
     {
@@ -416,9 +431,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "export_chat_answer",
-    "Export a Magic Prompt conversation or answer. Useful for saving AI-generated summaries, reports, or analysis results.",
+    "Export a specific Magic Prompt answer. Useful for saving AI-generated summaries, reports, or analysis results.",
     {
       promptId: z.string().min(1).describe("ID of the conversation to export"),
+      messageId: z.string().min(1).describe("ID of the specific message/answer to export"),
+      fileType: z
+        .enum(["txt", "docx", "pdf", "md"])
+        .describe("Export file format"),
     },
     {
       title: "Export Chat Answer",

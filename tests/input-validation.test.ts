@@ -174,12 +174,10 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
             { id: "speaker_1", name: "Bob" },
           ],
         });
-        expect(mockPut).toHaveBeenCalledWith("/v1/media/speakers/abc", {
-          speakers: [
-            { id: "speaker_0", name: "Alice" },
-            { id: "speaker_1", name: "Bob" },
-          ],
-        });
+        expect(mockPut).toHaveBeenCalledWith("/v1/media/speakers/abc", [
+          { id: "speaker_0", name: "Alice" },
+          { id: "speaker_1", name: "Bob" },
+        ]);
       });
     });
 
@@ -279,11 +277,11 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       await callback({
         folderId: "f1",
         name: "My View",
-        filters: { mediaType: "audio" },
+        columns: [{ name: "Name", type: "name", order: 0 }],
       });
-      expect(mockPost).toHaveBeenCalledWith("/v1/folders/f1/views", {
+      expect(mockPost).toHaveBeenCalledWith("/v1/folder/f1/views", {
         name: "My View",
-        filters: { mediaType: "audio" },
+        columns: [{ name: "Name", type: "name", order: 0 }],
       });
     });
   });
@@ -559,13 +557,13 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
 
     it("create_webhook schema rejects non-URL string", () => {
       const schema = getToolInputSchema(server, "create_webhook");
-      const result = schema.safeParse({ url: "not-a-url" });
+      const result = schema.safeParse({ callbackUrl: "not-a-url" });
       expect(result.success).toBe(false);
     });
 
     it("create_webhook schema accepts valid HTTPS URL", () => {
       const schema = getToolInputSchema(server, "create_webhook");
-      const result = schema.safeParse({ url: "https://example.com/webhook" });
+      const result = schema.safeParse({ callbackUrl: "https://example.com/webhook" });
       expect(result.success).toBe(true);
     });
 
