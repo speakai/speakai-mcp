@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.10.1 (2026-05-20)
+
+- Fix MCP tool + CLI API contracts to match speak-server
+
 ## v1.10.0 (2026-05-18)
 
 - Added live meeting transcription feature.
