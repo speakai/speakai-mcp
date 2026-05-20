@@ -64,13 +64,32 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "create_automation",
     "Create a new automation rule for automatic media processing workflows.",
     {
-      name: z.string().optional().describe("Display name for the automation"),
-      trigger: z.record(z.unknown()).optional().describe("Trigger configuration"),
-      actions: z
-        .array(z.record(z.unknown()))
+      name: z.string().min(1).describe("Display name for the automation"),
+      trigger: z
+        .record(z.unknown())
+        .describe(
+          "Trigger object. Keys: `type` (e.g. \"folders\") and `folderIds` (array of folder IDs).",
+        ),
+      action: z
+        .record(z.unknown())
+        .describe(
+          "Single action object (not an array). Keys: `type` (\"magic-prompt\" or \"translation\"). " +
+            "For magic-prompt, include a `magicPrompt` object ({ prompt, title?, assistantType?, fieldIds?, ... }). " +
+            "For translation, include a `translation` object ({ targetLanguage }).",
+        ),
+      description: z.string().optional().describe("Optional description"),
+      isActive: z
+        .boolean()
         .optional()
-        .describe("Array of action configurations"),
-      config: z.record(z.unknown()).optional().describe("Full automation configuration object"),
+        .describe("Whether the automation is active (defaults to true)"),
+      runType: z
+        .string()
+        .optional()
+        .describe("Run type, e.g. \"instant\" (default) or \"scheduled\""),
+      schedule: z
+        .record(z.unknown())
+        .optional()
+        .describe("Schedule object for scheduled automations: { timePeriod, repeatAt }"),
     },
     {
       title: "Create Automation",
@@ -96,16 +115,36 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_automation",
-    "Update an existing automation rule's configuration.",
+    "Update an existing automation rule. This replaces the whole automation, so " +
+      "fetch the current values with get_automation first and pass them all back.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
-      name: z.string().optional().describe("New display name"),
-      trigger: z.record(z.unknown()).optional().describe("Updated trigger configuration"),
-      actions: z
-        .array(z.record(z.unknown()))
+      name: z.string().min(1).describe("Display name for the automation"),
+      trigger: z
+        .record(z.unknown())
+        .describe(
+          "Trigger object. Keys: `type` (e.g. \"folders\") and `folderIds` (array of folder IDs).",
+        ),
+      action: z
+        .record(z.unknown())
+        .describe(
+          "Single action object (not an array). Keys: `type` (\"magic-prompt\" or \"translation\"). " +
+            "For magic-prompt, include a `magicPrompt` object ({ prompt, title?, assistantType?, fieldIds?, ... }). " +
+            "For translation, include a `translation` object ({ targetLanguage }).",
+        ),
+      description: z.string().optional().describe("Optional description"),
+      isActive: z
+        .boolean()
         .optional()
-        .describe("Updated action configurations"),
-      config: z.record(z.unknown()).optional().describe("Full updated configuration object"),
+        .describe("Whether the automation is active (defaults to true)"),
+      runType: z
+        .string()
+        .optional()
+        .describe("Run type, e.g. \"instant\" (default) or \"scheduled\""),
+      schedule: z
+        .record(z.unknown())
+        .optional()
+        .describe("Schedule object for scheduled automations: { timePeriod, repeatAt }"),
     },
     {
       title: "Update Automation",
@@ -134,23 +173,21 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "toggle_automation_status",
-    "Enable or disable an automation rule.",
+    "Toggle an automation rule between active and inactive. This flips the current state — call get_automation first if you need to know which way it will flip.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
-      enabled: z.boolean().describe("Set to true to enable, false to disable"),
     },
     {
-      title: "Enable or Disable Automation",
+      title: "Toggle Automation Status",
       readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false,
     },
-    async ({ automationId, enabled }) => {
+    async ({ automationId }) => {
       try {
         const result = await api.put(
-          `/v1/automations/status/${automationId}`,
-          { enabled }
+          `/v1/automations/status/${automationId}`
         );
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],

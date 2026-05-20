@@ -49,12 +49,20 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "schedule_meeting_event",
     "Schedule the Speak AI meeting assistant to join and record an upcoming meeting.",
     {
-      meetingUrl: z.string().min(1).describe("URL of the meeting to join"),
-      title: z.string().optional().describe("Display title for the event"),
-      scheduledAt: z
+      title: z.string().min(1).describe("Display title for the event"),
+      meetingURL: z.string().min(1).describe("URL of the meeting to join"),
+      meetingDate: z
         .string()
         .optional()
         .describe("ISO 8601 datetime for when the meeting starts"),
+      meetingLanguage: z
+        .string()
+        .optional()
+        .describe("Transcription language code for the meeting (e.g. en-US)"),
+      folderId: z
+        .string()
+        .optional()
+        .describe("Folder ID to store the recording in"),
     },
     {
       title: "Schedule AI Meeting Assistant",
@@ -98,10 +106,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async ({ meetingAssistantEventId }) => {
       try {
-        const result = await api.put(
+        const result = await api.post(
           "/v1/meeting-assistant/events/remove",
-          null,
-          { params: { meetingAssistantEventId } }
+          { meetingAssistantEventId }
         );
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],

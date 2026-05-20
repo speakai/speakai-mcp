@@ -3,6 +3,7 @@ import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
+import { ExportFormatType } from "@speakai/shared";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
@@ -12,7 +13,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
       fileType: z
-        .enum(["pdf", "docx", "srt", "vtt", "txt", "csv"])
+        .nativeEnum(ExportFormatType)
         .describe("Desired export format"),
       isSpeakerNames: z
         .boolean()
@@ -74,7 +75,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .array(z.string())
         .describe("Array of media IDs to export"),
       fileType: z
-        .enum(["pdf", "docx", "srt", "vtt", "txt", "csv"])
+        .nativeEnum(ExportFormatType)
         .describe("Desired export format"),
       isSpeakerNames: z
         .boolean()
