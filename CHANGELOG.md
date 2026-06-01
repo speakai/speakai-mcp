@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.11.0 (2026-06-01)
+
+- Exported SPEAK_MCP_TOOL_NAMES as a single source of truth for tool routing
+
 ## v1.10.1 (2026-05-20)
 
 - Fix MCP tool + CLI API contracts to match speak-server
