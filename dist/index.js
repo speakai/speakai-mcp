@@ -5713,6 +5713,7 @@ var init_cli = __esm({
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
+  SPEAK_MCP_TOOL_NAMES: () => SPEAK_MCP_TOOL_NAMES,
   createSpeakClient: () => createSpeakClient,
   formatAxiosError: () => formatAxiosError,
   registerAllTools: () => registerAllTools,
@@ -5724,6 +5725,110 @@ init_tools();
 init_resources();
 init_prompts();
 init_client();
+
+// src/tool-names.ts
+var SPEAK_MCP_TOOL_NAMES = [
+  // analytics
+  "get_media_statistics",
+  // automations
+  "list_automations",
+  "get_automation",
+  "create_automation",
+  "update_automation",
+  "toggle_automation_status",
+  // clips
+  "get_clips",
+  "create_clip",
+  "update_clip",
+  "delete_clip",
+  // embed
+  "create_embed",
+  "update_embed",
+  "check_embed",
+  "get_embed_iframe_url",
+  // exports
+  "export_media",
+  "export_multiple_media",
+  // fields
+  "list_fields",
+  "create_field",
+  "update_field",
+  "update_multiple_fields",
+  // folders
+  "list_folders",
+  "create_folder",
+  "update_folder",
+  "delete_folder",
+  "get_folder_info",
+  "clone_folder",
+  "get_folder_views",
+  "get_all_folder_views",
+  "create_folder_view",
+  "update_folder_view",
+  "clone_folder_view",
+  // media
+  "get_signed_upload_url",
+  "upload_media",
+  "get_media_status",
+  "get_media_insights",
+  "get_transcript",
+  "list_media",
+  "search_media",
+  "delete_media",
+  "update_media_metadata",
+  "toggle_media_favorite",
+  "reanalyze_media",
+  "get_captions",
+  "list_supported_languages",
+  "update_transcript_speakers",
+  "bulk_update_transcript_speakers",
+  "bulk_move_media",
+  // meeting
+  "list_meeting_events",
+  "schedule_meeting_event",
+  "remove_assistant_from_meeting",
+  "delete_scheduled_assistant",
+  "get_live_meeting_transcript",
+  // prompt
+  "ask_magic_prompt",
+  "list_prompts",
+  "get_favorite_prompts",
+  "toggle_prompt_favorite",
+  "get_chat_history",
+  "get_chat_messages",
+  "update_chat_title",
+  "delete_chat_message",
+  "submit_chat_feedback",
+  "retry_magic_prompt",
+  "export_chat_answer",
+  "get_chat_statistics",
+  // recorder
+  "list_recorders",
+  "create_recorder",
+  "update_recorder_settings",
+  "update_recorder_questions",
+  "delete_recorder",
+  "generate_recorder_url",
+  "get_recorder_info",
+  "get_recorder_recordings",
+  "check_recorder_status",
+  "clone_recorder",
+  // text
+  "create_text_note",
+  "update_text_note",
+  "get_text_insight",
+  "reanalyze_text",
+  // webhooks
+  "list_webhooks",
+  "create_webhook",
+  "update_webhook",
+  "delete_webhook",
+  // workflows (high-level wrappers around media + upload tools)
+  "upload_and_analyze",
+  "upload_local_file"
+];
+
+// src/index.ts
 var args = process.argv.slice(2);
 var cliCommands = [
   "config",
@@ -5798,6 +5903,7 @@ if (isCliMode) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  SPEAK_MCP_TOOL_NAMES,
   createSpeakClient,
   formatAxiosError,
   registerAllTools,
