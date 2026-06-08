@@ -49,12 +49,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 2. Upload media
   registerSpeakTool(server, 
     "upload_media",
-    "Upload media from a publicly accessible URL. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
+    "Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar) which Speak resolves to the underlying media automatically. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file. (Vimeo links are not yet supported.)",
     {
       name: z.string().min(1).describe("Display name for the media file"),
       url: z
         .string()
-        .describe("Publicly accessible URL of the media file (or pre-signed S3 URL)"),
+        .describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link (e.g. an Instagram reel or TikTok URL) — page links are resolved to the underlying media server-side."),
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .describe('Type of media: "audio" or "video"'),

@@ -13,9 +13,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "upload_and_analyze",
-    "Upload media and return media_id immediately. After this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
+    "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar), which Speak resolves to the underlying media automatically. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts. (Vimeo links are not yet supported.)",
     {
-      url: z.string().describe("Publicly accessible URL of the media file"),
+      url: z.string().describe("Direct/public media file URL, or a shareable social/video page link (e.g. an Instagram reel, TikTok, YouTube, or X post URL) — page links are resolved to the underlying media server-side. Pass the URL the user gave you as-is."),
       name: z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
       mediaType: z.enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]]).optional().describe("Media type (default: audio)"),
       sourceLanguage: z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
