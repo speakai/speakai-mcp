@@ -1208,10 +1208,10 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "upload_media",
-    "Upload media from a publicly accessible URL. Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
+    "Upload media from a URL \u2014 a direct/public file URL, a pre-signed S3 URL, or a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar) which Speak resolves to the underlying media automatically. Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file. (Vimeo links are not yet supported.)",
     {
       name: import_zod2.z.string().min(1).describe("Display name for the media file"),
-      url: import_zod2.z.string().describe("Publicly accessible URL of the media file (or pre-signed S3 URL)"),
+      url: import_zod2.z.string().describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link (e.g. an Instagram reel or TikTok URL) \u2014 page links are resolved to the underlying media server-side."),
       mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).describe('Type of media: "audio" or "video"'),
       description: import_zod2.z.string().optional().describe("Description of the media file"),
       sourceLanguage: import_zod2.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
@@ -4214,9 +4214,9 @@ function register14(server, client) {
   registerSpeakTool(
     server,
     "upload_and_analyze",
-    "Upload media and return media_id immediately. After this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.",
+    "Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar), which Speak resolves to the underlying media automatically. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts. (Vimeo links are not yet supported.)",
     {
-      url: import_zod15.z.string().describe("Publicly accessible URL of the media file"),
+      url: import_zod15.z.string().describe("Direct/public media file URL, or a shareable social/video page link (e.g. an Instagram reel, TikTok, YouTube, or X post URL) \u2014 page links are resolved to the underlying media server-side. Pass the URL the user gave you as-is."),
       name: import_zod15.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
       mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (default: audio)"),
       sourceLanguage: import_zod15.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
@@ -4540,7 +4540,7 @@ function registerPrompts(server) {
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
     {
-      url: import_zod16.z.string().describe("URL of the meeting recording"),
+      url: import_zod16.z.string().describe("URL of the meeting recording \u2014 a direct file link or a shareable social/video link (resolved automatically)"),
       name: import_zod16.z.string().optional().describe("Meeting name (optional)")
     },
     async ({ url, name }) => ({
