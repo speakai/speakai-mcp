@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.12.0 (2026-06-08)
+
+- Added support for accepting social and video links in upload_and_analyze and upload_media tools
+
 ## v1.11.0 (2026-06-01)
 
 - Exported SPEAK_MCP_TOOL_NAMES as a single source of truth for tool routing
