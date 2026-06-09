@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.12.2 (2026-06-09)
+
+- Fix AWS upload issue
+
 ## v1.12.1 (2026-06-08)
 
 - No changes made since the last release.
