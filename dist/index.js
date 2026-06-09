@@ -4312,8 +4312,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
           params: { isVideo, filename, mimeType }
         });
         const signedData = signedRes.data?.data;
-        const uploadUrl = signedData?.signedUrl ?? signedData?.url;
-        const s3Key = signedData?.key ?? signedData?.s3Key;
+        const uploadUrl = signedData?.preSignedUrl ?? signedData?.signedUrl ?? signedData?.url;
         if (!uploadUrl) {
           return {
             content: [{ type: "text", text: `Error: Could not get signed upload URL.
@@ -4333,10 +4332,9 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
         const createBody = {
           name: params.name ?? filename,
           url: uploadUrl.split("?")[0],
-          // S3 URL without query params
+          // S3 URL without query params; server re-signs via CloudFront
           mediaType
         };
-        if (s3Key) createBody.s3Key = s3Key;
         if (params.sourceLanguage) createBody.sourceLanguage = params.sourceLanguage;
         if (params.folderId) createBody.folderId = params.folderId;
         if (params.tags) createBody.tags = params.tags;

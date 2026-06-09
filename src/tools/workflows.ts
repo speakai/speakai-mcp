@@ -122,8 +122,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           params: { isVideo, filename, mimeType },
         });
         const signedData = signedRes.data?.data;
-        const uploadUrl = signedData?.signedUrl ?? signedData?.url;
-        const s3Key = signedData?.key ?? signedData?.s3Key;
+        const uploadUrl = signedData?.preSignedUrl ?? signedData?.signedUrl ?? signedData?.url;
 
         if (!uploadUrl) {
           return {
@@ -146,10 +145,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         // 3. Create media entry
         const createBody: Record<string, unknown> = {
           name: params.name ?? filename,
-          url: uploadUrl.split("?")[0], // S3 URL without query params
+          url: uploadUrl.split("?")[0], // S3 URL without query params; server re-signs via CloudFront
           mediaType,
         };
-        if (s3Key) createBody.s3Key = s3Key;
         if (params.sourceLanguage) createBody.sourceLanguage = params.sourceLanguage;
         if (params.folderId) createBody.folderId = params.folderId;
         if (params.tags) createBody.tags = params.tags;
