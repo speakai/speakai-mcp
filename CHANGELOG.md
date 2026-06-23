@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.12.3 (2026-06-23)
+
+- Surface options from meta.type on recorder reads
+
 ## v1.12.2 (2026-06-09)
 
 - Fix AWS upload issue
