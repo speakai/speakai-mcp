@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.13.1 (2026-06-26)
+
+- Added request-contract tests for user-group and dashboard tools
+
 ## v1.13.0 (2026-06-26)
 
 - Added user-group and dashboard tools, and improved CLI 1:1 dispatcher functionality
