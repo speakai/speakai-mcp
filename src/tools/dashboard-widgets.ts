@@ -16,6 +16,8 @@ export const WIDGET_TYPES = [
   "themes",
   "team-activity",
   "kpi-trend",
+  "field-metric",
+  "metric-group",
   "notes",
   "people",
   "comparison",
@@ -41,6 +43,8 @@ const WIDGET_META: Record<WidgetType, WidgetMeta> = {
   themes: { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Themes" },
   "team-activity": { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Team activity" },
   "kpi-trend": { w: 3, h: 2, minW: 2, minH: 2, titleDefault: "Total files" },
+  "field-metric": { w: 3, h: 2, minW: 2, minH: 2, titleDefault: "Field metric" },
+  "metric-group": { w: 6, h: 2, minW: 3, minH: 2, titleDefault: "Metrics" },
   notes: { w: GRID_COLS, h: 2, minW: 2, minH: 1, titleDefault: "Note" },
   people: { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "People" },
   comparison: { w: 6, h: 3, minW: 3, minH: 2, titleDefault: "Comparison" },
@@ -133,6 +137,19 @@ export const WIDGET_CATALOG = [
     config: 'metrics?: string[] — any of "totalFiles", "totalDurationSeconds", "totalWords", "uniqueSpeakers"',
   },
   {
+    type: "field-metric",
+    purpose: "A single custom field's aggregate, with a period-over-period delta.",
+    config:
+      'fieldId: string (custom field id from list_fields); aggregator: "sum" | "avg" | "min" | "max" | "count"',
+  },
+  {
+    type: "metric-group",
+    purpose: "A scorecard of several field metrics in one card.",
+    config:
+      'metrics: Array<{ fieldId: string, op: "sum"|"avg"|"min"|"max"|"count", label?: string }> ' +
+      "(note the per-item key is `op`, not `aggregator`)",
+  },
+  {
     type: "notes",
     purpose: "Free-text note/context block (full width).",
     config: "heading?: string; content?: string",
@@ -146,20 +163,66 @@ export const WIDGET_CATALOG = [
   { type: "sentiment-trend", purpose: "Sentiment over time.", config: "none" },
 ] as const;
 
-// A worked example to show what a good create_dashboard payload looks like.
-export const DASHBOARD_EXAMPLE = {
-  title: "Customer Calls Overview",
-  folderScope: ["<folderId>"],
-  dateRange: { preset: "last30days" },
-  filters: { filterList: [{ fieldName: "Stage", fieldOperator: "is", fieldValue: ["Closed Won"] }] },
-  widgets: [
-    { type: "stat-cards", config: { metrics: ["media", "words", "speakers"] } },
-    { type: "sentiment" },
-    { type: "field-distribution", title: "Deals by stage", config: { fieldId: "<fieldId>", measure: "count" } },
-    { type: "themes", config: { chartType: "bar" } },
-    { type: "media-list" },
-  ],
-};
+// Config keys that apply to (almost) every widget, set per-widget under `config`.
+export const COMMON_WIDGET_CONFIG = [
+  {
+    key: "accentColor",
+    appliesTo: "any widget",
+    description: 'Hex color for the widget accent, e.g. "#6366F1". Omit for the default.',
+  },
+  {
+    key: "scopeOverride",
+    appliesTo: "any widget except notes",
+    description:
+      "Override the dashboard's scope for just this widget: " +
+      "{ datePreset: string, folderId: string }. Omit to inherit the dashboard scope.",
+  },
+];
+
+// Worked examples of good create_dashboard payloads. Show varied widgets with real
+// config (including the field-metric / metric-group cards) and per-widget customization.
+export const DASHBOARD_EXAMPLES = [
+  {
+    name: "Sales calls overview",
+    payload: {
+      title: "Customer Calls Overview",
+      folderScope: ["<folderId>"],
+      dateRange: { preset: "last30days" },
+      filters: { filterList: [{ fieldName: "Stage", fieldOperator: "is", fieldValue: ["Closed Won"] }] },
+      widgets: [
+        { type: "stat-cards", config: { metrics: ["media", "words", "speakers"] } },
+        { type: "sentiment", config: { accentColor: "#6366F1" } },
+        { type: "field-distribution", title: "Deals by stage", config: { fieldId: "<fieldId>", measure: "count" } },
+        { type: "themes", config: { chartType: "bar" } },
+        { type: "media-list" },
+      ],
+    },
+  },
+  {
+    name: "Field-metrics scorecard (new widgets)",
+    payload: {
+      title: "Deal Metrics",
+      folderScope: ["<folderId>"],
+      dateRange: { preset: "thisQuarter" },
+      widgets: [
+        { type: "kpi-trend", title: "Total calls", config: { metrics: ["totalFiles"] } },
+        { type: "field-metric", title: "Avg deal size", config: { fieldId: "<dealSizeFieldId>", aggregator: "avg" } },
+        {
+          type: "metric-group",
+          title: "Pipeline",
+          config: {
+            metrics: [
+              { fieldId: "<dealSizeFieldId>", op: "sum", label: "Total pipeline" },
+              { fieldId: "<dealSizeFieldId>", op: "max", label: "Largest deal" },
+            ],
+          },
+        },
+        // Per-widget scope override: this card ignores the dashboard scope.
+        { type: "field-metric", title: "EMEA avg", config: { fieldId: "<dealSizeFieldId>", aggregator: "avg", scopeOverride: { datePreset: "last7days", folderId: "<emeaFolderId>" } } },
+      ],
+    },
+  },
+];
 
 function makeWidget(item: WidgetInput, x: number, y: number): DashboardWidget {
   const meta = WIDGET_META[item.type];

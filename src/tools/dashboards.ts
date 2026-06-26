@@ -6,7 +6,8 @@ import { speakClient, formatAxiosError } from "../client.js";
 import {
   WIDGET_TYPES,
   WIDGET_CATALOG,
-  DASHBOARD_EXAMPLE,
+  COMMON_WIDGET_CONFIG,
+  DASHBOARD_EXAMPLES,
   buildDashboardWidgets,
   type WidgetInput,
 } from "./dashboard-widgets.js";
@@ -26,15 +27,18 @@ const FILTER_LIST_DESCRIPTION =
 const widgetInputSchema = z.object({
   type: z.enum(WIDGET_TYPES as unknown as [string, ...string[]]).describe(
     "Widget type: stat-cards | sentiment | media-list | field-distribution | upload-timeline | " +
-      "themes | team-activity | kpi-trend | notes | people | comparison | sentiment-trend",
+      "themes | team-activity | kpi-trend | field-metric | metric-group | notes | people | comparison | sentiment-trend",
   ),
   title: z.string().max(200).optional().describe("Widget title (defaults to a per-type label)"),
   config: z
     .record(z.unknown())
     .optional()
     .describe(
-      "Optional render settings (e.g. fieldId for field-distribution, chartType for themes). " +
-        "Leave empty for sensible defaults — most widgets render without config.",
+      "Optional render settings. Per-type: fieldId+measure (field-distribution), fieldId+aggregator " +
+        "(field-metric), metrics list (stat-cards, kpi-trend, comparison, metric-group), chartType (themes), " +
+        "heading+content (notes). Any widget also accepts accentColor (hex) and scopeOverride " +
+        "({datePreset, folderId}). Call list_dashboard_widgets for the full catalog + examples. " +
+        "Leave empty for sensible defaults.",
     ),
 });
 
@@ -160,7 +164,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "list_dashboard_widgets",
-    "Discovery helper: list the available dashboard widget types, what each shows, and the `config` keys it accepts (e.g. field-distribution takes a fieldId + measure). Also returns a complete example create_dashboard payload. Call this before create_dashboard if you're unsure what widgets to use.",
+    "Discovery + how-to helper for building and customizing dashboards. Returns every widget type with what it shows and the exact `config` keys it accepts (metrics, fieldId, aggregator, chartType, accentColor, scopeOverride, …), the config that applies to all widgets, two complete worked example payloads (including the field-metric and metric-group cards), and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
     {},
     {
       title: "List Dashboard Widgets",
@@ -172,12 +176,20 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async () => {
       const data = {
         widgets: WIDGET_CATALOG,
+        commonConfig: COMMON_WIDGET_CONFIG,
         notes: [
           "Pass widgets to create_dashboard as a simple ordered list; ids and grid layout are computed for you.",
-          "field-distribution needs a custom field id (from list_fields) in config.fieldId.",
-          "Most widgets need no config and render on sensible defaults.",
+          "Field-driven widgets (field-distribution, field-metric, metric-group) need custom field ids from list_fields in their config.",
+          "field-metric uses config.aggregator; metric-group items use the key `op` (both: sum|avg|min|max|count).",
+          "accentColor (hex) and scopeOverride ({datePreset, folderId}) can be set on any widget's config to customize it.",
+          "Most other widgets render on sensible defaults with no config.",
         ],
-        example: DASHBOARD_EXAMPLE,
+        managing: [
+          "To customize an existing dashboard, call get_dashboard, edit the widgets array, and send the full array to update_dashboard (widgets are replaced, not merged).",
+          "To start from a working layout, duplicate_dashboard a good one, then update_dashboard to tweak it.",
+          "share_dashboard returns a public token; chain it after the dashboard is built.",
+        ],
+        examples: DASHBOARD_EXAMPLES,
       };
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }

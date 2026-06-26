@@ -4863,7 +4863,7 @@ function makeWidget(item, x, y) {
     layout: { x, y, w: meta.w, h: meta.h, minW: meta.minW, minH: meta.minH }
   };
 }
-var import_crypto, GRID_COLS, WIDGET_TYPES, WIDGET_META, WIDGET_CATALOG, DASHBOARD_EXAMPLE;
+var import_crypto, GRID_COLS, WIDGET_TYPES, WIDGET_META, WIDGET_CATALOG, COMMON_WIDGET_CONFIG, DASHBOARD_EXAMPLES;
 var init_dashboard_widgets = __esm({
   "src/tools/dashboard-widgets.ts"() {
     "use strict";
@@ -4878,6 +4878,8 @@ var init_dashboard_widgets = __esm({
       "themes",
       "team-activity",
       "kpi-trend",
+      "field-metric",
+      "metric-group",
       "notes",
       "people",
       "comparison",
@@ -4892,6 +4894,8 @@ var init_dashboard_widgets = __esm({
       themes: { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Themes" },
       "team-activity": { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Team activity" },
       "kpi-trend": { w: 3, h: 2, minW: 2, minH: 2, titleDefault: "Total files" },
+      "field-metric": { w: 3, h: 2, minW: 2, minH: 2, titleDefault: "Field metric" },
+      "metric-group": { w: 6, h: 2, minW: 3, minH: 2, titleDefault: "Metrics" },
       notes: { w: GRID_COLS, h: 2, minW: 2, minH: 1, titleDefault: "Note" },
       people: { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "People" },
       comparison: { w: 6, h: 3, minW: 3, minH: 2, titleDefault: "Comparison" },
@@ -4919,6 +4923,16 @@ var init_dashboard_widgets = __esm({
         config: 'metrics?: string[] \u2014 any of "totalFiles", "totalDurationSeconds", "totalWords", "uniqueSpeakers"'
       },
       {
+        type: "field-metric",
+        purpose: "A single custom field's aggregate, with a period-over-period delta.",
+        config: 'fieldId: string (custom field id from list_fields); aggregator: "sum" | "avg" | "min" | "max" | "count"'
+      },
+      {
+        type: "metric-group",
+        purpose: "A scorecard of several field metrics in one card.",
+        config: 'metrics: Array<{ fieldId: string, op: "sum"|"avg"|"min"|"max"|"count", label?: string }> (note the per-item key is `op`, not `aggregator`)'
+      },
+      {
         type: "notes",
         purpose: "Free-text note/context block (full width).",
         config: "heading?: string; content?: string"
@@ -4931,19 +4945,60 @@ var init_dashboard_widgets = __esm({
       },
       { type: "sentiment-trend", purpose: "Sentiment over time.", config: "none" }
     ];
-    DASHBOARD_EXAMPLE = {
-      title: "Customer Calls Overview",
-      folderScope: ["<folderId>"],
-      dateRange: { preset: "last30days" },
-      filters: { filterList: [{ fieldName: "Stage", fieldOperator: "is", fieldValue: ["Closed Won"] }] },
-      widgets: [
-        { type: "stat-cards", config: { metrics: ["media", "words", "speakers"] } },
-        { type: "sentiment" },
-        { type: "field-distribution", title: "Deals by stage", config: { fieldId: "<fieldId>", measure: "count" } },
-        { type: "themes", config: { chartType: "bar" } },
-        { type: "media-list" }
-      ]
-    };
+    COMMON_WIDGET_CONFIG = [
+      {
+        key: "accentColor",
+        appliesTo: "any widget",
+        description: 'Hex color for the widget accent, e.g. "#6366F1". Omit for the default.'
+      },
+      {
+        key: "scopeOverride",
+        appliesTo: "any widget except notes",
+        description: "Override the dashboard's scope for just this widget: { datePreset: string, folderId: string }. Omit to inherit the dashboard scope."
+      }
+    ];
+    DASHBOARD_EXAMPLES = [
+      {
+        name: "Sales calls overview",
+        payload: {
+          title: "Customer Calls Overview",
+          folderScope: ["<folderId>"],
+          dateRange: { preset: "last30days" },
+          filters: { filterList: [{ fieldName: "Stage", fieldOperator: "is", fieldValue: ["Closed Won"] }] },
+          widgets: [
+            { type: "stat-cards", config: { metrics: ["media", "words", "speakers"] } },
+            { type: "sentiment", config: { accentColor: "#6366F1" } },
+            { type: "field-distribution", title: "Deals by stage", config: { fieldId: "<fieldId>", measure: "count" } },
+            { type: "themes", config: { chartType: "bar" } },
+            { type: "media-list" }
+          ]
+        }
+      },
+      {
+        name: "Field-metrics scorecard (new widgets)",
+        payload: {
+          title: "Deal Metrics",
+          folderScope: ["<folderId>"],
+          dateRange: { preset: "thisQuarter" },
+          widgets: [
+            { type: "kpi-trend", title: "Total calls", config: { metrics: ["totalFiles"] } },
+            { type: "field-metric", title: "Avg deal size", config: { fieldId: "<dealSizeFieldId>", aggregator: "avg" } },
+            {
+              type: "metric-group",
+              title: "Pipeline",
+              config: {
+                metrics: [
+                  { fieldId: "<dealSizeFieldId>", op: "sum", label: "Total pipeline" },
+                  { fieldId: "<dealSizeFieldId>", op: "max", label: "Largest deal" }
+                ]
+              }
+            },
+            // Per-widget scope override: this card ignores the dashboard scope.
+            { type: "field-metric", title: "EMEA avg", config: { fieldId: "<dealSizeFieldId>", aggregator: "avg", scopeOverride: { datePreset: "last7days", folderId: "<emeaFolderId>" } } }
+          ]
+        }
+      }
+    ];
   }
 });
 
@@ -5017,7 +5072,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "list_dashboard_widgets",
-    "Discovery helper: list the available dashboard widget types, what each shows, and the `config` keys it accepts (e.g. field-distribution takes a fieldId + measure). Also returns a complete example create_dashboard payload. Call this before create_dashboard if you're unsure what widgets to use.",
+    "Discovery + how-to helper for building and customizing dashboards. Returns every widget type with what it shows and the exact `config` keys it accepts (metrics, fieldId, aggregator, chartType, accentColor, scopeOverride, \u2026), the config that applies to all widgets, two complete worked example payloads (including the field-metric and metric-group cards), and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
     {},
     {
       title: "List Dashboard Widgets",
@@ -5029,12 +5084,20 @@ function register16(server, client) {
     async () => {
       const data = {
         widgets: WIDGET_CATALOG,
+        commonConfig: COMMON_WIDGET_CONFIG,
         notes: [
           "Pass widgets to create_dashboard as a simple ordered list; ids and grid layout are computed for you.",
-          "field-distribution needs a custom field id (from list_fields) in config.fieldId.",
-          "Most widgets need no config and render on sensible defaults."
+          "Field-driven widgets (field-distribution, field-metric, metric-group) need custom field ids from list_fields in their config.",
+          "field-metric uses config.aggregator; metric-group items use the key `op` (both: sum|avg|min|max|count).",
+          "accentColor (hex) and scopeOverride ({datePreset, folderId}) can be set on any widget's config to customize it.",
+          "Most other widgets render on sensible defaults with no config."
         ],
-        example: DASHBOARD_EXAMPLE
+        managing: [
+          "To customize an existing dashboard, call get_dashboard, edit the widgets array, and send the full array to update_dashboard (widgets are replaced, not merged).",
+          "To start from a working layout, duplicate_dashboard a good one, then update_dashboard to tweak it.",
+          "share_dashboard returns a public token; chain it after the dashboard is built."
+        ],
+        examples: DASHBOARD_EXAMPLES
       };
       return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
     }
@@ -5220,11 +5283,11 @@ var init_dashboards = __esm({
     FILTER_LIST_DESCRIPTION = "Field filters. filters.filterList is an array of { fieldName, fieldOperator?, fieldValue?: string[], fieldCondition? }. Other keys pass through but only filterList is enforced.";
     widgetInputSchema = import_zod17.z.object({
       type: import_zod17.z.enum(WIDGET_TYPES).describe(
-        "Widget type: stat-cards | sentiment | media-list | field-distribution | upload-timeline | themes | team-activity | kpi-trend | notes | people | comparison | sentiment-trend"
+        "Widget type: stat-cards | sentiment | media-list | field-distribution | upload-timeline | themes | team-activity | kpi-trend | field-metric | metric-group | notes | people | comparison | sentiment-trend"
       ),
       title: import_zod17.z.string().max(200).optional().describe("Widget title (defaults to a per-type label)"),
       config: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
-        "Optional render settings (e.g. fieldId for field-distribution, chartType for themes). Leave empty for sensible defaults \u2014 most widgets render without config."
+        "Optional render settings. Per-type: fieldId+measure (field-distribution), fieldId+aggregator (field-metric), metrics list (stat-cards, kpi-trend, comparison, metric-group), chartType (themes), heading+content (notes). Any widget also accepts accentColor (hex) and scopeOverride ({datePreset, folderId}). Call list_dashboard_widgets for the full catalog + examples. Leave empty for sensible defaults."
       )
     });
     writeFields = {
