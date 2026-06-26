@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.13.2 (2026-06-26)
+
+- Fix Openai tools
+
 ## v1.13.1 (2026-06-26)
 
 - Added request-contract tests for user-group and dashboard tools
