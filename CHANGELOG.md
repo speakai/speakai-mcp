@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.13.0 (2026-06-26)
+
+- Added user-group and dashboard tools, and improved CLI 1:1 dispatcher functionality
+
 ## v1.12.3 (2026-06-23)
 
 - Surface options from meta.type on recorder reads
