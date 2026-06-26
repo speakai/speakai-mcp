@@ -105,7 +105,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Bulk Update Custom Field Values",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
@@ -154,7 +154,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Custom Field",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },

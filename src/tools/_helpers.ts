@@ -38,7 +38,7 @@ type SpeakToolAnnotations = {
   title?: string;
   readOnlyHint: boolean;
   destructiveHint: boolean;
-  idempotentHint?: boolean;
+  idempotentHint: boolean;
   openWorldHint: boolean;
 };
 

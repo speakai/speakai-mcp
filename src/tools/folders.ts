@@ -143,7 +143,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Folder View",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
@@ -355,7 +355,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Folder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
