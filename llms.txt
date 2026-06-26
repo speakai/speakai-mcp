@@ -4,7 +4,7 @@
 
 ## What this is
 
-A remote MCP (Model Context Protocol) server hosted at `https://api.speakai.co/v1/mcp`. It exposes 84 tools, 5 resources, and 3 prompts for working with a Speak AI workspace. MCP-compatible clients (Claude.ai, Claude Desktop, Claude Code, ChatGPT, Cursor, VS Code) connect using one of two methods:
+A remote MCP (Model Context Protocol) server hosted at `https://api.speakai.co/v1/mcp`. It exposes 107 tools, 5 resources, and 3 prompts for working with a Speak AI workspace. MCP-compatible clients (Claude.ai, Claude Desktop, Claude Code, ChatGPT, Cursor, VS Code) connect using one of two methods:
 
 - **OAuth one-click** — paste the MCP URL into the AI tool, click Allow on the consent popup. No API key required.
 - **Bearer token** — paste the URL plus a Speak AI API key in an `Authorization: Bearer <key>` header.
@@ -45,7 +45,7 @@ If you are an AI assistant (Claude, ChatGPT, etc.) helping a Speak AI customer i
 
 ### When a user asks Speak AI to do something inside the conversation
 
-Once the connector is installed, you have access to 84 tools. Some guidance for choosing efficiently:
+Once the connector is installed, you have access to 107 tools. Some guidance for choosing efficiently:
 
 - **For "what did I talk about" / "find recordings about X" questions**: use `search_media` with a natural-language query. It searches across transcripts, insights, and metadata.
 - **For "ask the AI" questions** (e.g. "what are the recurring themes in my coaching calls?"): use `ask_magic_prompt` with optional `mediaIds` to scope the question. This invokes Speak AI's own purpose-built analysis engine which is tuned for transcript-style content.
@@ -88,7 +88,7 @@ When you process transcript content:
 
 Auth scope: single scope `mcp` grants full read+write access to the user's Speak AI workspace.
 
-## Tools (83 total)
+## Tools (107 total)
 
 ### Media (16)
 get_signed_upload_url, upload_media, upload_local_file, upload_and_analyze, list_media, get_media_insights, get_transcript, get_captions, update_transcript_speakers, bulk_update_transcript_speakers, get_media_status, update_media_metadata, delete_media, toggle_media_favorite, reanalyze_media, bulk_move_media
@@ -102,8 +102,8 @@ list_folders, get_folder_info, create_folder, clone_folder, update_folder, delet
 ### Recorder / Survey (10)
 create_recorder, list_recorders, get_recorder_info, clone_recorder, get_recorder_recordings, generate_recorder_url, update_recorder_settings, update_recorder_questions, check_recorder_status, delete_recorder
 
-### Automations (5)
-list_automations, get_automation, create_automation, update_automation, toggle_automation_status
+### Automations (14)
+list_automations, list_automation_names, get_automation, get_automation_runs, create_automation, update_automation, toggle_automation_status, bulk_update_automation_status, bulk_assign_automation_folders, run_automations, delete_automation, list_automation_apps, list_automation_triggers, list_automation_actions
 
 ### Clips (4)
 create_clip, get_clips, update_clip, delete_clip
@@ -131,6 +131,12 @@ get_media_statistics, list_supported_languages
 
 ### Search (1)
 search_media
+
+### Users & Teams (5)
+list_users, list_user_groups, create_user_group, update_user_group, delete_user_group
+
+### Dashboards (9)
+list_dashboard_widgets, list_dashboards, get_dashboard, create_dashboard, update_dashboard, delete_dashboard, duplicate_dashboard, share_dashboard, get_dashboard_speakers_insight
 
 ## Resources (5)
 

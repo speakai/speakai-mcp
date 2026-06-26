@@ -99,4 +99,30 @@ describe("CLI Smoke Tests", () => {
       expect(cmd.description(), `Command ${cmd.name()} missing description`).toBeTruthy();
     }
   });
+
+  it("exposes the generic tools + call commands", async () => {
+    const { createCli } = await import("../src/cli/index.js");
+    const names = createCli().commands.map((c) => c.name());
+    expect(names).toContain("tools");
+    expect(names).toContain("call");
+  });
+
+  // The CLI's `call <tool>` dispatches via the SAME registerAllTools used here,
+  // so capturing the registered handlers proves `call` can reach every MCP tool.
+  // This is what keeps the CLI 1:1 with the tool surface.
+  it("call dispatcher covers every MCP tool (CLI is 1:1 with tools)", async () => {
+    const { registerAllTools } = await import("../src/tools/index.js");
+    const { SPEAK_MCP_TOOL_NAMES } = await import("../src/tool-names.js");
+
+    const handlers: Record<string, unknown> = {};
+    const stub = {
+      registerTool: (name: string, _def: unknown, cb: unknown) => {
+        handlers[name] = cb;
+        return {};
+      },
+    };
+    registerAllTools(stub as any);
+
+    expect(Object.keys(handlers).sort()).toEqual([...SPEAK_MCP_TOOL_NAMES].sort());
+  });
 });

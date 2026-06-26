@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 84 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 107 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,7 +394,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (83)
+### MCP Tools (107)
 
 <details>
 <summary>Media (16 tools)</summary>
@@ -478,15 +478,24 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Automations (5 tools)</summary>
+<summary>Automations (14 tools)</summary>
 
 | Tool | Description |
 |---|---|
-| `list_automations` | List automation rules |
-| `get_automation` | Get automation details |
-| `create_automation` | Create an automation rule |
-| `update_automation` | Update an automation |
+| `list_automations` | List automation rules with paging and filters |
+| `list_automation_names` | List automations as lightweight name + id pairs |
+| `get_automation` | Get automation details (trigger + step graph) |
+| `get_automation_runs` | Get an automation's run history |
+| `create_automation` | Create an automation rule (V2 trigger + steps graph) |
+| `update_automation` | Update an automation (replaces trigger + steps) |
 | `toggle_automation_status` | Enable or disable an automation |
+| `bulk_update_automation_status` | Activate/deactivate multiple automations |
+| `bulk_assign_automation_folders` | Set folder scope for multiple automations |
+| `run_automations` | Manually run automations against media now |
+| `delete_automation` | Permanently delete an automation |
+| `list_automation_apps` | List catalog apps (native + integrations) |
+| `list_automation_triggers` | List catalog trigger types (optionally by app) |
+| `list_automation_actions` | List catalog action/step types (optionally by app) |
 
 </details>
 
@@ -523,6 +532,36 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `list_webhooks` | List all webhooks |
 | `update_webhook` | Update a webhook |
 | `delete_webhook` | Delete a webhook |
+
+</details>
+
+<details>
+<summary>Users &amp; Teams (5 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `list_users` | List workspace members with ids, emails, and permissions |
+| `list_user_groups` | List user groups with hydrated members |
+| `create_user_group` | Create a user group and assign members |
+| `update_user_group` | Update a group's name and members (full replace) |
+| `delete_user_group` | Delete a user group |
+
+</details>
+
+<details>
+<summary>Dashboards (9 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `list_dashboard_widgets` | List widget types, their config keys, and an example payload |
+| `list_dashboards` | List analytics dashboards you can access |
+| `get_dashboard` | Get a dashboard's full config (widgets, filters, scope) |
+| `create_dashboard` | Create a dashboard with auto-laid-out widgets |
+| `update_dashboard` | Update a dashboard (partial; widgets are replaced) |
+| `delete_dashboard` | Soft-delete a dashboard and its share link |
+| `duplicate_dashboard` | Clone a dashboard with fresh widget ids |
+| `share_dashboard` | Enable public sharing and return the share token |
+| `get_dashboard_speakers_insight` | Speakers breakdown for a folder/date/filter scope |
 
 </details>
 

@@ -1308,5 +1308,89 @@ export function createCli(): Command {
       }
     });
 
+  // ── Generic tool dispatch (1:1 with the MCP tool surface) ───────────
+  // Every MCP tool is callable from the CLI by name via `call`, so the CLI
+  // stays in lockstep with the tool surface automatically — no per-tool command
+  // to maintain. The curated commands above are ergonomic shortcuts on top.
+
+  /** Register all tools against a stub server, capturing each tool's callback by name. */
+  async function loadToolHandlers() {
+    const client = await getClient();
+    const handlers: Record<string, (args: Record<string, unknown>) => Promise<any>> = {};
+    const stub = {
+      registerTool: (name: string, _def: unknown, cb: (args: Record<string, unknown>) => Promise<any>) => {
+        handlers[name] = cb;
+        return {};
+      },
+    };
+    const { registerAllTools } = await import("../tools/index.js");
+    registerAllTools(stub as any, client);
+    return handlers;
+  }
+
+  program
+    .command("tools")
+    .description("List every MCP tool callable via `call`")
+    .option("--json", "Output raw JSON")
+    .action(async (opts) => {
+      const { SPEAK_MCP_TOOL_NAMES } = await import("../tool-names.js");
+      const names = [...SPEAK_MCP_TOOL_NAMES].sort();
+      if (opts.json) {
+        printJson(names);
+      } else {
+        console.log(`${names.length} tools:\n`);
+        for (const n of names) console.log(`  ${n}`);
+      }
+    });
+
+  program
+    .command("call")
+    .description("Call any MCP tool by name with JSON arguments")
+    .argument("<tool>", "Tool name (see `speakai-mcp tools`)")
+    .argument("[json]", "Arguments as a JSON object", "{}")
+    .action(async (tool: string, json: string) => {
+      requireApiKey();
+      let args: Record<string, unknown>;
+      try {
+        args = JSON.parse(json);
+      } catch {
+        printError(`Invalid JSON arguments: ${json}`);
+        process.exit(1);
+        return;
+      }
+
+      const handlers = await loadToolHandlers();
+      const handler = handlers[tool];
+      if (!handler) {
+        printError(`Unknown tool "${tool}". Run "speakai-mcp tools" to list them.`);
+        process.exit(1);
+        return;
+      }
+
+      try {
+        const result = await handler(args);
+        const text = result?.content?.find((c: any) => c.type === "text")?.text;
+        if (result?.isError) {
+          printError(text ?? "Tool call failed");
+          process.exit(1);
+          return;
+        }
+        const data = result?.structuredContent?.data ?? (text ? safeParse(text) : result);
+        printJson(data);
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
   return program;
+}
+
+/** Parse JSON, falling back to the raw string when it isn't JSON. */
+function safeParse(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 83,
+  "totalTools": 107,
   "categories": [
     {
       "id": "media",
@@ -712,6 +712,87 @@
           "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": true
+        },
+        {
+          "name": "list_automation_names",
+          "title": "List Automation Names",
+          "description": "List automations as lightweight { name, id } pairs — useful for pickers without fetching full configs.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_automation_runs",
+          "title": "Get Automation Runs",
+          "description": "Get the run history (executions) for an automation, with paging and optional status filter.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "bulk_update_automation_status",
+          "title": "Bulk Update Automation Status",
+          "description": "Activate or deactivate multiple automations at once.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "bulk_assign_automation_folders",
+          "title": "Bulk Assign Automation Folders",
+          "description": "Set the folder scope for multiple automations at once. Pass an empty folderIds array to remove the folder restriction (run on all folders).",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "run_automations",
+          "title": "Run Automations",
+          "description": "Manually run one or more automations against one or more media items now (outside the normal trigger).",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "delete_automation",
+          "title": "Delete Automation",
+          "description": "Permanently delete an automation rule.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_automation_apps",
+          "title": "List Automation Apps",
+          "description": "List the apps available in the automation catalog (e.g. Speak native + connected integrations). Use to discover what triggers/actions exist before building an automation.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_automation_triggers",
+          "title": "List Automation Triggers",
+          "description": "List the trigger types available in the automation catalog. Optionally filter by app.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_automation_actions",
+          "title": "List Automation Actions",
+          "description": "List the action/step types available in the automation catalog. Optionally filter by app.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
         }
       ]
     },
@@ -832,6 +913,148 @@
           "name": "get_embed_iframe_url",
           "title": "Get Embed Iframe URL",
           "description": "Get the iframe URL for embedding a media player/transcript on a webpage.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "users-team",
+      "name": "Users & teams",
+      "iconKey": "users-team",
+      "shortDescription": "List workspace members and manage user groups.",
+      "tools": [
+        {
+          "name": "list_users",
+          "title": "List Users",
+          "description": "List the users (members) in the workspace/company, with their ids, names, emails, and permissions. Use the returned _id values when assigning members to user groups.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_user_groups",
+          "title": "List User Groups",
+          "description": "List all user groups in the company. Each group includes its members (hydrated names/emails) and member ids. Use this to discover group ids and current membership before updating or deleting a group.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_user_group",
+          "title": "Create User Group",
+          "description": "Create a new user group and assign members. Member ids come from list_users. Fails with a 409 if a group with the same name already exists in the company.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_user_group",
+          "title": "Update User Group",
+          "description": "Update a user group's name and member list. NOTE: the users array is a FULL REPLACEMENT, not a delta — any member id you omit is removed from the group. Fetch the current members with list_user_groups first and send the complete list.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "delete_user_group",
+          "title": "Delete User Group",
+          "description": "Delete a user group. This removes the group only; it does not delete the users themselves.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "dashboards",
+      "name": "Dashboards",
+      "iconKey": "dashboards",
+      "shortDescription": "Create and manage analytics dashboards, widgets, and public sharing.",
+      "tools": [
+        {
+          "name": "list_dashboard_widgets",
+          "title": "List Dashboard Widgets",
+          "description": "Discovery helper: list the available dashboard widget types, what each shows, and the `config` keys it accepts (e.g. field-distribution takes a fieldId + measure). Also returns a complete example create_dashboard payload. Call this before create_dashboard if you're unsure what widgets to use.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_dashboards",
+          "title": "List Dashboards",
+          "description": "List all analytics dashboards the caller can access, including share state.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_dashboard",
+          "title": "Get Dashboard",
+          "description": "Get a single dashboard's full config (widgets, filters, date range, folder scope).",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_dashboard",
+          "title": "Create Dashboard",
+          "description": "Create an analytics dashboard. Only `title` is required. Add widgets by listing their types (the MCP assigns ids and lays them out automatically) and scope with folderScope, dateRange, and filters. Call list_dashboard_widgets first to see the available widget types and their config keys, plus a full example.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_dashboard",
+          "title": "Update Dashboard",
+          "description": "Update a dashboard. Only the fields you pass are changed (partial update). NOTE: passing `widgets` replaces the entire widget set — fetch the dashboard first if you want to preserve existing widgets.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "delete_dashboard",
+          "title": "Delete Dashboard",
+          "description": "Soft-delete a dashboard. This also deactivates its public share link.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "duplicate_dashboard",
+          "title": "Duplicate Dashboard",
+          "description": "Clone an existing dashboard. The copy gets fresh widget ids, a \"<name> (copy)\" title, and cleared sharing. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "share_dashboard",
+          "title": "Share Dashboard",
+          "description": "Enable public sharing for a dashboard and return its share token + embed id. WARNING: by default the public link resolves with no passphrase, so anyone with the token can view the dashboard data until an owner sets one.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_dashboard_speakers_insight",
+          "title": "Get Dashboard Speakers Insight",
+          "description": "Compute a speakers breakdown for a given folder scope, date range, and field filters. Standalone analytics — does not require a dashboard to exist.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,

@@ -63,7 +63,7 @@ describe("Automations tools", () => {
   it("list_automations calls GET /v1/automations", async () => {
     const cb = getToolCallback(server, "list_automations");
     await cb({});
-    expect(mockGet).toHaveBeenCalledWith("/v1/automations");
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations", { params: {} });
   });
 
   it("get_automation calls GET /v1/automations/:id", async () => {
@@ -74,11 +74,13 @@ describe("Automations tools", () => {
 
   it("create_automation calls POST /v1/automations/", async () => {
     const cb = getToolCallback(server, "create_automation");
-    await cb({ name: "My Rule", trigger: { type: "upload" } });
-    expect(mockPost).toHaveBeenCalledWith("/v1/automations/", {
+    const body = {
       name: "My Rule",
-      trigger: { type: "upload" },
-    });
+      trigger: { type: "folders", folderIds: ["f1"] },
+      steps: [{ stepId: "s1", stepType: "translation", translation: { targetLanguage: "es" } }],
+    };
+    await cb(body);
+    expect(mockPost).toHaveBeenCalledWith("/v1/automations/", body);
   });
 
   it("update_automation calls PUT /v1/automations/:id", async () => {
