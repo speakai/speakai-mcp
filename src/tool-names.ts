@@ -17,10 +17,19 @@ export const SPEAK_MCP_TOOL_NAMES = [
 
   // automations
   "list_automations",
+  "list_automation_names",
   "get_automation",
+  "get_automation_runs",
   "create_automation",
   "update_automation",
   "toggle_automation_status",
+  "bulk_update_automation_status",
+  "bulk_assign_automation_folders",
+  "run_automations",
+  "delete_automation",
+  "list_automation_apps",
+  "list_automation_triggers",
+  "list_automation_actions",
 
   // clips
   "get_clips",
@@ -123,6 +132,24 @@ export const SPEAK_MCP_TOOL_NAMES = [
   // workflows (high-level wrappers around media + upload tools)
   "upload_and_analyze",
   "upload_local_file",
+
+  // users / team management
+  "list_users",
+  "list_user_groups",
+  "create_user_group",
+  "update_user_group",
+  "delete_user_group",
+
+  // dashboards
+  "list_dashboard_widgets",
+  "list_dashboards",
+  "get_dashboard",
+  "create_dashboard",
+  "update_dashboard",
+  "delete_dashboard",
+  "duplicate_dashboard",
+  "share_dashboard",
+  "get_dashboard_speakers_insight",
 ] as const satisfies readonly string[];
 
 export type SpeakMcpToolName = (typeof SPEAK_MCP_TOOL_NAMES)[number];

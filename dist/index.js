@@ -2390,6 +2390,27 @@ var recorder_exports = {};
 __export(recorder_exports, {
   register: () => register5
 });
+function optionsFromMetaType(metaType) {
+  const bool = (v, fallback) => typeof v === "boolean" ? v : fallback;
+  const upload = metaType?.upload ?? {};
+  return {
+    audio: bool(metaType?.audio, true),
+    video: bool(metaType?.video, true),
+    screenShare: bool(metaType?.screenShare, false),
+    upload: {
+      file: bool(upload.file, true),
+      multiple: bool(upload.multiple, false),
+      url: bool(upload.url, false)
+    },
+    liveTranscription: bool(metaType?.liveTranscription, false)
+  };
+}
+function addRecorderOptions(recorder) {
+  if (recorder && typeof recorder === "object") {
+    recorder.options = optionsFromMetaType(recorder.meta?.type);
+  }
+  return recorder;
+}
 function register5(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
@@ -2441,6 +2462,7 @@ function register5(server, client) {
     async (body) => {
       try {
         const result = await api.post("/v1/recorder/create", body);
+        addRecorderOptions(result.data?.data?.recorderData);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2471,6 +2493,7 @@ function register5(server, client) {
     async (params) => {
       try {
         const result = await api.get("/v1/recorder", { params });
+        result.data?.data?.recorderList?.forEach?.(addRecorderOptions);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2530,6 +2553,7 @@ function register5(server, client) {
     async ({ recorderId }) => {
       try {
         const result = await api.get(`/v1/recorder/${recorderId}`);
+        addRecorderOptions(result.data?.data);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2616,6 +2640,7 @@ function register5(server, client) {
     async ({ recorderId, ...body }) => {
       try {
         const result = await api.put(`/v1/recorder/settings/${recorderId}`, body);
+        addRecorderOptions(result.data?.data?.recorderData);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -3641,8 +3666,16 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "list_automations",
-    "List all automation rules configured in the workspace.",
-    {},
+    "List automation rules in the workspace, with paging and filters.",
+    {
+      page: import_zod11.z.number().int().min(0).optional().describe("0-based page index"),
+      pageSize: import_zod11.z.number().int().min(1).max(100).optional().describe("Results per page"),
+      sortBy: import_zod11.z.string().optional().describe('Sort expression, e.g. "createdAt:desc"'),
+      query: import_zod11.z.string().optional().describe("Free-text search over automation names"),
+      folderIds: import_zod11.z.string().optional().describe("Comma-separated folder ids to filter by"),
+      isActive: import_zod11.z.boolean().optional().describe("Filter by active state"),
+      runType: import_zod11.z.enum(["instant", "schedule"]).optional().describe("Filter by run type")
+    },
     {
       title: "List Automations",
       readOnlyHint: true,
@@ -3650,9 +3683,35 @@ function register10(server, client) {
       idempotentHint: true,
       openWorldHint: false
     },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/automations", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_automation_names",
+    "List automations as lightweight { name, id } pairs \u2014 useful for pickers without fetching full configs.",
+    {},
+    {
+      title: "List Automation Names",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
     async () => {
       try {
-        const result = await api.get("/v1/automations");
+        const result = await api.get("/v1/automations/list");
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -3667,7 +3726,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "get_automation",
-    "Get detailed information about a specific automation rule.",
+    "Get detailed information about a specific automation rule, including its trigger and step graph.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation")
     },
@@ -3694,21 +3753,40 @@ function register10(server, client) {
   );
   registerSpeakTool(
     server,
-    "create_automation",
-    "Create a new automation rule for automatic media processing workflows.",
+    "get_automation_runs",
+    "Get the run history (executions) for an automation, with paging and optional status filter.",
     {
-      name: import_zod11.z.string().min(1).describe("Display name for the automation"),
-      trigger: import_zod11.z.record(import_zod11.z.unknown()).describe(
-        'Trigger object. Keys: `type` (e.g. "folders") and `folderIds` (array of folder IDs).'
-      ),
-      action: import_zod11.z.record(import_zod11.z.unknown()).describe(
-        'Single action object (not an array). Keys: `type` ("magic-prompt" or "translation"). For magic-prompt, include a `magicPrompt` object ({ prompt, title?, assistantType?, fieldIds?, ... }). For translation, include a `translation` object ({ targetLanguage }).'
-      ),
-      description: import_zod11.z.string().optional().describe("Optional description"),
-      isActive: import_zod11.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
-      runType: import_zod11.z.string().optional().describe('Run type, e.g. "instant" (default) or "scheduled"'),
-      schedule: import_zod11.z.record(import_zod11.z.unknown()).optional().describe("Schedule object for scheduled automations: { timePeriod, repeatAt }")
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
+      page: import_zod11.z.number().int().min(0).optional().describe("0-based page index"),
+      pageSize: import_zod11.z.number().int().min(1).max(100).optional().describe("Results per page"),
+      status: import_zod11.z.enum(["pending", "running", "completed", "failed", "killed"]).optional().describe("Filter runs by status")
     },
+    {
+      title: "Get Automation Runs",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ automationId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/automations/${automationId}/runs`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_automation",
+    "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure.",
+    writeSchema,
     {
       title: "Create Automation",
       readOnlyHint: false,
@@ -3733,20 +3811,10 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "update_automation",
-    "Update an existing automation rule. This replaces the whole automation, so fetch the current values with get_automation first and pass them all back.",
+    "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
-      name: import_zod11.z.string().min(1).describe("Display name for the automation"),
-      trigger: import_zod11.z.record(import_zod11.z.unknown()).describe(
-        'Trigger object. Keys: `type` (e.g. "folders") and `folderIds` (array of folder IDs).'
-      ),
-      action: import_zod11.z.record(import_zod11.z.unknown()).describe(
-        'Single action object (not an array). Keys: `type` ("magic-prompt" or "translation"). For magic-prompt, include a `magicPrompt` object ({ prompt, title?, assistantType?, fieldIds?, ... }). For translation, include a `translation` object ({ targetLanguage }).'
-      ),
-      description: import_zod11.z.string().optional().describe("Optional description"),
-      isActive: import_zod11.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
-      runType: import_zod11.z.string().optional().describe('Run type, e.g. "instant" (default) or "scheduled"'),
-      schedule: import_zod11.z.record(import_zod11.z.unknown()).optional().describe("Schedule object for scheduled automations: { timePeriod, repeatAt }")
+      ...writeSchema
     },
     {
       title: "Update Automation",
@@ -3757,10 +3825,7 @@ function register10(server, client) {
     },
     async ({ automationId, ...body }) => {
       try {
-        const result = await api.put(
-          `/v1/automations/${automationId}`,
-          body
-        );
+        const result = await api.put(`/v1/automations/${automationId}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -3788,9 +3853,204 @@ function register10(server, client) {
     },
     async ({ automationId }) => {
       try {
-        const result = await api.put(
-          `/v1/automations/status/${automationId}`
-        );
+        const result = await api.put(`/v1/automations/status/${automationId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "bulk_update_automation_status",
+    "Activate or deactivate multiple automations at once.",
+    {
+      automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
+      isActive: import_zod11.z.boolean().describe("true to activate, false to deactivate, for all listed automations")
+    },
+    {
+      title: "Bulk Update Automation Status",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.put("/v1/automations/bulk/status", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "bulk_assign_automation_folders",
+    "Set the folder scope for multiple automations at once. Pass an empty folderIds array to remove the folder restriction (run on all folders).",
+    {
+      automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
+      folderIds: import_zod11.z.array(import_zod11.z.string().min(1)).max(50).describe("Folder ids to scope the automations to. Empty array = all folders.")
+    },
+    {
+      title: "Bulk Assign Automation Folders",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.put("/v1/automations/bulk/folders", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "run_automations",
+    "Manually run one or more automations against one or more media items now (outside the normal trigger).",
+    {
+      mediaIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).describe("Media ids to run the automations against"),
+      automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).describe("Automation ids to run")
+    },
+    {
+      title: "Run Automations",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/automations/run", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_automation",
+    "Permanently delete an automation rule.",
+    {
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation to delete")
+    },
+    {
+      title: "Delete Automation",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ automationId }) => {
+      try {
+        const result = await api.delete(`/v1/automations/${automationId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_automation_apps",
+    "List the apps available in the automation catalog (e.g. Speak native + connected integrations). Use to discover what triggers/actions exist before building an automation.",
+    {},
+    {
+      title: "List Automation Apps",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/automations/catalog/apps");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_automation_triggers",
+    "List the trigger types available in the automation catalog. Optionally filter by app.",
+    {
+      app: import_zod11.z.string().min(1).max(100).optional().describe("Filter triggers to a specific app slug")
+    },
+    {
+      title: "List Automation Triggers",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/automations/catalog/triggers", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_automation_actions",
+    "List the action/step types available in the automation catalog. Optionally filter by app.",
+    {
+      app: import_zod11.z.string().min(1).max(100).optional().describe("Filter actions to a specific app slug")
+    },
+    {
+      title: "List Automation Actions",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/automations/catalog/actions", { params });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -3803,13 +4063,26 @@ function register10(server, client) {
     }
   );
 }
-var import_zod11;
+var import_zod11, STEPS_DESCRIPTION, TRIGGER_DESCRIPTION, writeSchema;
 var init_automations = __esm({
   "src/tools/automations.ts"() {
     "use strict";
     import_zod11 = require("zod");
     init_helpers();
     init_client();
+    STEPS_DESCRIPTION = 'Ordered array of graph steps (1-20). Each step is an object: { stepId: string (unique within the array), stepType: one of "magic-prompt" | "translation" | "filter" | "composio-action" | "speak-upload", dependsOn?: string[] (stepIds this step runs after) } plus ONE payload key matching stepType:\n- magic-prompt -> magicPrompt: { prompt (required unless fieldIds given), title?, assistantType? ("general"|"researcher"|"marketer"|"sales"|"recruiter"|"custom", default "general"), assistantTemplateId? (required if assistantType="custom"), fieldIds?: string[] (max 10, for field extraction) }\n- translation -> translation: { targetLanguage: BCP-47 code, e.g. "es" }\n- filter -> filter: { logic: "AND"|"OR", rules: [{ field, op: "eq"|"neq"|"contains"|"ncontains"|"startsWith"|"gt"|"lt"|"exists", value? }] }\n- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)\n- speak-upload -> speakUpload: { folderId, sourceMode: "url"|"file", sourceUrl? (required when sourceMode="url"), name?, fieldsMap?, language? }';
+    TRIGGER_DESCRIPTION = 'Trigger object. For folder-based automations: { type: "folders", folderIds: string[] } (at least one folder is required). Note: only "folders" is currently supported for multi-step automations via the API \u2014 "tags"/"keywords" are rejected, and "composio"/"webhook" triggers (provider, app, triggerSlug, webhookId, childKey, connectedAccountId) are gated by server flags.';
+    writeSchema = {
+      name: import_zod11.z.string().min(1).max(150).describe("Display name for the automation"),
+      trigger: import_zod11.z.record(import_zod11.z.unknown()).describe(TRIGGER_DESCRIPTION),
+      steps: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).min(1).max(20).describe(STEPS_DESCRIPTION),
+      description: import_zod11.z.string().max(1e3).optional().describe("Optional description"),
+      isActive: import_zod11.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
+      runType: import_zod11.z.enum(["instant", "schedule"]).optional().describe('Run type: "instant" (default, runs on trigger) or "schedule" (cron)'),
+      schedule: import_zod11.z.record(import_zod11.z.unknown()).optional().describe(
+        'Required when runType="schedule": { timePeriod: "today"|"yesterday"|"last7days"|"last14days"|"thisWeek", repeatAt: string }'
+      )
+    };
   }
 });
 
@@ -4379,6 +4652,676 @@ var init_workflows = __esm({
   }
 });
 
+// src/tools/users.ts
+var users_exports = {};
+__export(users_exports, {
+  register: () => register15
+});
+function register15(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_users",
+    "List the users (members) in the workspace/company, with their ids, names, emails, and permissions. Use the returned _id values when assigning members to user groups.",
+    {
+      filterName: import_zod16.z.string().optional().describe(
+        'Search text. Plain text matches first/last name or email; prefix with "email:" or "name:" to scope, e.g. "email:jane@acme.com".'
+      ),
+      sortBy: import_zod16.z.string().optional().describe('Sort expression "field:asc" or "field:desc", e.g. "createdAt:desc", "email:asc"'),
+      page: import_zod16.z.number().int().min(0).optional().describe("0-based page index (default 0)"),
+      pageSize: import_zod16.z.number().int().min(1).max(200).optional().describe("Results per page (default 50)")
+    },
+    {
+      title: "List Users",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/admin/users", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_user_groups",
+    "List all user groups in the company. Each group includes its members (hydrated names/emails) and member ids. Use this to discover group ids and current membership before updating or deleting a group.",
+    {},
+    {
+      title: "List User Groups",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/admin/usergroup");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_user_group",
+    "Create a new user group and assign members. Member ids come from list_users. Fails with a 409 if a group with the same name already exists in the company.",
+    {
+      description: import_zod16.z.string().min(1).describe("Group name"),
+      users: import_zod16.z.array(import_zod16.z.string().min(1)).default([]).describe("User _id strings to add as members (fetch via list_users)")
+    },
+    {
+      title: "Create User Group",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/admin/usergroup", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_user_group",
+    "Update a user group's name and member list. NOTE: the users array is a FULL REPLACEMENT, not a delta \u2014 any member id you omit is removed from the group. Fetch the current members with list_user_groups first and send the complete list.",
+    {
+      _id: import_zod16.z.string().min(1).describe("Group _id to update (from list_user_groups)"),
+      description: import_zod16.z.string().min(1).describe("New group name"),
+      users: import_zod16.z.array(import_zod16.z.string().min(1)).describe("Full replacement list of member _id strings (omitted users are removed)")
+    },
+    {
+      title: "Update User Group",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.put("/v1/admin/usergroup", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_user_group",
+    "Delete a user group. This removes the group only; it does not delete the users themselves.",
+    {
+      id: import_zod16.z.string().min(1).describe("Group _id to delete (from list_user_groups)")
+    },
+    {
+      title: "Delete User Group",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ id }) => {
+      try {
+        const result = await api.delete(`/v1/admin/usergroup/${id}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+}
+var import_zod16;
+var init_users = __esm({
+  "src/tools/users.ts"() {
+    "use strict";
+    import_zod16 = require("zod");
+    init_helpers();
+    init_client();
+  }
+});
+
+// src/tools/dashboard-widgets.ts
+function buildDashboardWidgets(items) {
+  let y = 0;
+  let rowX = 0;
+  let rowH = 0;
+  return items.map((item) => {
+    const meta = WIDGET_META[item.type];
+    const full = meta.w >= GRID_COLS;
+    let x;
+    if (full) {
+      if (rowX !== 0) {
+        y += rowH;
+        rowX = 0;
+        rowH = 0;
+      }
+      x = 0;
+      const widget2 = makeWidget(item, x, y);
+      y += meta.h;
+      return widget2;
+    }
+    if (rowX + meta.w > GRID_COLS) {
+      y += rowH;
+      rowX = 0;
+      rowH = 0;
+    }
+    x = rowX;
+    const widget = makeWidget(item, x, y);
+    rowX += meta.w;
+    rowH = Math.max(rowH, meta.h);
+    if (rowX >= GRID_COLS) {
+      y += rowH;
+      rowX = 0;
+      rowH = 0;
+    }
+    return widget;
+  });
+}
+function makeWidget(item, x, y) {
+  const meta = WIDGET_META[item.type];
+  return {
+    id: (0, import_crypto.randomUUID)(),
+    type: item.type,
+    title: item.title ?? meta.titleDefault,
+    config: item.config ?? {},
+    layout: { x, y, w: meta.w, h: meta.h, minW: meta.minW, minH: meta.minH }
+  };
+}
+var import_crypto, GRID_COLS, WIDGET_TYPES, WIDGET_META, WIDGET_CATALOG, COMMON_WIDGET_CONFIG, DASHBOARD_EXAMPLES;
+var init_dashboard_widgets = __esm({
+  "src/tools/dashboard-widgets.ts"() {
+    "use strict";
+    import_crypto = require("crypto");
+    GRID_COLS = 12;
+    WIDGET_TYPES = [
+      "stat-cards",
+      "sentiment",
+      "media-list",
+      "field-distribution",
+      "upload-timeline",
+      "themes",
+      "team-activity",
+      "kpi-trend",
+      "field-metric",
+      "metric-group",
+      "notes",
+      "people",
+      "comparison",
+      "sentiment-trend"
+    ];
+    WIDGET_META = {
+      "stat-cards": { w: GRID_COLS, h: 3, minW: 4, minH: 2, titleDefault: "Usage overview" },
+      sentiment: { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Sentiment" },
+      "media-list": { w: GRID_COLS, h: 4, minW: 4, minH: 3, titleDefault: "Recent media" },
+      "field-distribution": { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Field breakdown" },
+      "upload-timeline": { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Uploads over time" },
+      themes: { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Themes" },
+      "team-activity": { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Team activity" },
+      "kpi-trend": { w: 3, h: 2, minW: 2, minH: 2, titleDefault: "Total files" },
+      "field-metric": { w: 3, h: 2, minW: 2, minH: 2, titleDefault: "Field metric" },
+      "metric-group": { w: 6, h: 2, minW: 3, minH: 2, titleDefault: "Metrics" },
+      notes: { w: GRID_COLS, h: 2, minW: 2, minH: 1, titleDefault: "Note" },
+      people: { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "People" },
+      comparison: { w: 6, h: 3, minW: 3, minH: 2, titleDefault: "Comparison" },
+      "sentiment-trend": { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Sentiment over time" }
+    };
+    WIDGET_CATALOG = [
+      {
+        type: "stat-cards",
+        purpose: "Headline totals for the scope (full width).",
+        config: 'metrics?: string[] \u2014 any of "media", "storage", "words", "speakers", "duration", "sentiment"'
+      },
+      { type: "sentiment", purpose: "Sentiment distribution + representative sentences.", config: "none" },
+      { type: "media-list", purpose: "Most recent media in scope (full width).", config: "none" },
+      {
+        type: "field-distribution",
+        purpose: "Value-frequency breakdown for one custom field.",
+        config: 'fieldId: string (a custom field id from list_fields); measure?: "count" | "words" | "duration" | "avg:<numericFieldId>" | "sum:<numericFieldId>"'
+      },
+      { type: "upload-timeline", purpose: "Uploads over time per media type.", config: "none" },
+      { type: "themes", purpose: "Dominant theme clusters.", config: 'chartType?: "cloud" | "bar"' },
+      { type: "team-activity", purpose: "Activity by team member.", config: "none" },
+      {
+        type: "kpi-trend",
+        purpose: "A KPI with period-over-period delta.",
+        config: 'metrics?: string[] \u2014 any of "totalFiles", "totalDurationSeconds", "totalWords", "uniqueSpeakers"'
+      },
+      {
+        type: "field-metric",
+        purpose: "A single custom field's aggregate, with a period-over-period delta.",
+        config: 'fieldId: string (custom field id from list_fields); aggregator: "sum" | "avg" | "min" | "max" | "count"'
+      },
+      {
+        type: "metric-group",
+        purpose: "A scorecard of several field metrics in one card.",
+        config: 'metrics: Array<{ fieldId: string, op: "sum"|"avg"|"min"|"max"|"count", label?: string }> (note the per-item key is `op`, not `aggregator`)'
+      },
+      {
+        type: "notes",
+        purpose: "Free-text note/context block (full width).",
+        config: "heading?: string; content?: string"
+      },
+      { type: "people", purpose: "Speaker/people breakdown.", config: "none" },
+      {
+        type: "comparison",
+        purpose: "Period-over-period comparison of KPIs.",
+        config: 'metrics?: string[] \u2014 any of "totalFiles", "totalDurationSeconds", "totalWords", "uniqueSpeakers"'
+      },
+      { type: "sentiment-trend", purpose: "Sentiment over time.", config: "none" }
+    ];
+    COMMON_WIDGET_CONFIG = [
+      {
+        key: "accentColor",
+        appliesTo: "any widget",
+        description: 'Hex color for the widget accent, e.g. "#6366F1". Omit for the default.'
+      },
+      {
+        key: "scopeOverride",
+        appliesTo: "any widget except notes",
+        description: "Override the dashboard's scope for just this widget: { datePreset: string, folderId: string }. Omit to inherit the dashboard scope."
+      }
+    ];
+    DASHBOARD_EXAMPLES = [
+      {
+        name: "Sales calls overview",
+        payload: {
+          title: "Customer Calls Overview",
+          folderScope: ["<folderId>"],
+          dateRange: { preset: "last30days" },
+          filters: { filterList: [{ fieldName: "Stage", fieldOperator: "is", fieldValue: ["Closed Won"] }] },
+          widgets: [
+            { type: "stat-cards", config: { metrics: ["media", "words", "speakers"] } },
+            { type: "sentiment", config: { accentColor: "#6366F1" } },
+            { type: "field-distribution", title: "Deals by stage", config: { fieldId: "<fieldId>", measure: "count" } },
+            { type: "themes", config: { chartType: "bar" } },
+            { type: "media-list" }
+          ]
+        }
+      },
+      {
+        name: "Field-metrics scorecard (new widgets)",
+        payload: {
+          title: "Deal Metrics",
+          folderScope: ["<folderId>"],
+          dateRange: { preset: "thisQuarter" },
+          widgets: [
+            { type: "kpi-trend", title: "Total calls", config: { metrics: ["totalFiles"] } },
+            { type: "field-metric", title: "Avg deal size", config: { fieldId: "<dealSizeFieldId>", aggregator: "avg" } },
+            {
+              type: "metric-group",
+              title: "Pipeline",
+              config: {
+                metrics: [
+                  { fieldId: "<dealSizeFieldId>", op: "sum", label: "Total pipeline" },
+                  { fieldId: "<dealSizeFieldId>", op: "max", label: "Largest deal" }
+                ]
+              }
+            },
+            // Per-widget scope override: this card ignores the dashboard scope.
+            { type: "field-metric", title: "EMEA avg", config: { fieldId: "<dealSizeFieldId>", aggregator: "avg", scopeOverride: { datePreset: "last7days", folderId: "<emeaFolderId>" } } }
+          ]
+        }
+      }
+    ];
+  }
+});
+
+// src/tools/dashboards.ts
+var dashboards_exports = {};
+__export(dashboards_exports, {
+  register: () => register16
+});
+function withBuiltWidgets(body) {
+  if (Array.isArray(body.widgets)) {
+    return { ...body, widgets: buildDashboardWidgets(body.widgets) };
+  }
+  return body;
+}
+function register16(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_dashboards",
+    "List all analytics dashboards the caller can access, including share state.",
+    {},
+    {
+      title: "List Dashboards",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/dashboards");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_dashboard",
+    "Get a single dashboard's full config (widgets, filters, date range, folder scope).",
+    {
+      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id (the dashboardId field from list_dashboards, not the Mongo _id)")
+    },
+    {
+      title: "Get Dashboard",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ dashboardId }) => {
+      try {
+        const result = await api.get(`/v1/dashboards/${dashboardId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_dashboard_widgets",
+    "Discovery + how-to helper for building and customizing dashboards. Returns every widget type with what it shows and the exact `config` keys it accepts (metrics, fieldId, aggregator, chartType, accentColor, scopeOverride, \u2026), the config that applies to all widgets, two complete worked example payloads (including the field-metric and metric-group cards), and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
+    {},
+    {
+      title: "List Dashboard Widgets",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      const data = {
+        widgets: WIDGET_CATALOG,
+        commonConfig: COMMON_WIDGET_CONFIG,
+        notes: [
+          "Pass widgets to create_dashboard as a simple ordered list; ids and grid layout are computed for you.",
+          "Field-driven widgets (field-distribution, field-metric, metric-group) need custom field ids from list_fields in their config.",
+          "field-metric uses config.aggregator; metric-group items use the key `op` (both: sum|avg|min|max|count).",
+          "accentColor (hex) and scopeOverride ({datePreset, folderId}) can be set on any widget's config to customize it.",
+          "Most other widgets render on sensible defaults with no config."
+        ],
+        managing: [
+          "To customize an existing dashboard, call get_dashboard, edit the widgets array, and send the full array to update_dashboard (widgets are replaced, not merged).",
+          "To start from a working layout, duplicate_dashboard a good one, then update_dashboard to tweak it.",
+          "share_dashboard returns a public token; chain it after the dashboard is built."
+        ],
+        examples: DASHBOARD_EXAMPLES
+      };
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_dashboard",
+    "Create an analytics dashboard. Only `title` is required. Add widgets by listing their types (the MCP assigns ids and lays them out automatically) and scope with folderScope, dateRange, and filters. Call list_dashboard_widgets first to see the available widget types and their config keys, plus a full example.",
+    {
+      title: import_zod17.z.string().min(1).max(200).describe("Dashboard name (the only required field)"),
+      ...writeFields
+    },
+    {
+      title: "Create Dashboard",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/dashboards", withBuiltWidgets(body));
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_dashboard",
+    "Update a dashboard. Only the fields you pass are changed (partial update). NOTE: passing `widgets` replaces the entire widget set \u2014 fetch the dashboard first if you want to preserve existing widgets.",
+    {
+      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id"),
+      title: import_zod17.z.string().min(1).max(200).optional().describe("New dashboard name"),
+      ...writeFields
+    },
+    {
+      title: "Update Dashboard",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ dashboardId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/dashboards/${dashboardId}`, withBuiltWidgets(body));
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_dashboard",
+    "Soft-delete a dashboard. This also deactivates its public share link.",
+    {
+      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id to delete")
+    },
+    {
+      title: "Delete Dashboard",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ dashboardId }) => {
+      try {
+        const result = await api.delete(`/v1/dashboards/${dashboardId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "duplicate_dashboard",
+    'Clone an existing dashboard. The copy gets fresh widget ids, a "<name> (copy)" title, and cleared sharing. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.',
+    {
+      dashboardId: import_zod17.z.string().min(1).describe("Source dashboard business id to clone")
+    },
+    {
+      title: "Duplicate Dashboard",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async ({ dashboardId }) => {
+      try {
+        const result = await api.post(`/v1/dashboards/${dashboardId}/duplicate`, {});
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "share_dashboard",
+    "Enable public sharing for a dashboard and return its share token + embed id. WARNING: by default the public link resolves with no passphrase, so anyone with the token can view the dashboard data until an owner sets one.",
+    {
+      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id to share")
+    },
+    {
+      title: "Share Dashboard",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ dashboardId }) => {
+      try {
+        const result = await api.put(`/v1/dashboards/${dashboardId}/share`, {});
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_dashboard_speakers_insight",
+    "Compute a speakers breakdown for a given folder scope, date range, and field filters. Standalone analytics \u2014 does not require a dashboard to exist.",
+    SPEAKERS_FILTER_SCHEMA,
+    {
+      title: "Get Dashboard Speakers Insight",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/dashboards/insights/speakers", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+}
+var import_zod17, FILTER_LIST_DESCRIPTION, widgetInputSchema, writeFields, SPEAKERS_FILTER_SCHEMA;
+var init_dashboards = __esm({
+  "src/tools/dashboards.ts"() {
+    "use strict";
+    import_zod17 = require("zod");
+    init_helpers();
+    init_client();
+    init_dashboard_widgets();
+    FILTER_LIST_DESCRIPTION = "Field filters. filters.filterList is an array of { fieldName, fieldOperator?, fieldValue?: string[], fieldCondition? }. Other keys pass through but only filterList is enforced.";
+    widgetInputSchema = import_zod17.z.object({
+      type: import_zod17.z.enum(WIDGET_TYPES).describe(
+        "Widget type: stat-cards | sentiment | media-list | field-distribution | upload-timeline | themes | team-activity | kpi-trend | field-metric | metric-group | notes | people | comparison | sentiment-trend"
+      ),
+      title: import_zod17.z.string().max(200).optional().describe("Widget title (defaults to a per-type label)"),
+      config: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
+        "Optional render settings. Per-type: fieldId+measure (field-distribution), fieldId+aggregator (field-metric), metrics list (stat-cards, kpi-trend, comparison, metric-group), chartType (themes), heading+content (notes). Any widget also accepts accentColor (hex) and scopeOverride ({datePreset, folderId}). Call list_dashboard_widgets for the full catalog + examples. Leave empty for sensible defaults."
+      )
+    });
+    writeFields = {
+      description: import_zod17.z.string().max(2e3).optional().describe("Dashboard description"),
+      icon: import_zod17.z.string().max(200).optional().describe("Icon identifier"),
+      folderScope: import_zod17.z.array(import_zod17.z.string().max(100)).max(100).optional().describe("Folder ids to scope analytics to. Empty/omitted = all accessible folders."),
+      assignTo: import_zod17.z.array(import_zod17.z.string()).max(100).optional().describe('User ids, or group ids in the "<groupId> (G)" convention, to share view access with'),
+      dateRange: import_zod17.z.object({
+        preset: import_zod17.z.string().max(50).optional(),
+        startDate: import_zod17.z.string().optional(),
+        endDate: import_zod17.z.string().optional()
+      }).optional().describe("Date range: { preset?, startDate?, endDate? }"),
+      filters: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
+      widgets: import_zod17.z.array(widgetInputSchema).max(50).optional().describe(
+        "Widgets to place on the dashboard, in order. The MCP assigns ids and computes a tidy two-per-row grid layout matching the Speak UI. Just list the widget types you want."
+      ),
+      isDefault: import_zod17.z.boolean().optional().describe("Make this the company default dashboard")
+    };
+    SPEAKERS_FILTER_SCHEMA = {
+      folderScope: import_zod17.z.array(import_zod17.z.string().max(100)).max(100).optional().describe("Folder ids to scope to"),
+      startDate: import_zod17.z.string().optional().describe("ISO start date"),
+      endDate: import_zod17.z.string().optional().describe("ISO end date"),
+      filterList: import_zod17.z.array(
+        import_zod17.z.object({
+          fieldName: import_zod17.z.string().max(100),
+          fieldOperator: import_zod17.z.string().max(50).optional(),
+          fieldValue: import_zod17.z.array(import_zod17.z.string().max(500)).optional(),
+          fieldCondition: import_zod17.z.string().max(50).optional()
+        })
+      ).max(20).optional().describe("Field filter rules")
+    };
+  }
+});
+
 // src/tools/index.ts
 var tools_exports = {};
 __export(tools_exports, {
@@ -4407,6 +5350,8 @@ var init_tools = __esm({
     init_analytics();
     init_clips();
     init_workflows();
+    init_users();
+    init_dashboards();
     modules = [
       media_exports,
       text_exports,
@@ -4421,7 +5366,9 @@ var init_tools = __esm({
       webhooks_exports,
       analytics_exports,
       clips_exports,
-      workflows_exports
+      workflows_exports,
+      users_exports,
+      dashboards_exports
     ];
   }
 });
@@ -4538,8 +5485,8 @@ function registerPrompts(server) {
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
     {
-      url: import_zod16.z.string().describe("URL of the meeting recording \u2014 a direct file link or a shareable social/video link (resolved automatically)"),
-      name: import_zod16.z.string().optional().describe("Meeting name (optional)")
+      url: import_zod18.z.string().describe("URL of the meeting recording \u2014 a direct file link or a shareable social/video link (resolved automatically)"),
+      name: import_zod18.z.string().optional().describe("Meeting name (optional)")
     },
     async ({ url, name }) => ({
       messages: [
@@ -4571,8 +5518,8 @@ function registerPrompts(server) {
     "research-across-media",
     "Search for themes, patterns, or topics across multiple recordings or your entire media library.",
     {
-      topic: import_zod16.z.string().describe("The topic, theme, or question to research"),
-      folder: import_zod16.z.string().optional().describe("Folder ID to scope the research (optional)")
+      topic: import_zod18.z.string().describe("The topic, theme, or question to research"),
+      folder: import_zod18.z.string().optional().describe("Folder ID to scope the research (optional)")
     },
     async ({ topic, folder }) => ({
       messages: [
@@ -4605,8 +5552,8 @@ function registerPrompts(server) {
     "meeting-brief",
     "Prepare a brief from recent meetings \u2014 pull transcripts, extract decisions, and summarize open items.",
     {
-      days: import_zod16.z.string().optional().describe("Number of days to look back (default: 7)"),
-      folder: import_zod16.z.string().optional().describe("Folder ID to scope to (optional)")
+      days: import_zod18.z.string().optional().describe("Number of days to look back (default: 7)"),
+      folder: import_zod18.z.string().optional().describe("Folder ID to scope to (optional)")
     },
     async ({ days, folder }) => {
       const lookback = parseInt(days ?? "7");
@@ -4643,11 +5590,148 @@ function registerPrompts(server) {
     }
   );
 }
-var import_zod16;
+var import_zod18;
 var init_prompts = __esm({
   "src/prompts.ts"() {
     "use strict";
-    import_zod16 = require("zod");
+    import_zod18 = require("zod");
+  }
+});
+
+// src/tool-names.ts
+var tool_names_exports = {};
+__export(tool_names_exports, {
+  SPEAK_MCP_TOOL_NAMES: () => SPEAK_MCP_TOOL_NAMES
+});
+var SPEAK_MCP_TOOL_NAMES;
+var init_tool_names = __esm({
+  "src/tool-names.ts"() {
+    "use strict";
+    SPEAK_MCP_TOOL_NAMES = [
+      // analytics
+      "get_media_statistics",
+      // automations
+      "list_automations",
+      "list_automation_names",
+      "get_automation",
+      "get_automation_runs",
+      "create_automation",
+      "update_automation",
+      "toggle_automation_status",
+      "bulk_update_automation_status",
+      "bulk_assign_automation_folders",
+      "run_automations",
+      "delete_automation",
+      "list_automation_apps",
+      "list_automation_triggers",
+      "list_automation_actions",
+      // clips
+      "get_clips",
+      "create_clip",
+      "update_clip",
+      "delete_clip",
+      // embed
+      "create_embed",
+      "update_embed",
+      "check_embed",
+      "get_embed_iframe_url",
+      // exports
+      "export_media",
+      "export_multiple_media",
+      // fields
+      "list_fields",
+      "create_field",
+      "update_field",
+      "update_multiple_fields",
+      // folders
+      "list_folders",
+      "create_folder",
+      "update_folder",
+      "delete_folder",
+      "get_folder_info",
+      "clone_folder",
+      "get_folder_views",
+      "get_all_folder_views",
+      "create_folder_view",
+      "update_folder_view",
+      "clone_folder_view",
+      // media
+      "get_signed_upload_url",
+      "upload_media",
+      "get_media_status",
+      "get_media_insights",
+      "get_transcript",
+      "list_media",
+      "search_media",
+      "delete_media",
+      "update_media_metadata",
+      "toggle_media_favorite",
+      "reanalyze_media",
+      "get_captions",
+      "list_supported_languages",
+      "update_transcript_speakers",
+      "bulk_update_transcript_speakers",
+      "bulk_move_media",
+      // meeting
+      "list_meeting_events",
+      "schedule_meeting_event",
+      "remove_assistant_from_meeting",
+      "delete_scheduled_assistant",
+      "get_live_meeting_transcript",
+      // prompt
+      "ask_magic_prompt",
+      "list_prompts",
+      "get_favorite_prompts",
+      "toggle_prompt_favorite",
+      "get_chat_history",
+      "get_chat_messages",
+      "update_chat_title",
+      "delete_chat_message",
+      "submit_chat_feedback",
+      "retry_magic_prompt",
+      "export_chat_answer",
+      "get_chat_statistics",
+      // recorder
+      "list_recorders",
+      "create_recorder",
+      "update_recorder_settings",
+      "update_recorder_questions",
+      "delete_recorder",
+      "generate_recorder_url",
+      "get_recorder_info",
+      "get_recorder_recordings",
+      "check_recorder_status",
+      "clone_recorder",
+      // text
+      "create_text_note",
+      "update_text_note",
+      "get_text_insight",
+      "reanalyze_text",
+      // webhooks
+      "list_webhooks",
+      "create_webhook",
+      "update_webhook",
+      "delete_webhook",
+      // workflows (high-level wrappers around media + upload tools)
+      "upload_and_analyze",
+      "upload_local_file",
+      // users / team management
+      "list_users",
+      "list_user_groups",
+      "create_user_group",
+      "update_user_group",
+      "delete_user_group",
+      // dashboards
+      "list_dashboard_widgets",
+      "list_dashboards",
+      "get_dashboard",
+      "create_dashboard",
+      "update_dashboard",
+      "delete_dashboard",
+      "duplicate_dashboard",
+      "share_dashboard",
+      "get_dashboard_speakers_insight"
+    ];
   }
 });
 
@@ -5694,7 +6778,70 @@ function createCli() {
       process.exit(1);
     }
   });
+  async function loadToolHandlers() {
+    const client = await getClient();
+    const handlers = {};
+    const stub = {
+      registerTool: (name, _def, cb) => {
+        handlers[name] = cb;
+        return {};
+      }
+    };
+    const { registerAllTools: registerAllTools2 } = await Promise.resolve().then(() => (init_tools(), tools_exports));
+    registerAllTools2(stub, client);
+    return handlers;
+  }
+  program.command("tools").description("List every MCP tool callable via `call`").option("--json", "Output raw JSON").action(async (opts) => {
+    const { SPEAK_MCP_TOOL_NAMES: SPEAK_MCP_TOOL_NAMES2 } = await Promise.resolve().then(() => (init_tool_names(), tool_names_exports));
+    const names = [...SPEAK_MCP_TOOL_NAMES2].sort();
+    if (opts.json) {
+      printJson(names);
+    } else {
+      console.log(`${names.length} tools:
+`);
+      for (const n of names) console.log(`  ${n}`);
+    }
+  });
+  program.command("call").description("Call any MCP tool by name with JSON arguments").argument("<tool>", "Tool name (see `speakai-mcp tools`)").argument("[json]", "Arguments as a JSON object", "{}").action(async (tool, json) => {
+    requireApiKey();
+    let args2;
+    try {
+      args2 = JSON.parse(json);
+    } catch {
+      printError(`Invalid JSON arguments: ${json}`);
+      process.exit(1);
+      return;
+    }
+    const handlers = await loadToolHandlers();
+    const handler = handlers[tool];
+    if (!handler) {
+      printError(`Unknown tool "${tool}". Run "speakai-mcp tools" to list them.`);
+      process.exit(1);
+      return;
+    }
+    try {
+      const result = await handler(args2);
+      const text = result?.content?.find((c) => c.type === "text")?.text;
+      if (result?.isError) {
+        printError(text ?? "Tool call failed");
+        process.exit(1);
+        return;
+      }
+      const data = result?.structuredContent?.data ?? (text ? safeParse(text) : result);
+      printJson(data);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
   return program;
+}
+function safeParse(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 var import_commander, import_readline;
 var init_cli = __esm({
@@ -5723,110 +6870,7 @@ init_tools();
 init_resources();
 init_prompts();
 init_client();
-
-// src/tool-names.ts
-var SPEAK_MCP_TOOL_NAMES = [
-  // analytics
-  "get_media_statistics",
-  // automations
-  "list_automations",
-  "get_automation",
-  "create_automation",
-  "update_automation",
-  "toggle_automation_status",
-  // clips
-  "get_clips",
-  "create_clip",
-  "update_clip",
-  "delete_clip",
-  // embed
-  "create_embed",
-  "update_embed",
-  "check_embed",
-  "get_embed_iframe_url",
-  // exports
-  "export_media",
-  "export_multiple_media",
-  // fields
-  "list_fields",
-  "create_field",
-  "update_field",
-  "update_multiple_fields",
-  // folders
-  "list_folders",
-  "create_folder",
-  "update_folder",
-  "delete_folder",
-  "get_folder_info",
-  "clone_folder",
-  "get_folder_views",
-  "get_all_folder_views",
-  "create_folder_view",
-  "update_folder_view",
-  "clone_folder_view",
-  // media
-  "get_signed_upload_url",
-  "upload_media",
-  "get_media_status",
-  "get_media_insights",
-  "get_transcript",
-  "list_media",
-  "search_media",
-  "delete_media",
-  "update_media_metadata",
-  "toggle_media_favorite",
-  "reanalyze_media",
-  "get_captions",
-  "list_supported_languages",
-  "update_transcript_speakers",
-  "bulk_update_transcript_speakers",
-  "bulk_move_media",
-  // meeting
-  "list_meeting_events",
-  "schedule_meeting_event",
-  "remove_assistant_from_meeting",
-  "delete_scheduled_assistant",
-  "get_live_meeting_transcript",
-  // prompt
-  "ask_magic_prompt",
-  "list_prompts",
-  "get_favorite_prompts",
-  "toggle_prompt_favorite",
-  "get_chat_history",
-  "get_chat_messages",
-  "update_chat_title",
-  "delete_chat_message",
-  "submit_chat_feedback",
-  "retry_magic_prompt",
-  "export_chat_answer",
-  "get_chat_statistics",
-  // recorder
-  "list_recorders",
-  "create_recorder",
-  "update_recorder_settings",
-  "update_recorder_questions",
-  "delete_recorder",
-  "generate_recorder_url",
-  "get_recorder_info",
-  "get_recorder_recordings",
-  "check_recorder_status",
-  "clone_recorder",
-  // text
-  "create_text_note",
-  "update_text_note",
-  "get_text_insight",
-  "reanalyze_text",
-  // webhooks
-  "list_webhooks",
-  "create_webhook",
-  "update_webhook",
-  "delete_webhook",
-  // workflows (high-level wrappers around media + upload tools)
-  "upload_and_analyze",
-  "upload_local_file"
-];
-
-// src/index.ts
+init_tool_names();
 var args = process.argv.slice(2);
 var cliCommands = [
   "config",
