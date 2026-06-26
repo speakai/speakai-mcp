@@ -1230,7 +1230,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -1449,7 +1449,7 @@ function register(server, client) {
     {
       title: "Update Media Metadata",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -1770,7 +1770,7 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -1920,9 +1920,9 @@ function register3(server, client) {
     },
     {
       title: "Export Media Transcript",
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false
     },
     async ({ mediaId, fileType, ...body }) => {
@@ -1961,9 +1961,9 @@ function register3(server, client) {
     },
     {
       title: "Export Multiple Media Files",
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false
     },
     async (body) => {
@@ -2128,7 +2128,7 @@ function register4(server, client) {
     {
       title: "Update Folder View",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -2324,7 +2324,7 @@ function register4(server, client) {
     {
       title: "Update Folder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -2919,7 +2919,7 @@ function register7(server, client) {
     },
     {
       title: "Ask AI About Your Recordings",
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
@@ -2948,7 +2948,7 @@ function register7(server, client) {
     },
     {
       title: "Retry AI Question",
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
@@ -3240,9 +3240,9 @@ function register7(server, client) {
     },
     {
       title: "Export Chat Answer",
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false
     },
     async (body) => {
@@ -3589,7 +3589,7 @@ function register9(server, client) {
     {
       title: "Bulk Update Custom Field Values",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -3626,7 +3626,7 @@ function register9(server, client) {
     {
       title: "Update Custom Field",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -3792,7 +3792,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -3819,9 +3819,9 @@ function register10(server, client) {
     {
       title: "Update Automation",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ automationId, ...body }) => {
       try {
@@ -3849,7 +3849,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ automationId }) => {
       try {
@@ -3878,7 +3878,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -3905,9 +3905,9 @@ function register10(server, client) {
     {
       title: "Bulk Assign Automation Folders",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -3936,7 +3936,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -4501,7 +4501,7 @@ function register14(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (params) => {
       try {
@@ -4566,7 +4566,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (params) => {
       try {
@@ -5143,7 +5143,7 @@ function register16(server, client) {
     {
       title: "Update Dashboard",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -5229,7 +5229,7 @@ function register16(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ dashboardId }) => {
       try {

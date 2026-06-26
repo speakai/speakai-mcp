@@ -186,7 +186,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -214,9 +214,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Automation",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ automationId, ...body }) => {
       try {
@@ -244,7 +244,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ automationId }) => {
       try {
@@ -277,7 +277,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -311,9 +311,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Bulk Assign Automation Folders",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -342,7 +342,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {

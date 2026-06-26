@@ -238,7 +238,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Dashboard",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
@@ -324,7 +324,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ dashboardId }) => {
       try {

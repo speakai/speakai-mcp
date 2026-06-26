@@ -25,14 +25,20 @@ interface ToolEntry {
 const captured: Record<string, ToolEntry> = {};
 const stub = {
   registerTool(name: string, def: any) {
+    for (const key of ["readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"] as const) {
+      if (typeof def.annotations?.[key] !== "boolean") {
+        throw new Error(`Tool "${name}" annotation "${key}" must be explicitly true or false`);
+      }
+    }
+
     captured[name] = {
       name,
       title: def.title ?? name,
       description: def.description ?? "",
-      readOnlyHint: def.annotations?.readOnlyHint ?? false,
-      destructiveHint: def.annotations?.destructiveHint ?? false,
-      idempotentHint: def.annotations?.idempotentHint ?? false,
-      openWorldHint: def.annotations?.openWorldHint ?? false,
+      readOnlyHint: def.annotations.readOnlyHint,
+      destructiveHint: def.annotations.destructiveHint,
+      idempotentHint: def.annotations.idempotentHint,
+      openWorldHint: def.annotations.openWorldHint,
     };
     return {} as any;
   },
@@ -48,6 +54,10 @@ const entry = (name: string): ToolEntry => {
   if (!t) throw new Error(`Tool "${name}" is not registered — cannot add to tools.json`);
   return t;
 };
+
+for (const cat of json.categories) {
+  cat.tools = cat.tools.map((t: ToolEntry) => entry(t.name));
+}
 
 // New tools appended to an existing category.
 const additions: Record<string, string[]> = {

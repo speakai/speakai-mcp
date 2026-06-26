@@ -79,6 +79,10 @@ describe("MCP Server Smoke Tests", () => {
         tool.annotations?.destructiveHint,
         `Tool ${name} missing destructiveHint`
       ).toBeTypeOf("boolean");
+      expect(
+        tool.annotations?.idempotentHint,
+        `Tool ${name} missing idempotentHint`
+      ).toBeTypeOf("boolean");
     }
   });
 
@@ -93,9 +97,13 @@ describe("MCP Server Smoke Tests", () => {
       .sort();
 
     expect(openWorldTools).toEqual([
+      "bulk_assign_automation_folders",
+      "bulk_update_automation_status",
       "clone_recorder",
+      "create_automation",
       "create_embed",
       "create_recorder",
+      "create_text_note",
       "create_webhook",
       "delete_recorder",
       "delete_scheduled_assistant",
@@ -103,11 +111,18 @@ describe("MCP Server Smoke Tests", () => {
       "generate_recorder_url",
       "get_live_meeting_transcript",
       "remove_assistant_from_meeting",
+      "run_automations",
       "schedule_meeting_event",
+      "share_dashboard",
+      "toggle_automation_status",
+      "update_automation",
       "update_embed",
       "update_recorder_questions",
       "update_recorder_settings",
       "update_webhook",
+      "upload_and_analyze",
+      "upload_local_file",
+      "upload_media",
     ].sort());
   });
 
