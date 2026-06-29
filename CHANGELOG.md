@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.13.3 (2026-06-29)
+
+- Fix hint
+
 ## v1.13.2 (2026-06-26)
 
 - Fix Openai tools
