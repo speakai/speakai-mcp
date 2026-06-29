@@ -958,7 +958,7 @@
           "title": "Update User Group",
           "description": "Update a user group's name and member list. NOTE: the users array is a FULL REPLACEMENT, not a delta — any member id you omit is removed from the group. Fetch the current members with list_user_groups first and send the complete list.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },

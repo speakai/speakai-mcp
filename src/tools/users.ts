@@ -120,7 +120,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update User Group",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
