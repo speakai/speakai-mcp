@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.13.8 (2026-07-02)
+
+- Refactored Magic Prompt to AI Chat, including renaming and dropping an alias
+
 ## v1.13.7 (2026-07-02)
 
 - No user-facing changes.
