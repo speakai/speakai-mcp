@@ -15,8 +15,7 @@ permissions:
   pages: write
   id-token: write
 
-# Serialize deployments; do NOT cancel an in-progress one (that was causing the
-# competing runs to cancel each other on the legacy pipeline).
+# Allow one concurrent deployment; do NOT cancel an in-progress one.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -41,4 +40,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
