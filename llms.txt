@@ -48,8 +48,8 @@ If you are an AI assistant (Claude, ChatGPT, etc.) helping a Speak AI customer i
 Once the connector is installed, you have access to 107 tools. Some guidance for choosing efficiently:
 
 - **For "what did I talk about" / "find recordings about X" questions**: use `search_media` with a natural-language query. It searches across transcripts, insights, and metadata.
-- **For "ask the AI" questions** (e.g. "what are the recurring themes in my coaching calls?"): use `ask_magic_prompt` with optional `mediaIds` to scope the question. This invokes Speak AI's own purpose-built analysis engine which is tuned for transcript-style content.
-- **For long-history queries**: prefer `search_media` + `ask_magic_prompt` over `list_media` (which returns metadata, not content).
+- **For "ask the AI" questions** (e.g. "what are the recurring themes in my coaching calls?"): use `ask_ai_chat` with optional `mediaIds` to scope the question. This invokes Speak AI's own purpose-built analysis engine which is tuned for transcript-style content.
+- **For long-history queries**: prefer `search_media` + `ask_ai_chat` over `list_media` (which returns metadata, not content).
 - **For uploading new recordings**: call `upload_and_analyze` which returns a `media_id` immediately. Then poll `get_media_status` until `processed`, then call `get_media_insights` for the AI summary. Do NOT block waiting for transcription to complete in a single tool call.
 - **For exporting**: use `export_multiple_media` with `merge: true` instead of N individual `export_media` calls.
 - **For renaming speakers across many files**: use `bulk_update_transcript_speakers` (max 500 files per call) instead of N individual `update_transcript_speakers` calls.
@@ -93,8 +93,8 @@ Auth scope: single scope `mcp` grants full read+write access to the user's Speak
 ### Media (16)
 get_signed_upload_url, upload_media, upload_local_file, upload_and_analyze, list_media, get_media_insights, get_transcript, get_captions, update_transcript_speakers, bulk_update_transcript_speakers, get_media_status, update_media_metadata, delete_media, toggle_media_favorite, reanalyze_media, bulk_move_media
 
-### Magic Prompt / AI Chat (12)
-ask_magic_prompt, retry_magic_prompt, get_chat_history, get_chat_messages, delete_chat_message, list_prompts, get_favorite_prompts, toggle_prompt_favorite, update_chat_title, submit_chat_feedback, get_chat_statistics, export_chat_answer
+### AI Chat (12)
+ask_ai_chat, retry_magic_prompt, get_chat_history, get_chat_messages, delete_chat_message, list_prompts, get_favorite_prompts, toggle_prompt_favorite, update_chat_title, submit_chat_feedback, get_chat_statistics, export_chat_answer
 
 ### Folders & Views (11)
 list_folders, get_folder_info, create_folder, clone_folder, update_folder, delete_folder, get_all_folder_views, get_folder_views, create_folder_view, update_folder_view, clone_folder_view
