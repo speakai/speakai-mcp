@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.13.7 (2026-07-02)
+
+- No user-facing changes.
+
 ## v1.13.6 (2026-07-02)
 
 - Deploy Pages via GitHub Actions (replaces legacy branch build)
