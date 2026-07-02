@@ -216,8 +216,8 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       register(server, mockClient);
     });
 
-    it("ask_magic_prompt sends all params", async () => {
-      const callback = getToolCallback(server, "ask_magic_prompt");
+    it("ask_ai_chat sends all params", async () => {
+      const callback = getToolCallback(server, "ask_ai_chat");
       await callback({
         prompt: "Summarize the key points",
         mediaIds: ["id1", "id2"],
@@ -230,8 +230,8 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       });
     });
 
-    it("ask_magic_prompt works with prompt only (workspace-wide)", async () => {
-      const callback = getToolCallback(server, "ask_magic_prompt");
+    it("ask_ai_chat works with prompt only (workspace-wide)", async () => {
+      const callback = getToolCallback(server, "ask_ai_chat");
       await callback({ prompt: "What common themes exist?" });
       expect(mockPost).toHaveBeenCalledWith("/v1/prompt", {
         prompt: "What common themes exist?",
@@ -580,8 +580,8 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
       register(server, mockClient);
     });
 
-    it("ask_magic_prompt schema rejects empty prompt", () => {
-      const schema = getToolInputSchema(server, "ask_magic_prompt");
+    it("ask_ai_chat schema rejects empty prompt", () => {
+      const schema = getToolInputSchema(server, "ask_ai_chat");
       const result = schema.safeParse({ prompt: "" });
       expect(result.success).toBe(false);
     });

@@ -224,7 +224,7 @@ describe("Error Handling & Resilience", () => {
 
       mockPost.mockRejectedValueOnce(axiosError(503, { message: "Service unavailable" }));
 
-      const callback = getToolCallback(server, "ask_magic_prompt");
+      const callback = getToolCallback(server, "ask_ai_chat");
       const result = await callback({ prompt: "test" });
 
       expect(result.isError).toBe(true);

@@ -693,7 +693,7 @@ export function createCli(): Command {
       }
     });
 
-  // ── Magic Prompt ───────────────────────────────────────────────────
+  // ── AI Chat ────────────────────────────────────────────────────────
 
   program
     .command("ask")
@@ -748,7 +748,7 @@ export function createCli(): Command {
 
   program
     .command("chat-history")
-    .description("List past Magic Prompt conversations")
+    .description("List past AI Chat conversations")
     .option("--json", "Output raw JSON")
     .action(async (opts) => {
       requireApiKey();

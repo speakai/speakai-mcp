@@ -246,14 +246,14 @@ Speak AI ships 107 tools your AI assistant can call. You don't memorize them —
 
 | Ask | Tools used (auto) |
 |---|---|
-| "Find customer interviews about pricing and group the feedback by theme" | `search_media`, `ask_magic_prompt` |
+| "Find customer interviews about pricing and group the feedback by theme" | `search_media`, `ask_ai_chat` |
 | "Summarize this week's meetings into decisions, owners, and risks" | `list_media`, `get_media_insights` |
-| "Pull action items from yesterday's call" | `get_media_insights`, `ask_magic_prompt` |
+| "Pull action items from yesterday's call" | `get_media_insights`, `ask_ai_chat` |
 | "Schedule the AI to join my 2pm Zoom" | `schedule_meeting_event` |
 | "Pull the live transcript from my current MS Teams meeting since last fetch" | `list_meeting_events`, `get_live_meeting_transcript` |
 | "Find a 30-second webinar highlight and export captions" | `create_clip`, `export_media` |
 | "Export the transcript as a PDF and captions as SRT" | `export_media` |
-| "Compare Q1 sales calls against Q2 sales calls and summarize changed objections" | `search_media`, `ask_magic_prompt` |
+| "Compare Q1 sales calls against Q2 sales calls and summarize changed objections" | `search_media`, `ask_ai_chat` |
 
 Full tool catalog is in the developer reference below.
 
@@ -421,13 +421,13 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Magic Prompt / AI Chat (12 tools)</summary>
+<summary>AI Chat (12 tools)</summary>
 
 | Tool | Description |
 |---|---|
-| `ask_magic_prompt` | Ask AI questions about media, folders, or your whole workspace |
+| `ask_ai_chat` | Ask AI questions about media, folders, or your whole workspace |
 | `retry_magic_prompt` | Retry a failed or incomplete AI response |
-| `get_chat_history` | List recent Magic Prompt conversations |
+| `get_chat_history` | List recent AI Chat conversations |
 | `get_chat_messages` | Get full message history for conversations |
 | `delete_chat_message` | Delete a specific chat message |
 | `list_prompts` | List available AI prompt templates |
@@ -435,7 +435,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `toggle_prompt_favorite` | Mark or unmark a chat message as favorite |
 | `update_chat_title` | Rename a chat conversation |
 | `submit_chat_feedback` | Rate a chat response (thumbs up/down) |
-| `get_chat_statistics` | Get Magic Prompt usage statistics |
+| `get_chat_statistics` | Get AI Chat usage statistics |
 | `export_chat_answer` | Export a conversation or answer |
 
 </details>
@@ -723,7 +723,7 @@ npx @speakai/mcp-server config set-key
 | Command | Description |
 |---|---|
 | `ask <prompt>` | Ask AI about media, folders, or your whole workspace |
-| `chat-history` | List past Magic Prompt conversations |
+| `chat-history` | List past AI Chat conversations |
 | `search <query>` | Full-text search across transcripts and insights |
 
 #### Folders & Clips
@@ -822,7 +822,7 @@ You: "What themes came up across all our customer interviews this month?"
 
 AI: Let me search your media library.
     → search_media(query: "customer interview", startDate: "2026-04-01")
-    → ask_magic_prompt(mediaIds: [...], prompt: "What are the recurring themes?")
+    → ask_ai_chat(mediaIds: [...], prompt: "What are the recurring themes?")
 
     Across 12 interviews, the top themes were:
     1. Pricing sensitivity (mentioned in 8/12)
@@ -842,7 +842,7 @@ AI: → schedule_meeting_event(meetingUrl, scheduledAt: "2026-04-25T14:00:00Z")
 
     [After the meeting]
     → get_media_insights(mediaId)
-    → ask_magic_prompt(mediaIds: [...], prompt: "List all action items with owners")
+    → ask_ai_chat(mediaIds: [...], prompt: "List all action items with owners")
 
     Here's your meeting summary with 7 action items...
 ```

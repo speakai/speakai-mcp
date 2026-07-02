@@ -56,7 +56,7 @@ export function registerPrompts(server: McpServer): void {
               ``,
               `Steps:`,
               `1. Use search_media to find relevant media matching this topic`,
-              `2. For the most relevant results, use ask_magic_prompt with the matching mediaIds to ask: "${topic}"`,
+              `2. For the most relevant results, use ask_ai_chat with the matching mediaIds to ask: "${topic}"`,
               `3. Synthesize findings across all results:`,
               `   - Common themes and patterns`,
               `   - Notable quotes or data points`,

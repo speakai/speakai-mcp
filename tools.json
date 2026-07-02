@@ -48,7 +48,7 @@
         {
           "name": "list_media",
           "title": "List Media Files",
-          "description": "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_magic_prompt. For deep full-text search across transcripts, use search_media instead.",
+          "description": "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_ai_chat. For deep full-text search across transcripts, use search_media instead.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -57,7 +57,7 @@
         {
           "name": "get_media_insights",
           "title": "Get Media Insights",
-          "description": "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_magic_prompt instead.",
+          "description": "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -157,14 +157,14 @@
     },
     {
       "id": "magic-prompt",
-      "name": "Ask AI (Magic Prompt)",
+      "name": "Ask AI Chat",
       "iconKey": "magic-prompt",
       "shortDescription": "Run AI prompts across one file, a folder, or your whole workspace. Save favorites.",
       "tools": [
         {
-          "name": "ask_magic_prompt",
-          "title": "Ask AI About Your Recordings",
-          "description": "Ask an AI-powered question about your media using Speak AI's Magic Prompt. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions.",
+          "name": "ask_ai_chat",
+          "title": "Ask AI Chat",
+          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -173,7 +173,7 @@
         {
           "name": "retry_magic_prompt",
           "title": "Retry AI Question",
-          "description": "Retry a failed or incomplete Magic Prompt response. Use when a previous ask_magic_prompt call returned an error or incomplete answer.",
+          "description": "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -182,7 +182,7 @@
         {
           "name": "get_chat_history",
           "title": "Get Chat History",
-          "description": "Get a list of recent Magic Prompt conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_magic_prompt or retrieve full messages via get_chat_messages.",
+          "description": "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_ai_chat or retrieve full messages via get_chat_messages.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -209,7 +209,7 @@
         {
           "name": "list_prompts",
           "title": "List Prompt Templates",
-          "description": "List all available Magic Prompt templates. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
+          "description": "List all available AI Chat templates. Use template IDs with ask_ai_chat's assistantTemplateId parameter when using assistantType 'custom'.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -254,7 +254,7 @@
         {
           "name": "get_chat_statistics",
           "title": "Get Chat Statistics",
-          "description": "Get usage statistics for Magic Prompt / chat. Returns metrics on prompt usage, optionally filtered by date range.",
+          "description": "Get usage statistics for AI Chat / chat. Returns metrics on prompt usage, optionally filtered by date range.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -263,7 +263,7 @@
         {
           "name": "export_chat_answer",
           "title": "Export Chat Answer",
-          "description": "Export a specific Magic Prompt answer. Useful for saving AI-generated summaries, reports, or analysis results.",
+          "description": "Export a specific AI Chat answer. Useful for saving AI-generated summaries, reports, or analysis results.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
