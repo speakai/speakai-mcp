@@ -92,6 +92,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "get_live_meeting_transcript",
 
   // prompt
+  "ask_ai_chat",
   "ask_magic_prompt",
   "list_prompts",
   "get_favorite_prompts",

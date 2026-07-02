@@ -104,11 +104,11 @@ describe("Tools Integration Tests", () => {
   });
 
   describe("Prompt/Chat tools", () => {
-    it("ask_magic_prompt calls POST /v1/prompt with all params", async () => {
+    it("ask_ai_chat calls POST /v1/prompt with all params", async () => {
       const { register } = await import("../src/tools/prompt.js");
       register(server, mockClient);
 
-      const callback = getToolCallback(server, "ask_magic_prompt");
+      const callback = getToolCallback(server, "ask_ai_chat");
       await callback({
         prompt: "What were the action items?",
         mediaIds: ["id1", "id2"],
@@ -122,15 +122,27 @@ describe("Tools Integration Tests", () => {
       });
     });
 
-    it("ask_magic_prompt works without mediaIds (workspace-wide)", async () => {
+    it("ask_ai_chat works without mediaIds (workspace-wide)", async () => {
       const { register } = await import("../src/tools/prompt.js");
       register(server, mockClient);
 
-      const callback = getToolCallback(server, "ask_magic_prompt");
+      const callback = getToolCallback(server, "ask_ai_chat");
       await callback({ prompt: "What themes appear across all interviews?" });
 
       expect(mockPost).toHaveBeenCalledWith("/v1/prompt", {
         prompt: "What themes appear across all interviews?",
+      });
+    });
+
+    it("ask_magic_prompt (deprecated alias) routes to the same POST /v1/prompt", async () => {
+      const { register } = await import("../src/tools/prompt.js");
+      register(server, mockClient);
+
+      const callback = getToolCallback(server, "ask_magic_prompt");
+      await callback({ prompt: "Legacy client question" });
+
+      expect(mockPost).toHaveBeenCalledWith("/v1/prompt", {
+        prompt: "Legacy client question",
       });
     });
 

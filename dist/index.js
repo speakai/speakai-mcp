@@ -1251,7 +1251,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "list_media",
-    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_magic_prompt. For deep full-text search across transcripts, use search_media instead.",
+    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_ai_chat. For deep full-text search across transcripts, use search_media instead.",
     {
       mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO, MediaType.TEXT]).optional().describe('Filter by media type: "audio", "video", or "text"'),
       page: import_zod2.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
@@ -1306,7 +1306,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "get_media_insights",
-    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_magic_prompt instead.",
+    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
     },
@@ -2889,59 +2889,71 @@ __export(prompt_exports, {
 });
 function register7(server, client) {
   const api = client ?? speakClient;
+  const askAiChatDescription = [
+    "Ask an AI-powered question about your media using Speak AI's AI Chat.",
+    "Supports querying a single file, multiple files, entire folders, or your whole workspace.",
+    "Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media.",
+    "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
+    "To continue a conversation, pass the promptId from a previous response.",
+    "Returns a promptId \u2014 save it to continue the conversation with follow-up questions."
+  ].join(" ");
+  const askAiChatInputSchema = {
+    prompt: import_zod8.z.string().min(1).describe("The question or prompt to ask about the media"),
+    mediaIds: import_zod8.z.array(import_zod8.z.string()).optional().describe("Array of media IDs to query. Omit along with folderIds to search across all media in your workspace."),
+    folderIds: import_zod8.z.array(import_zod8.z.string()).optional().describe("Array of folder IDs to scope the query to. Omit along with mediaIds to search across all media."),
+    folderId: import_zod8.z.string().optional().describe("Single folder ID to scope the query to. Use folderIds for multiple folders."),
+    assistantType: import_zod8.z.enum(Object.values(AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
+    assistantTemplateId: import_zod8.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
+    promptId: import_zod8.z.string().optional().describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
+    speakers: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter to specific speaker IDs from the transcript"),
+    tags: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter media by tags"),
+    startDate: import_zod8.z.string().optional().describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
+    endDate: import_zod8.z.string().optional().describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
+    isIndividualPrompt: import_zod8.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
+    fieldId: import_zod8.z.string().optional().describe("Scope the prompt to a single custom field"),
+    fieldIds: import_zod8.z.array(import_zod8.z.string()).max(10).optional().describe("Scope the prompt to multiple custom fields (max 10)"),
+    filters: import_zod8.z.record(import_zod8.z.unknown()).optional().describe("Advanced filter object to scope which media the prompt runs over")
+  };
+  const askAiChatAnnotations = {
+    title: "Ask AI Chat",
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: false
+  };
+  const askAiChatHandler = async (params) => {
+    try {
+      const result = await api.post("/v1/prompt", params);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+      };
+    } catch (err) {
+      return {
+        content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+        isError: true
+      };
+    }
+  };
+  registerSpeakTool(
+    server,
+    "ask_ai_chat",
+    askAiChatDescription,
+    askAiChatInputSchema,
+    askAiChatAnnotations,
+    askAiChatHandler
+  );
   registerSpeakTool(
     server,
     "ask_magic_prompt",
-    [
-      "Ask an AI-powered question about your media using Speak AI's Magic Prompt.",
-      "Supports querying a single file, multiple files, entire folders, or your whole workspace.",
-      "Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media.",
-      "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
-      "To continue a conversation, pass the promptId from a previous response.",
-      "Returns a promptId \u2014 save it to continue the conversation with follow-up questions."
-    ].join(" "),
-    {
-      prompt: import_zod8.z.string().min(1).describe("The question or prompt to ask about the media"),
-      mediaIds: import_zod8.z.array(import_zod8.z.string()).optional().describe("Array of media IDs to query. Omit along with folderIds to search across all media in your workspace."),
-      folderIds: import_zod8.z.array(import_zod8.z.string()).optional().describe("Array of folder IDs to scope the query to. Omit along with mediaIds to search across all media."),
-      folderId: import_zod8.z.string().optional().describe("Single folder ID to scope the query to. Use folderIds for multiple folders."),
-      assistantType: import_zod8.z.enum(Object.values(AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
-      assistantTemplateId: import_zod8.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
-      promptId: import_zod8.z.string().optional().describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
-      speakers: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter to specific speaker IDs from the transcript"),
-      tags: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter media by tags"),
-      startDate: import_zod8.z.string().optional().describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
-      endDate: import_zod8.z.string().optional().describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
-      isIndividualPrompt: import_zod8.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
-      fieldId: import_zod8.z.string().optional().describe("Scope the prompt to a single custom field"),
-      fieldIds: import_zod8.z.array(import_zod8.z.string()).max(10).optional().describe("Scope the prompt to multiple custom fields (max 10)"),
-      filters: import_zod8.z.record(import_zod8.z.unknown()).optional().describe("Advanced filter object to scope which media the prompt runs over")
-    },
-    {
-      title: "Ask AI About Your Recordings",
-      readOnlyHint: false,
-      destructiveHint: false,
-      idempotentHint: false,
-      openWorldHint: false
-    },
-    async (params) => {
-      try {
-        const result = await api.post("/v1/prompt", params);
-        return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
-        };
-      } catch (err) {
-        return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
-          isError: true
-        };
-      }
-    }
+    `[Deprecated \u2014 use ask_ai_chat] ${askAiChatDescription}`,
+    askAiChatInputSchema,
+    askAiChatAnnotations,
+    askAiChatHandler
   );
   registerSpeakTool(
     server,
     "retry_magic_prompt",
-    "Retry a failed or incomplete Magic Prompt response. Use when a previous ask_magic_prompt call returned an error or incomplete answer.",
+    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: import_zod8.z.string().min(1).describe("ID of the specific message to retry")
@@ -2970,7 +2982,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "get_chat_history",
-    "Get a list of recent Magic Prompt conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_magic_prompt or retrieve full messages via get_chat_messages.",
+    "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_ai_chat or retrieve full messages via get_chat_messages.",
     {
       limit: import_zod8.z.number().int().positive().optional().describe("Number of recent conversations to return (default: 10)")
     },
@@ -3061,7 +3073,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "list_prompts",
-    "List all available Magic Prompt templates. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
+    "List all available AI Chat templates. Use template IDs with ask_ai_chat's assistantTemplateId parameter when using assistantType 'custom'.",
     {},
     {
       title: "List Prompt Templates",
@@ -3203,7 +3215,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "get_chat_statistics",
-    "Get usage statistics for Magic Prompt / chat. Returns metrics on prompt usage, optionally filtered by date range.",
+    "Get usage statistics for AI Chat / chat. Returns metrics on prompt usage, optionally filtered by date range.",
     {
       startDate: import_zod8.z.string().optional().describe("Start date for stats (ISO 8601)"),
       endDate: import_zod8.z.string().optional().describe("End date for stats (ISO 8601)")
@@ -3232,7 +3244,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "export_chat_answer",
-    "Export a specific Magic Prompt answer. Useful for saving AI-generated summaries, reports, or analysis results.",
+    "Export a specific AI Chat answer. Useful for saving AI-generated summaries, reports, or analysis results.",
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation to export"),
       messageId: import_zod8.z.string().min(1).describe("ID of the specific message/answer to export"),
@@ -5534,7 +5546,7 @@ function registerPrompts(server) {
               ``,
               `Steps:`,
               `1. Use search_media to find relevant media matching this topic`,
-              `2. For the most relevant results, use ask_magic_prompt with the matching mediaIds to ask: "${topic}"`,
+              `2. For the most relevant results, use ask_ai_chat with the matching mediaIds to ask: "${topic}"`,
               `3. Synthesize findings across all results:`,
               `   - Common themes and patterns`,
               `   - Notable quotes or data points`,
@@ -5679,6 +5691,7 @@ var init_tool_names = __esm({
       "delete_scheduled_assistant",
       "get_live_meeting_transcript",
       // prompt
+      "ask_ai_chat",
       "ask_magic_prompt",
       "list_prompts",
       "get_favorite_prompts",
@@ -6384,7 +6397,7 @@ function createCli() {
       process.exit(1);
     }
   });
-  program.command("chat-history").description("List past Magic Prompt conversations").option("--json", "Output raw JSON").action(async (opts) => {
+  program.command("chat-history").description("List past AI Chat conversations").option("--json", "Output raw JSON").action(async (opts) => {
     requireApiKey();
     const client = await getClient();
     try {
