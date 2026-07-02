@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.13.5 (2026-07-02)
+
+- Renamed Magic Prompt to AI Chat on mcp.speakai.co and added .nojekyll
+
 ## v1.13.4 (2026-07-02)
 
 - Refactored naming of Magic Prompt tool/wording to AI Chat
