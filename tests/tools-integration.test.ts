@@ -134,18 +134,6 @@ describe("Tools Integration Tests", () => {
       });
     });
 
-    it("ask_magic_prompt (deprecated alias) routes to the same POST /v1/prompt", async () => {
-      const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient);
-
-      const callback = getToolCallback(server, "ask_magic_prompt");
-      await callback({ prompt: "Legacy client question" });
-
-      expect(mockPost).toHaveBeenCalledWith("/v1/prompt", {
-        prompt: "Legacy client question",
-      });
-    });
-
     it("get_chat_history calls GET /v1/prompt/history", async () => {
       const { register } = await import("../src/tools/prompt.js");
       register(server, mockClient);

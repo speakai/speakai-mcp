@@ -2944,22 +2944,14 @@ function register7(server, client) {
   );
   registerSpeakTool(
     server,
-    "ask_magic_prompt",
-    `[Deprecated \u2014 use ask_ai_chat] ${askAiChatDescription}`,
-    askAiChatInputSchema,
-    askAiChatAnnotations,
-    askAiChatHandler
-  );
-  registerSpeakTool(
-    server,
-    "retry_magic_prompt",
+    "retry_ai_chat",
     "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: import_zod8.z.string().min(1).describe("ID of the specific message to retry")
     },
     {
-      title: "Retry AI Question",
+      title: "Retry AI Chat",
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
@@ -5692,7 +5684,6 @@ var init_tool_names = __esm({
       "get_live_meeting_transcript",
       // prompt
       "ask_ai_chat",
-      "ask_magic_prompt",
       "list_prompts",
       "get_favorite_prompts",
       "toggle_prompt_favorite",
@@ -5701,7 +5692,7 @@ var init_tool_names = __esm({
       "update_chat_title",
       "delete_chat_message",
       "submit_chat_feedback",
-      "retry_magic_prompt",
+      "retry_ai_chat",
       "export_chat_answer",
       "get_chat_statistics",
       // recorder

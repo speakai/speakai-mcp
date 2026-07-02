@@ -111,25 +111,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     askAiChatHandler
   );
 
-  // Backward-compat alias — keeps existing clients calling the old name working.
-  registerSpeakTool(
-    server,
-    "ask_magic_prompt",
-    `[Deprecated — use ask_ai_chat] ${askAiChatDescription}`,
-    askAiChatInputSchema,
-    askAiChatAnnotations,
-    askAiChatHandler
-  );
-
-  registerSpeakTool(server, 
-    "retry_magic_prompt",
+  registerSpeakTool(server,
+    "retry_ai_chat",
     "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
     {
       promptId: z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: z.string().min(1).describe("ID of the specific message to retry"),
     },
     {
-      title: "Retry AI Question",
+      title: "Retry AI Chat",
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,

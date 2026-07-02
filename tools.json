@@ -171,8 +171,8 @@
           "openWorldHint": false
         },
         {
-          "name": "retry_magic_prompt",
-          "title": "Retry AI Question",
+          "name": "retry_ai_chat",
+          "title": "Retry AI Chat",
           "description": "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
           "readOnlyHint": false,
           "destructiveHint": false,
