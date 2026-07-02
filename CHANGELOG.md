@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.13.4 (2026-07-02)
+
+- Refactored naming of Magic Prompt tool/wording to AI Chat
+
 ## v1.13.3 (2026-06-29)
 
 - Fix hint
