@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.13.6 (2026-07-02)
+
+- Deploy Pages via GitHub Actions (replaces legacy branch build)
+
 ## v1.13.5 (2026-07-02)
 
 - Renamed Magic Prompt to AI Chat on mcp.speakai.co and added .nojekyll
