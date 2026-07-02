@@ -648,8 +648,8 @@ describe("Prompt tools — remaining untested endpoints", () => {
     register(server, mockClient);
   });
 
-  it("retry_magic_prompt calls POST /v1/prompt/retry", async () => {
-    const cb = getToolCallback(server, "retry_magic_prompt");
+  it("retry_ai_chat calls POST /v1/prompt/retry", async () => {
+    const cb = getToolCallback(server, "retry_ai_chat");
     await cb({ promptId: "p1", messageId: "msg1" });
     expect(mockPost).toHaveBeenCalledWith("/v1/prompt/retry", {
       promptId: "p1",

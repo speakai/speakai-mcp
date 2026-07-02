@@ -93,7 +93,6 @@ export const SPEAK_MCP_TOOL_NAMES = [
 
   // prompt
   "ask_ai_chat",
-  "ask_magic_prompt",
   "list_prompts",
   "get_favorite_prompts",
   "toggle_prompt_favorite",
@@ -102,7 +101,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "update_chat_title",
   "delete_chat_message",
   "submit_chat_feedback",
-  "retry_magic_prompt",
+  "retry_ai_chat",
   "export_chat_answer",
   "get_chat_statistics",
 

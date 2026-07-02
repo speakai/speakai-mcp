@@ -586,8 +586,8 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
       expect(result.success).toBe(false);
     });
 
-    it("retry_magic_prompt schema rejects empty promptId", () => {
-      const schema = getToolInputSchema(server, "retry_magic_prompt");
+    it("retry_ai_chat schema rejects empty promptId", () => {
+      const schema = getToolInputSchema(server, "retry_ai_chat");
       const result = schema.safeParse({ promptId: "", messageId: "msg1" });
       expect(result.success).toBe(false);
     });

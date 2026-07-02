@@ -94,7 +94,7 @@ Auth scope: single scope `mcp` grants full read+write access to the user's Speak
 get_signed_upload_url, upload_media, upload_local_file, upload_and_analyze, list_media, get_media_insights, get_transcript, get_captions, update_transcript_speakers, bulk_update_transcript_speakers, get_media_status, update_media_metadata, delete_media, toggle_media_favorite, reanalyze_media, bulk_move_media
 
 ### AI Chat (12)
-ask_ai_chat, retry_magic_prompt, get_chat_history, get_chat_messages, delete_chat_message, list_prompts, get_favorite_prompts, toggle_prompt_favorite, update_chat_title, submit_chat_feedback, get_chat_statistics, export_chat_answer
+ask_ai_chat, retry_ai_chat, get_chat_history, get_chat_messages, delete_chat_message, list_prompts, get_favorite_prompts, toggle_prompt_favorite, update_chat_title, submit_chat_feedback, get_chat_statistics, export_chat_answer
 
 ### Folders & Views (11)
 list_folders, get_folder_info, create_folder, clone_folder, update_folder, delete_folder, get_all_folder_views, get_folder_views, create_folder_view, update_folder_view, clone_folder_view
