@@ -81,6 +81,67 @@ describe("Automations tools", () => {
     };
     await cb(body);
     expect(mockPost).toHaveBeenCalledWith("/v1/automations/", body);
+    // Non-webhook automations skip the inbound-webhook enrichment lookups.
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it("create_automation enriches inbound-webhook automations with the receive URL and tokens", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: { status: "success", data: { automationId: "auto1", message: "created" } },
+    });
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/automations/auto1") {
+        return Promise.resolve({
+          data: { status: "success", data: { trigger: { webhookId: "wh1", childKey: "data" } } },
+        });
+      }
+      return Promise.resolve({
+        data: {
+          status: "success",
+          data: {
+            webhookData: {
+              inboundUrl: "https://api.test/v1/webhook/in/tok",
+              samplePayload: { data: { url: "https://x.mp3", name: "Call" } },
+              flattenedPaths: ["data.url", "data.name"],
+            },
+          },
+        },
+      });
+    });
+    const cb = getToolCallback(server, "create_automation");
+    const result = await cb({
+      name: "Webhook Rule",
+      trigger: { type: "folders", triggerSlug: "inbound_webhook", childKey: "data" },
+      steps: [
+        {
+          stepId: "s1",
+          stepType: "speak-upload",
+          speakUpload: { sourceMode: "url", sourceUrl: "{{trigger.payload.url}}", folderId: "f1" },
+        },
+      ],
+    });
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations/auto1");
+    expect(mockGet).toHaveBeenCalledWith("/v1/webhook/wh1");
+    const text = result.content[0].text;
+    expect(text).toContain("auto1");
+    expect(text).toContain("https://api.test/v1/webhook/in/tok");
+    expect(text).toContain("{{trigger.payload.url}}");
+    expect(result.isError).toBeUndefined();
+  });
+
+  it("create_automation still succeeds when webhook enrichment fails", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: { status: "success", data: { automationId: "auto2", message: "created" } },
+    });
+    mockGet.mockRejectedValue(new Error("boom"));
+    const cb = getToolCallback(server, "create_automation");
+    const result = await cb({
+      name: "Webhook Rule",
+      trigger: { type: "folders", triggerSlug: "inbound_webhook" },
+      steps: [{ stepId: "s1", stepType: "translation", translation: { targetLanguage: "es" } }],
+    });
+    expect(result.isError).toBeUndefined();
+    expect(result.content[0].text).toContain("auto2");
   });
 
   it("update_automation calls PUT /v1/automations/:id", async () => {
@@ -499,6 +560,92 @@ describe("Webhook tools", () => {
     const cb = getToolCallback(server, "create_webhook");
     const result = await cb({ url: "https://example.com/hook" });
     expect(result.isError).toBe(true);
+  });
+
+  it("provision_inbound_webhook calls POST /v1/webhook/inbound/provision and returns nextSteps", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: { status: "success", data: { webhookId: "wh1", inboundUrl: "https://api.test/v1/webhook/in/tok" } },
+    });
+    const cb = getToolCallback(server, "provision_inbound_webhook");
+    const result = await cb({});
+    expect(mockPost).toHaveBeenCalledWith("/v1/webhook/inbound/provision", {});
+    const text = result.content[0].text;
+    expect(text).toContain("https://api.test/v1/webhook/in/tok");
+    expect(text).toContain("nextSteps");
+  });
+
+  it("get_inbound_webhook with webhookId calls GET /v1/webhook/:id and maps payload tokens", async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          webhookData: {
+            inboundUrl: "https://api.test/v1/webhook/in/tok",
+            samplePayload: { data: { url: "https://x.mp3" } },
+            flattenedPaths: ["data.url", "data.name", "other"],
+          },
+        },
+      },
+    });
+    const cb = getToolCallback(server, "get_inbound_webhook");
+    const result = await cb({ webhookId: "wh1", childKey: "data" });
+    expect(mockGet).toHaveBeenCalledWith("/v1/webhook/wh1");
+    const text = result.content[0].text;
+    expect(text).toContain("{{trigger.payload.url}}");
+    expect(text).toContain("{{trigger.payload.name}}");
+    expect(text).not.toContain("{{trigger.payload.other}}");
+    expect(text).toContain("https://api.test/v1/webhook/in/tok");
+  });
+
+  it("get_inbound_webhook with automationId resolves the bound webhook and childKey", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/automations/auto1") {
+        return Promise.resolve({
+          data: { status: "success", data: { trigger: { webhookId: "wh9", childKey: "data" } } },
+        });
+      }
+      return Promise.resolve({
+        data: {
+          status: "success",
+          data: {
+            webhookData: {
+              inboundUrl: "https://api.test/v1/webhook/in/tok9",
+              samplePayload: { data: { url: "https://x.mp3" } },
+              flattenedPaths: ["data.url"],
+            },
+          },
+        },
+      });
+    });
+    const cb = getToolCallback(server, "get_inbound_webhook");
+    const result = await cb({ automationId: "auto1" });
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations/auto1");
+    expect(mockGet).toHaveBeenCalledWith("/v1/webhook/wh9");
+    expect(result.content[0].text).toContain("{{trigger.payload.url}}");
+  });
+
+  it("get_inbound_webhook errors when neither webhookId nor automationId is given", async () => {
+    const cb = getToolCallback(server, "get_inbound_webhook");
+    const result = await cb({});
+    expect(result.isError).toBe(true);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it("get_inbound_webhook errors when the automation has no inbound webhook", async () => {
+    mockGet.mockResolvedValueOnce({
+      data: { status: "success", data: { trigger: { type: "folders", folderIds: ["f1"] } } },
+    });
+    const cb = getToolCallback(server, "get_inbound_webhook");
+    const result = await cb({ automationId: "auto1" });
+    expect(result.isError).toBe(true);
+  });
+
+  it("get_webhook_attempts calls GET /v1/webhook/:id/attempts with paging", async () => {
+    const cb = getToolCallback(server, "get_webhook_attempts");
+    await cb({ webhookId: "wh1", page: 1, pageSize: 20 });
+    expect(mockGet).toHaveBeenCalledWith("/v1/webhook/wh1/attempts", {
+      params: { page: 1, pageSize: 20 },
+    });
   });
 });
 

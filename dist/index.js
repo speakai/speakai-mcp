@@ -3660,11 +3660,87 @@ var init_fields2 = __esm({
   }
 });
 
+// src/tools/inbound-webhook-utils.ts
+function unwrapData(payload) {
+  const p = payload;
+  return p && typeof p === "object" && "status" in p && "data" in p ? p.data : p;
+}
+function narrowPathsToChildKey(paths, childKey) {
+  if (!childKey) return paths;
+  const prefix = `${childKey}.`;
+  const narrowed = paths.filter((p) => p.startsWith(prefix)).map((p) => p.slice(prefix.length)).filter(Boolean);
+  return narrowed.length ? narrowed : paths;
+}
+function buildHowToUse(inboundUrl, sampleCaptured) {
+  const url = inboundUrl ?? "<inboundUrl>";
+  const lines = [
+    `Send events with: curl -X POST '${url}' -H 'Content-Type: application/json' -d '{"url": "https://example.com/file.mp3", "name": "My recording"}'`,
+    `To capture/refresh a sample payload WITHOUT running the automation, POST to '${url}?test=1'.`,
+    "Reference payload values in step configs with {{trigger.payload.<path>}} tokens \u2014 see mappableTokens."
+  ];
+  if (!sampleCaptured) {
+    lines.unshift(
+      "No sample payload captured yet \u2014 send a test request first (see below) so payload paths become discoverable for mapping, then call get_inbound_webhook again."
+    );
+  }
+  return lines;
+}
+async function fetchInboundWebhookInfo(api, webhookId, childKey) {
+  const res = await api.get(`/v1/webhook/${webhookId}`);
+  const payload = unwrapData(res.data);
+  const wh = payload?.webhookData ?? payload ?? {};
+  const flattened = Array.isArray(wh.flattenedPaths) ? wh.flattenedPaths : [];
+  const sample = wh.samplePayload ?? null;
+  const sampleCaptured = sample != null && (typeof sample !== "object" || Object.keys(sample).length > 0);
+  const inboundUrl = typeof wh.inboundUrl === "string" ? wh.inboundUrl : null;
+  return {
+    webhookId,
+    inboundUrl,
+    sampleCaptured,
+    samplePayload: sample,
+    mappableTokens: narrowPathsToChildKey(flattened, childKey).map(
+      (p) => `{{trigger.payload.${p}}}`
+    ),
+    ...childKey ? { childKey } : {},
+    howToUse: buildHowToUse(inboundUrl, sampleCaptured)
+  };
+}
+async function resolveAutomationInboundWebhook(api, automationId) {
+  const res = await api.get(`/v1/automations/${automationId}`);
+  const automation = unwrapData(res.data);
+  const trigger = automation?.trigger ?? {};
+  return {
+    webhookId: typeof trigger.webhookId === "string" && trigger.webhookId ? trigger.webhookId : void 0,
+    childKey: typeof trigger.childKey === "string" && trigger.childKey ? trigger.childKey : void 0
+  };
+}
+function isInboundWebhookTrigger(trigger) {
+  const t = trigger;
+  return !!t && (t.triggerSlug === "inbound_webhook" || t.type === "webhook" || !!t.webhookId);
+}
+var init_inbound_webhook_utils = __esm({
+  "src/tools/inbound-webhook-utils.ts"() {
+    "use strict";
+  }
+});
+
 // src/tools/automations.ts
 var automations_exports = {};
 __export(automations_exports, {
   register: () => register10
 });
+async function withInboundWebhookInfo(api, responseData, automationId) {
+  try {
+    if (!automationId) return responseData;
+    const { webhookId, childKey } = await resolveAutomationInboundWebhook(api, automationId);
+    if (!webhookId) return responseData;
+    const inboundWebhook = await fetchInboundWebhookInfo(api, webhookId, childKey);
+    const base = responseData && typeof responseData === "object" ? responseData : { data: responseData };
+    return { ...base, inboundWebhook };
+  } catch {
+    return responseData;
+  }
+}
 function register10(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
@@ -3789,7 +3865,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "create_automation",
-    "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure.",
+    "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) \u2014 recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
     writeSchema,
     {
       title: "Create Automation",
@@ -3801,8 +3877,13 @@ function register10(server, client) {
     async (body) => {
       try {
         const result = await api.post("/v1/automations/", body);
+        let data = result.data;
+        if (isInboundWebhookTrigger(body.trigger)) {
+          const automationId = unwrapData(result.data)?.automationId;
+          data = await withInboundWebhookInfo(api, data, automationId);
+        }
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
         };
       } catch (err) {
         return {
@@ -3830,8 +3911,12 @@ function register10(server, client) {
     async ({ automationId, ...body }) => {
       try {
         const result = await api.put(`/v1/automations/${automationId}`, body);
+        let data = result.data;
+        if (isInboundWebhookTrigger(body.trigger)) {
+          data = await withInboundWebhookInfo(api, data, automationId);
+        }
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
         };
       } catch (err) {
         return {
@@ -4067,18 +4152,27 @@ function register10(server, client) {
     }
   );
 }
-var import_zod11, STEPS_DESCRIPTION, TRIGGER_DESCRIPTION, writeSchema;
+var import_zod11, TOKEN_SYNTAX_NOTE, STEPS_DESCRIPTION, TRIGGER_DESCRIPTION, OR_TRIGGERS_DESCRIPTION, writeSchema;
 var init_automations = __esm({
   "src/tools/automations.ts"() {
     "use strict";
     import_zod11 = require("zod");
     init_helpers();
     init_client();
-    STEPS_DESCRIPTION = 'Ordered array of graph steps (1-20). Each step is an object: { stepId: string (unique within the array), stepType: one of "magic-prompt" | "translation" | "filter" | "composio-action" | "speak-upload", dependsOn?: string[] (stepIds this step runs after) } plus ONE payload key matching stepType:\n- magic-prompt -> magicPrompt: { prompt (required unless fieldIds given), title?, assistantType? ("general"|"researcher"|"marketer"|"sales"|"recruiter"|"custom", default "general"), assistantTemplateId? (required if assistantType="custom"), fieldIds?: string[] (max 10, for field extraction) }\n- translation -> translation: { targetLanguage: BCP-47 code, e.g. "es" }\n- filter -> filter: { logic: "AND"|"OR", rules: [{ field, op: "eq"|"neq"|"contains"|"ncontains"|"startsWith"|"gt"|"lt"|"exists", value? }] }\n- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)\n- speak-upload -> speakUpload: { folderId, sourceMode: "url"|"file", sourceUrl? (required when sourceMode="url"), name?, fieldsMap?, language? }';
-    TRIGGER_DESCRIPTION = 'Trigger object. For folder-based automations: { type: "folders", folderIds: string[] } (at least one folder is required). Note: only "folders" is currently supported for multi-step automations via the API \u2014 "tags"/"keywords" are rejected, and "composio"/"webhook" triggers (provider, app, triggerSlug, webhookId, childKey, connectedAccountId) are gated by server flags.';
+    init_inbound_webhook_utils();
+    TOKEN_SYNTAX_NOTE = "Token syntax (usable in fields marked 'tokens allowed'): {{trigger.payload.<path>}} reads the inbound webhook payload (dot paths and [n] array indices; paths are relative to trigger.childKey when set \u2014 discover valid paths with get_inbound_webhook after sending a test payload); {{step.<index>.<path>}} or {{step.<stepId>.<path>}} reads a previous step's output (speak-upload -> mediaId, magic-prompt -> answer, outbound-webhook -> status/response).";
+    STEPS_DESCRIPTION = 'Ordered array of graph steps (1-20). Each step is an object: { stepId: string (unique within the array), stepType: one of "speak-upload" | "magic-prompt" | "translation" | "filter" | "condition" | "notify" | "outbound-webhook" | "composio-action", dependsOn?: string[] (stepIds this step runs after), branch?: "true"|"false" (which outcome of an upstream condition step this step belongs to) } plus ONE config key matching stepType:\n- speak-upload -> speakUpload: { sourceMode: "url"|"file", sourceUrl (required when sourceMode="url"; tokens allowed \u2014 if the token resolves to an object, the first http(s) URL inside it is used), folderId (required, unless folderRouting.mode="dynamic" where it becomes the optional fallback), name? (tokens allowed, mixable with static text), language? (language code or token), fieldsMap?: { <customFieldId>: "<value>" } (writes payload values into Speak custom fields on the uploaded media; values are usually {{trigger.payload.<path>}} tokens \u2014 get field ids from list_fields), folderRouting?: { mode: "static"|"dynamic", sourceKey (payload key holding the destination folder name, required when dynamic), onNoMatch: "create"|"default" (create a folder named after the value, or fall back to folderId) } }\n- magic-prompt -> magicPrompt: { prompt (required unless fieldIds given, max 20000), title?, assistantType? ("general"|"researcher"|"marketer"|"sales"|"recruiter"|"custom", default "general"), assistantTemplateId? (required if assistantType="custom"), fieldIds?: string[] (max 10 \u2014 extract answers into these custom fields) }\n- translation -> translation: { targetLanguage: BCP-47 code, e.g. "es" }\n- filter -> filter: { logic: "AND"|"OR" (default "AND"), rules: [{ field, op, value? }] (1-20) } \u2014 the run continues only when the rules match, otherwise it stops silently\n- condition -> condition: same { logic, rules } shape as filter, but instead of stopping it routes: downstream steps marked branch:"true"/"false" run according to the outcome\n- notify -> notify: { channel: "in_app"|"email"|"slack", target?, message (required, tokens allowed) }\n- outbound-webhook -> outboundWebhook: { url (required, tokens allowed), method? ("GET"|"POST"|"PUT"|"PATCH"|"DELETE", default "POST"), headers?: { <name>: <value> }, bodyTemplate?: string | object (tokens allowed) }\n- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)\nFilter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers or a custom field id; INSIGHT -> answer; inbound-webhook DATA -> any payload path (e.g. "contact.status"). Ops by field type \u2014 text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists ("exists" takes no value; gt/lt values are numbers).\n' + TOKEN_SYNTAX_NOTE;
+    TRIGGER_DESCRIPTION = `Trigger object (the automation's root). Always include triggerSlug. Supported shapes:
+- Media analyzed in folder(s): { type: "folders", triggerSlug: "media_analyzed", folderIds: string[] (min 1) }
+- Inbound webhook (receive external payloads): { type: "folders", triggerSlug: "inbound_webhook", webhookId? (from provision_inbound_webhook; omit to auto-provision a new one on create), childKey? (dot-path narrowing which part of the payload feeds the automation, e.g. "data") }. The create/update response includes inboundWebhook.inboundUrl \u2014 the public URL to POST payloads to.
+- Custom field updated: { type: "folders", triggerSlug: "field_updated", values: string[] (watched custom field ids, min 1), fieldValueMatches?: [{ fieldId, values: string[] }] (fire only when the field changes TO one of these values; empty values = any change), fieldMatchLogic?: "AND"|"OR" (how multiple fieldValueMatches combine, default "OR") }
+- Composio app event: { type: "composio", provider: "composio", app, triggerSlug, connectedAccountId } (requires a connected account; may be behind a server flag)
+Notes: "tags"/"keywords" trigger types are rejected for graph automations. The server stores inbound-webhook triggers with type "webhook" internally \u2014 send type "folders" plus the slug as shown above.`;
+    OR_TRIGGERS_DESCRIPTION = 'Optional additional "Or" triggers (max 10): the automation runs when ANY of them fires, sharing the same steps. Each entry mirrors the trigger shapes above but cannot be an inbound webhook and carries no webhookId/childKey. Example: [{ type: "folders", triggerSlug: "field_updated", values: ["<fieldId>"] }]';
     writeSchema = {
       name: import_zod11.z.string().min(1).max(150).describe("Display name for the automation"),
       trigger: import_zod11.z.record(import_zod11.z.unknown()).describe(TRIGGER_DESCRIPTION),
+      triggers: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).max(10).optional().describe(OR_TRIGGERS_DESCRIPTION),
       steps: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).min(1).max(20).describe(STEPS_DESCRIPTION),
       description: import_zod11.z.string().max(1e3).optional().describe("Optional description"),
       isActive: import_zod11.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
@@ -4186,6 +4280,126 @@ function register11(server, client) {
   );
   registerSpeakTool(
     server,
+    "provision_inbound_webhook",
+    "Provision a standalone inbound webhook and get its public receive URL (inboundUrl) BEFORE creating an automation. Webhook-first flow: provision, send a test payload to the URL (append ?test=1 to only capture a sample without running anything), inspect mappable payload paths with get_inbound_webhook, then pass the webhookId as trigger.webhookId to create_automation.",
+    {},
+    {
+      title: "Provision Inbound Webhook",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async () => {
+      try {
+        const result = await api.post("/v1/webhook/inbound/provision", {});
+        const payload = unwrapData(result.data) ?? {};
+        const inboundUrl = typeof payload.inboundUrl === "string" ? payload.inboundUrl : "<inboundUrl>";
+        const data = {
+          ...payload,
+          nextSteps: [
+            `Capture a sample payload (does not run anything): curl -X POST '${inboundUrl}?test=1' -H 'Content-Type: application/json' -d '{"url": "https://example.com/file.mp3", "name": "Test"}'`,
+            "Call get_inbound_webhook with this webhookId to see the captured sample and mappable {{trigger.payload.*}} tokens.",
+            'Create the automation with create_automation, passing this webhookId in trigger.webhookId (triggerSlug: "inbound_webhook").'
+          ]
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_inbound_webhook",
+    "Get an inbound webhook's public receive URL, captured sample payload, and the ready-to-paste {{trigger.payload.*}} tokens for mapping payload values into automation steps (speak-upload name/sourceUrl, fieldsMap custom-field values, notify/outbound-webhook templates). Pass either the webhookId or the automationId of an inbound-webhook automation. If no sample has been captured yet, send a test payload to the inboundUrl first (append ?test=1 to capture without running the automation).",
+    {
+      webhookId: import_zod12.z.string().min(1).optional().describe("Inbound webhook id (from provision_inbound_webhook or an automation's trigger.webhookId)"),
+      automationId: import_zod12.z.string().min(1).optional().describe("Automation id \u2014 resolves the bound webhookId and childKey automatically"),
+      childKey: import_zod12.z.string().optional().describe("Override the dot-path used to narrow mappable payload paths (defaults to the automation's trigger.childKey)")
+    },
+    {
+      title: "Get Inbound Webhook",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ webhookId, automationId, childKey }) => {
+      try {
+        let resolvedWebhookId = webhookId;
+        let resolvedChildKey = childKey;
+        if (!resolvedWebhookId && automationId) {
+          const resolved = await resolveAutomationInboundWebhook(api, automationId);
+          if (!resolved.webhookId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: automation ${automationId} has no inbound webhook bound to its trigger (it is not an inbound-webhook automation).`
+                }
+              ],
+              isError: true
+            };
+          }
+          resolvedWebhookId = resolved.webhookId;
+          resolvedChildKey = resolvedChildKey ?? resolved.childKey;
+        }
+        if (!resolvedWebhookId) {
+          return {
+            content: [{ type: "text", text: "Error: provide either webhookId or automationId." }],
+            isError: true
+          };
+        }
+        const info = await fetchInboundWebhookInfo(api, resolvedWebhookId, resolvedChildKey);
+        return {
+          content: [{ type: "text", text: JSON.stringify(info, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_webhook_attempts",
+    "Get the delivery log for an inbound webhook: each received request with its HTTP acknowledgement status (200 = sample captured, 202 = accepted and run started, 401/403 = rejected) and the automation run it started. Use get_automation_runs for the run outcomes themselves.",
+    {
+      webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the inbound webhook"),
+      page: import_zod12.z.number().int().min(0).optional().describe("0-based page index"),
+      pageSize: import_zod12.z.number().int().min(1).max(100).optional().describe("Results per page")
+    },
+    {
+      title: "Get Webhook Attempts",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ webhookId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/webhook/${webhookId}/attempts`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
     "delete_webhook",
     "Delete a webhook and stop receiving notifications at its endpoint.",
     {
@@ -4220,6 +4434,7 @@ var init_webhooks = __esm({
     import_zod12 = require("zod");
     init_helpers();
     init_client();
+    init_inbound_webhook_utils();
   }
 });
 
@@ -5715,6 +5930,9 @@ var init_tool_names = __esm({
       "list_webhooks",
       "create_webhook",
       "update_webhook",
+      "provision_inbound_webhook",
+      "get_inbound_webhook",
+      "get_webhook_attempts",
       "delete_webhook",
       // workflows (high-level wrappers around media + upload tools)
       "upload_and_analyze",
