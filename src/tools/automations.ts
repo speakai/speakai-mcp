@@ -39,7 +39,7 @@ const STEPS_DESCRIPTION =
   "- magic-prompt -> magicPrompt: { prompt (required unless fieldIds given, max 20000), title?, " +
   "assistantType? (\"general\"|\"researcher\"|\"marketer\"|\"sales\"|\"recruiter\"|\"custom\", default \"general\"), " +
   "assistantTemplateId? (required if assistantType=\"custom\"), fieldIds?: string[] (max 10 — extract answers into these custom fields) }\n" +
-  "- translation -> translation: { targetLanguage: BCP-47 code, e.g. \"es\" }\n" +
+  "- translation -> translation: { targetLanguage: region-qualified locale code, e.g. \"es-ES\", \"fr-FR\" (bare codes like \"es\" are rejected) }\n" +
   "- filter -> filter: { logic: \"AND\"|\"OR\" (default \"AND\"), rules: [{ field, op, value? }] (1-20) } — " +
   "the run continues only when the rules match, otherwise it stops silently\n" +
   "- condition -> condition: same { logic, rules } shape as filter, but instead of stopping it routes: " +
