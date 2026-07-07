@@ -1134,7 +1134,13 @@ describe("build_automation workflow", () => {
 
     expect(result.isError).toBeUndefined();
     const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
-    expect(body.trigger).toEqual({ type: "folders", triggerSlug: "media_analyzed", folderIds: ["fld1"] });
+    expect(body.trigger).toEqual({
+      type: "folders",
+      provider: "speak",
+      app: "speak",
+      triggerSlug: "media_analyzed",
+      folderIds: ["fld1"],
+    });
     expect(body.steps[0]).toMatchObject({ stepType: "filter", filter: { logic: "AND" } });
     expect(body.steps[1].magicPrompt.fieldIds).toEqual(["fldA"]);
     expect(body.steps[2].notify.message).toBe("Done: payload.name"); // literal — not payload-prefixed shorthand form
@@ -1197,7 +1203,15 @@ describe("build_automation workflow", () => {
 
     expect(result.isError).toBeUndefined();
     const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
-    expect(body.trigger).toEqual({ type: "folders", triggerSlug: "inbound_webhook", childKey: "data" });
+    expect(body.trigger).toEqual({
+      type: "folders",
+      provider: "speak",
+      app: "speak",
+      triggerSlug: "inbound_webhook",
+      folderIds: [],
+      childKey: "data",
+    });
+    expect(body.steps[0].speakUpload.waitForProcessing).toBe(true);
     expect(body.steps[0].speakUpload.sourceUrl).toBe("{{trigger.payload.url}}");
     expect(body.steps[0].speakUpload.folderRouting).toEqual({
       mode: "dynamic",
@@ -1235,8 +1249,53 @@ describe("build_automation workflow", () => {
       fieldValueMatches: [{ fieldId: "fldB", values: ["Closed"] }],
       fieldMatchLogic: "AND",
     });
-    expect(body.triggers).toEqual([{ type: "folders", triggerSlug: "media_analyzed", folderIds: ["fld1"] }]);
+    expect(body.triggers).toEqual([
+      { type: "folders", provider: "speak", app: "speak", triggerSlug: "media_analyzed", folderIds: ["fld1"] },
+    ]);
     expect(body.steps[1]).toMatchObject({ branch: "true", dependsOn: ["s1"], stepType: "notify" });
+  });
+
+  it("resolves filter fields by flow position: payload paths on DATA flow, field names after upload (MEDIA flow)", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a6" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Flow-aware filters",
+      trigger: { on: "inbound_webhook" },
+      steps: [
+        { do: "filter", rules: [{ field: "status", op: "eq", value: "completed" }] },
+        { do: "upload", source: "payload.url", folder: "Sales Calls" },
+        { do: "filter", rules: [{ field: "Deal Stage", op: "eq", value: "Closed" }] },
+      ],
+    });
+
+    expect(result.isError).toBeUndefined();
+    const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
+    // Before the upload the webhook payload (DATA) flows: field stays a payload path.
+    expect(body.steps[0].filter.rules[0].field).toBe("status");
+    // After the upload MEDIA flows: the custom-field name resolves to its id.
+    expect(body.steps[2].filter.rules[0].field).toBe("fldB");
+  });
+
+  it("rejects an unknown folder id instead of creating a folder named after it", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Typo id",
+      trigger: { on: "media_analyzed", folders: ["aaaabbbbcccc"] },
+      steps: [{ do: "translate", language: "fr-FR" }],
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain('Folder id "aaaabbbbcccc" not found');
+    expect(mockPost).not.toHaveBeenCalledWith("/v1/folder", expect.anything());
   });
 
   it("updates via PUT when automationId is given", async () => {

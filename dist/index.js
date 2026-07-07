@@ -4729,6 +4729,9 @@ async function resolveFolder(api, ref, folders, createdFolders) {
   if (byId) return byId.folderId;
   const byName = folders.find((f) => f.name.toLowerCase() === ref.toLowerCase());
   if (byName) return byName.folderId;
+  if (ID_PATTERN.test(ref)) {
+    throw new Error(`Folder id "${ref}" not found in this workspace (and it looks like an id, so it was not created as a folder name)`);
+  }
   const res = await api.post("/v1/folder", { name: ref });
   const folderId = unwrapData(res.data)?.folderId;
   if (!folderId) throw new Error(`Could not create folder "${ref}"`);
@@ -4760,8 +4763,9 @@ function register14(server, client) {
     },
     async (args2) => {
       const { name, trigger, steps, automationId, description, isActive, orTriggers } = args2;
+      const createdFolders = [];
+      const dataFlowFilterFields = [];
       try {
-        const createdFolders = [];
         let folders = null;
         let fields = null;
         const getFolders = async () => folders ?? (folders = await loadFolders(api));
@@ -4773,11 +4777,11 @@ function register14(server, client) {
             if (!refs.length) throw new Error("media_analyzed trigger requires `folders` (names or ids)");
             const folderIds = [];
             for (const ref of refs) folderIds.push(await resolveFolder(api, String(ref), await getFolders(), createdFolders));
-            return { type: "folders", triggerSlug: "media_analyzed", folderIds };
+            return { type: "folders", provider: "speak", app: "speak", triggerSlug: "media_analyzed", folderIds };
           }
           if (on === "inbound_webhook") {
             if (!allowWebhook) throw new Error("inbound_webhook cannot be used as an Or-trigger \u2014 make it the primary trigger");
-            const t = { type: "folders", triggerSlug: "inbound_webhook" };
+            const t = { type: "folders", provider: "speak", app: "speak", triggerSlug: "inbound_webhook", folderIds: [] };
             if (spec.webhookId) t.webhookId = spec.webhookId;
             if (spec.childKey) t.childKey = spec.childKey;
             return t;
@@ -4795,7 +4799,7 @@ function register14(server, client) {
                 fieldValueMatches.push({ fieldId, values: w.values.map(String) });
               }
             }
-            const t = { type: "folders", triggerSlug: "field_updated", values };
+            const t = { type: "folders", provider: "speak", app: "speak", triggerSlug: "field_updated", folderIds: [], values };
             if (fieldValueMatches.length) t.fieldValueMatches = fieldValueMatches;
             if (spec.matchLogic === "AND") t.fieldMatchLogic = "AND";
             return t;
@@ -4803,21 +4807,27 @@ function register14(server, client) {
           throw new Error(`Unknown trigger \`on\`: "${on}". Use media_analyzed, inbound_webhook, or field_updated.`);
         };
         const isWebhookAutomation = trigger.on === "inbound_webhook";
-        const buildRules = async (rules) => {
+        const buildRules = async (rules, flowing2, isFilterStep) => {
           const out = [];
           for (const r of rules) {
             let field = String(r.field ?? "");
-            if (!CANONICAL_FILTER_FIELDS.has(field) && !field.includes(".") && !isWebhookAutomation) {
+            if (flowing2 === "media" && !CANONICAL_FILTER_FIELDS.has(field) && !field.includes(".")) {
               field = resolveField(field, await getFields());
+            } else if (isFilterStep && flowing2 === "data" && !CANONICAL_FILTER_FIELDS.has(field)) {
+              dataFlowFilterFields.push(field);
             }
-            const rule = { field, op: String(r.op ?? "eq") };
-            if (r.value !== void 0) rule.value = r.value;
+            const op = String(r.op ?? "eq");
+            const rule = { field, op };
+            if (r.value !== void 0) {
+              rule.value = (op === "gt" || op === "lt") && Number.isFinite(Number(r.value)) ? Number(r.value) : r.value;
+            }
             out.push(rule);
           }
           return out;
         };
         const wireSteps = [];
         let lastBranchStepId = null;
+        let flowing = isWebhookAutomation ? "data" : "media";
         for (let i = 0; i < steps.length; i++) {
           const spec = steps[i];
           const stepId = `s${i + 1}`;
@@ -4832,7 +4842,7 @@ function register14(server, client) {
             step.stepType = doType === "filter" ? "filter" : "condition";
             const block = {
               logic: spec.logic === "OR" ? "OR" : "AND",
-              rules: await buildRules(spec.rules ?? [])
+              rules: await buildRules(spec.rules ?? [], flowing, doType === "filter")
             };
             step[doType === "filter" ? "filter" : "condition"] = block;
             if (doType === "branch") lastBranchStepId = stepId;
@@ -4840,14 +4850,20 @@ function register14(server, client) {
             if (!spec.source) throw new Error(`Step ${i + 1} (upload): \`source\` is required (URL or payload.<path>)`);
             const upload = {
               sourceMode: "url",
-              sourceUrl: tokenize(spec.source)
+              sourceUrl: tokenize(spec.source),
+              // Always defer until the uploaded media is PROCESSED so downstream
+              // steps (ai_chat, translate) see the transcript — the web canvas
+              // hardcodes this too.
+              waitForProcessing: true
             };
             if (spec.name) upload.name = tokenize(spec.name);
             if (spec.language) upload.language = tokenize(spec.language);
             if (spec.folderFromPayload) {
+              const rawKey = String(spec.folderFromPayload);
+              const sourceKey = rawKey.includes("{{") ? rawKey : `{{trigger.payload.${rawKey.startsWith("payload.") ? rawKey.slice("payload.".length) : rawKey}}}`;
               upload.folderRouting = {
                 mode: "dynamic",
-                sourceKey: tokenize(String(spec.folderFromPayload)),
+                sourceKey,
                 onNoMatch: spec.onNoFolderMatch === "default" ? "default" : "create"
               };
               if (spec.folder) upload.folderId = await resolveFolder(api, String(spec.folder), await getFolders(), createdFolders);
@@ -4859,41 +4875,59 @@ function register14(server, client) {
               const fieldList = await getFields();
               const fieldsMap = {};
               for (const [ref, value] of Object.entries(spec.mapFields)) {
-                fieldsMap[resolveField(ref, fieldList)] = tokenize(value);
+                if (value !== null && typeof value === "object") {
+                  throw new Error(`Step ${i + 1} (upload): mapFields["${ref}"] must be a string or number, not an object`);
+                }
+                fieldsMap[resolveField(ref, fieldList)] = tokenize(String(value));
               }
               if (Object.keys(fieldsMap).length) upload.fieldsMap = fieldsMap;
             }
             step.stepType = "speak-upload";
             step.speakUpload = upload;
+            flowing = "media";
           } else if (doType === "ai_chat") {
-            if (!spec.prompt) throw new Error(`Step ${i + 1} (ai_chat): \`prompt\` is required`);
-            const magicPrompt = { prompt: spec.prompt, assistantType: "general" };
+            const hasSaveToFields = Array.isArray(spec.saveToFields) && spec.saveToFields.length > 0;
+            if (!spec.prompt && !hasSaveToFields) {
+              throw new Error(`Step ${i + 1} (ai_chat): provide \`prompt\`, \`saveToFields\`, or both`);
+            }
+            const magicPrompt = { prompt: spec.prompt ?? "", assistantType: "general" };
             if (spec.title) magicPrompt.title = spec.title;
             if (spec.model) magicPrompt.modelId = spec.model;
             if (Array.isArray(spec.saveToFields) && spec.saveToFields.length) {
+              if (spec.saveToFields.length > 10) {
+                throw new Error(`Step ${i + 1} (ai_chat): saveToFields supports at most 10 fields`);
+              }
               const fieldList = await getFields();
               magicPrompt.fieldIds = spec.saveToFields.map((ref) => resolveField(String(ref), fieldList));
             }
             step.stepType = "magic-prompt";
             step.magicPrompt = magicPrompt;
+            flowing = "insight";
           } else if (doType === "translate") {
             if (!spec.language) throw new Error(`Step ${i + 1} (translate): \`language\` is required (e.g. "es-ES")`);
             step.stepType = "translation";
             step.translation = { targetLanguage: spec.language };
+            flowing = "media";
           } else if (doType === "notify") {
             if (!spec.message) throw new Error(`Step ${i + 1} (notify): \`message\` is required`);
-            const notify = {
-              channel: ["email", "slack"].includes(String(spec.channel)) ? spec.channel : "in_app",
-              message: tokenize(spec.message)
-            };
+            const channel = spec.channel === void 0 ? "in_app" : String(spec.channel);
+            if (!["in_app", "email", "slack"].includes(channel)) {
+              throw new Error(`Step ${i + 1} (notify): channel must be "in_app", "email", or "slack" (got "${channel}")`);
+            }
+            const notify = { channel, message: tokenize(spec.message) };
             if (spec.target) notify.target = String(spec.target);
             step.stepType = "notify";
             step.notify = notify;
+            flowing = "data";
           } else if (doType === "call_webhook") {
             if (!spec.url) throw new Error(`Step ${i + 1} (call_webhook): \`url\` is required`);
+            const method = spec.method === void 0 ? "POST" : String(spec.method).toUpperCase();
+            if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+              throw new Error(`Step ${i + 1} (call_webhook): method must be GET, POST, PUT, PATCH, or DELETE (got "${spec.method}")`);
+            }
             const outbound = {
               url: tokenize(spec.url),
-              method: ["GET", "PUT", "PATCH", "DELETE"].includes(String(spec.method)) ? spec.method : "POST"
+              method
             };
             if (spec.headers && typeof spec.headers === "object") outbound.headers = spec.headers;
             if (spec.body !== void 0) {
@@ -4901,6 +4935,7 @@ function register14(server, client) {
             }
             step.stepType = "outbound-webhook";
             step.outboundWebhook = outbound;
+            flowing = "data";
           } else {
             throw new Error(
               `Step ${i + 1}: unknown \`do\`: "${doType}". Use filter, branch, upload, ai_chat, translate, notify, or call_webhook.`
@@ -4939,8 +4974,14 @@ function register14(server, client) {
           content: [{ type: "text", text: JSON.stringify(response, null, 2) }]
         };
       } catch (err) {
+        let message = formatAxiosError(err);
+        if (dataFlowFilterFields.length && message.includes("fieldIds do not belong")) {
+          message += `
+
+Likely cause: this server rejects filter rules on webhook payload fields (${dataFlowFilterFields.join(", ")}) at publish time (known server-side validation gap). Workarounds: move the filter AFTER the upload step and filter on media/custom fields instead, or filter in the sending system before it posts to the webhook.`;
+        }
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${message}` }],
           isError: true
         };
       }
@@ -5100,7 +5141,7 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
     }
   );
 }
-var import_zod15, fs, path2, CANONICAL_FILTER_FIELDS, TRIGGER_SPEC_DESCRIPTION, STEP_SPEC_DESCRIPTION, buildAutomationSchema;
+var import_zod15, fs, path2, CANONICAL_FILTER_FIELDS, ID_PATTERN, TRIGGER_SPEC_DESCRIPTION, STEP_SPEC_DESCRIPTION, buildAutomationSchema;
 var init_workflows = __esm({
   "src/tools/workflows.ts"() {
     "use strict";
@@ -5125,8 +5166,9 @@ var init_workflows = __esm({
       "language",
       "speakersCount"
     ]);
+    ID_PATTERN = /^[0-9a-f]{12}$/;
     TRIGGER_SPEC_DESCRIPTION = 'What starts the automation. Object with:\n- on (required): "media_analyzed" | "inbound_webhook" | "field_updated"\n- folders: array of folder names or ids (required for media_analyzed; missing folders are created)\n- childKey: dot-path narrowing the webhook payload root, e.g. "data" (inbound_webhook only)\n- webhookId: reuse a webhook from provision_inbound_webhook (inbound_webhook only; omit to auto-provision)\n- watchFields: array of { field: name-or-id, values?: string[] } (required for field_updated \u2014 fires when the field changes; values restricts to specific new values)\n- matchLogic: "AND"|"OR" for combining multiple watchFields value matches (default OR)';
-    STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match. Fields: media flows use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; webhook payloads use payload paths like "contact.status". Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic? } \u2014 like filter but routes instead of stopping; later steps with runWhen: "true"|"false" only run on that outcome\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt (required), title?, saveToFields?: [field names or ids] (max 10 \u2014 the answer is extracted into these fields), model? }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app), target? }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nSteps may also set runWhen (after a branch step). Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
+    STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match. Fields: media flows use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; webhook payloads use payload paths like "contact.status". Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic? } \u2014 like filter but routes instead of stopping; later steps with runWhen: "true"|"false" only run on that outcome. NOTE: branch routing requires the server\'s DAG runner (feature-flagged); when it is off, steps run in order and runWhen markers are ignored \u2014 prefer filter for guaranteed gating\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default) }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nSteps may also set runWhen (after a branch step). Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
     buildAutomationSchema = {
       name: import_zod15.z.string().min(1).max(150).describe("Display name for the automation"),
       trigger: import_zod15.z.record(import_zod15.z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
