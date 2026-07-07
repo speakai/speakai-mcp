@@ -1090,3 +1090,196 @@ describe("Media tools — additional endpoints", () => {
     expect(result.isError).toBe(true);
   });
 });
+
+describe("build_automation workflow", () => {
+  let server: McpServer;
+
+  const FOLDERS = { status: "success", data: { folderList: [{ folderId: "fld1", name: "Sales Calls" }] } };
+  const FIELDS = {
+    status: "success",
+    data: [
+      { id: "fldA", name: "Customer Name" },
+      { id: "fldB", name: "Deal Stage" },
+    ],
+  };
+
+  beforeEach(async () => {
+    vi.resetAllMocks();
+    mockGet.mockResolvedValue({ data: { data: {} } });
+    mockPost.mockResolvedValue({ data: { data: {} } });
+    mockPut.mockResolvedValue({ data: { data: {} } });
+    server = new McpServer({ name: "test", version: "1.0.0" });
+    const { register } = await import("../src/tools/workflows.js");
+    register(server, mockClient);
+  });
+
+  it("resolves folder/field names, converts payload shorthand, and assembles the wire body", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a1" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Friendly build",
+      trigger: { on: "media_analyzed", folders: ["Sales Calls"] },
+      steps: [
+        { do: "filter", rules: [{ field: "name", op: "contains", value: "Acme" }] },
+        { do: "ai_chat", prompt: "Summarize", saveToFields: ["Customer Name"] },
+        { do: "notify", message: "Done: payload.name" },
+      ],
+    });
+
+    expect(result.isError).toBeUndefined();
+    const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
+    expect(body.trigger).toEqual({ type: "folders", triggerSlug: "media_analyzed", folderIds: ["fld1"] });
+    expect(body.steps[0]).toMatchObject({ stepType: "filter", filter: { logic: "AND" } });
+    expect(body.steps[1].magicPrompt.fieldIds).toEqual(["fldA"]);
+    expect(body.steps[2].notify.message).toBe("Done: payload.name"); // literal — not payload-prefixed shorthand form
+  });
+
+  it("creates a missing folder and reports it", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: { status: "success", data: { folderId: "fldNew" } } });
+      return Promise.resolve({ data: { status: "success", data: { automationId: "a2" } } });
+    });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "New folder build",
+      trigger: { on: "media_analyzed", folders: ["Webhook Inbox"] },
+      steps: [{ do: "translate", language: "fr-FR" }],
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(mockPost).toHaveBeenCalledWith("/v1/folder", { name: "Webhook Inbox" });
+    expect(result.content[0].text).toContain("Webhook Inbox (fldNew)");
+  });
+
+  it("builds a webhook automation with token shorthand, dynamic routing, and enrichment", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      if (url === "/v1/automations/a3") {
+        return Promise.resolve({ data: { status: "success", data: { trigger: { webhookId: "wh1", childKey: "data" } } } });
+      }
+      if (url === "/v1/webhook/wh1") {
+        return Promise.resolve({
+          data: {
+            status: "success",
+            data: { webhookData: { inboundUrl: "https://api.test/v1/webhook/in/tok", samplePayload: { x: 1 }, flattenedPaths: ["data.url"] } },
+          },
+        });
+      }
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a3" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Webhook build",
+      trigger: { on: "inbound_webhook", childKey: "data" },
+      steps: [
+        {
+          do: "upload",
+          source: "payload.url",
+          name: "payload.name",
+          folderFromPayload: "payload.clinic",
+          mapFields: { "Deal Stage": "payload.stage" },
+        },
+      ],
+    });
+
+    expect(result.isError).toBeUndefined();
+    const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
+    expect(body.trigger).toEqual({ type: "folders", triggerSlug: "inbound_webhook", childKey: "data" });
+    expect(body.steps[0].speakUpload.sourceUrl).toBe("{{trigger.payload.url}}");
+    expect(body.steps[0].speakUpload.folderRouting).toEqual({
+      mode: "dynamic",
+      sourceKey: "{{trigger.payload.clinic}}",
+      onNoMatch: "create",
+    });
+    expect(body.steps[0].speakUpload.fieldsMap).toEqual({ fldB: "{{trigger.payload.stage}}" });
+    expect(result.content[0].text).toContain("https://api.test/v1/webhook/in/tok");
+  });
+
+  it("supports branch + runWhen wiring and field_updated triggers with Or-triggers", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a4" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Branchy",
+      trigger: { on: "field_updated", watchFields: [{ field: "Deal Stage", values: ["Closed"] }], matchLogic: "AND" },
+      orTriggers: [{ on: "media_analyzed", folders: ["Sales Calls"] }],
+      steps: [
+        { do: "branch", rules: [{ field: "name", op: "contains", value: "Acme" }] },
+        { do: "notify", message: "Acme deal closed", runWhen: "true" },
+      ],
+    });
+
+    expect(result.isError).toBeUndefined();
+    const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
+    expect(body.trigger).toMatchObject({
+      triggerSlug: "field_updated",
+      values: ["fldB"],
+      fieldValueMatches: [{ fieldId: "fldB", values: ["Closed"] }],
+      fieldMatchLogic: "AND",
+    });
+    expect(body.triggers).toEqual([{ type: "folders", triggerSlug: "media_analyzed", folderIds: ["fld1"] }]);
+    expect(body.steps[1]).toMatchObject({ branch: "true", dependsOn: ["s1"], stepType: "notify" });
+  });
+
+  it("updates via PUT when automationId is given", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPut.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a5" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      automationId: "a5",
+      name: "Updated build",
+      trigger: { on: "media_analyzed", folders: ["fld1"] },
+      steps: [{ do: "translate", language: "es-ES" }],
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(mockPut).toHaveBeenCalledWith("/v1/automations/a5", expect.objectContaining({ name: "Updated build" }));
+  });
+
+  it("returns a helpful error for unknown fields and unknown step types", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    const cb = getToolCallback(server, "build_automation");
+
+    const badField = await cb({
+      name: "x",
+      trigger: { on: "field_updated", watchFields: [{ field: "Nope" }] },
+      steps: [{ do: "translate", language: "es-ES" }],
+    });
+    expect(badField.isError).toBe(true);
+    expect(badField.content[0].text).toContain('Unknown custom field "Nope"');
+    expect(badField.content[0].text).toContain("Customer Name");
+
+    const badStep = await cb({
+      name: "x",
+      trigger: { on: "inbound_webhook" },
+      steps: [{ do: "teleport" }],
+    });
+    expect(badStep.isError).toBe(true);
+    expect(badStep.content[0].text).toContain('unknown `do`: "teleport"');
+  });
+});

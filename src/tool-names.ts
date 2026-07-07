@@ -132,7 +132,8 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "get_webhook_attempts",
   "delete_webhook",
 
-  // workflows (high-level wrappers around media + upload tools)
+  // workflows (high-level wrappers around media + upload + automation tools)
+  "build_automation",
   "upload_and_analyze",
   "upload_local_file",
 

@@ -74,6 +74,7 @@ const additions: Record<string, string[]> = {
     "provision_inbound_webhook",
     "get_inbound_webhook",
     "get_webhook_attempts",
+    "build_automation",
   ],
 };
 

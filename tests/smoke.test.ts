@@ -30,13 +30,13 @@ describe("MCP Server Smoke Tests", () => {
     server = new McpServer({ name: "speak-ai-test", version: "1.0.0" });
   });
 
-  it("registers all 110 MCP tools without errors", async () => {
+  it("registers all 111 MCP tools without errors", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
     expect(() => registerAllTools(server)).not.toThrow();
 
     const tools = getRegisteredTools(server);
     const toolNames = Object.keys(tools);
-    expect(toolNames).toHaveLength(110);
+    expect(toolNames).toHaveLength(111);
   });
 
   it("registers all tools with unique names", async () => {
@@ -97,6 +97,7 @@ describe("MCP Server Smoke Tests", () => {
       .sort();
 
     expect(openWorldTools).toEqual([
+      "build_automation",
       "bulk_assign_automation_folders",
       "bulk_update_automation_status",
       "clone_recorder",
