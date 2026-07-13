@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.14.0 (2026-07-13)
+
+- Added build_automation high-level workflow tool and guided inbound-webhook automation flow
+
 ## v1.13.8 (2026-07-02)
 
 - Refactored Magic Prompt to AI Chat, including renaming and dropping an alias
