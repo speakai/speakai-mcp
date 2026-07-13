@@ -34,6 +34,28 @@ function addRecorderOptions(recorder: any) {
   return recorder;
 }
 
+// Valid recorder question answer types. Source of truth: RecorderAnswerType in
+// @speakai/shared (see speak-server @speak-common/types/enum/recorder.ts).
+// NOTE: there is no free-text / rating / number type — choice types cover input.
+const RECORDER_ANSWER_TYPES = [
+  "single",
+  "multiple",
+  "checkbox",
+  "radiobutton",
+  "dropdownlist",
+  "date",
+  "time",
+  "datetime",
+] as const;
+
+// Reusable description of a survey question, incl. the allowed answerType values.
+const QUESTION_SHAPE_DESC =
+  `Each: { question, isRequired, answerType, options?, includeOther?, fieldId? }. ` +
+  `answerType must be one of: ${RECORDER_ANSWER_TYPES.map((t) => `"${t}"`).join(", ")}. ` +
+  `Choice types (single, multiple, checkbox, radiobutton, dropdownlist) take options:string[] ` +
+  `and includeOther:boolean (adds a free-text "Other"). date/time/datetime take no options. ` +
+  `There is no free-text/rating/number answerType.`;
+
 // Config keys shared by create_recorder and update_recorder_settings.
 // Nested objects use z.record to keep TS type-inference light; the exact keys
 // are documented in each .describe() and validated server-side.
@@ -105,7 +127,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .record(z.unknown())
         .optional()
         .describe(
-          "Respondent info & questions: { name:boolean, email:boolean, questions:[{ question, isRequired, answerType, options?, includeOther?, fieldId? }], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }",
+          `Respondent info & questions: { name:boolean, email:boolean, questions:[…], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }. Question shape — ${QUESTION_SHAPE_DESC}`,
         ),
     },
     {
@@ -319,7 +341,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       questions: z
         .array(z.record(z.unknown()))
         .describe(
-          "Survey questions. Each: { question, isRequired, answerType, options?, includeOther?, fieldId?, id? }",
+          `Survey questions. ${QUESTION_SHAPE_DESC} (id? may also be passed to update an existing question.)`,
         ),
       consent: z
         .record(z.unknown())

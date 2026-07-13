@@ -2449,7 +2449,7 @@ function register5(server, client) {
       name: import_zod6.z.string().describe("Display name for the recorder"),
       ...recorderConfigShape,
       clientInformation: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
-        "Respondent info & questions: { name:boolean, email:boolean, questions:[{ question, isRequired, answerType, options?, includeOther?, fieldId? }], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }"
+        `Respondent info & questions: { name:boolean, email:boolean, questions:[\u2026], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }. Question shape \u2014 ${QUESTION_SHAPE_DESC}`
       )
     },
     {
@@ -2661,7 +2661,7 @@ function register5(server, client) {
       name: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's name"),
       email: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's email"),
       questions: import_zod6.z.array(import_zod6.z.record(import_zod6.z.unknown())).describe(
-        "Survey questions. Each: { question, isRequired, answerType, options?, includeOther?, fieldId?, id? }"
+        `Survey questions. ${QUESTION_SHAPE_DESC} (id? may also be passed to update an existing question.)`
       ),
       consent: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
         "Consent screen: { isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? }"
@@ -2717,13 +2717,24 @@ function register5(server, client) {
     }
   );
 }
-var import_zod6, recorderConfigShape;
+var import_zod6, RECORDER_ANSWER_TYPES, QUESTION_SHAPE_DESC, recorderConfigShape;
 var init_recorder3 = __esm({
   "src/tools/recorder.ts"() {
     "use strict";
     import_zod6 = require("zod");
     init_helpers();
     init_client();
+    RECORDER_ANSWER_TYPES = [
+      "single",
+      "multiple",
+      "checkbox",
+      "radiobutton",
+      "dropdownlist",
+      "date",
+      "time",
+      "datetime"
+    ];
+    QUESTION_SHAPE_DESC = `Each: { question, isRequired, answerType, options?, includeOther?, fieldId? }. answerType must be one of: ${RECORDER_ANSWER_TYPES.map((t) => `"${t}"`).join(", ")}. Choice types (single, multiple, checkbox, radiobutton, dropdownlist) take options:string[] and includeOther:boolean (adds a free-text "Other"). date/time/datetime take no options. There is no free-text/rating/number answerType.`;
     recorderConfigShape = {
       description: import_zod6.z.string().optional().describe("Recorder description"),
       sourceLanguage: import_zod6.z.string().optional().describe("Transcription language code (e.g. en-US)"),
