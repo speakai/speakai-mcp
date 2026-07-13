@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 107,
+  "totalTools": 111,
   "categories": [
     {
       "id": "media",
@@ -653,7 +653,7 @@
         {
           "name": "create_automation",
           "title": "Create Automation",
-          "description": "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure.",
+          "description": "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) — recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -793,6 +793,42 @@
           "destructiveHint": false,
           "idempotentHint": true,
           "openWorldHint": false
+        },
+        {
+          "name": "provision_inbound_webhook",
+          "title": "Provision Inbound Webhook",
+          "description": "Provision a standalone inbound webhook and get its public receive URL (inboundUrl) BEFORE creating an automation. Webhook-first flow: provision, send a test payload to the URL (append ?test=1 to only capture a sample without running anything), inspect mappable payload paths with get_inbound_webhook, then pass the webhookId as trigger.webhookId to create_automation.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "get_inbound_webhook",
+          "title": "Get Inbound Webhook",
+          "description": "Get an inbound webhook's public receive URL, captured sample payload, and the ready-to-paste {{trigger.payload.*}} tokens for mapping payload values into automation steps (speak-upload name/sourceUrl, fieldsMap custom-field values, notify/outbound-webhook templates). Pass either the webhookId or the automationId of an inbound-webhook automation. If no sample has been captured yet, send a test payload to the inboundUrl first (append ?test=1 to capture without running the automation).",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_webhook_attempts",
+          "title": "Get Webhook Attempts",
+          "description": "Get the delivery log for an inbound webhook: each received request with its HTTP acknowledgement status (200 = sample captured, 202 = accepted and run started, 401/403 = rejected) and the automation run it started. Use get_automation_runs for the run outcomes themselves.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "build_automation",
+          "title": "Build Automation",
+          "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. Prefer this over create_automation unless you need raw control.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
         }
       ]
     },

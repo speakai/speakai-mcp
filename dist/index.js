@@ -2449,7 +2449,7 @@ function register5(server, client) {
       name: import_zod6.z.string().describe("Display name for the recorder"),
       ...recorderConfigShape,
       clientInformation: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
-        "Respondent info & questions: { name:boolean, email:boolean, questions:[{ question, isRequired, answerType, options?, includeOther?, fieldId? }], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }"
+        `Respondent info & questions: { name:boolean, email:boolean, questions:[\u2026], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }. Question shape \u2014 ${QUESTION_SHAPE_DESC}`
       )
     },
     {
@@ -2661,7 +2661,7 @@ function register5(server, client) {
       name: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's name"),
       email: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's email"),
       questions: import_zod6.z.array(import_zod6.z.record(import_zod6.z.unknown())).describe(
-        "Survey questions. Each: { question, isRequired, answerType, options?, includeOther?, fieldId?, id? }"
+        `Survey questions. ${QUESTION_SHAPE_DESC} (id? may also be passed to update an existing question.)`
       ),
       consent: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
         "Consent screen: { isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? }"
@@ -2717,13 +2717,24 @@ function register5(server, client) {
     }
   );
 }
-var import_zod6, recorderConfigShape;
+var import_zod6, RECORDER_ANSWER_TYPES, QUESTION_SHAPE_DESC, recorderConfigShape;
 var init_recorder3 = __esm({
   "src/tools/recorder.ts"() {
     "use strict";
     import_zod6 = require("zod");
     init_helpers();
     init_client();
+    RECORDER_ANSWER_TYPES = [
+      "single",
+      "multiple",
+      "checkbox",
+      "radiobutton",
+      "dropdownlist",
+      "date",
+      "time",
+      "datetime"
+    ];
+    QUESTION_SHAPE_DESC = `Each: { question, isRequired, answerType, options?, includeOther?, fieldId? }. answerType must be one of: ${RECORDER_ANSWER_TYPES.map((t) => `"${t}"`).join(", ")}. Choice types (single, multiple, checkbox, radiobutton, dropdownlist) take options:string[] and includeOther:boolean (adds a free-text "Other"). date/time/datetime take no options. There is no free-text/rating/number answerType.`;
     recorderConfigShape = {
       description: import_zod6.z.string().optional().describe("Recorder description"),
       sourceLanguage: import_zod6.z.string().optional().describe("Transcription language code (e.g. en-US)"),
@@ -3660,11 +3671,87 @@ var init_fields2 = __esm({
   }
 });
 
+// src/tools/inbound-webhook-utils.ts
+function unwrapData(payload) {
+  const p = payload;
+  return p && typeof p === "object" && "status" in p && "data" in p ? p.data : p;
+}
+function narrowPathsToChildKey(paths, childKey) {
+  if (!childKey) return paths;
+  const prefix = `${childKey}.`;
+  const narrowed = paths.filter((p) => p.startsWith(prefix)).map((p) => p.slice(prefix.length)).filter(Boolean);
+  return narrowed.length ? narrowed : paths;
+}
+function buildHowToUse(inboundUrl, sampleCaptured) {
+  const url = inboundUrl ?? "<inboundUrl>";
+  const lines = [
+    `Send events with: curl -X POST '${url}' -H 'Content-Type: application/json' -d '{"url": "https://example.com/file.mp3", "name": "My recording"}'`,
+    `To capture/refresh a sample payload WITHOUT running the automation, POST to '${url}?test=1'.`,
+    "Reference payload values in step configs with {{trigger.payload.<path>}} tokens \u2014 see mappableTokens."
+  ];
+  if (!sampleCaptured) {
+    lines.unshift(
+      "No sample payload captured yet \u2014 send a test request first (see below) so payload paths become discoverable for mapping, then call get_inbound_webhook again."
+    );
+  }
+  return lines;
+}
+async function fetchInboundWebhookInfo(api, webhookId, childKey) {
+  const res = await api.get(`/v1/webhook/${webhookId}`);
+  const payload = unwrapData(res.data);
+  const wh = payload?.webhookData ?? payload ?? {};
+  const flattened = Array.isArray(wh.flattenedPaths) ? wh.flattenedPaths : [];
+  const sample = wh.samplePayload ?? null;
+  const sampleCaptured = sample != null && (typeof sample !== "object" || Object.keys(sample).length > 0);
+  const inboundUrl = typeof wh.inboundUrl === "string" ? wh.inboundUrl : null;
+  return {
+    webhookId,
+    inboundUrl,
+    sampleCaptured,
+    samplePayload: sample,
+    mappableTokens: narrowPathsToChildKey(flattened, childKey).map(
+      (p) => `{{trigger.payload.${p}}}`
+    ),
+    ...childKey ? { childKey } : {},
+    howToUse: buildHowToUse(inboundUrl, sampleCaptured)
+  };
+}
+async function resolveAutomationInboundWebhook(api, automationId) {
+  const res = await api.get(`/v1/automations/${automationId}`);
+  const automation = unwrapData(res.data);
+  const trigger = automation?.trigger ?? {};
+  return {
+    webhookId: typeof trigger.webhookId === "string" && trigger.webhookId ? trigger.webhookId : void 0,
+    childKey: typeof trigger.childKey === "string" && trigger.childKey ? trigger.childKey : void 0
+  };
+}
+function isInboundWebhookTrigger(trigger) {
+  const t = trigger;
+  return !!t && (t.triggerSlug === "inbound_webhook" || t.type === "webhook" || !!t.webhookId);
+}
+var init_inbound_webhook_utils = __esm({
+  "src/tools/inbound-webhook-utils.ts"() {
+    "use strict";
+  }
+});
+
 // src/tools/automations.ts
 var automations_exports = {};
 __export(automations_exports, {
   register: () => register10
 });
+async function withInboundWebhookInfo(api, responseData, automationId) {
+  try {
+    if (!automationId) return responseData;
+    const { webhookId, childKey } = await resolveAutomationInboundWebhook(api, automationId);
+    if (!webhookId) return responseData;
+    const inboundWebhook = await fetchInboundWebhookInfo(api, webhookId, childKey);
+    const base = responseData && typeof responseData === "object" ? responseData : { data: responseData };
+    return { ...base, inboundWebhook };
+  } catch {
+    return responseData;
+  }
+}
 function register10(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
@@ -3789,7 +3876,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "create_automation",
-    "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure.",
+    "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) \u2014 recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
     writeSchema,
     {
       title: "Create Automation",
@@ -3801,8 +3888,13 @@ function register10(server, client) {
     async (body) => {
       try {
         const result = await api.post("/v1/automations/", body);
+        let data = result.data;
+        if (isInboundWebhookTrigger(body.trigger)) {
+          const automationId = unwrapData(result.data)?.automationId;
+          data = await withInboundWebhookInfo(api, data, automationId);
+        }
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
         };
       } catch (err) {
         return {
@@ -3830,8 +3922,12 @@ function register10(server, client) {
     async ({ automationId, ...body }) => {
       try {
         const result = await api.put(`/v1/automations/${automationId}`, body);
+        let data = result.data;
+        if (isInboundWebhookTrigger(body.trigger)) {
+          data = await withInboundWebhookInfo(api, data, automationId);
+        }
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
         };
       } catch (err) {
         return {
@@ -4067,18 +4163,27 @@ function register10(server, client) {
     }
   );
 }
-var import_zod11, STEPS_DESCRIPTION, TRIGGER_DESCRIPTION, writeSchema;
+var import_zod11, TOKEN_SYNTAX_NOTE, STEPS_DESCRIPTION, TRIGGER_DESCRIPTION, OR_TRIGGERS_DESCRIPTION, writeSchema;
 var init_automations = __esm({
   "src/tools/automations.ts"() {
     "use strict";
     import_zod11 = require("zod");
     init_helpers();
     init_client();
-    STEPS_DESCRIPTION = 'Ordered array of graph steps (1-20). Each step is an object: { stepId: string (unique within the array), stepType: one of "magic-prompt" | "translation" | "filter" | "composio-action" | "speak-upload", dependsOn?: string[] (stepIds this step runs after) } plus ONE payload key matching stepType:\n- magic-prompt -> magicPrompt: { prompt (required unless fieldIds given), title?, assistantType? ("general"|"researcher"|"marketer"|"sales"|"recruiter"|"custom", default "general"), assistantTemplateId? (required if assistantType="custom"), fieldIds?: string[] (max 10, for field extraction) }\n- translation -> translation: { targetLanguage: BCP-47 code, e.g. "es" }\n- filter -> filter: { logic: "AND"|"OR", rules: [{ field, op: "eq"|"neq"|"contains"|"ncontains"|"startsWith"|"gt"|"lt"|"exists", value? }] }\n- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)\n- speak-upload -> speakUpload: { folderId, sourceMode: "url"|"file", sourceUrl? (required when sourceMode="url"), name?, fieldsMap?, language? }';
-    TRIGGER_DESCRIPTION = 'Trigger object. For folder-based automations: { type: "folders", folderIds: string[] } (at least one folder is required). Note: only "folders" is currently supported for multi-step automations via the API \u2014 "tags"/"keywords" are rejected, and "composio"/"webhook" triggers (provider, app, triggerSlug, webhookId, childKey, connectedAccountId) are gated by server flags.';
+    init_inbound_webhook_utils();
+    TOKEN_SYNTAX_NOTE = "Token syntax (usable in fields marked 'tokens allowed'): {{trigger.payload.<path>}} reads the inbound webhook payload (dot paths and [n] array indices; paths are relative to trigger.childKey when set \u2014 discover valid paths with get_inbound_webhook after sending a test payload); {{step.<index>.<path>}} or {{step.<stepId>.<path>}} reads a previous step's output (speak-upload -> mediaId, magic-prompt -> answer, outbound-webhook -> status/response).";
+    STEPS_DESCRIPTION = 'Ordered array of graph steps (1-20). Each step is an object: { stepId: string (unique within the array), stepType: one of "speak-upload" | "magic-prompt" | "translation" | "filter" | "condition" | "notify" | "outbound-webhook" | "composio-action", dependsOn?: string[] (stepIds this step runs after), branch?: "true"|"false" (which outcome of an upstream condition step this step belongs to) } plus ONE config key matching stepType:\n- speak-upload -> speakUpload: { sourceMode: "url"|"file", sourceUrl (required when sourceMode="url"; tokens allowed \u2014 if the token resolves to an object, the first http(s) URL inside it is used), folderId (required, unless folderRouting.mode="dynamic" where it becomes the optional fallback), name? (tokens allowed, mixable with static text), language? (language code or token), fieldsMap?: { <customFieldId>: "<value>" } (writes payload values into Speak custom fields on the uploaded media; values are usually {{trigger.payload.<path>}} tokens \u2014 get field ids from list_fields), folderRouting?: { mode: "static"|"dynamic", sourceKey (payload key holding the destination folder name, required when dynamic), onNoMatch: "create"|"default" (create a folder named after the value, or fall back to folderId) } }\n- magic-prompt -> magicPrompt: { prompt (required unless fieldIds given, max 20000), title?, assistantType? ("general"|"researcher"|"marketer"|"sales"|"recruiter"|"custom", default "general"), assistantTemplateId? (required if assistantType="custom"), fieldIds?: string[] (max 10 \u2014 extract answers into these custom fields) }\n- translation -> translation: { targetLanguage: region-qualified locale code, e.g. "es-ES", "fr-FR" (bare codes like "es" are rejected) }\n- filter -> filter: { logic: "AND"|"OR" (default "AND"), rules: [{ field, op, value? }] (1-20) } \u2014 the run continues only when the rules match, otherwise it stops silently\n- condition -> condition: same { logic, rules } shape as filter, but instead of stopping it routes: downstream steps marked branch:"true"/"false" run according to the outcome\n- notify -> notify: { channel: "in_app"|"email"|"slack", target?, message (required, tokens allowed) }\n- outbound-webhook -> outboundWebhook: { url (required, tokens allowed), method? ("GET"|"POST"|"PUT"|"PATCH"|"DELETE", default "POST"), headers?: { <name>: <value> }, bodyTemplate?: string | object (tokens allowed) }\n- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)\nFilter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers or a custom field id; INSIGHT -> answer; inbound-webhook DATA -> any payload path (e.g. "contact.status"). Ops by field type \u2014 text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists ("exists" takes no value; gt/lt values are numbers).\n' + TOKEN_SYNTAX_NOTE;
+    TRIGGER_DESCRIPTION = `Trigger object (the automation's root). Always include triggerSlug. Supported shapes:
+- Media analyzed in folder(s): { type: "folders", triggerSlug: "media_analyzed", folderIds: string[] (min 1) }
+- Inbound webhook (receive external payloads): { type: "folders", triggerSlug: "inbound_webhook", webhookId? (from provision_inbound_webhook; omit to auto-provision a new one on create), childKey? (dot-path narrowing which part of the payload feeds the automation, e.g. "data") }. The create/update response includes inboundWebhook.inboundUrl \u2014 the public URL to POST payloads to.
+- Custom field updated: { type: "folders", triggerSlug: "field_updated", values: string[] (watched custom field ids, min 1), fieldValueMatches?: [{ fieldId, values: string[] }] (fire only when the field changes TO one of these values; empty values = any change), fieldMatchLogic?: "AND"|"OR" (how multiple fieldValueMatches combine, default "OR") }
+- Composio app event: { type: "composio", provider: "composio", app, triggerSlug, connectedAccountId } (requires a connected account; may be behind a server flag)
+Notes: "tags"/"keywords" trigger types are rejected for graph automations. The server stores inbound-webhook triggers with type "webhook" internally \u2014 send type "folders" plus the slug as shown above.`;
+    OR_TRIGGERS_DESCRIPTION = 'Optional additional "Or" triggers (max 10): the automation runs when ANY of them fires, sharing the same steps. Each entry mirrors the trigger shapes above but cannot be an inbound webhook and carries no webhookId/childKey. Example: [{ type: "folders", triggerSlug: "field_updated", values: ["<fieldId>"] }]';
     writeSchema = {
       name: import_zod11.z.string().min(1).max(150).describe("Display name for the automation"),
       trigger: import_zod11.z.record(import_zod11.z.unknown()).describe(TRIGGER_DESCRIPTION),
+      triggers: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).max(10).optional().describe(OR_TRIGGERS_DESCRIPTION),
       steps: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).min(1).max(20).describe(STEPS_DESCRIPTION),
       description: import_zod11.z.string().max(1e3).optional().describe("Optional description"),
       isActive: import_zod11.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
@@ -4186,6 +4291,126 @@ function register11(server, client) {
   );
   registerSpeakTool(
     server,
+    "provision_inbound_webhook",
+    "Provision a standalone inbound webhook and get its public receive URL (inboundUrl) BEFORE creating an automation. Webhook-first flow: provision, send a test payload to the URL (append ?test=1 to only capture a sample without running anything), inspect mappable payload paths with get_inbound_webhook, then pass the webhookId as trigger.webhookId to create_automation.",
+    {},
+    {
+      title: "Provision Inbound Webhook",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async () => {
+      try {
+        const result = await api.post("/v1/webhook/inbound/provision", {});
+        const payload = unwrapData(result.data) ?? {};
+        const inboundUrl = typeof payload.inboundUrl === "string" ? payload.inboundUrl : "<inboundUrl>";
+        const data = {
+          ...payload,
+          nextSteps: [
+            `Capture a sample payload (does not run anything): curl -X POST '${inboundUrl}?test=1' -H 'Content-Type: application/json' -d '{"url": "https://example.com/file.mp3", "name": "Test"}'`,
+            "Call get_inbound_webhook with this webhookId to see the captured sample and mappable {{trigger.payload.*}} tokens.",
+            'Create the automation with create_automation, passing this webhookId in trigger.webhookId (triggerSlug: "inbound_webhook").'
+          ]
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_inbound_webhook",
+    "Get an inbound webhook's public receive URL, captured sample payload, and the ready-to-paste {{trigger.payload.*}} tokens for mapping payload values into automation steps (speak-upload name/sourceUrl, fieldsMap custom-field values, notify/outbound-webhook templates). Pass either the webhookId or the automationId of an inbound-webhook automation. If no sample has been captured yet, send a test payload to the inboundUrl first (append ?test=1 to capture without running the automation).",
+    {
+      webhookId: import_zod12.z.string().min(1).optional().describe("Inbound webhook id (from provision_inbound_webhook or an automation's trigger.webhookId)"),
+      automationId: import_zod12.z.string().min(1).optional().describe("Automation id \u2014 resolves the bound webhookId and childKey automatically"),
+      childKey: import_zod12.z.string().optional().describe("Override the dot-path used to narrow mappable payload paths (defaults to the automation's trigger.childKey)")
+    },
+    {
+      title: "Get Inbound Webhook",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ webhookId, automationId, childKey }) => {
+      try {
+        let resolvedWebhookId = webhookId;
+        let resolvedChildKey = childKey;
+        if (!resolvedWebhookId && automationId) {
+          const resolved = await resolveAutomationInboundWebhook(api, automationId);
+          if (!resolved.webhookId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: automation ${automationId} has no inbound webhook bound to its trigger (it is not an inbound-webhook automation).`
+                }
+              ],
+              isError: true
+            };
+          }
+          resolvedWebhookId = resolved.webhookId;
+          resolvedChildKey = resolvedChildKey ?? resolved.childKey;
+        }
+        if (!resolvedWebhookId) {
+          return {
+            content: [{ type: "text", text: "Error: provide either webhookId or automationId." }],
+            isError: true
+          };
+        }
+        const info = await fetchInboundWebhookInfo(api, resolvedWebhookId, resolvedChildKey);
+        return {
+          content: [{ type: "text", text: JSON.stringify(info, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_webhook_attempts",
+    "Get the delivery log for an inbound webhook: each received request with its HTTP acknowledgement status (200 = sample captured, 202 = accepted and run started, 401/403 = rejected) and the automation run it started. Use get_automation_runs for the run outcomes themselves.",
+    {
+      webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the inbound webhook"),
+      page: import_zod12.z.number().int().min(0).optional().describe("0-based page index"),
+      pageSize: import_zod12.z.number().int().min(1).max(100).optional().describe("Results per page")
+    },
+    {
+      title: "Get Webhook Attempts",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ webhookId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/webhook/${webhookId}/attempts`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
     "delete_webhook",
     "Delete a webhook and stop receiving notifications at its endpoint.",
     {
@@ -4220,6 +4445,7 @@ var init_webhooks = __esm({
     import_zod12 = require("zod");
     init_helpers();
     init_client();
+    init_inbound_webhook_utils();
   }
 });
 
@@ -4486,8 +4712,292 @@ var workflows_exports = {};
 __export(workflows_exports, {
   register: () => register14
 });
+function tokenize(value) {
+  if (typeof value !== "string") return value;
+  if (value.includes("{{")) return value;
+  if (value.startsWith("payload.")) return `{{trigger.payload.${value.slice("payload.".length)}}}`;
+  return value;
+}
+async function loadFolders(api) {
+  const res = await api.get("/v1/folder", { params: { pageSize: 500 } });
+  const data = unwrapData(res.data) ?? {};
+  const list = data.folderList ?? data.folders ?? (Array.isArray(data) ? data : []);
+  return list.map((f) => ({
+    folderId: String(f.folderId ?? f.id ?? ""),
+    name: String(f.name ?? "")
+  }));
+}
+async function loadFields(api) {
+  const res = await api.get("/v1/fields");
+  const data = unwrapData(res.data) ?? [];
+  return data.map((f) => ({
+    id: String(f.id ?? ""),
+    name: String(f.name ?? "")
+  }));
+}
+async function resolveFolder(api, ref, folders, createdFolders) {
+  const byId = folders.find((f) => f.folderId === ref);
+  if (byId) return byId.folderId;
+  const byName = folders.find((f) => f.name.toLowerCase() === ref.toLowerCase());
+  if (byName) return byName.folderId;
+  if (ID_PATTERN.test(ref)) {
+    throw new Error(`Folder id "${ref}" not found in this workspace (and it looks like an id, so it was not created as a folder name)`);
+  }
+  const res = await api.post("/v1/folder", { name: ref });
+  const folderId = unwrapData(res.data)?.folderId;
+  if (!folderId) throw new Error(`Could not create folder "${ref}"`);
+  folders.push({ folderId, name: ref });
+  createdFolders.push(`${ref} (${folderId})`);
+  return folderId;
+}
+function resolveField(ref, fields) {
+  const byId = fields.find((f) => f.id === ref);
+  if (byId) return byId.id;
+  const byName = fields.find((f) => f.name.toLowerCase() === ref.toLowerCase());
+  if (byName) return byName.id;
+  const available = fields.map((f) => f.name).slice(0, 25).join(", ");
+  throw new Error(`Unknown custom field "${ref}". Available fields: ${available || "(none \u2014 create one with create_field)"}`);
+}
 function register14(server, client) {
   const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "build_automation",
+    "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. Prefer this over create_automation unless you need raw control.",
+    buildAutomationSchema,
+    {
+      title: "Build Automation",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async (args2) => {
+      const { name, trigger, steps, automationId, description, isActive, orTriggers } = args2;
+      const createdFolders = [];
+      const dataFlowFilterFields = [];
+      try {
+        let folders = null;
+        let fields = null;
+        const getFolders = async () => folders ?? (folders = await loadFolders(api));
+        const getFields = async () => fields ?? (fields = await loadFields(api));
+        const buildTrigger = async (spec, allowWebhook) => {
+          const on = String(spec.on ?? "");
+          if (on === "media_analyzed") {
+            const refs = spec.folders ?? [];
+            if (!refs.length) throw new Error("media_analyzed trigger requires `folders` (names or ids)");
+            const folderIds = [];
+            for (const ref of refs) folderIds.push(await resolveFolder(api, String(ref), await getFolders(), createdFolders));
+            return { type: "folders", provider: "speak", app: "speak", triggerSlug: "media_analyzed", folderIds };
+          }
+          if (on === "inbound_webhook") {
+            if (!allowWebhook) throw new Error("inbound_webhook cannot be used as an Or-trigger \u2014 make it the primary trigger");
+            const t = { type: "folders", provider: "speak", app: "speak", triggerSlug: "inbound_webhook", folderIds: [] };
+            if (spec.webhookId) t.webhookId = spec.webhookId;
+            if (spec.childKey) t.childKey = spec.childKey;
+            return t;
+          }
+          if (on === "field_updated") {
+            const watch = spec.watchFields ?? [];
+            if (!watch.length) throw new Error("field_updated trigger requires `watchFields`: [{ field, values? }]");
+            const fieldList = await getFields();
+            const values = [];
+            const fieldValueMatches = [];
+            for (const w of watch) {
+              const fieldId = resolveField(String(w.field), fieldList);
+              values.push(fieldId);
+              if (Array.isArray(w.values) && w.values.length) {
+                fieldValueMatches.push({ fieldId, values: w.values.map(String) });
+              }
+            }
+            const t = { type: "folders", provider: "speak", app: "speak", triggerSlug: "field_updated", folderIds: [], values };
+            if (fieldValueMatches.length) t.fieldValueMatches = fieldValueMatches;
+            if (spec.matchLogic === "AND") t.fieldMatchLogic = "AND";
+            return t;
+          }
+          throw new Error(`Unknown trigger \`on\`: "${on}". Use media_analyzed, inbound_webhook, or field_updated.`);
+        };
+        const isWebhookAutomation = trigger.on === "inbound_webhook";
+        const buildRules = async (rules, flowing2, isFilterStep) => {
+          const out = [];
+          for (const r of rules) {
+            let field = String(r.field ?? "");
+            if (flowing2 === "media" && !CANONICAL_FILTER_FIELDS.has(field) && !field.includes(".")) {
+              field = resolveField(field, await getFields());
+            } else if (isFilterStep && flowing2 === "data" && !CANONICAL_FILTER_FIELDS.has(field)) {
+              dataFlowFilterFields.push(field);
+            }
+            const op = String(r.op ?? "eq");
+            const rule = { field, op };
+            if (r.value !== void 0) {
+              rule.value = (op === "gt" || op === "lt") && Number.isFinite(Number(r.value)) ? Number(r.value) : r.value;
+            }
+            out.push(rule);
+          }
+          return out;
+        };
+        const wireSteps = [];
+        let lastBranchStepId = null;
+        let flowing = isWebhookAutomation ? "data" : "media";
+        for (let i = 0; i < steps.length; i++) {
+          const spec = steps[i];
+          const stepId = `s${i + 1}`;
+          const doType = String(spec.do ?? "");
+          const step = { stepId };
+          if (spec.runWhen === "true" || spec.runWhen === "false") {
+            if (!lastBranchStepId) throw new Error(`Step ${i + 1}: runWhen requires an earlier branch step`);
+            step.branch = spec.runWhen;
+            step.dependsOn = [lastBranchStepId];
+          }
+          if (doType === "filter" || doType === "branch") {
+            step.stepType = doType === "filter" ? "filter" : "condition";
+            const block = {
+              logic: spec.logic === "OR" ? "OR" : "AND",
+              rules: await buildRules(spec.rules ?? [], flowing, doType === "filter")
+            };
+            step[doType === "filter" ? "filter" : "condition"] = block;
+            if (doType === "branch") lastBranchStepId = stepId;
+          } else if (doType === "upload") {
+            if (!spec.source) throw new Error(`Step ${i + 1} (upload): \`source\` is required (URL or payload.<path>)`);
+            const upload = {
+              sourceMode: "url",
+              sourceUrl: tokenize(spec.source),
+              // Always defer until the uploaded media is PROCESSED so downstream
+              // steps (ai_chat, translate) see the transcript — the web canvas
+              // hardcodes this too.
+              waitForProcessing: true
+            };
+            if (spec.name) upload.name = tokenize(spec.name);
+            if (spec.language) upload.language = tokenize(spec.language);
+            if (spec.folderFromPayload) {
+              const rawKey = String(spec.folderFromPayload);
+              const sourceKey = rawKey.includes("{{") ? rawKey : `{{trigger.payload.${rawKey.startsWith("payload.") ? rawKey.slice("payload.".length) : rawKey}}}`;
+              upload.folderRouting = {
+                mode: "dynamic",
+                sourceKey,
+                onNoMatch: spec.onNoFolderMatch === "default" ? "default" : "create"
+              };
+              if (spec.folder) upload.folderId = await resolveFolder(api, String(spec.folder), await getFolders(), createdFolders);
+            } else {
+              if (!spec.folder) throw new Error(`Step ${i + 1} (upload): provide \`folder\` (name or id) or \`folderFromPayload\``);
+              upload.folderId = await resolveFolder(api, String(spec.folder), await getFolders(), createdFolders);
+            }
+            if (spec.mapFields && typeof spec.mapFields === "object") {
+              const fieldList = await getFields();
+              const fieldsMap = {};
+              for (const [ref, value] of Object.entries(spec.mapFields)) {
+                if (value !== null && typeof value === "object") {
+                  throw new Error(`Step ${i + 1} (upload): mapFields["${ref}"] must be a string or number, not an object`);
+                }
+                fieldsMap[resolveField(ref, fieldList)] = tokenize(String(value));
+              }
+              if (Object.keys(fieldsMap).length) upload.fieldsMap = fieldsMap;
+            }
+            step.stepType = "speak-upload";
+            step.speakUpload = upload;
+            flowing = "media";
+          } else if (doType === "ai_chat") {
+            const hasSaveToFields = Array.isArray(spec.saveToFields) && spec.saveToFields.length > 0;
+            if (!spec.prompt && !hasSaveToFields) {
+              throw new Error(`Step ${i + 1} (ai_chat): provide \`prompt\`, \`saveToFields\`, or both`);
+            }
+            const magicPrompt = { prompt: spec.prompt ?? "", assistantType: "general" };
+            if (spec.title) magicPrompt.title = spec.title;
+            if (spec.model) magicPrompt.modelId = spec.model;
+            if (Array.isArray(spec.saveToFields) && spec.saveToFields.length) {
+              if (spec.saveToFields.length > 10) {
+                throw new Error(`Step ${i + 1} (ai_chat): saveToFields supports at most 10 fields`);
+              }
+              const fieldList = await getFields();
+              magicPrompt.fieldIds = spec.saveToFields.map((ref) => resolveField(String(ref), fieldList));
+            }
+            step.stepType = "magic-prompt";
+            step.magicPrompt = magicPrompt;
+            flowing = "insight";
+          } else if (doType === "translate") {
+            if (!spec.language) throw new Error(`Step ${i + 1} (translate): \`language\` is required (e.g. "es-ES")`);
+            step.stepType = "translation";
+            step.translation = { targetLanguage: spec.language };
+            flowing = "media";
+          } else if (doType === "notify") {
+            if (!spec.message) throw new Error(`Step ${i + 1} (notify): \`message\` is required`);
+            const channel = spec.channel === void 0 ? "in_app" : String(spec.channel);
+            if (!["in_app", "email", "slack"].includes(channel)) {
+              throw new Error(`Step ${i + 1} (notify): channel must be "in_app", "email", or "slack" (got "${channel}")`);
+            }
+            const notify = { channel, message: tokenize(spec.message) };
+            if (spec.target) notify.target = String(spec.target);
+            step.stepType = "notify";
+            step.notify = notify;
+            flowing = "data";
+          } else if (doType === "call_webhook") {
+            if (!spec.url) throw new Error(`Step ${i + 1} (call_webhook): \`url\` is required`);
+            const method = spec.method === void 0 ? "POST" : String(spec.method).toUpperCase();
+            if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+              throw new Error(`Step ${i + 1} (call_webhook): method must be GET, POST, PUT, PATCH, or DELETE (got "${spec.method}")`);
+            }
+            const outbound = {
+              url: tokenize(spec.url),
+              method
+            };
+            if (spec.headers && typeof spec.headers === "object") outbound.headers = spec.headers;
+            if (spec.body !== void 0) {
+              outbound.bodyTemplate = typeof spec.body === "string" ? tokenize(spec.body) : spec.body;
+            }
+            step.stepType = "outbound-webhook";
+            step.outboundWebhook = outbound;
+            flowing = "data";
+          } else {
+            throw new Error(
+              `Step ${i + 1}: unknown \`do\`: "${doType}". Use filter, branch, upload, ai_chat, translate, notify, or call_webhook.`
+            );
+          }
+          wireSteps.push(step);
+        }
+        const body = {
+          name,
+          trigger: await buildTrigger(trigger, true),
+          steps: wireSteps
+        };
+        if (description) body.description = description;
+        if (isActive !== void 0) body.isActive = isActive;
+        if (orTriggers?.length) {
+          const entries = [];
+          for (const spec of orTriggers) entries.push(await buildTrigger(spec, false));
+          body.triggers = entries;
+        }
+        const result = automationId ? await api.put(`/v1/automations/${automationId}`, body) : await api.post("/v1/automations/", body);
+        const resolvedId = unwrapData(result.data)?.automationId ?? automationId;
+        const response = {
+          ...typeof result.data === "object" ? result.data : { data: result.data }
+        };
+        if (createdFolders.length) response.createdFolders = createdFolders;
+        if (isWebhookAutomation && resolvedId) {
+          try {
+            const resolved = await resolveAutomationInboundWebhook(api, resolvedId);
+            if (resolved.webhookId) {
+              response.inboundWebhook = await fetchInboundWebhookInfo(api, resolved.webhookId, resolved.childKey);
+            }
+          } catch {
+          }
+        }
+        return {
+          content: [{ type: "text", text: JSON.stringify(response, null, 2) }]
+        };
+      } catch (err) {
+        let message = formatAxiosError(err);
+        if (dataFlowFilterFields.length && message.includes("fieldIds do not belong")) {
+          message += `
+
+Likely cause: this server rejects filter rules on webhook payload fields (${dataFlowFilterFields.join(", ")}) at publish time (known server-side validation gap). Workarounds: move the filter AFTER the upload step and filter on media/custom fields instead, or filter in the sending system before it posts to the webhook.`;
+        }
+        return {
+          content: [{ type: "text", text: `Error: ${message}` }],
+          isError: true
+        };
+      }
+    }
+  );
   registerSpeakTool(
     server,
     "upload_and_analyze",
@@ -4642,7 +5152,7 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
     }
   );
 }
-var import_zod15, fs, path2;
+var import_zod15, fs, path2, CANONICAL_FILTER_FIELDS, ID_PATTERN, TRIGGER_SPEC_DESCRIPTION, STEP_SPEC_DESCRIPTION, buildAutomationSchema;
 var init_workflows = __esm({
   "src/tools/workflows.ts"() {
     "use strict";
@@ -4653,6 +5163,34 @@ var init_workflows = __esm({
     fs = __toESM(require("fs"));
     path2 = __toESM(require("path"));
     init_media_utils();
+    init_inbound_webhook_utils();
+    CANONICAL_FILTER_FIELDS = /* @__PURE__ */ new Set([
+      "name",
+      "duration",
+      "sourceLanguage",
+      "tags",
+      "transcript",
+      "speakers",
+      "answer",
+      // server-side aliases
+      "title",
+      "language",
+      "speakersCount"
+    ]);
+    ID_PATTERN = /^[0-9a-f]{12}$/;
+    TRIGGER_SPEC_DESCRIPTION = 'What starts the automation. Object with:\n- on (required): "media_analyzed" | "inbound_webhook" | "field_updated"\n- folders: array of folder names or ids (required for media_analyzed; missing folders are created)\n- childKey: dot-path narrowing the webhook payload root, e.g. "data" (inbound_webhook only)\n- webhookId: reuse a webhook from provision_inbound_webhook (inbound_webhook only; omit to auto-provision)\n- watchFields: array of { field: name-or-id, values?: string[] } (required for field_updated \u2014 fires when the field changes; values restricts to specific new values)\n- matchLogic: "AND"|"OR" for combining multiple watchFields value matches (default OR)';
+    STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match. Fields: media flows use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; webhook payloads use payload paths like "contact.status". Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic? } \u2014 like filter but routes instead of stopping; later steps with runWhen: "true"|"false" only run on that outcome. NOTE: branch routing requires the server\'s DAG runner (feature-flagged); when it is off, steps run in order and runWhen markers are ignored \u2014 prefer filter for guaranteed gating\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default) }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nSteps may also set runWhen (after a branch step). Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
+    buildAutomationSchema = {
+      name: import_zod15.z.string().min(1).max(150).describe("Display name for the automation"),
+      trigger: import_zod15.z.record(import_zod15.z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
+      steps: import_zod15.z.array(import_zod15.z.record(import_zod15.z.unknown())).min(1).max(20).describe(STEP_SPEC_DESCRIPTION),
+      automationId: import_zod15.z.string().optional().describe("Update this existing automation instead of creating a new one (full replace)"),
+      description: import_zod15.z.string().max(1e3).optional().describe("Optional description"),
+      isActive: import_zod15.z.boolean().optional().describe("Whether the automation is active (default true)"),
+      orTriggers: import_zod15.z.array(import_zod15.z.record(import_zod15.z.unknown())).max(10).optional().describe(
+        'Additional "Or" triggers (same shape as trigger, but inbound_webhook is not allowed here). The automation runs when ANY trigger fires.'
+      )
+    };
   }
 });
 
@@ -5715,8 +6253,12 @@ var init_tool_names = __esm({
       "list_webhooks",
       "create_webhook",
       "update_webhook",
+      "provision_inbound_webhook",
+      "get_inbound_webhook",
+      "get_webhook_attempts",
       "delete_webhook",
-      // workflows (high-level wrappers around media + upload tools)
+      // workflows (high-level wrappers around media + upload + automation tools)
+      "build_automation",
       "upload_and_analyze",
       "upload_local_file",
       // users / team management
@@ -6905,6 +7447,11 @@ var cliCommands = [
   "clips",
   "clip",
   "schedule-meeting",
+  "list-meeting-events",
+  "live-transcript",
+  "move",
+  "tools",
+  "call",
   "help"
 ];
 var isCliMode = args.length > 0 && (args[0].startsWith("-") || cliCommands.includes(args[0]));

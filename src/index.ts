@@ -47,6 +47,11 @@ const cliCommands = [
   "clips",
   "clip",
   "schedule-meeting",
+  "list-meeting-events",
+  "live-transcript",
+  "move",
+  "tools",
+  "call",
   "help",
 ];
 

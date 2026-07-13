@@ -71,6 +71,10 @@ const additions: Record<string, string[]> = {
     "list_automation_apps",
     "list_automation_triggers",
     "list_automation_actions",
+    "provision_inbound_webhook",
+    "get_inbound_webhook",
+    "get_webhook_attempts",
+    "build_automation",
   ],
 };
 
