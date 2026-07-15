@@ -4821,32 +4821,114 @@ var init_users = __esm({
 });
 
 // src/tools/dashboard-widgets.ts
-function buildDashboardWidgets(items) {
-  let y = 0;
+function defaultWidgetConfig(type) {
+  switch (type) {
+    case "narrative":
+      return { focus: "Summarize the key takeaways from this data." };
+    case "stat-cards":
+      return {
+        tiles: [
+          { metric: { kind: "builtin", name: "mediaCount" }, label: "Media files" },
+          { metric: { kind: "builtin", name: "totalDuration" }, label: "Total duration" },
+          { metric: { kind: "builtin", name: "wordCount" }, label: "Total words" },
+          { metric: { kind: "builtin", name: "speakerCount" }, label: "Unique speakers" }
+        ]
+      };
+    case "metric-chart":
+      return {
+        mark: "bar",
+        metric: { kind: "builtin", name: "mediaCount" },
+        groupBy: { kind: "folder" }
+      };
+    case "table":
+      return {
+        rowsAre: "groups",
+        groupBy: { kind: "folder" },
+        columns: [
+          { header: "Recordings", metric: { kind: "builtin", name: "mediaCount" } },
+          { header: "Duration", metric: { kind: "builtin", name: "totalDuration" } }
+        ],
+        sort: { column: "Recordings", dir: "desc" }
+      };
+    case "comparison":
+      return {
+        dimension: "folder",
+        a: {},
+        b: {},
+        metrics: [{ kind: "builtin", name: "mediaCount" }]
+      };
+    case "field-distribution":
+      throw new Error(
+        'field-distribution requires config.fieldName (a custom field NAME \u2014 not id \u2014 from list_fields), plus measure ("count" | "percent") and chartType ("bar" | "donut").'
+      );
+    case "sentiment-trend":
+      return { granularity: "week" };
+    case "themes":
+      return { limit: 10 };
+    case "people":
+      return { metrics: [{ kind: "builtin", name: "mediaCount" }], limit: 10 };
+    case "team-activity":
+      return { metrics: ["uploads", "minutes", "lastActive"] };
+    case "notes":
+      return { content: "Add notes or context for this dashboard." };
+  }
+}
+function buildDashboardWidgets(items, sections = []) {
+  for (const item of items) {
+    if (item.id !== void 0 && !KEBAB_ID.test(item.id)) {
+      throw new Error(
+        `widget id "${item.id}" must be kebab-case (lowercase letters, digits, single dashes)`
+      );
+    }
+  }
+  const widgets = items.map((item) => makeWidget(item));
+  const referenced = new Set(sections.flatMap((s) => s.widgetIds));
+  const known = new Set(widgets.map((w) => w.id));
+  for (const wid of referenced) {
+    if (!known.has(wid)) {
+      throw new Error(
+        `section widgetIds reference unknown widget id "${wid}". Give each sectioned widget an explicit kebab-case \`id\` and list that id in the section.`
+      );
+    }
+  }
+  const sectionOf = /* @__PURE__ */ new Map();
+  sections.forEach((s, i) => s.widgetIds.forEach((wid) => sectionOf.set(wid, i)));
+  const groups = [widgets.filter((w) => !sectionOf.has(w.id))];
+  sections.forEach(
+    (_, i) => groups.push(widgets.filter((w) => sectionOf.get(w.id) === i))
+  );
+  for (const group of groups) {
+    layoutGroup(group);
+  }
+  return widgets;
+}
+function layoutGroup(group) {
+  let y = group.reduce(
+    (bottom, w) => isAutoLayout(w) ? bottom : Math.max(bottom, w.layout.y + w.layout.h),
+    0
+  );
   let rowX = 0;
   let rowH = 0;
-  return items.map((item) => {
-    const meta = WIDGET_META[item.type];
+  for (const widget of group) {
+    if (!isAutoLayout(widget)) continue;
+    const meta = WIDGET_META[widget.type];
     const full = meta.w >= GRID_COLS;
-    let x;
     if (full) {
       if (rowX !== 0) {
         y += rowH;
         rowX = 0;
         rowH = 0;
       }
-      x = 0;
-      const widget2 = makeWidget(item, x, y);
+      widget.layout = { x: 0, y, w: meta.w, h: meta.h };
       y += meta.h;
-      return widget2;
+      continue;
     }
     if (rowX + meta.w > GRID_COLS) {
       y += rowH;
       rowX = 0;
       rowH = 0;
     }
-    x = rowX;
-    const widget = makeWidget(item, x, y);
+    widget.layout = { x: rowX, y, w: meta.w, h: meta.h };
     rowX += meta.w;
     rowH = Math.max(rowH, meta.h);
     if (rowX >= GRID_COLS) {
@@ -4854,151 +4936,226 @@ function buildDashboardWidgets(items) {
       rowX = 0;
       rowH = 0;
     }
-    return widget;
-  });
+  }
 }
-function makeWidget(item, x, y) {
+function isAutoLayout(widget) {
+  return widget.layout.w === 0;
+}
+function makeWidget(item) {
   const meta = WIDGET_META[item.type];
-  return {
-    id: (0, import_crypto.randomUUID)(),
+  const widget = {
+    id: item.id ?? (0, import_crypto.randomUUID)(),
     type: item.type,
     title: item.title ?? meta.titleDefault,
-    config: item.config ?? {},
-    layout: { x, y, w: meta.w, h: meta.h, minW: meta.minW, minH: meta.minH }
+    config: item.config ?? defaultWidgetConfig(item.type),
+    layout: item.layout ? { x: item.layout.x, y: item.layout.y, w: item.layout.w, h: item.layout.h } : { ...AUTO_LAYOUT }
   };
+  if (item.binding && Object.keys(item.binding).length > 0) {
+    widget.binding = item.binding;
+  }
+  return widget;
 }
-var import_crypto, GRID_COLS, WIDGET_TYPES, WIDGET_META, WIDGET_CATALOG, COMMON_WIDGET_CONFIG, DASHBOARD_EXAMPLES;
+var import_crypto, GRID_COLS, WIDGET_TYPES, DATE_RANGE_PRESETS, WIDGET_META, KEBAB_ID, AUTO_LAYOUT, WIDGET_CATALOG, SPEC_VOCABULARY, DASHBOARD_EXAMPLES;
 var init_dashboard_widgets = __esm({
   "src/tools/dashboard-widgets.ts"() {
     "use strict";
     import_crypto = require("crypto");
     GRID_COLS = 12;
     WIDGET_TYPES = [
+      "narrative",
       "stat-cards",
-      "sentiment",
-      "media-list",
-      "field-distribution",
-      "upload-timeline",
-      "themes",
-      "team-activity",
-      "kpi-trend",
-      "field-metric",
-      "metric-group",
-      "notes",
-      "people",
+      "metric-chart",
+      "table",
       "comparison",
-      "sentiment-trend"
+      "field-distribution",
+      "sentiment-trend",
+      "themes",
+      "people",
+      "team-activity",
+      "notes"
+    ];
+    DATE_RANGE_PRESETS = [
+      "last7days",
+      "last30days",
+      "last3months",
+      "yearToDate",
+      "allTime"
     ];
     WIDGET_META = {
-      "stat-cards": { w: GRID_COLS, h: 3, minW: 4, minH: 2, titleDefault: "Usage overview" },
-      sentiment: { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Sentiment" },
-      "media-list": { w: GRID_COLS, h: 4, minW: 4, minH: 3, titleDefault: "Recent media" },
-      "field-distribution": { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Field breakdown" },
-      "upload-timeline": { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Uploads over time" },
-      themes: { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Themes" },
-      "team-activity": { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Team activity" },
-      "kpi-trend": { w: 3, h: 2, minW: 2, minH: 2, titleDefault: "Total files" },
-      "field-metric": { w: 3, h: 2, minW: 2, minH: 2, titleDefault: "Field metric" },
-      "metric-group": { w: 6, h: 2, minW: 3, minH: 2, titleDefault: "Metrics" },
-      notes: { w: GRID_COLS, h: 2, minW: 2, minH: 1, titleDefault: "Note" },
-      people: { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "People" },
-      comparison: { w: 6, h: 3, minW: 3, minH: 2, titleDefault: "Comparison" },
-      "sentiment-trend": { w: 6, h: 4, minW: 3, minH: 3, titleDefault: "Sentiment over time" }
+      narrative: { w: GRID_COLS, h: 3, titleDefault: "Insights" },
+      "stat-cards": { w: GRID_COLS, h: 3, titleDefault: "Usage overview" },
+      "metric-chart": { w: 6, h: 4, titleDefault: "Metric chart" },
+      table: { w: GRID_COLS, h: 4, titleDefault: "Table" },
+      comparison: { w: 6, h: 3, titleDefault: "Comparison" },
+      "field-distribution": { w: 6, h: 4, titleDefault: "Field breakdown" },
+      "sentiment-trend": { w: 6, h: 4, titleDefault: "Sentiment over time" },
+      themes: { w: 6, h: 4, titleDefault: "Themes" },
+      people: { w: 6, h: 4, titleDefault: "People" },
+      "team-activity": { w: 6, h: 4, titleDefault: "Team activity" },
+      notes: { w: GRID_COLS, h: 2, titleDefault: "Note" }
     };
+    KEBAB_ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+    AUTO_LAYOUT = { x: 0, y: 0, w: 0, h: 0 };
     WIDGET_CATALOG = [
       {
-        type: "stat-cards",
-        purpose: "Headline totals for the scope (full width).",
-        config: 'metrics?: string[] \u2014 any of "media", "storage", "words", "speakers", "duration", "sentiment"'
+        type: "narrative",
+        purpose: "AI-written insight narrative for the scope (full width).",
+        config: 'focus: string (1-400 chars) \u2014 what the narrative should analyse, e.g. "Summarize the key objections raised in these calls." The server generates the text.'
       },
-      { type: "sentiment", purpose: "Sentiment distribution + representative sentences.", config: "none" },
-      { type: "media-list", purpose: "Most recent media in scope (full width).", config: "none" },
+      {
+        type: "stat-cards",
+        purpose: "Headline stat tiles for the scope (full width).",
+        config: "tiles: Array<{ metric: Metric, label: string (<=40), caption?: string (<=80), thresholds?: Threshold[] }> (1-6 tiles). See metricGrammar for the Metric shape."
+      },
+      {
+        type: "metric-chart",
+        purpose: "The chart workhorse: one metric, optionally grouped and split into series.",
+        config: 'mark: "line" | "bar" | "area" | "donut" | "stacked-bar"; metric: Metric; groupBy?: GroupBy; series?: GroupBy (2nd dimension, e.g. one line per person); sort?: "value-desc" | "value-asc" | "label"; limit?: number (1-100); thresholds?: Threshold[]'
+      },
+      {
+        type: "table",
+        purpose: "Tabular records or grouped aggregates (full width).",
+        config: 'rowsAre: "records" | "groups"; groupBy?: GroupBy (required when rowsAre="groups", forbidden when "records"); columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); searchable?: boolean; rowClick?: "openMedia" | "none"'
+      },
+      {
+        type: "comparison",
+        purpose: "Side-by-side A/B comparison of the same metrics across two scopes.",
+        config: 'dimension: "folder" | "time" | "fieldValue"; a: Binding; b: Binding (the two sides \u2014 see binding; {} inherits the dashboard scope); metrics: Metric[] (1-6)'
+      },
       {
         type: "field-distribution",
         purpose: "Value-frequency breakdown for one custom field.",
-        config: 'fieldId: string (a custom field id from list_fields); measure?: "count" | "words" | "duration" | "avg:<numericFieldId>" | "sum:<numericFieldId>"'
-      },
-      { type: "upload-timeline", purpose: "Uploads over time per media type.", config: "none" },
-      { type: "themes", purpose: "Dominant theme clusters.", config: 'chartType?: "cloud" | "bar"' },
-      { type: "team-activity", purpose: "Activity by team member.", config: "none" },
-      {
-        type: "kpi-trend",
-        purpose: "A KPI with period-over-period delta.",
-        config: 'metrics?: string[] \u2014 any of "totalFiles", "totalDurationSeconds", "totalWords", "uniqueSpeakers"'
+        config: 'fieldName: string \u2014 the custom field NAME (not id) from list_fields; measure: "count" | "percent"; chartType: "bar" | "donut". All three keys are required.'
       },
       {
-        type: "field-metric",
-        purpose: "A single custom field's aggregate, with a period-over-period delta.",
-        config: 'fieldId: string (custom field id from list_fields); aggregator: "sum" | "avg" | "min" | "max" | "count"'
+        type: "sentiment-trend",
+        purpose: "Sentiment over time.",
+        config: 'granularity: "day" | "week" | "month" (required)'
       },
       {
-        type: "metric-group",
-        purpose: "A scorecard of several field metrics in one card.",
-        config: 'metrics: Array<{ fieldId: string, op: "sum"|"avg"|"min"|"max"|"count", label?: string }> (note the per-item key is `op`, not `aggregator`)'
+        type: "themes",
+        purpose: "Dominant theme clusters.",
+        config: "limit: number (1-50, required)"
+      },
+      {
+        type: "people",
+        purpose: "Speaker/people breakdown ranked by metrics.",
+        config: "metrics: Metric[] (1-6, required); limit: number (1-100, required)"
+      },
+      {
+        type: "team-activity",
+        purpose: `Activity by team member. ONLY valid when the effective source is {type:"team"} (dashboard source or the widget's binding.source).`,
+        config: 'metrics: Array<"uploads" | "minutes" | "meetings" | "chatUsage" | "lastActive"> (1-5, required)'
       },
       {
         type: "notes",
         purpose: "Free-text note/context block (full width).",
-        config: "heading?: string; content?: string"
-      },
-      { type: "people", purpose: "Speaker/people breakdown.", config: "none" },
-      {
-        type: "comparison",
-        purpose: "Period-over-period comparison of KPIs.",
-        config: 'metrics?: string[] \u2014 any of "totalFiles", "totalDurationSeconds", "totalWords", "uniqueSpeakers"'
-      },
-      { type: "sentiment-trend", purpose: "Sentiment over time.", config: "none" }
-    ];
-    COMMON_WIDGET_CONFIG = [
-      {
-        key: "accentColor",
-        appliesTo: "any widget",
-        description: 'Hex color for the widget accent, e.g. "#6366F1". Omit for the default.'
-      },
-      {
-        key: "scopeOverride",
-        appliesTo: "any widget except notes",
-        description: "Override the dashboard's scope for just this widget: { datePreset: string, folderId: string }. Omit to inherit the dashboard scope."
+        config: "content: string (1-4000 chars, required)"
       }
     ];
+    SPEC_VOCABULARY = {
+      metricGrammar: {
+        builtin: '{ kind: "builtin", name: "mediaCount" | "totalDuration" | "avgSentiment" | "speakerCount" | "wordCount", filter?: Filter }',
+        field: '{ kind: "field", fieldName: string (custom field NAME from list_fields), agg: "sum" | "avg" | "min" | "max" | "median" | "count" | "countDistinct", filter?: Filter } \u2014 sum/avg/median/min/max require a number or currency field',
+        expr: '{ kind: "expr", expr: <one of the four ops>, filter?: Filter }. Ops (operands are builtin/field metrics, never nested exprs): { op: "ratio", numerator: Metric, denominator: Metric } | { op: "diff", a: Metric, b: Metric } | { op: "delta", metric: Metric, over: "first-to-last" | "prev-period" } | { op: "rank", metric: Metric, direction: "desc" | "asc" }'
+      },
+      groupBy: '{ kind: "field", fieldName } (non-date fields) | { kind: "time", fieldName, granularity: "record" | "day" | "week" | "month" | "quarter" } (date/datetime fields only) | { kind: "folder" } | { kind: "speaker" }',
+      binding: "Per-widget scope override, set as `binding` on any widget (omit a key to inherit the dashboard's value): { source?: Source, dateRange?: { preset }, filter?: Filter }",
+      filter: 'Predicate tree: { field, op: "eq" | "neq" | "in" | "gt" | "gte" | "lt" | "lte" | "exists" | "notExists", value? } (op "in" takes an array value; "exists"/"notExists" take none) \u2014 or { and: Filter[] } / { or: Filter[] } (1-10 branches, max depth 5)',
+      thresholds: 'Color bands for stat tiles, chart marks, and table columns (max 8): { when: { op: "gte" | "gt" | "lt" | "lte", value: number } | { op: "between", value: [low, high] }, status: "good" | "warn" | "critical" | "neutral", label?: string (<=40) }',
+      source: 'Dashboard data source: { type: "folders", folderIds: string[] (1-50) } | { type: "team" } | { type: "workspace" }',
+      dateRangePresets: DATE_RANGE_PRESETS,
+      sections: "Optional named groups of widgets rendered as tabs/sections (max 12): { id: kebab-case string, title: string (<=24), icon: kebab-case lucide icon name, widgetIds: string[] (<=24) }. Widget ids in sections must match explicit `id`s you set on the widgets; a widget may appear in at most one section; widgets in no section form the implicit Overview group."
+    };
     DASHBOARD_EXAMPLES = [
       {
         name: "Sales calls overview",
         payload: {
           title: "Customer Calls Overview",
-          folderScope: ["<folderId>"],
+          description: "Volume, sentiment, and themes for closed-won calls",
+          source: { type: "folders", folderIds: ["<folderId>"] },
           dateRange: { preset: "last30days" },
-          filters: { filterList: [{ fieldName: "Stage", fieldOperator: "is", fieldValue: ["Closed Won"] }] },
           widgets: [
-            { type: "stat-cards", config: { metrics: ["media", "words", "speakers"] } },
-            { type: "sentiment", config: { accentColor: "#6366F1" } },
-            { type: "field-distribution", title: "Deals by stage", config: { fieldId: "<fieldId>", measure: "count" } },
-            { type: "themes", config: { chartType: "bar" } },
-            { type: "media-list" }
+            { type: "narrative", config: { focus: "Summarize the key wins and objections in these calls." } },
+            { type: "stat-cards" },
+            {
+              type: "metric-chart",
+              title: "Calls per week",
+              config: {
+                mark: "line",
+                metric: { kind: "builtin", name: "mediaCount" },
+                groupBy: { kind: "time", fieldName: "createdAt", granularity: "week" }
+              }
+            },
+            {
+              type: "field-distribution",
+              title: "Deals by stage",
+              config: { fieldName: "Stage", measure: "count", chartType: "bar" }
+            },
+            { type: "themes", config: { limit: 10 } },
+            { type: "sentiment-trend", config: { granularity: "week" } }
           ]
         }
       },
       {
-        name: "Field-metrics scorecard (new widgets)",
+        name: "Sectioned revenue dashboard (explicit widget ids + sections)",
         payload: {
           title: "Deal Metrics",
-          folderScope: ["<folderId>"],
-          dateRange: { preset: "thisQuarter" },
+          source: { type: "workspace" },
+          dateRange: { preset: "last3months" },
           widgets: [
-            { type: "kpi-trend", title: "Total calls", config: { metrics: ["totalFiles"] } },
-            { type: "field-metric", title: "Avg deal size", config: { fieldId: "<dealSizeFieldId>", aggregator: "avg" } },
             {
-              type: "metric-group",
+              id: "pipeline-stats",
+              type: "stat-cards",
               title: "Pipeline",
               config: {
-                metrics: [
-                  { fieldId: "<dealSizeFieldId>", op: "sum", label: "Total pipeline" },
-                  { fieldId: "<dealSizeFieldId>", op: "max", label: "Largest deal" }
+                tiles: [
+                  { metric: { kind: "field", fieldName: "Deal Size", agg: "sum" }, label: "Total pipeline" },
+                  { metric: { kind: "field", fieldName: "Deal Size", agg: "max" }, label: "Largest deal" },
+                  {
+                    metric: {
+                      kind: "expr",
+                      expr: {
+                        op: "ratio",
+                        numerator: { kind: "field", fieldName: "Deal Size", agg: "sum" },
+                        denominator: { kind: "builtin", name: "mediaCount" }
+                      }
+                    },
+                    label: "Revenue per call",
+                    thresholds: [{ when: { op: "gte", value: 5e3 }, status: "good" }]
+                  }
                 ]
               }
             },
-            // Per-widget scope override: this card ignores the dashboard scope.
-            { type: "field-metric", title: "EMEA avg", config: { fieldId: "<dealSizeFieldId>", aggregator: "avg", scopeOverride: { datePreset: "last7days", folderId: "<emeaFolderId>" } } }
+            {
+              id: "deals-table",
+              type: "table",
+              title: "Deals by folder",
+              config: {
+                rowsAre: "groups",
+                groupBy: { kind: "folder" },
+                columns: [
+                  { header: "Calls", metric: { kind: "builtin", name: "mediaCount" } },
+                  { header: "Pipeline", metric: { kind: "field", fieldName: "Deal Size", agg: "sum" } }
+                ],
+                sort: { column: "Pipeline", dir: "desc" }
+              }
+            },
+            {
+              id: "emea-vs-na",
+              type: "comparison",
+              title: "EMEA vs NA",
+              config: {
+                dimension: "folder",
+                a: { source: { type: "folders", folderIds: ["<emeaFolderId>"] } },
+                b: { source: { type: "folders", folderIds: ["<naFolderId>"] } },
+                metrics: [{ kind: "builtin", name: "mediaCount" }]
+              }
+            }
+          ],
+          sections: [
+            { id: "revenue", title: "Revenue", icon: "dollar-sign", widgetIds: ["pipeline-stats", "deals-table"] },
+            { id: "regions", title: "Regions", icon: "globe", widgetIds: ["emea-vs-na"] }
           ]
         }
       }
@@ -5011,18 +5168,42 @@ var dashboards_exports = {};
 __export(dashboards_exports, {
   register: () => register16
 });
-function withBuiltWidgets(body) {
-  if (Array.isArray(body.widgets)) {
-    return { ...body, widgets: buildDashboardWidgets(body.widgets) };
+function buildSource(source) {
+  if (source.type === "folders") {
+    if (!source.folderIds?.length) {
+      throw new Error('source.type "folders" requires source.folderIds (1-50 folder ids)');
+    }
+    return { type: "folders", folderIds: source.folderIds };
   }
-  return body;
+  return { type: source.type };
+}
+function buildSpec(input) {
+  const sections = input.sections ?? [];
+  const spec = {
+    schemaVersion: 2,
+    title: input.title,
+    source: buildSource(input.source ?? { type: "workspace" }),
+    dateRange: input.dateRange ?? { preset: "last30days" },
+    sections,
+    widgets: buildDashboardWidgets(input.widgets ?? [], sections)
+  };
+  if (input.description !== void 0) spec.description = input.description;
+  return spec;
+}
+function pickMetadata(body) {
+  const out = {};
+  if (body.icon !== void 0) out.icon = body.icon;
+  if (body.assignTo !== void 0) out.assignTo = body.assignTo;
+  if (body.filters !== void 0) out.filters = body.filters;
+  if (body.isDefault !== void 0) out.isDefault = body.isDefault;
+  return out;
 }
 function register16(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
     "list_dashboards",
-    "List all analytics dashboards the caller can access, including share state.",
+    "List all analytics dashboards the caller can access, including share state and each dashboard's current `revision` (needed for update_dashboard).",
     {},
     {
       title: "List Dashboards",
@@ -5048,7 +5229,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "get_dashboard",
-    "Get a single dashboard's full config (widgets, filters, date range, folder scope).",
+    "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, and the current `revision` (pass that revision back to update_dashboard).",
     {
       dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id (the dashboardId field from list_dashboards, not the Mongo _id)")
     },
@@ -5076,7 +5257,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "list_dashboard_widgets",
-    "Discovery + how-to helper for building and customizing dashboards. Returns every widget type with what it shows and the exact `config` keys it accepts (metrics, fieldId, aggregator, chartType, accentColor, scopeOverride, \u2026), the config that applies to all widgets, two complete worked example payloads (including the field-metric and metric-group cards), and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
+    "Discovery + how-to helper for building and customizing dashboards (spec v2). Returns every widget type with what it shows and the exact strict `config` shape it accepts, the shared vocabulary (metric grammar, groupBy, per-widget binding, filters, thresholds, sources, date-range presets, sections), two complete worked example payloads, and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
     {},
     {
       title: "List Dashboard Widgets",
@@ -5088,16 +5269,16 @@ function register16(server, client) {
     async () => {
       const data = {
         widgets: WIDGET_CATALOG,
-        commonConfig: COMMON_WIDGET_CONFIG,
+        vocabulary: SPEC_VOCABULARY,
         notes: [
           "Pass widgets to create_dashboard as a simple ordered list; ids and grid layout are computed for you.",
-          "Field-driven widgets (field-distribution, field-metric, metric-group) need custom field ids from list_fields in their config.",
-          "field-metric uses config.aggregator; metric-group items use the key `op` (both: sum|avg|min|max|count).",
-          "accentColor (hex) and scopeOverride ({datePreset, folderId}) can be set on any widget's config to customize it.",
-          "Most other widgets render on sensible defaults with no config."
+          "Widget configs are STRICT: unknown keys are rejected. Metrics reference custom fields by NAME (list_fields), not id.",
+          "field-distribution requires config.fieldName; most other widgets render on valid defaults with no config.",
+          `team-activity is only valid when the dashboard source (or the widget's binding.source) is {type:"team"}.`,
+          "To group widgets into sections, give each sectioned widget an explicit kebab-case `id` and reference those ids in sections[].widgetIds."
         ],
         managing: [
-          "To customize an existing dashboard, call get_dashboard, edit the widgets array, and send the full array to update_dashboard (widgets are replaced, not merged).",
+          "To edit an existing dashboard, call get_dashboard, modify the widgets/sections, and send the FULL spec to update_dashboard including the `revision` you loaded (widgets are replaced, not merged).",
           "To start from a working layout, duplicate_dashboard a good one, then update_dashboard to tweak it.",
           "share_dashboard returns a public token; chain it after the dashboard is built."
         ],
@@ -5109,10 +5290,11 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "create_dashboard",
-    "Create an analytics dashboard. Only `title` is required. Add widgets by listing their types (the MCP assigns ids and lays them out automatically) and scope with folderScope, dateRange, and filters. Call list_dashboard_widgets first to see the available widget types and their config keys, plus a full example.",
+    'Create an analytics dashboard (spec v2). Only `title` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Call list_dashboard_widgets first for the widget catalog, config vocabulary, and full examples.',
     {
-      title: import_zod17.z.string().min(1).max(200).describe("Dashboard name (the only required field)"),
-      ...writeFields
+      title: import_zod17.z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
+      ...specFields,
+      ...metadataFields
     },
     {
       title: "Create Dashboard",
@@ -5121,9 +5303,20 @@ function register16(server, client) {
       idempotentHint: false,
       openWorldHint: false
     },
-    async (body) => {
+    async ({ title, description, source, dateRange, sections, widgets, ...metadata }) => {
       try {
-        const result = await api.post("/v1/dashboards", withBuiltWidgets(body));
+        const body = {
+          spec: buildSpec({
+            title,
+            description,
+            source,
+            dateRange,
+            sections,
+            widgets
+          }),
+          ...pickMetadata(metadata)
+        };
+        const result = await api.post("/v1/dashboards", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -5138,22 +5331,49 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "update_dashboard",
-    "Update a dashboard. Only the fields you pass are changed (partial update). NOTE: passing `widgets` replaces the entire widget set \u2014 fetch the dashboard first if you want to preserve existing widgets.",
+    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault \u2014 no spec fields, no revision needed. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision.",
     {
       dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id"),
-      title: import_zod17.z.string().min(1).max(200).optional().describe("New dashboard name"),
-      ...writeFields
+      title: import_zod17.z.string().min(1).max(60).optional().describe("Dashboard name \u2014 required (with revision) when updating the spec"),
+      revision: import_zod17.z.number().int().nonnegative().optional().describe(
+        "The revision loaded from get_dashboard. Required for spec updates; mismatch returns a 409 conflict."
+      ),
+      ...specFields,
+      ...metadataFields
     },
     {
       title: "Update Dashboard",
       readOnlyHint: false,
       destructiveHint: true,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false
     },
-    async ({ dashboardId, ...body }) => {
+    async ({ dashboardId, title, revision, description, source, dateRange, sections, widgets, ...metadata }) => {
       try {
-        const result = await api.put(`/v1/dashboards/${dashboardId}`, withBuiltWidgets(body));
+        const specTouched = title !== void 0 || description !== void 0 || source !== void 0 || dateRange !== void 0 || sections !== void 0 || widgets !== void 0;
+        const body = pickMetadata(metadata);
+        if (specTouched) {
+          if (title === void 0 || revision === void 0) {
+            throw new Error(
+              "Spec updates replace the whole spec: call get_dashboard first, then pass the FULL spec (title, source, dateRange, sections, widgets) together with the loaded `revision`."
+            );
+          }
+          body.spec = {
+            ...buildSpec({
+              title,
+              description,
+              source,
+              dateRange,
+              sections,
+              widgets
+            }),
+            revision
+          };
+        }
+        if (Object.keys(body).length === 0) {
+          throw new Error("Nothing to update: pass spec fields (with revision) or metadata fields.");
+        }
+        const result = await api.put(`/v1/dashboards/${dashboardId}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -5196,7 +5416,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "duplicate_dashboard",
-    'Clone an existing dashboard. The copy gets fresh widget ids, a "<name> (copy)" title, and cleared sharing. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.',
+    'Clone an existing dashboard. The copy gets fresh widget ids, a "<name> (copy)" title, cleared sharing, and its revision reset to 0. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.',
     {
       dashboardId: import_zod17.z.string().min(1).describe("Source dashboard business id to clone")
     },
@@ -5276,7 +5496,7 @@ function register16(server, client) {
     }
   );
 }
-var import_zod17, FILTER_LIST_DESCRIPTION, widgetInputSchema, writeFields, SPEAKERS_FILTER_SCHEMA;
+var import_zod17, FILTER_LIST_DESCRIPTION, widgetInputSchema, sectionInputSchema, sourceInputSchema, dateRangeInputSchema, metadataFields, specFields, SPEAKERS_FILTER_SCHEMA;
 var init_dashboards = __esm({
   "src/tools/dashboards.ts"() {
     "use strict";
@@ -5287,28 +5507,60 @@ var init_dashboards = __esm({
     FILTER_LIST_DESCRIPTION = "Field filters. filters.filterList is an array of { fieldName, fieldOperator?, fieldValue?: string[], fieldCondition? }. Other keys pass through but only filterList is enforced.";
     widgetInputSchema = import_zod17.z.object({
       type: import_zod17.z.enum(WIDGET_TYPES).describe(
-        "Widget type: stat-cards | sentiment | media-list | field-distribution | upload-timeline | themes | team-activity | kpi-trend | field-metric | metric-group | notes | people | comparison | sentiment-trend"
+        "Widget type: narrative | stat-cards | metric-chart | table | comparison | field-distribution | sentiment-trend | themes | people | team-activity | notes"
       ),
-      title: import_zod17.z.string().max(200).optional().describe("Widget title (defaults to a per-type label)"),
+      id: import_zod17.z.string().max(64).optional().describe(
+        "Optional explicit widget id (kebab-case). Required if you reference the widget from sections[].widgetIds; auto-generated otherwise."
+      ),
+      title: import_zod17.z.string().min(1).max(40).optional().describe("Widget title, max 40 chars (defaults to a per-type label)"),
       config: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
-        "Optional render settings. Per-type: fieldId+measure (field-distribution), fieldId+aggregator (field-metric), metrics list (stat-cards, kpi-trend, comparison, metric-group), chartType (themes), heading+content (notes). Any widget also accepts accentColor (hex) and scopeOverride ({datePreset, folderId}). Call list_dashboard_widgets for the full catalog + examples. Leave empty for sensible defaults."
+        "Per-type v2 config (STRICT \u2014 unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content. Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. Omit for a sensible valid default (except field-distribution, which needs fieldName)."
+      ),
+      binding: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
+        "Per-widget scope override: { source?, dateRange?: {preset}, filter? }. Omit any key to inherit the dashboard's value."
+      ),
+      layout: import_zod17.z.object({
+        x: import_zod17.z.number().int().min(0).max(11),
+        y: import_zod17.z.number().int().min(0).max(200),
+        w: import_zod17.z.number().int().min(1).max(12),
+        h: import_zod17.z.number().int().min(1).max(40)
+      }).optional().describe(
+        "Explicit 12-column grid position. Omit to auto-place two-per-row like the UI. Widgets must not overlap within a section group."
       )
     });
-    writeFields = {
-      description: import_zod17.z.string().max(2e3).optional().describe("Dashboard description"),
-      icon: import_zod17.z.string().max(200).optional().describe("Icon identifier"),
-      folderScope: import_zod17.z.array(import_zod17.z.string().max(100)).max(100).optional().describe("Folder ids to scope analytics to. Empty/omitted = all accessible folders."),
-      assignTo: import_zod17.z.array(import_zod17.z.string()).max(100).optional().describe('User ids, or group ids in the "<groupId> (G)" convention, to share view access with'),
-      dateRange: import_zod17.z.object({
-        preset: import_zod17.z.string().max(50).optional(),
-        startDate: import_zod17.z.string().optional(),
-        endDate: import_zod17.z.string().optional()
-      }).optional().describe("Date range: { preset?, startDate?, endDate? }"),
-      filters: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
-      widgets: import_zod17.z.array(widgetInputSchema).max(50).optional().describe(
-        "Widgets to place on the dashboard, in order. The MCP assigns ids and computes a tidy two-per-row grid layout matching the Speak UI. Just list the widget types you want."
+    sectionInputSchema = import_zod17.z.object({
+      id: import_zod17.z.string().min(1).max(64).describe("Section id (kebab-case)"),
+      title: import_zod17.z.string().min(1).max(24).describe("Section title, max 24 chars"),
+      icon: import_zod17.z.string().min(1).max(40).describe('Kebab-case lucide icon name, e.g. "dollar-sign"'),
+      widgetIds: import_zod17.z.array(import_zod17.z.string().max(64)).max(24).describe("Widget ids in this section \u2014 must match explicit `id`s set on widgets[]")
+    });
+    sourceInputSchema = import_zod17.z.object({
+      type: import_zod17.z.enum(["folders", "team", "workspace"]).describe(
+        "folders = specific folder ids; team = the caller's team scope; workspace = everything accessible"
       ),
+      folderIds: import_zod17.z.array(import_zod17.z.string().min(1).max(64)).min(1).max(50).optional().describe('Folder ids \u2014 required when type is "folders", forbidden otherwise')
+    }).describe(
+      'Data source: {type:"folders", folderIds:[...]} | {type:"team"} | {type:"workspace"}'
+    );
+    dateRangeInputSchema = import_zod17.z.object({
+      preset: import_zod17.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
+    }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
+    metadataFields = {
+      icon: import_zod17.z.string().max(200).optional().describe("Icon identifier"),
+      assignTo: import_zod17.z.array(import_zod17.z.string()).max(100).optional().describe('User ids, or group ids in the "<groupId> (G)" convention, to share view access with'),
+      filters: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
       isDefault: import_zod17.z.boolean().optional().describe("Make this the company default dashboard")
+    };
+    specFields = {
+      description: import_zod17.z.string().max(280).optional().describe("Dashboard description, max 280 chars"),
+      source: sourceInputSchema.optional(),
+      dateRange: dateRangeInputSchema.optional(),
+      sections: import_zod17.z.array(sectionInputSchema).max(12).optional().describe(
+        "Optional named widget groups (tabs). Each references widgets by their explicit ids; widgets in no section form the implicit Overview group."
+      ),
+      widgets: import_zod17.z.array(widgetInputSchema).max(24).optional().describe(
+        "Widgets to place on the dashboard, in order (max 24). The MCP assigns ids and computes a tidy two-per-row grid layout matching the Speak UI unless you pass explicit id/layout."
+      )
     };
     SPEAKERS_FILTER_SCHEMA = {
       folderScope: import_zod17.z.array(import_zod17.z.string().max(100)).max(100).optional().describe("Folder ids to scope to"),

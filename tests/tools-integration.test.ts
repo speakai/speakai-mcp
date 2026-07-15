@@ -295,32 +295,115 @@ describe("Tools Integration Tests", () => {
       expect(mockGet).toHaveBeenCalledWith("/v1/dashboards/d1");
     });
 
-    it("create_dashboard posts {title} when no widgets", async () => {
+    it("create_dashboard posts a spec v2 envelope with defaults when only title is given", async () => {
       await reg();
       await getToolCallback(server, "create_dashboard")({ title: "My Dashboard" });
-      expect(mockPost).toHaveBeenCalledWith("/v1/dashboards", { title: "My Dashboard" });
+      expect(mockPost).toHaveBeenCalledWith("/v1/dashboards", {
+        spec: {
+          schemaVersion: 2,
+          title: "My Dashboard",
+          source: { type: "workspace" },
+          dateRange: { preset: "last30days" },
+          sections: [],
+          widgets: [],
+        },
+      });
     });
 
-    it("create_dashboard expands a widget spec into a full {id,type,layout} widget", async () => {
+    it("create_dashboard expands a widget spec into a full {id,type,config,layout} v2 widget", async () => {
       await reg();
       await getToolCallback(server, "create_dashboard")({
         title: "D",
-        widgets: [{ type: "field-metric", config: { fieldId: "f1", aggregator: "avg" } }],
+        source: { type: "folders", folderIds: ["f1"] },
+        dateRange: { preset: "last7days" },
+        widgets: [{ type: "metric-chart" }],
       });
       const body = mockPost.mock.calls.at(-1)![1] as any;
-      expect(body.widgets).toHaveLength(1);
-      expect(body.widgets[0]).toMatchObject({
-        type: "field-metric",
-        config: { fieldId: "f1", aggregator: "avg" },
-        layout: { w: 3, h: 2, minW: 2, minH: 2 },
+      expect(body.spec.source).toEqual({ type: "folders", folderIds: ["f1"] });
+      expect(body.spec.dateRange).toEqual({ preset: "last7days" });
+      expect(body.spec.widgets).toHaveLength(1);
+      expect(body.spec.widgets[0]).toMatchObject({
+        type: "metric-chart",
+        config: { mark: "bar", metric: { kind: "builtin", name: "mediaCount" } },
+        layout: { x: 0, y: 0, w: 6, h: 4 },
       });
-      expect(typeof body.widgets[0].id).toBe("string");
+      // The v2 layout schema is strict {x,y,w,h} — render-only minW/minH must not travel.
+      expect(body.spec.widgets[0].layout).not.toHaveProperty("minW");
+      expect(typeof body.spec.widgets[0].id).toBe("string");
     });
 
-    it("update_dashboard calls PUT /v1/dashboards/:id with only provided fields", async () => {
+    it("create_dashboard carries sections and lays each section out from y=0", async () => {
       await reg();
-      await getToolCallback(server, "update_dashboard")({ dashboardId: "d1", title: "X" });
-      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { title: "X" });
+      await getToolCallback(server, "create_dashboard")({
+        title: "D",
+        widgets: [
+          { id: "w-a", type: "themes" },
+          { id: "w-b", type: "people" },
+        ],
+        sections: [
+          { id: "s-a", title: "A", icon: "star", widgetIds: ["w-a"] },
+          { id: "s-b", title: "B", icon: "globe", widgetIds: ["w-b"] },
+        ],
+      });
+      const body = mockPost.mock.calls.at(-1)![1] as any;
+      expect(body.spec.sections).toHaveLength(2);
+      expect(body.spec.widgets.map((w: any) => w.layout)).toEqual([
+        { x: 0, y: 0, w: 6, h: 4 },
+        { x: 0, y: 0, w: 6, h: 4 },
+      ]);
+    });
+
+    it("create_dashboard rejects sections referencing unknown widget ids without calling the API", async () => {
+      await reg();
+      const result = await getToolCallback(server, "create_dashboard")({
+        title: "D",
+        widgets: [{ type: "themes" }],
+        sections: [{ id: "s", title: "S", icon: "star", widgetIds: ["missing"] }],
+      });
+      expect(result.isError).toBe(true);
+      expect(mockPost).not.toHaveBeenCalled();
+    });
+
+    it("create_dashboard rejects field-distribution without config before calling the API", async () => {
+      await reg();
+      const result = await getToolCallback(server, "create_dashboard")({
+        title: "D",
+        widgets: [{ type: "field-distribution" }],
+      });
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("fieldName");
+      expect(mockPost).not.toHaveBeenCalled();
+    });
+
+    it("update_dashboard sends metadata-only updates without a spec", async () => {
+      await reg();
+      await getToolCallback(server, "update_dashboard")({ dashboardId: "d1", isDefault: true });
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { isDefault: true });
+    });
+
+    it("update_dashboard sends the full spec with the revision for optimistic concurrency", async () => {
+      await reg();
+      await getToolCallback(server, "update_dashboard")({
+        dashboardId: "d1",
+        title: "X",
+        revision: 3,
+        widgets: [{ type: "notes", config: { content: "hi" } }],
+      });
+      const body = mockPut.mock.calls.at(-1)![1] as any;
+      expect(body.spec).toMatchObject({
+        schemaVersion: 2,
+        title: "X",
+        revision: 3,
+      });
+      expect(body.spec.widgets[0]).toMatchObject({ type: "notes", config: { content: "hi" } });
+    });
+
+    it("update_dashboard rejects spec fields without a revision", async () => {
+      await reg();
+      const result = await getToolCallback(server, "update_dashboard")({ dashboardId: "d1", title: "X" });
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("revision");
+      expect(mockPut).not.toHaveBeenCalled();
     });
 
     it("delete_dashboard calls DELETE /v1/dashboards/:id", async () => {
@@ -347,13 +430,40 @@ describe("Tools Integration Tests", () => {
       expect(mockPost).toHaveBeenCalledWith("/v1/dashboards/insights/speakers", { folderScope: ["f1"] });
     });
 
-    it("list_dashboard_widgets returns the catalog incl. the new widgets (no API call)", async () => {
+    it("list_dashboard_widgets returns the spec v2 catalog (no API call)", async () => {
       await reg();
       const result = await getToolCallback(server, "list_dashboard_widgets")({});
       const data = JSON.parse(result.content[0].text);
       const types = data.widgets.map((w: any) => w.type);
-      expect(types).toContain("field-metric");
-      expect(types).toContain("metric-group");
+      expect(types).toEqual(
+        expect.arrayContaining([
+          "narrative",
+          "stat-cards",
+          "metric-chart",
+          "table",
+          "comparison",
+          "field-distribution",
+          "sentiment-trend",
+          "themes",
+          "people",
+          "team-activity",
+          "notes",
+        ]),
+      );
+      // v1 widget types are gone.
+      expect(types).not.toContain("sentiment");
+      expect(types).not.toContain("media-list");
+      expect(types).not.toContain("upload-timeline");
+      expect(types).not.toContain("kpi-trend");
+      expect(types).not.toContain("field-metric");
+      expect(types).not.toContain("metric-group");
+      expect(data.vocabulary.dateRangePresets).toEqual([
+        "last7days",
+        "last30days",
+        "last3months",
+        "yearToDate",
+        "allTime",
+      ]);
       expect(data.examples.length).toBeGreaterThanOrEqual(1);
       expect(mockGet).not.toHaveBeenCalled();
     });
