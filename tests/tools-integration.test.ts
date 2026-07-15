@@ -295,12 +295,11 @@ describe("Tools Integration Tests", () => {
       expect(mockGet).toHaveBeenCalledWith("/v1/dashboards/d1");
     });
 
-    it("create_dashboard posts a spec v2 envelope with defaults when only title is given", async () => {
+    it("create_dashboard posts the spec envelope with defaults when only title is given", async () => {
       await reg();
       await getToolCallback(server, "create_dashboard")({ title: "My Dashboard" });
       expect(mockPost).toHaveBeenCalledWith("/v1/dashboards", {
         spec: {
-          schemaVersion: 2,
           title: "My Dashboard",
           source: { type: "workspace" },
           dateRange: { preset: "last30days" },
@@ -310,7 +309,7 @@ describe("Tools Integration Tests", () => {
       });
     });
 
-    it("create_dashboard expands a widget spec into a full {id,type,config,layout} v2 widget", async () => {
+    it("create_dashboard expands a widget spec into a full {id,type,config,layout} widget", async () => {
       await reg();
       await getToolCallback(server, "create_dashboard")({
         title: "D",
@@ -327,7 +326,7 @@ describe("Tools Integration Tests", () => {
         config: { mark: "bar", metric: { kind: "builtin", name: "mediaCount" } },
         layout: { x: 0, y: 0, w: 6, h: 4 },
       });
-      // The v2 layout schema is strict {x,y,w,h} — render-only minW/minH must not travel.
+      // The layout schema is strict {x,y,w,h} — render-only minW/minH must not travel.
       expect(body.spec.widgets[0].layout).not.toHaveProperty("minW");
       expect(typeof body.spec.widgets[0].id).toBe("string");
     });
@@ -391,10 +390,10 @@ describe("Tools Integration Tests", () => {
       });
       const body = mockPut.mock.calls.at(-1)![1] as any;
       expect(body.spec).toMatchObject({
-        schemaVersion: 2,
         title: "X",
         revision: 3,
       });
+      expect(body.spec).not.toHaveProperty("schemaVersion");
       expect(body.spec.widgets[0]).toMatchObject({ type: "notes", config: { content: "hi" } });
     });
 
@@ -430,7 +429,7 @@ describe("Tools Integration Tests", () => {
       expect(mockPost).toHaveBeenCalledWith("/v1/dashboards/insights/speakers", { folderScope: ["f1"] });
     });
 
-    it("list_dashboard_widgets returns the spec v2 catalog (no API call)", async () => {
+    it("list_dashboard_widgets returns the widget catalog and design rules (no API call)", async () => {
       await reg();
       const result = await getToolCallback(server, "list_dashboard_widgets")({});
       const data = JSON.parse(result.content[0].text);
@@ -450,7 +449,7 @@ describe("Tools Integration Tests", () => {
           "notes",
         ]),
       );
-      // v1 widget types are gone.
+      // Widget types removed from the spec must not reappear in the catalog.
       expect(types).not.toContain("sentiment");
       expect(types).not.toContain("media-list");
       expect(types).not.toContain("upload-timeline");
@@ -465,6 +464,8 @@ describe("Tools Integration Tests", () => {
         "allTime",
       ]);
       expect(data.examples.length).toBeGreaterThanOrEqual(1);
+      expect(data.designRules.join(" ")).toContain("narrative");
+      expect(data.designRules.join(" ")).toContain("every widget earns its place");
       expect(mockGet).not.toHaveBeenCalled();
     });
   });

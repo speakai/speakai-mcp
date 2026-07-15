@@ -1,13 +1,13 @@
 import { randomUUID } from "crypto";
 
-// Faithful port of the dashboard spec v2 widget contract (@speakai/shared
+// Faithful port of the dashboard spec widget contract (@speakai/shared
 // schemas/dashboard-spec + speak-client's widget-meta.ts): same 11 widget types,
 // same per-type grid geometry, and the same two-per-row auto-layout, so
 // MCP-created widgets match UI-built ones. Keep in sync with the shared schema.
 
 export const GRID_COLS = 12;
 
-// The spec v2 widget-type union (mirrors widgetTypeSchema in @speakai/shared).
+// The widget-type union (mirrors widgetTypeSchema in @speakai/shared).
 export const WIDGET_TYPES = [
   "narrative",
   "stat-cards",
@@ -40,9 +40,9 @@ interface WidgetMeta {
   titleDefault: string;
 }
 
-// Default grid geometry per type (mirrors speak-client widget-meta.ts). The v2
-// layout schema is strict {x, y, w, h} — minW/minH are render-only in the UI
-// and must never be sent to the server.
+// Default grid geometry per type (mirrors speak-client widget-meta.ts). The
+// spec's layout schema is strict {x, y, w, h} — minW/minH are render-only in
+// the UI and must never be sent to the server.
 const WIDGET_META: Record<WidgetType, WidgetMeta> = {
   narrative: { w: GRID_COLS, h: 3, titleDefault: "Insights" },
   "stat-cards": { w: GRID_COLS, h: 3, titleDefault: "Usage overview" },
@@ -89,7 +89,7 @@ export interface DashboardWidget {
   layout: WidgetLayout;
 }
 
-// Valid default v2 config per type, mirroring speak-client's
+// Valid default config per type, mirroring speak-client's
 // defaultWidgetConfig — every widget built without an explicit config must
 // parse against the shared spec schema as-is.
 function defaultWidgetConfig(type: WidgetType): Record<string, unknown> {
@@ -150,7 +150,7 @@ function defaultWidgetConfig(type: WidgetType): Record<string, unknown> {
 const KEBAB_ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /**
- * Materialise ordered widget specs into concrete spec v2 widgets: assign ids
+ * Materialise ordered widget specs into concrete spec widgets: assign ids
  * (kebab-case, UUID when omitted), apply per-type default config, sanitize any
  * provided layout to the strict {x, y, w, h} shape, and auto-place the rest
  * with the UI's two-per-row geometry. Layout is computed PER SECTION GROUP —
@@ -270,7 +270,7 @@ function makeWidget(item: WidgetInput): DashboardWidget {
 }
 
 // ── Discovery catalog ──────────────────────────────────────────────────────
-// What each spec v2 widget shows and the exact `config` shape it takes.
+// What each widget shows and the exact `config` shape it takes.
 // Mirrors the shared zod schema (@speakai/shared schemas/dashboard-spec):
 // configs are STRICT objects — unknown keys are rejected by the server.
 
@@ -388,7 +388,19 @@ export const SPEC_VOCABULARY = {
     "widgets in no section form the implicit Overview group.",
 } as const;
 
-// Worked examples of good create_dashboard payloads (spec v2).
+// Design rules mirroring speak-server's in-app dashboard generation prompt
+// (@speak-dashboards/chat/generationPrompt.ts), so a dashboard built via MCP
+// reads like one built by the in-app AI. Keep the two lists aligned.
+export const DESIGN_RULES = [
+  "Lead with a narrative widget: on a new dashboard, make it the first widget of the first section — it is the headline insight.",
+  "Sections group widgets by the QUESTION they answer (e.g. \"How is pipeline trending?\"), not by widget type.",
+  "Layout must never overlap within a section; side-by-side is x:0,w:6 and x:6,w:6, and y restarts at 0 in each section. " +
+    "Omit `layout` and the auto-layout guarantees this — only pass explicit layout when you need a non-default arrangement.",
+  "Don't pad — every widget earns its place. Aim for 4-16 widgets on a full build.",
+  "If something can't be computed by the widget catalog, put it in a narrative widget's focus instead of faking it with the wrong widget.",
+] as const;
+
+// Worked examples of good create_dashboard payloads.
 export const DASHBOARD_EXAMPLES = [
   {
     name: "Sales calls overview",

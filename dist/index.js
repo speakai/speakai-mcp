@@ -4955,7 +4955,7 @@ function makeWidget(item) {
   }
   return widget;
 }
-var import_crypto, GRID_COLS, WIDGET_TYPES, DATE_RANGE_PRESETS, WIDGET_META, KEBAB_ID, AUTO_LAYOUT, WIDGET_CATALOG, SPEC_VOCABULARY, DASHBOARD_EXAMPLES;
+var import_crypto, GRID_COLS, WIDGET_TYPES, DATE_RANGE_PRESETS, WIDGET_META, KEBAB_ID, AUTO_LAYOUT, WIDGET_CATALOG, SPEC_VOCABULARY, DESIGN_RULES, DASHBOARD_EXAMPLES;
 var init_dashboard_widgets = __esm({
   "src/tools/dashboard-widgets.ts"() {
     "use strict";
@@ -5067,6 +5067,13 @@ var init_dashboard_widgets = __esm({
       dateRangePresets: DATE_RANGE_PRESETS,
       sections: "Optional named groups of widgets rendered as tabs/sections (max 12): { id: kebab-case string, title: string (<=24), icon: kebab-case lucide icon name, widgetIds: string[] (<=24) }. Widget ids in sections must match explicit `id`s you set on the widgets; a widget may appear in at most one section; widgets in no section form the implicit Overview group."
     };
+    DESIGN_RULES = [
+      "Lead with a narrative widget: on a new dashboard, make it the first widget of the first section \u2014 it is the headline insight.",
+      'Sections group widgets by the QUESTION they answer (e.g. "How is pipeline trending?"), not by widget type.',
+      "Layout must never overlap within a section; side-by-side is x:0,w:6 and x:6,w:6, and y restarts at 0 in each section. Omit `layout` and the auto-layout guarantees this \u2014 only pass explicit layout when you need a non-default arrangement.",
+      "Don't pad \u2014 every widget earns its place. Aim for 4-16 widgets on a full build.",
+      "If something can't be computed by the widget catalog, put it in a narrative widget's focus instead of faking it with the wrong widget."
+    ];
     DASHBOARD_EXAMPLES = [
       {
         name: "Sales calls overview",
@@ -5180,7 +5187,6 @@ function buildSource(source) {
 function buildSpec(input) {
   const sections = input.sections ?? [];
   const spec = {
-    schemaVersion: 2,
     title: input.title,
     source: buildSource(input.source ?? { type: "workspace" }),
     dateRange: input.dateRange ?? { preset: "last30days" },
@@ -5257,7 +5263,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "list_dashboard_widgets",
-    "Discovery + how-to helper for building and customizing dashboards (spec v2). Returns every widget type with what it shows and the exact strict `config` shape it accepts, the shared vocabulary (metric grammar, groupBy, per-widget binding, filters, thresholds, sources, date-range presets, sections), two complete worked example payloads, and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
+    "Discovery + how-to helper for building and customizing dashboards. Returns every widget type with what it shows and the exact strict `config` shape it accepts, the shared vocabulary (metric grammar, groupBy, per-widget binding, filters, thresholds, sources, date-range presets, sections), design rules for composing a dashboard that reads well, two complete worked example payloads, and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
     {},
     {
       title: "List Dashboard Widgets",
@@ -5270,6 +5276,7 @@ function register16(server, client) {
       const data = {
         widgets: WIDGET_CATALOG,
         vocabulary: SPEC_VOCABULARY,
+        designRules: DESIGN_RULES,
         notes: [
           "Pass widgets to create_dashboard as a simple ordered list; ids and grid layout are computed for you.",
           "Widget configs are STRICT: unknown keys are rejected. Metrics reference custom fields by NAME (list_fields), not id.",
@@ -5290,7 +5297,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "create_dashboard",
-    'Create an analytics dashboard (spec v2). Only `title` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Call list_dashboard_widgets first for the widget catalog, config vocabulary, and full examples.',
+    `Create an analytics dashboard. Only \`title\` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad \u2014 every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples.`,
     {
       title: import_zod17.z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
       ...specFields,
@@ -5514,7 +5521,7 @@ var init_dashboards = __esm({
       ),
       title: import_zod17.z.string().min(1).max(40).optional().describe("Widget title, max 40 chars (defaults to a per-type label)"),
       config: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
-        "Per-type v2 config (STRICT \u2014 unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content. Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. Omit for a sensible valid default (except field-distribution, which needs fieldName)."
+        "Per-type config (STRICT \u2014 unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content. Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. Omit for a sensible valid default (except field-distribution, which needs fieldName)."
       ),
       binding: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
         "Per-widget scope override: { source?, dateRange?: {preset}, filter? }. Omit any key to inherit the dashboard's value."

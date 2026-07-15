@@ -8,6 +8,7 @@ import {
   DATE_RANGE_PRESETS,
   WIDGET_CATALOG,
   SPEC_VOCABULARY,
+  DESIGN_RULES,
   DASHBOARD_EXAMPLES,
   buildDashboardWidgets,
   type WidgetInput,
@@ -16,8 +17,8 @@ import {
 
 // Analytics dashboards (speak-server @speak-dashboards, mounted at /v1/dashboards).
 // `dashboardId` everywhere is the string business id (returned by list/get/create),
-// NOT the Mongo _id. Writes use the dashboard SPEC v2 envelope: the request body is
-// { spec: { schemaVersion: 2, title, description?, source, dateRange, sections, widgets, revision? },
+// NOT the Mongo _id. Writes use the dashboard spec envelope: the request body is
+// { spec: { title, description?, source, dateRange, sections, widgets, revision? },
 //   icon?, assignTo?, filters?, isDefault? } — validated server-side against the
 // shared @speakai/shared dashboard-spec zod schema (strict shapes; unknown keys 400).
 
@@ -45,7 +46,7 @@ const widgetInputSchema = z.object({
     .record(z.unknown())
     .optional()
     .describe(
-      "Per-type v2 config (STRICT — unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + " +
+      "Per-type config (STRICT — unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + " +
         "metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; " +
         "field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content. " +
         "Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. " +
@@ -117,7 +118,7 @@ const metadataFields = {
   isDefault: z.boolean().optional().describe("Make this the company default dashboard"),
 } as const;
 
-// Fields that make up the spec v2 envelope body.
+// Fields that make up the spec envelope body.
 const specFields = {
   description: z.string().max(280).optional().describe("Dashboard description, max 280 chars"),
   source: sourceInputSchema.optional(),
@@ -160,12 +161,11 @@ function buildSource(source: NonNullable<SpecFieldValues["source"]>): Record<str
   return { type: source.type };
 }
 
-// Assemble the spec v2 envelope from tool inputs (widgets materialised with
+// Assemble the spec envelope from tool inputs (widgets materialised with
 // ids + layout). `revision` is appended by the update path only.
 function buildSpec(input: SpecFieldValues & { title: string }): Record<string, unknown> {
   const sections = input.sections ?? [];
   const spec: Record<string, unknown> = {
-    schemaVersion: 2,
     title: input.title,
     source: buildSource(input.source ?? { type: "workspace" }),
     dateRange: input.dateRange ?? { preset: "last30days" },
@@ -272,11 +272,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "list_dashboard_widgets",
-    "Discovery + how-to helper for building and customizing dashboards (spec v2). Returns every widget " +
+    "Discovery + how-to helper for building and customizing dashboards. Returns every widget " +
       "type with what it shows and the exact strict `config` shape it accepts, the shared vocabulary " +
       "(metric grammar, groupBy, per-widget binding, filters, thresholds, sources, date-range presets, " +
-      "sections), two complete worked example payloads, and tips for managing dashboards. " +
-      "Call this before create_dashboard / update_dashboard.",
+      "sections), design rules for composing a dashboard that reads well, two complete worked example " +
+      "payloads, and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
     {},
     {
       title: "List Dashboard Widgets",
@@ -289,6 +289,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       const data = {
         widgets: WIDGET_CATALOG,
         vocabulary: SPEC_VOCABULARY,
+        designRules: DESIGN_RULES,
         notes: [
           "Pass widgets to create_dashboard as a simple ordered list; ids and grid layout are computed for you.",
           "Widget configs are STRICT: unknown keys are rejected. Metrics reference custom fields by NAME (list_fields), not id.",
@@ -310,11 +311,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "create_dashboard",
-    "Create an analytics dashboard (spec v2). Only `title` is required — source defaults to the whole " +
+    "Create an analytics dashboard. Only `title` is required — source defaults to the whole " +
       "workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and " +
       "lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | " +
       "{type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. " +
-      "Call list_dashboard_widgets first for the widget catalog, config vocabulary, and full examples.",
+      "Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION " +
+      "they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on " +
+      "a full build); if something can't be expressed by the widget catalog, put it in a narrative " +
+      "widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, " +
+      "config vocabulary, design rules, and full examples.",
     {
       title: z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
       ...specFields,
