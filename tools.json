@@ -982,7 +982,7 @@
         {
           "name": "list_dashboard_widgets",
           "title": "List Dashboard Widgets",
-          "description": "Discovery + how-to helper for building and customizing dashboards. Returns every widget type with what it shows and the exact `config` keys it accepts (metrics, fieldId, aggregator, chartType, accentColor, scopeOverride, …), the config that applies to all widgets, two complete worked example payloads (including the field-metric and metric-group cards), and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
+          "description": "Discovery + how-to helper for building and customizing dashboards. Returns every widget type with what it shows and the exact strict `config` shape it accepts, the shared vocabulary (metric grammar, groupBy, per-widget binding, filters, thresholds, sources, date-range presets, sections), design rules for composing a dashboard that reads well, two complete worked example payloads, and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -991,7 +991,7 @@
         {
           "name": "list_dashboards",
           "title": "List Dashboards",
-          "description": "List all analytics dashboards the caller can access, including share state.",
+          "description": "List all analytics dashboards the caller can access, including share state and each dashboard's current `revision` (needed for update_dashboard).",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -1000,7 +1000,7 @@
         {
           "name": "get_dashboard",
           "title": "Get Dashboard",
-          "description": "Get a single dashboard's full config (widgets, filters, date range, folder scope).",
+          "description": "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, and the current `revision` (pass that revision back to update_dashboard).",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -1009,7 +1009,7 @@
         {
           "name": "create_dashboard",
           "title": "Create Dashboard",
-          "description": "Create an analytics dashboard. Only `title` is required. Add widgets by listing their types (the MCP assigns ids and lays them out automatically) and scope with folderScope, dateRange, and filters. Call list_dashboard_widgets first to see the available widget types and their config keys, plus a full example.",
+          "description": "Create an analytics dashboard. Only `title` is required — source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -1018,10 +1018,10 @@
         {
           "name": "update_dashboard",
           "title": "Update Dashboard",
-          "description": "Update a dashboard. Only the fields you pass are changed (partial update). NOTE: passing `widgets` replaces the entire widget set — fetch the dashboard first if you want to preserve existing widgets.",
+          "description": "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault — no spec fields, no revision needed. (2) Spec update: pass the FULL spec — title, source, dateRange, sections, widgets — plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first — re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision.",
           "readOnlyHint": false,
           "destructiveHint": true,
-          "idempotentHint": true,
+          "idempotentHint": false,
           "openWorldHint": false
         },
         {
@@ -1036,7 +1036,7 @@
         {
           "name": "duplicate_dashboard",
           "title": "Duplicate Dashboard",
-          "description": "Clone an existing dashboard. The copy gets fresh widget ids, a \"<name> (copy)\" title, and cleared sharing. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.",
+          "description": "Clone an existing dashboard. The copy gets fresh widget ids, a \"<name> (copy)\" title, cleared sharing, and its revision reset to 0. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
