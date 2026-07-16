@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.15.0 (2026-07-16)
+
+- Rewired dashboard tools to the spec v2 envelope
+
 ## v1.14.0 (2026-07-13)
 
 - Added build_automation high-level workflow tool and guided inbound-webhook automation flow
