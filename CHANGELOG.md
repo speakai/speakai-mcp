@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.16.0 (2026-07-21)
+
+- Added update_transcription MCP tool for transcript find/replace functionality
+
 ## v1.15.0 (2026-07-16)
 
 - Rewired dashboard tools to the spec v2 envelope
