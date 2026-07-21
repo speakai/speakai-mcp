@@ -81,6 +81,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "get_captions",
   "list_supported_languages",
   "update_transcript_speakers",
+  "update_transcription",
   "bulk_update_transcript_speakers",
   "bulk_move_media",
 
