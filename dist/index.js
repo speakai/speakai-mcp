@@ -1404,6 +1404,42 @@ function register(server, client) {
   );
   registerSpeakTool(
     server,
+    "update_transcription",
+    "Edit the official transcript text of a single media file by finding and replacing text. Replaces every occurrence of the original text with the replacement (leave replacement empty to delete the text) and reports how many occurrences were replaced. Use update_transcript_speakers to rename speaker labels instead.",
+    {
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file"),
+      original: import_zod2.z.string().min(1).describe("Text to find in the transcript"),
+      replacement: import_zod2.z.string().describe("Text to replace it with (empty string deletes the matched text)"),
+      caseSensitive: import_zod2.z.boolean().optional().describe("Match case exactly when finding the original text")
+    },
+    {
+      title: "Update Transcription Text",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async ({ mediaId, original, replacement, caseSensitive }) => {
+      try {
+        const result = await api.put(
+          `/v1/media/transcript/${mediaId}/replace`,
+          { original, replacement, caseSensitive }
+        );
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
     "get_media_status",
     "Check the processing status of a media file. States: pending \u2192 transcribing \u2192 analyzing \u2192 processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
     {
@@ -6471,6 +6507,7 @@ var init_tool_names = __esm({
       "get_captions",
       "list_supported_languages",
       "update_transcript_speakers",
+      "update_transcription",
       "bulk_update_transcript_speakers",
       "bulk_move_media",
       // meeting

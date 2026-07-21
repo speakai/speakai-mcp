@@ -308,6 +308,48 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
+  // 6b. Update transcription text (find/replace)
+  registerSpeakTool(server,
+    "update_transcription",
+    "Edit the official transcript text of a single media file by finding and replacing text. Replaces every occurrence of the original text with the replacement (leave replacement empty to delete the text) and reports how many occurrences were replaced. Use update_transcript_speakers to rename speaker labels instead.",
+    {
+      mediaId: z.string().min(1).describe("Unique identifier of the media file"),
+      original: z.string().min(1).describe("Text to find in the transcript"),
+      replacement: z
+        .string()
+        .describe("Text to replace it with (empty string deletes the matched text)"),
+      caseSensitive: z
+        .boolean()
+        .optional()
+        .describe("Match case exactly when finding the original text"),
+    },
+    {
+      title: "Update Transcription Text",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
+    async ({ mediaId, original, replacement, caseSensitive }) => {
+      try {
+        const result = await api.put(
+          `/v1/media/transcript/${mediaId}/replace`,
+          { original, replacement, caseSensitive }
+        );
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) },
+          ],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
   // 7. Get media status
   registerSpeakTool(server, 
     "get_media_status",
