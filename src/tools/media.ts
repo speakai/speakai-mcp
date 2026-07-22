@@ -6,6 +6,7 @@ import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 
 export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
+export const LIST_MEDIA_MAX_PAGE_SIZE = 100;
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
@@ -130,10 +131,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .number()
         .int()
         .min(1)
-        .max(500)
+        .max(LIST_MEDIA_MAX_PAGE_SIZE)
         .optional()
         .describe(
-          "Number of results per page (default: 25, max: 500). Keep this small when include contains 'transcription' — each result then carries a full transcript."
+          "Number of results per page (default: 25, max: 100). Page through larger sets rather than raising this — with include: ['transcription'] each result carries a full transcript, and an oversized response is rejected outright."
         ),
       sortBy: z
         .string()
@@ -194,8 +195,6 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           queryParams.requestTypes = include.join(",");
         }
 
-        // Sent explicitly: the parameter was forwarded untouched, so the API's default of
-        // 50 applied while the tool documented its own.
         queryParams.pageSize = params.pageSize ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
 
         const result = await api.get("/v1/media", { params: queryParams });
