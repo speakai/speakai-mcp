@@ -1366,15 +1366,19 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "update_transcript_speakers",
-    "Update or rename speaker labels in a media transcript.",
+    "Update or rename speaker labels in a single media transcript. Call get_transcript first to read the speaker list \u2014 a speaker's label is whatever it was last renamed to, not a fixed value, so ids from an earlier turn may be stale. Renaming a speaker to a name another speaker already has is refused as a collision. Re-sending a rename that has already been applied is a safe no-op, so do not retry a call that reported success.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file"),
       speakers: import_zod2.z.array(
         import_zod2.z.object({
-          id: import_zod2.z.string().min(1).describe("Speaker identifier from the transcript"),
-          name: import_zod2.z.string().min(1).describe("Display name to assign to the speaker")
+          id: import_zod2.z.string().min(1).describe(
+            `Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. "Speaker 0", "Vatsal Shah"), or its numeric id from insight.speakers[].id (e.g. "0"). Not a fixed identifier \u2014 it changes when the speaker is renamed.`
+          ),
+          name: import_zod2.z.string().min(1).describe("New display name to assign to the speaker")
         })
-      ).describe("Array of speaker ID to name mappings")
+      ).describe(
+        "Speakers to rename. Each entry maps one existing speaker to its new name; speakers not listed are left untouched."
+      )
     },
     {
       title: "Rename Transcript Speakers",
