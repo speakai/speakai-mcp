@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.16.4 (2026-07-22)
+
+- Lowered the page ceiling for media transcripts and adjusted default page size settings.
+
 ## v1.16.3 (2026-07-22)
 
 - Fixed bulk speaker identify functionality and updated documentation for bulk speaker rename tool.
