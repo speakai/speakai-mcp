@@ -1693,15 +1693,19 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "bulk_update_transcript_speakers",
-    "Update or rename speaker labels across multiple media files in a single operation. Applies the same speaker mappings to every specified media file. Use this instead of calling update_transcript_speakers repeatedly when renaming speakers across a project or folder.",
+    "Update or rename speaker labels across multiple media files in a single operation. Applies the same speaker mappings to every specified media file. Use this instead of calling update_transcript_speakers repeatedly when renaming speakers across a project or folder. Match speakers by their current LABEL, not by numeric id \u2014 a numeric id is a per-file position, so the same id refers to a different person in each file. A file whose speakers do not match the mapping is left unchanged. Re-sending a mapping that has already been applied is a safe no-op, so do not retry a call that reported success.",
     {
       mediaIds: import_zod2.z.array(import_zod2.z.string().min(1)).min(1).max(500).describe("Array of media IDs to update speakers for (max 500 per call)"),
       speakers: import_zod2.z.array(
         import_zod2.z.object({
-          id: import_zod2.z.string().min(1).describe("Speaker identifier from the transcript"),
-          name: import_zod2.z.string().min(1).describe("Display name to assign to the speaker")
+          id: import_zod2.z.string().min(1).describe(
+            `Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. "Speaker 0", "Vatsal Shah"). A numeric id also works but is per-file and identifies a different person in each file, so it is unsafe here. Not a fixed identifier \u2014 it changes when the speaker is renamed.`
+          ),
+          name: import_zod2.z.string().min(1).describe("New display name to assign to the speaker")
         })
-      ).describe("Array of speaker ID to name mappings to apply to all specified media files")
+      ).describe(
+        "Speaker mappings applied to every file in mediaIds. Speakers not listed, and files with no matching speaker, are left untouched."
+      )
     },
     {
       title: "Bulk Rename Speakers Across Files",
