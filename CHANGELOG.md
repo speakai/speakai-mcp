@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.16.1 (2026-07-22)
+
+- Fixed speaker tool description in documentation
+
 ## v1.16.0 (2026-07-21)
 
 - Added update_transcription MCP tool for transcript find/replace functionality
