@@ -636,7 +636,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 15. Bulk update transcript speakers across multiple media
   registerSpeakTool(server, 
     "bulk_update_transcript_speakers",
-    "Update or rename speaker labels across multiple media files in a single operation. Applies the same speaker mappings to every specified media file. Use this instead of calling update_transcript_speakers repeatedly when renaming speakers across a project or folder. Match speakers by their current LABEL, not by numeric id — a numeric id is a per-file position, so the same id refers to a different person in each file. A file whose speakers do not match the mapping is left unchanged. Re-sending a mapping that has already been applied is a safe no-op, so do not retry a call that reported success.",
+    "Normalise speaker names that are ALREADY correct across multiple media files — for example changing \"Frederik S.\" to \"Frederik\" everywhere. Applies the same mapping to every specified media file. NOT a way to identify a speaker across a project: neither the numeric id nor a default label such as \"Speaker 1\" refers to the same person in different files, because speakers are numbered per file in order of appearance. Renaming \"Speaker 1\" across many files will label a different person in each one. Identify the speakers in each file first (get_transcript, or an identify-speakers automation), then use this tool only to tidy up naming that is already correct. Match by the speaker's current LABEL, not by numeric id. A file whose speakers do not match the mapping is left unchanged and reported as failed. Re-sending a mapping that has already been applied is a safe no-op, so do not retry a call that reported success.",
     {
       mediaIds: z
         .array(z.string().min(1))
@@ -650,7 +650,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
               .string()
               .min(1)
               .describe(
-                "Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. \"Speaker 0\", \"Vatsal Shah\"). A numeric id also works but is per-file and identifies a different person in each file, so it is unsafe here. Not a fixed identifier — it changes when the speaker is renamed."
+                "Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. \"Vatsal Shah\"). Only safe when that label already identifies the same person in every file listed — a default label like \"Speaker 1\", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed."
               ),
             name: z.string().min(1).describe("New display name to assign to the speaker"),
           })
