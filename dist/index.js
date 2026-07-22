@@ -1167,6 +1167,8 @@ var init_dist = __esm({
 // src/tools/media.ts
 var media_exports = {};
 __export(media_exports, {
+  LIST_MEDIA_DEFAULT_PAGE_SIZE: () => LIST_MEDIA_DEFAULT_PAGE_SIZE,
+  LIST_MEDIA_MAX_PAGE_SIZE: () => LIST_MEDIA_MAX_PAGE_SIZE,
   register: () => register
 });
 function register(server, client) {
@@ -1255,7 +1257,9 @@ function register(server, client) {
     {
       mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO, MediaType.TEXT]).optional().describe('Filter by media type: "audio", "video", or "text"'),
       page: import_zod2.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
-      pageSize: import_zod2.z.number().int().min(1).max(500).optional().describe("Number of results per page (default: 20, max: 500)"),
+      pageSize: import_zod2.z.number().int().min(1).max(LIST_MEDIA_MAX_PAGE_SIZE).optional().describe(
+        "Number of results per page (default: 25, max: 100). Page through larger sets rather than raising this \u2014 with include: ['transcription'] each result carries a full transcript, and an oversized response is rejected outright."
+      ),
       sortBy: import_zod2.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc" or "name:asc"'),
       filterMedia: import_zod2.z.number().int().optional().describe("Filter: 0=Uploaded, 1=Assigned, 2=Both (default: 2)"),
       filterName: import_zod2.z.string().optional().describe("Filter media by partial name match"),
@@ -1289,11 +1293,10 @@ function register(server, client) {
         if (include?.length) {
           queryParams.requestTypes = include.join(",");
         }
+        queryParams.pageSize = params.pageSize ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
         const result = await api.get("/v1/media", { params: queryParams });
         return {
-          content: [
-            { type: "text", text: JSON.stringify(result.data, null, 2) }
-          ]
+          content: [{ type: "text", text: JSON.stringify(result.data) }]
         };
       } catch (err) {
         return {
@@ -1773,7 +1776,7 @@ function register(server, client) {
     }
   );
 }
-var import_zod2;
+var import_zod2, LIST_MEDIA_DEFAULT_PAGE_SIZE, LIST_MEDIA_MAX_PAGE_SIZE;
 var init_media3 = __esm({
   "src/tools/media.ts"() {
     "use strict";
@@ -1781,6 +1784,8 @@ var init_media3 = __esm({
     init_helpers();
     init_client();
     init_dist();
+    LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
+    LIST_MEDIA_MAX_PAGE_SIZE = 100;
   }
 });
 

@@ -5,6 +5,9 @@ import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 
+export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
+export const LIST_MEDIA_MAX_PAGE_SIZE = 100;
+
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   // 1. Get signed upload URL
@@ -128,9 +131,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .number()
         .int()
         .min(1)
-        .max(500)
+        .max(LIST_MEDIA_MAX_PAGE_SIZE)
         .optional()
-        .describe("Number of results per page (default: 20, max: 500)"),
+        .describe(
+          "Number of results per page (default: 25, max: 100). Page through larger sets rather than raising this — with include: ['transcription'] each result carries a full transcript, and an oversized response is rejected outright."
+        ),
       sortBy: z
         .string()
         .optional()
@@ -189,11 +194,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         if (include?.length) {
           queryParams.requestTypes = include.join(",");
         }
+
+        queryParams.pageSize = params.pageSize ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
+
         const result = await api.get("/v1/media", { params: queryParams });
         return {
-          content: [
-            { type: "text", text: JSON.stringify(result.data, null, 2) },
-          ],
+          content: [{ type: "text", text: JSON.stringify(result.data) }],
         };
       } catch (err) {
         return {
