@@ -120,8 +120,10 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       it("accepts date range filters", async () => {
         const callback = getToolCallback(server, "list_media");
         await callback({ from: "2025-01-01", to: "2025-12-31" });
+        // pageSize is always sent now: forwarding it untouched let the API's default of 50
+        // apply while the tool documented 20.
         expect(mockGet).toHaveBeenCalledWith("/v1/media", {
-          params: { from: "2025-01-01", to: "2025-12-31" },
+          params: { from: "2025-01-01", to: "2025-12-31", pageSize: 20 },
         });
       });
 
@@ -129,7 +131,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
         const callback = getToolCallback(server, "list_media");
         await callback({ isFavorites: true });
         expect(mockGet).toHaveBeenCalledWith("/v1/media", {
-          params: { isFavorites: true },
+          params: { isFavorites: true, pageSize: 20 },
         });
       });
     });

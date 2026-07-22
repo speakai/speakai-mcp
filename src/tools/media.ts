@@ -5,6 +5,21 @@ import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 
+export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 20;
+export const LIST_MEDIA_TRANSCRIPT_PAGE_SIZE = 25;
+
+// include:["transcription"] inlines every utterance of every result: 500 files returned
+// 65MB in production, which the provider rejected and which failed the whole turn.
+export const resolveListMediaPageSize = (
+  requested: number | undefined,
+  include: string[] | undefined
+): number => {
+  const pageSize = requested ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
+  return include?.includes("transcription")
+    ? Math.min(pageSize, LIST_MEDIA_TRANSCRIPT_PAGE_SIZE)
+    : pageSize;
+};
+
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   // 1. Get signed upload URL
@@ -130,7 +145,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .min(1)
         .max(500)
         .optional()
-        .describe("Number of results per page (default: 20, max: 500)"),
+        .describe(
+          "Number of results per page (default: 20, max: 500). When include contains 'transcription' this is capped at 25, because each result then carries a full transcript."
+        ),
       sortBy: z
         .string()
         .optional()
@@ -189,11 +206,14 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         if (include?.length) {
           queryParams.requestTypes = include.join(",");
         }
+
+        // Sent explicitly: the parameter was forwarded untouched, so the API's default of
+        // 50 applied while the tool documented 20.
+        queryParams.pageSize = resolveListMediaPageSize(params.pageSize, include);
+
         const result = await api.get("/v1/media", { params: queryParams });
         return {
-          content: [
-            { type: "text", text: JSON.stringify(result.data, null, 2) },
-          ],
+          content: [{ type: "text", text: JSON.stringify(result.data) }],
         };
       } catch (err) {
         return {
