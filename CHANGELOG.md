@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.16.2 (2026-07-22)
+
+- Fixed bulk speaker tool description and updated documentation to warn against numeric IDs in bulk update transcript speakers
+
 ## v1.16.1 (2026-07-22)
 
 - Fixed speaker tool description in documentation
