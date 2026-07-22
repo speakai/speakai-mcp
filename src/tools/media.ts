@@ -5,20 +5,7 @@ import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 
-export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 20;
-export const LIST_MEDIA_TRANSCRIPT_PAGE_SIZE = 25;
-
-// include:["transcription"] inlines every utterance of every result: 500 files returned
-// 65MB in production, which the provider rejected and which failed the whole turn.
-export const resolveListMediaPageSize = (
-  requested: number | undefined,
-  include: string[] | undefined
-): number => {
-  const pageSize = requested ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
-  return include?.includes("transcription")
-    ? Math.min(pageSize, LIST_MEDIA_TRANSCRIPT_PAGE_SIZE)
-    : pageSize;
-};
+export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
@@ -146,7 +133,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .max(500)
         .optional()
         .describe(
-          "Number of results per page (default: 20, max: 500). When include contains 'transcription' this is capped at 25, because each result then carries a full transcript."
+          "Number of results per page (default: 25, max: 500). Keep this small when include contains 'transcription' — each result then carries a full transcript."
         ),
       sortBy: z
         .string()
@@ -208,8 +195,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         }
 
         // Sent explicitly: the parameter was forwarded untouched, so the API's default of
-        // 50 applied while the tool documented 20.
-        queryParams.pageSize = resolveListMediaPageSize(params.pageSize, include);
+        // 50 applied while the tool documented its own.
+        queryParams.pageSize = params.pageSize ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
 
         const result = await api.get("/v1/media", { params: queryParams });
         return {

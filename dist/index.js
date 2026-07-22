@@ -1168,9 +1168,7 @@ var init_dist = __esm({
 var media_exports = {};
 __export(media_exports, {
   LIST_MEDIA_DEFAULT_PAGE_SIZE: () => LIST_MEDIA_DEFAULT_PAGE_SIZE,
-  LIST_MEDIA_TRANSCRIPT_PAGE_SIZE: () => LIST_MEDIA_TRANSCRIPT_PAGE_SIZE,
-  register: () => register,
-  resolveListMediaPageSize: () => resolveListMediaPageSize
+  register: () => register
 });
 function register(server, client) {
   const api = client ?? speakClient;
@@ -1259,7 +1257,7 @@ function register(server, client) {
       mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO, MediaType.TEXT]).optional().describe('Filter by media type: "audio", "video", or "text"'),
       page: import_zod2.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
       pageSize: import_zod2.z.number().int().min(1).max(500).optional().describe(
-        "Number of results per page (default: 20, max: 500). When include contains 'transcription' this is capped at 25, because each result then carries a full transcript."
+        "Number of results per page (default: 25, max: 500). Keep this small when include contains 'transcription' \u2014 each result then carries a full transcript."
       ),
       sortBy: import_zod2.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc" or "name:asc"'),
       filterMedia: import_zod2.z.number().int().optional().describe("Filter: 0=Uploaded, 1=Assigned, 2=Both (default: 2)"),
@@ -1294,7 +1292,7 @@ function register(server, client) {
         if (include?.length) {
           queryParams.requestTypes = include.join(",");
         }
-        queryParams.pageSize = resolveListMediaPageSize(params.pageSize, include);
+        queryParams.pageSize = params.pageSize ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
         const result = await api.get("/v1/media", { params: queryParams });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data) }]
@@ -1773,7 +1771,7 @@ function register(server, client) {
     }
   );
 }
-var import_zod2, LIST_MEDIA_DEFAULT_PAGE_SIZE, LIST_MEDIA_TRANSCRIPT_PAGE_SIZE, resolveListMediaPageSize;
+var import_zod2, LIST_MEDIA_DEFAULT_PAGE_SIZE;
 var init_media3 = __esm({
   "src/tools/media.ts"() {
     "use strict";
@@ -1781,12 +1779,7 @@ var init_media3 = __esm({
     init_helpers();
     init_client();
     init_dist();
-    LIST_MEDIA_DEFAULT_PAGE_SIZE = 20;
-    LIST_MEDIA_TRANSCRIPT_PAGE_SIZE = 25;
-    resolveListMediaPageSize = (requested, include) => {
-      const pageSize = requested ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
-      return include?.includes("transcription") ? Math.min(pageSize, LIST_MEDIA_TRANSCRIPT_PAGE_SIZE) : pageSize;
-    };
+    LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
   }
 });
 

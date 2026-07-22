@@ -1,35 +1,55 @@
-import { describe, it, expect } from "vitest";
-import {
-  resolveListMediaPageSize,
-  LIST_MEDIA_DEFAULT_PAGE_SIZE,
-  LIST_MEDIA_TRANSCRIPT_PAGE_SIZE,
-} from "../src/tools/media.js";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { AxiosInstance } from "axios";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { register } from "../src/tools/media.js";
+import { LIST_MEDIA_DEFAULT_PAGE_SIZE } from "../src/tools/media.js";
 
-describe("resolveListMediaPageSize", () => {
-  it("applies the documented default when the model omits pageSize", () => {
-    // Previously the parameter was forwarded untouched, so the API's default of 50 applied
-    // while the tool told the model 20.
-    expect(resolveListMediaPageSize(undefined, undefined)).toBe(LIST_MEDIA_DEFAULT_PAGE_SIZE);
-    expect(resolveListMediaPageSize(undefined, ["keywords"])).toBe(LIST_MEDIA_DEFAULT_PAGE_SIZE);
+function getToolCallback(server: McpServer, toolName: string): Function {
+  const tools = (server as any)._registeredTools;
+  const tool = tools[toolName];
+  if (!tool) throw new Error(`Tool ${toolName} not registered`);
+  return (params: any) => tool.handler(params, {});
+}
+
+describe("list_media page size", () => {
+  let server: McpServer;
+  let mockGet: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    mockGet = vi.fn().mockResolvedValue({ data: { mediaList: [] } });
+    server = new McpServer({ name: "test", version: "0.0.0" });
+    register(server, { get: mockGet } as unknown as AxiosInstance);
   });
 
-  it("honours an explicit pageSize when transcripts are not requested", () => {
-    expect(resolveListMediaPageSize(500, undefined)).toBe(500);
-    expect(resolveListMediaPageSize(500, ["fields"])).toBe(500);
-    expect(resolveListMediaPageSize(1, ["speakers", "keywords"])).toBe(1);
+  it("defaults to 25 rather than letting the API apply its own", () => {
+    expect(LIST_MEDIA_DEFAULT_PAGE_SIZE).toBe(25);
   });
 
-  it("caps the page when transcripts are inlined", () => {
-    // 500 files with transcripts inline produced a 65MB response the provider rejected.
-    expect(resolveListMediaPageSize(500, ["transcription"])).toBe(LIST_MEDIA_TRANSCRIPT_PAGE_SIZE);
-    expect(resolveListMediaPageSize(100, ["fields", "transcription"])).toBe(LIST_MEDIA_TRANSCRIPT_PAGE_SIZE);
+  it("sends the default when the model omits pageSize", async () => {
+    const callback = getToolCallback(server, "list_media");
+    await callback({});
+    expect(mockGet).toHaveBeenCalledWith("/v1/media", { params: { pageSize: 25 } });
   });
 
-  it("does not raise a page that is already small", () => {
-    expect(resolveListMediaPageSize(5, ["transcription"])).toBe(5);
+  it("honours an explicit pageSize, including the maximum", async () => {
+    const callback = getToolCallback(server, "list_media");
+    await callback({ pageSize: 500 });
+    expect(mockGet).toHaveBeenCalledWith("/v1/media", { params: { pageSize: 500 } });
   });
 
-  it("caps the default too when transcripts are requested without a pageSize", () => {
-    expect(resolveListMediaPageSize(undefined, ["transcription"])).toBe(LIST_MEDIA_DEFAULT_PAGE_SIZE);
+  it("does not cap when transcripts are requested", async () => {
+    const callback = getToolCallback(server, "list_media");
+    await callback({ pageSize: 500, include: ["transcription"] });
+    expect(mockGet).toHaveBeenCalledWith("/v1/media", {
+      params: { pageSize: 500, requestTypes: "transcription" },
+    });
+  });
+
+  it("applies the default alongside other filters", async () => {
+    const callback = getToolCallback(server, "list_media");
+    await callback({ isFavorites: true });
+    expect(mockGet).toHaveBeenCalledWith("/v1/media", {
+      params: { isFavorites: true, pageSize: 25 },
+    });
   });
 });
