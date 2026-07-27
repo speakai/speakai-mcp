@@ -127,24 +127,6 @@
       }
     },
     {
-      "id": "zed",
-      "title": "Zed",
-      "tagline": "stdio transport via the npm package.",
-      "steps": [
-        { "html": "Get your API key at <a href=\"https://app.speakai.co/developers/apikeys\" target=\"_blank\" rel=\"noopener\">app.speakai.co/developers/apikeys</a>" },
-        { "html": "Add the config below to your Zed <code>settings.json</code>" },
-        { "html": "Zed uses the stdio transport rather than the HTTP URL. If your workflow needs HTTP, Cursor or VS Code are the better choice" }
-      ],
-      "config": {
-        "context_servers": {
-          "speakai": {
-            "command": { "path": "npx", "args": ["-y", "@speakai/mcp-server"] },
-            "settings": {}
-          }
-        }
-      }
-    },
-    {
       "id": "chatgpt-api",
       "title": "ChatGPT API / Responses",
       "tagline": "For developers calling the Responses API directly.",
