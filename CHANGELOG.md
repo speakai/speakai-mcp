@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.17.0 (2026-07-27)
+
+- Added update_transcription to tools.json and new tools Windsurf and Zed with updated categories
+
 ## v1.16.4 (2026-07-22)
 
 - Lowered the page ceiling for media transcripts and adjusted default page size settings.
