@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.17.1 (2026-07-27)
+
+- No user-facing changes made.
+
 ## v1.17.0 (2026-07-27)
 
 - Added update_transcription to tools.json and new tools Windsurf and Zed with updated categories
