@@ -512,8 +512,8 @@
       ]
     },
     {
-      "id": "clips-exports",
-      "name": "Clips & exports",
+      "id": "clips",
+      "name": "Clips",
       "iconKey": "clips-exports",
       "shortDescription": "Highlight clips from any time range. Export PDF, DOCX, SRT, VTT, TXT, CSV.",
       "tools": [
@@ -552,7 +552,15 @@
           "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
-        },
+        }
+      ]
+    },
+    {
+      "id": "exports",
+      "name": "Exports",
+      "iconKey": "clips-exports",
+      "shortDescription": "Highlight clips from any time range. Export PDF, DOCX, SRT, VTT, TXT, CSV.",
+      "tools": [
         {
           "name": "export_media",
           "title": "Export Media Transcript",
@@ -627,8 +635,8 @@
       ]
     },
     {
-      "id": "automations-webhooks",
-      "name": "Automations & webhooks",
+      "id": "automations",
+      "name": "Automations",
       "iconKey": "automations-webhooks",
       "shortDescription": "Trigger actions on new recordings. Send events to your own backend.",
       "tools": [
@@ -675,42 +683,6 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
-        },
-        {
-          "name": "create_webhook",
-          "title": "Create Webhook",
-          "description": "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
-          "readOnlyHint": false,
-          "destructiveHint": false,
-          "idempotentHint": false,
-          "openWorldHint": true
-        },
-        {
-          "name": "list_webhooks",
-          "title": "List Webhooks",
-          "description": "List all configured webhooks in the workspace.",
-          "readOnlyHint": true,
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": false
-        },
-        {
-          "name": "update_webhook",
-          "title": "Update Webhook",
-          "description": "Update an existing webhook. This replaces the webhook config, so `callbackUrl` must always be supplied.",
-          "readOnlyHint": false,
-          "destructiveHint": false,
-          "idempotentHint": true,
-          "openWorldHint": true
-        },
-        {
-          "name": "delete_webhook",
-          "title": "Delete Webhook",
-          "description": "Delete a webhook and stop receiving notifications at its endpoint.",
-          "readOnlyHint": false,
-          "destructiveHint": true,
-          "idempotentHint": true,
           "openWorldHint": true
         },
         {
@@ -795,6 +767,59 @@
           "openWorldHint": false
         },
         {
+          "name": "build_automation",
+          "title": "Build Automation",
+          "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. Prefer this over create_automation unless you need raw control.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        }
+      ]
+    },
+    {
+      "id": "webhooks",
+      "name": "Webhooks",
+      "iconKey": "automations-webhooks",
+      "shortDescription": "Trigger actions on new recordings. Send events to your own backend.",
+      "tools": [
+        {
+          "name": "create_webhook",
+          "title": "Create Webhook",
+          "description": "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "list_webhooks",
+          "title": "List Webhooks",
+          "description": "List all configured webhooks in the workspace.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_webhook",
+          "title": "Update Webhook",
+          "description": "Update an existing webhook. This replaces the webhook config, so `callbackUrl` must always be supplied.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        {
+          "name": "delete_webhook",
+          "title": "Delete Webhook",
+          "description": "Delete a webhook and stop receiving notifications at its endpoint.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        {
           "name": "provision_inbound_webhook",
           "title": "Provision Inbound Webhook",
           "description": "Provision a standalone inbound webhook and get its public receive URL (inboundUrl) BEFORE creating an automation. Webhook-first flow: provision, send a test payload to the URL (append ?test=1 to only capture a sample without running anything), inspect mappable payload paths with get_inbound_webhook, then pass the webhookId as trigger.webhookId to create_automation.",
@@ -820,21 +845,12 @@
           "destructiveHint": false,
           "idempotentHint": true,
           "openWorldHint": false
-        },
-        {
-          "name": "build_automation",
-          "title": "Build Automation",
-          "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. Prefer this over create_automation unless you need raw control.",
-          "readOnlyHint": false,
-          "destructiveHint": false,
-          "idempotentHint": false,
-          "openWorldHint": true
         }
       ]
     },
     {
-      "id": "text-fields",
-      "name": "Text notes & custom fields",
+      "id": "text-notes",
+      "name": "Text notes",
       "iconKey": "text-fields",
       "shortDescription": "Standalone AI-analyzed text notes plus custom fields you can tag any media file with.",
       "tools": [
@@ -873,7 +889,15 @@
           "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
-        },
+        }
+      ]
+    },
+    {
+      "id": "custom-fields",
+      "name": "Custom fields",
+      "iconKey": "text-fields",
+      "shortDescription": "Standalone AI-analyzed text notes plus custom fields you can tag any media file with.",
+      "tools": [
         {
           "name": "list_fields",
           "title": "List Custom Fields",
