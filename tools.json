@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 111,
+  "totalTools": 112,
   "categories": [
     {
       "id": "media",
@@ -9,6 +9,15 @@
       "iconKey": "media",
       "shortDescription": "Upload audio or video, fetch transcripts, get AI insights, organize, favorite, export.",
       "tools": [
+        {
+          "name": "update_transcription",
+          "title": "Update Transcription Text",
+          "description": "Edit the official transcript text of a single media file by finding and replacing text. Replaces every occurrence of the original text with the replacement (leave replacement empty to delete the text) and reports how many occurrences were replaced. Use update_transcript_speakers to rename speaker labels instead.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
         {
           "name": "get_signed_upload_url",
           "title": "Get Signed Upload URL",
