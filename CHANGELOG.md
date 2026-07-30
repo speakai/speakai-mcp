@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.18.0 (2026-07-30)
+
+- Added a new tool hint for the recorder
+
 ## v1.17.1 (2026-07-27)
 
 - No user-facing changes made.
