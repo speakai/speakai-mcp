@@ -109,7 +109,6 @@ describe("MCP Server Smoke Tests", () => {
       "delete_recorder",
       "delete_scheduled_assistant",
       "delete_webhook",
-      "generate_recorder_url",
       "get_live_meeting_transcript",
       "provision_inbound_webhook",
       "remove_assistant_from_meeting",

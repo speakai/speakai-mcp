@@ -93,7 +93,7 @@
         {
           "name": "update_transcript_speakers",
           "title": "Rename Transcript Speakers",
-          "description": "Update or rename speaker labels in a media transcript.",
+          "description": "Update or rename speaker labels in a single media transcript. Call get_transcript first to read the speaker list — a speaker's label is whatever it was last renamed to, not a fixed value, so ids from an earlier turn may be stale. Renaming a speaker to a name another speaker already has is refused as a collision. Re-sending a rename that has already been applied is a safe no-op, so do not retry a call that reported success.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -102,7 +102,7 @@
         {
           "name": "bulk_update_transcript_speakers",
           "title": "Bulk Rename Speakers Across Files",
-          "description": "Update or rename speaker labels across multiple media files in a single operation. Applies the same speaker mappings to every specified media file. Use this instead of calling update_transcript_speakers repeatedly when renaming speakers across a project or folder.",
+          "description": "Normalise speaker names that are ALREADY correct across multiple media files — for example changing \"Frederik S.\" to \"Frederik\" everywhere. Applies the same mapping to every specified media file. NOT a way to identify a speaker across a project: neither the numeric id nor a default label such as \"Speaker 1\" refers to the same person in different files, because speakers are numbered per file in order of appearance. Renaming \"Speaker 1\" across many files will label a different person in each one. Identify the speakers in each file first (get_transcript, or an identify-speakers automation), then use this tool only to tidy up naming that is already correct. Match by the speaker's current LABEL, not by numeric id. A file whose speakers do not match the mapping is left unchanged and reported as failed. Re-sending a mapping that has already been applied is a safe no-op, so do not retry a call that reported success.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -480,7 +480,7 @@
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "update_recorder_settings",
