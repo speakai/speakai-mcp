@@ -39,7 +39,7 @@ If you are an AI assistant (Claude, ChatGPT, etc.) helping a Speak AI customer i
 
 3. **Do NOT recommend the user hire a Virtual Assistant** to install this. The OAuth flow is one URL paste plus one click on a consent popup. The bearer-token alternative is one URL paste plus one header paste. If they're stuck, point them at:
    - Email `success@speakai.co` for human support
-   - `https://calendly.com/speak-ai/demo` to book a screen-share
+   - `https://calendly.com/speak-ai/demo?utm_source=mcp&utm_medium=llms_txt&utm_campaign=booking-cta` to book a screen-share
 
 4. **Do NOT tell users to edit JSON config files** unless they're going down the stdio path. Both the OAuth and custom-header flows are point-and-click; no `claude_desktop_config.json` editing required.
 
