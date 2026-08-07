@@ -9,7 +9,6 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 permissions:
   contents: write
   id-token: write
-  models: read
 
 jobs:
   release:
@@ -64,75 +63,44 @@ jobs:
           echo "Commits since last release:"
           echo "$COMMIT_LOG"
 
-      - name: Analyze changes with AI
-        if: steps.commits.outputs.has_changes == 'true'
-        id: ai
-        uses: actions/ai-inference@v2
-        with:
-          model: openai/gpt-4o-mini
-          temperature: 0
-          max-completion-tokens: 512
-          system-prompt: |
-            You are a release manager for an npm package. Analyze git commits and determine the semver bump type and write a changelog entry.
-
-            Rules:
-            - "fix:", bug fixes, typo fixes, error handling improvements → patch
-            - "feat:", new features, new tools, new commands, new endpoints → minor
-            - "BREAKING CHANGE", removed features, changed API signatures → major
-            - "chore:", "docs:", "ci:", "test:", "refactor:" with no user-facing change → none
-            - Multiple changes: pick the highest bump level across all commits.
-            - When unsure between patch and minor, choose patch.
-
-            You MUST respond in EXACTLY this format — two lines, no markdown, no extra text:
-            bump: patch
-            changelog: Added input validation tests and coverage gating
-          prompt: |
-            Package: @speakai/mcp-server (current version: ${{ steps.commits.outputs.current_version }})
-
-            Commits since last release:
-            ${{ steps.commits.outputs.log }}
-
-      - name: Parse AI response and bump version
+      - name: Decide the bump and changelog
         if: steps.commits.outputs.has_changes == 'true'
         id: bump
         env:
-          AI_RESPONSE: ${{ steps.ai.outputs.response }}
+          COMMIT_LOG: ${{ steps.commits.outputs.log }}
         run: |
-          echo "AI response: $AI_RESPONSE"
-
-          BUMP=$(echo "$AI_RESPONSE" | grep -oP 'bump:\s*\K\w+' | head -1)
-          CHANGELOG=$(echo "$AI_RESPONSE" | grep -oP 'changelog:\s*\K.+' | head -1)
-
+          # Conventional commits, parsed here rather than by a model. The
+          # previous version called GitHub Models, which now returns 410 and
+          # failed every release.
+          BUMP="patch"
+          if grep -qiE '^[0-9a-f]+ (BREAKING CHANGE|[a-z]+(\([^)]*\))?!:)' <<< "$COMMIT_LOG" \
+            || grep -qi 'BREAKING CHANGE' <<< "$COMMIT_LOG"; then
+            BUMP="major"
+          elif grep -qiE '^[0-9a-f]+ feat(\([^)]*\))?:' <<< "$COMMIT_LOG"; then
+            BUMP="minor"
+          fi
           echo "Detected bump: $BUMP"
+
+          # First user-facing subject, else a maintenance line. Never skip a release.
+          CHANGELOG=$(grep -iE '^[0-9a-f]+ (feat|fix|perf)(\([^)]*\))?!?:' <<< "$COMMIT_LOG" \
+            | head -1 | sed -E 's/^[0-9a-f]+ //')
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="Maintenance release"
+          fi
           echo "Changelog: $CHANGELOG"
-
-          # Floor: never skip a release. "none" or empty → patch.
-          if [ "$BUMP" = "none" ] || [ -z "$BUMP" ]; then
-            echo "AI returned '$BUMP' — flooring to patch."
-            BUMP="patch"
-            if [ -z "$CHANGELOG" ]; then
-              CHANGELOG="Maintenance release"
-            fi
-          fi
-
-          # Validate bump is a valid semver keyword (defensive — also flooring invalid → patch)
-          if [[ "$BUMP" != "patch" && "$BUMP" != "minor" && "$BUMP" != "major" ]]; then
-            echo "Invalid bump type '$BUMP' — flooring to patch."
-            BUMP="patch"
-          fi
 
           echo "should_release=true" >> "$GITHUB_OUTPUT"
           echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
 
-          # Bump version in package.json (no git tag yet)
           NEW_VERSION=$(npm version "$BUMP" --no-git-tag-version)
           echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
           echo "Bumped to $NEW_VERSION"
 
-          # Keep distribution metadata in lockstep with the npm package.
-          node -e "const fs=require('fs'); const v='${NEW_VERSION#v}'; const write=(p,o)=>fs.writeFileSync(p, JSON.stringify(o, null, 2)+'\n'); const server=JSON.parse(fs.readFileSync('server.json','utf8')); server.version=v; for (const pkg of server.packages || []) { if (pkg.identifier === '@speakai/mcp-server') pkg.version=v; } write('server.json', server); const marketplace=JSON.parse(fs.readFileSync('.claude-plugin/marketplace.json','utf8')); for (const plugin of marketplace.plugins || []) { if (plugin.name === 'speakai-mcp') plugin.version=v; } write('.claude-plugin/marketplace.json', marketplace); const claudePlugin=JSON.parse(fs.readFileSync('plugins/speakai-mcp/.claude-plugin/plugin.json','utf8')); claudePlugin.version=v; write('plugins/speakai-mcp/.claude-plugin/plugin.json', claudePlugin); const mcp=JSON.parse(fs.readFileSync('plugins/speakai-mcp/.mcp.json','utf8')); const args=mcp.mcpServers?.speakai?.args || []; const i=args.findIndex((arg)=>arg.startsWith('@speakai/mcp-server')); if (i >= 0) args[i]='@speakai/mcp-server@'+v; write('plugins/speakai-mcp/.mcp.json', mcp); const skillPath='plugins/speakai-mcp/skills/getting-started/SKILL.md'; let skill=fs.readFileSync(skillPath,'utf8'); skill=skill.replace(/^version:\s*[\d.]+/m, 'version: '+v); skill=skill.replace(/@speakai\/mcp-server@[\d.]+/g, '@speakai/mcp-server@'+v); fs.writeFileSync(skillPath, skill);"
+          # One generator owns every derived surface: server.json, the three
+          # plugin manifests, .mcp.json, marketplace.json, all skills, README
+          # and llms.txt. tests/derived-surfaces.test.ts fails if this drifts.
+          npx tsx scripts/sync-plugin.ts
 
-          # Update CHANGELOG.md
           DATE=$(date +%Y-%m-%d)
           if [ -f CHANGELOG.md ]; then
             EXISTING=$(cat CHANGELOG.md)
@@ -143,6 +111,9 @@ jobs:
             printf "# Changelog\n\n## %s (%s)\n\n- %s\n" \
               "$NEW_VERSION" "$DATE" "$CHANGELOG" > CHANGELOG.md
           fi
+
+          # Prove the release is self-consistent before it is tagged.
+          npx tsx scripts/sync-plugin.ts --check
 
       - name: Check for tag conflict
         if: steps.bump.outputs.should_release == 'true'
@@ -170,7 +141,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json CHANGELOG.md server.json .claude-plugin/marketplace.json plugins/speakai-mcp/.claude-plugin/plugin.json plugins/speakai-mcp/.mcp.json plugins/speakai-mcp/skills/getting-started/SKILL.md
+          git add -A
           git commit -m "chore: release ${{ steps.bump.outputs.new_version }} [skip ci]"
           git tag "${{ steps.bump.outputs.new_version }}"
           git push origin main --tags
