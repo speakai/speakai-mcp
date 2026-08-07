@@ -14,6 +14,9 @@ import { fileURLToPath } from "url";
 import path from "path";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+/** npx resolves to npx.cmd on Windows, which execFile will not find. */
+const NPX = process.platform === "win32" ? "npx.cmd" : "npx";
 const PLUGIN = path.join(ROOT, "plugins/speakai-mcp");
 const LIVE = process.argv.includes("--live");
 
@@ -173,7 +176,7 @@ check("every tool named in a skill exists", () => {
 
 check("derived surfaces are in sync", () => {
   try {
-    execFileSync("npx", ["tsx", "scripts/sync-plugin.ts", "--check"], {
+    execFileSync(NPX, ["tsx", "scripts/sync-plugin.ts", "--check"], {
       cwd: ROOT,
       stdio: ["ignore", "pipe", "pipe"],
     });

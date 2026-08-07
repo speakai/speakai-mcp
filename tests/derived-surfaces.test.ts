@@ -10,13 +10,16 @@ import path from "path";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
+/** npx resolves to npx.cmd on Windows, which execFile will not find. */
+const NPX = process.platform === "win32" ? "npx.cmd" : "npx";
+
 describe("derived surfaces", () => {
   it("state the current version and tool count everywhere", () => {
     let output = "";
     let failed = false;
 
     try {
-      output = execFileSync("npx", ["tsx", "scripts/sync-plugin.ts", "--check"], {
+      output = execFileSync(NPX, ["tsx", "scripts/sync-plugin.ts", "--check"], {
         cwd: ROOT,
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
