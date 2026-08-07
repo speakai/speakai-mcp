@@ -167,8 +167,8 @@ const RULES: Rule[] = [
 
 ];
 
-// Every skill that states a total. Per-category counts inside a skill are left
-// alone; they describe one category and are checked by check-skill-counts below.
+// Skills state the total and the server version. Per-category counts inside a
+// skill are validated against the registry by the audit below.
 const SKILLS_DIR = "plugins/speakai-mcp/skills";
 const skillNames = readdirSync(path.join(ROOT, SKILLS_DIR), { withFileTypes: true })
   .filter((e) => e.isDirectory())
@@ -199,7 +199,9 @@ for (const rule of RULES) {
     process.exit(1);
   }
   const after = rule.edit(before);
-  if (after === before) continue;
+  // Compare without line endings: a Windows checkout carries CRLF while the
+  // rules emit LF, and that difference is not drift.
+  if (after.replace(/\r\n/g, "\n") === before.replace(/\r\n/g, "\n")) continue;
 
   drifted.push(rule.file);
   if (!CHECK) writeFileSync(path.join(ROOT, rule.file), after);
