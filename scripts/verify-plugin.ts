@@ -1,14 +1,12 @@
 /**
- * The plugin verification checklist, as a command rather than a document nobody
- * reads. Run it before shipping any change to plugins/speakai-mcp/.
+ * Pre-ship checks for plugins/speakai-mcp.
  *
- *   npx tsx scripts/verify-plugin.ts          # static checks only
+ * Validates both manifests against the Agent Plugins 1.0.0 schemas, every
+ * SKILL.md against the Agent Skills specification, and the tool names the skills
+ * reference against tools.json.
+ *
+ *   npx tsx scripts/verify-plugin.ts          # static checks
  *   npx tsx scripts/verify-plugin.ts --live   # also probe the remote endpoint
- *
- * Every check here exists because something it covers was actually wrong once:
- * the skill claimed 84 tools, the Codex manifest sat at 1.6.0, three skills told
- * agents to send `Authorization: Bearer` to REST endpoints, and one skill had a
- * nested metadata object the Agent Skills specification forbids.
  */
 import { readFileSync, readdirSync, existsSync } from "fs";
 import { execFileSync } from "child_process";
@@ -136,6 +134,8 @@ for (const dir of skillDirs) {
 
 /* ------------------------------------------------- factual correctness ---- */
 
+// Only the MCP endpoint accepts Bearer. REST uses x-speakai-key and
+// x-access-token, which is the path src/client.ts implements.
 check("Bearer is used only against the MCP endpoint", () => {
   const offenders: string[] = [];
   for (const dir of skillDirs) {

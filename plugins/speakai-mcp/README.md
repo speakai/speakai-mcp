@@ -26,7 +26,7 @@ plugins/speakai-mcp/
 │   └── automations-and-webhooks/
 ├── .claude-plugin/plugin.json  # Claude Code's own manifest format
 ├── .codex-plugin/plugin.json   # Codex's own manifest format
-└── .mcp.json                   # stdio server config used by those two clients
+└── .mcp.json                   # stdio server config, used by Claude Code
 ```
 
 `plugin.json` and `mcp.json` are the portable core. The dot-directories are each client's
@@ -62,7 +62,8 @@ claude plugin install speakai-mcp@speakai
 ```
 
 Claude Code uses `.mcp.json`, which runs the server locally over stdio and asks for your
-Speak AI API key. Create one at <https://app.speakai.co/developers/apikeys>.
+Speak AI API key. Codex has no equivalent prompt, so its manifest points at the remote
+endpoint instead. Create one at <https://app.speakai.co/developers/apikeys>.
 
 ## Skills
 
@@ -121,9 +122,7 @@ npm run sync          # rewrite every derived surface
 npm run sync:check    # report drift, used by CI
 ```
 
-`tests/derived-surfaces.test.ts` fails the build when any of them drift. This exists because
-they did drift, repeatedly and silently: this plugin's skill claimed 84 and the root README
-claimed 107 long after the real count reached 112.
+`tests/derived-surfaces.test.ts` fails the build when any of them drift.
 
 When you change the manifests themselves, read the
 [Agent Plugins specification](https://agent-plugins.org/specification) first. `plugin.json`

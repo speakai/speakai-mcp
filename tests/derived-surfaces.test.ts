@@ -1,14 +1,6 @@
 /**
- * Fails when any derived surface drifts from the single source of truth.
- *
- * This exists because drift shipped repeatedly and silently: the agent plugin's
- * skill claimed 84 tools, the README and landing page claimed 107, the Codex
- * manifest sat at version 1.6.0, and the homepage said the automations and
- * webhooks card held 9 tools when it held 22. Nothing failed, because nothing
- * checked. tests/tools-coverage.test.ts pins the tool registry; this pins
- * everything that quotes it.
- *
- * Fix a failure with: npx tsx scripts/sync-plugin.ts
+ * Fails when a derived surface drifts from the single source of truth.
+ * Fix with: npx tsx scripts/sync-plugin.ts
  */
 import { describe, it, expect } from "vitest";
 import { execFileSync } from "child_process";
@@ -39,14 +31,8 @@ describe("derived surfaces", () => {
 });
 
 /**
- * Counts drifting is one failure mode. Instructions drifting is the other, and it
- * is worse: a stale number is embarrassing, a wrong auth header makes every call
- * an agent copies fail.
- *
- * Three skills shipped `Authorization: Bearer` against REST endpoints. Only the
- * MCP endpoint accepts Bearer. REST takes `x-speakai-key` plus `x-access-token`,
- * which is the only path src/client.ts implements. This pins that so a future
- * edit cannot reintroduce it.
+ * Only the MCP endpoint accepts Bearer. The REST API takes `x-speakai-key` and
+ * `x-access-token`, which is the path src/client.ts implements.
  */
 describe("skill auth examples", () => {
   const SKILLS_DIR = path.join(ROOT, "plugins/speakai-mcp/skills");
