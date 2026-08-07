@@ -3,33 +3,21 @@
  * Fix with: npx tsx scripts/sync-plugin.ts
  */
 import { describe, it, expect } from "vitest";
-import { execFileSync } from "child_process";
 import { readFileSync, readdirSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
+import { syncDerivedSurfaces } from "../scripts/sync-plugin.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-/** npx resolves to npx.cmd on Windows, which execFile will not find. */
-const NPX = process.platform === "win32" ? "npx.cmd" : "npx";
-
 describe("derived surfaces", () => {
   it("state the current version and tool count everywhere", () => {
-    let output = "";
-    let failed = false;
-
-    try {
-      output = execFileSync(NPX, ["tsx", "scripts/sync-plugin.ts", "--check"], {
-        cwd: ROOT,
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "pipe"],
-      });
-    } catch (error: any) {
-      failed = true;
-      output = `${error.stdout ?? ""}${error.stderr ?? ""}`;
-    }
-
-    expect(failed, `\n${output}\n`).toBe(false);
+    const { drifted, stale } = syncDerivedSurfaces(false);
+    const problems = [
+      ...drifted.map((f) => `  out of step: ${f}`),
+      ...stale,
+    ];
+    expect(problems, `\n${problems.join("\n")}\n\nFix: npx tsx scripts/sync-plugin.ts\n`).toEqual([]);
   });
 });
 

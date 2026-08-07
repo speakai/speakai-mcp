@@ -15,7 +15,7 @@
  *   npx tsx scripts/sync-plugin.ts --check   # exit 1 on drift, for CI
  */
 import { readFileSync, writeFileSync, readdirSync } from "fs";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import path from "path";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -188,15 +188,21 @@ for (const skill of skillNames) {
 
 /* ---------------------------------------------------------------- apply --- */
 
-const drifted: string[] = [];
+/**
+ * Applies the rules and audits, returning what is out of step. Exported so the
+ * test can call it directly rather than spawning a process.
+ */
+export function syncDerivedSurfaces(write: boolean) {
+  /* ---------------------------------------------------------------- apply --- */
 
-for (const rule of RULES) {
+  const drifted: string[] = [];
+
+  for (const rule of RULES) {
   let before: string;
   try {
     before = read(rule.file);
   } catch {
-    console.error(`sync-plugin: missing derived surface ${rule.file}`);
-    process.exit(1);
+    throw new Error(`missing derived surface ${rule.file}`);
   }
   const after = rule.edit(before);
   // Compare without line endings: a Windows checkout carries CRLF while the
@@ -204,24 +210,24 @@ for (const rule of RULES) {
   if (after.replace(/\r\n/g, "\n") === before.replace(/\r\n/g, "\n")) continue;
 
   drifted.push(rule.file);
-  if (!CHECK) writeFileSync(path.join(ROOT, rule.file), after);
-}
+  if (write) writeFileSync(path.join(ROOT, rule.file), after);
+  }
 
-/* ----------------------------------------------------------------- audit -- */
+  /* ----------------------------------------------------------------- audit -- */
 
-/**
+  /**
  * Catches counts in phrasings no rule covers. Per-category counts in README
  * `<summary>` rows are excluded, since the rule above derives those.
  */
-const AUDIT_FILES = [
+  const AUDIT_FILES = [
   "README.md",
   "llms.txt",
   "plugins/speakai-mcp/README.md",
   ...skillNames.map((s) => `${SKILLS_DIR}/${s}/SKILL.md`),
-];
-const stale: string[] = [];
+  ];
+  const stale: string[] = [];
 
-for (const file of AUDIT_FILES) {
+  for (const file of AUDIT_FILES) {
   let text: string;
   try {
     text = read(file);
@@ -252,21 +258,21 @@ for (const file of AUDIT_FILES) {
       }
     }
   });
-}
+  }
 
-/** The same, for the package version. */
-// marketplace.json carries a catalog version of its own, which is not the
-// package version, so it is synced but not audited against it.
-const VERSION_AUDIT_FILES = [
+  /** The same, for the package version. */
+  // marketplace.json carries a catalog version of its own, which is not the
+  // package version, so it is synced but not audited against it.
+  const VERSION_AUDIT_FILES = [
   "server.json",
   "plugins/speakai-mcp/plugin.json",
   "plugins/speakai-mcp/.claude-plugin/plugin.json",
   "plugins/speakai-mcp/.codex-plugin/plugin.json",
   "plugins/speakai-mcp/.mcp.json",
   ...skillNames.map((s) => `${SKILLS_DIR}/${s}/SKILL.md`),
-];
+  ];
 
-for (const file of VERSION_AUDIT_FILES) {
+  for (const file of VERSION_AUDIT_FILES) {
   let text: string;
   try {
     text = read(file);
@@ -282,18 +288,28 @@ for (const file of VERSION_AUDIT_FILES) {
       }
     }
   });
+  }
+
+  return { drifted, stale };
 }
 
-if (stale.length) {
+/* ---------------------------------------------------------------- cli ----- */
+
+// Only when run directly. Importing this module, as the test does, must not
+// write files or exit the process.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const { drifted, stale } = syncDerivedSurfaces(!CHECK);
+
+  if (stale.length) {
   console.error(
     `sync-plugin: ${stale.length} stale tool count(s) that no rule covers.\n` +
       stale.join("\n") +
       `\n\nAdd a rule for the phrasing, or correct the text by hand.`,
   );
   process.exit(1);
-}
+  }
 
-if (CHECK) {
+  if (CHECK) {
   if (drifted.length) {
     console.error(
       `sync-plugin: ${drifted.length} file(s) are out of step with package.json ` +
@@ -304,9 +320,10 @@ if (CHECK) {
     process.exit(1);
   }
   console.log(`sync-plugin: all derived surfaces match version ${version} and ${toolCount} tools.`);
-} else if (drifted.length) {
+  } else if (drifted.length) {
   console.log(`sync-plugin: updated ${drifted.length} file(s) to version ${version}, ${toolCount} tools:`);
   for (const f of drifted) console.log(`  - ${f}`);
-} else {
+  } else {
   console.log(`sync-plugin: already in step (version ${version}, ${toolCount} tools).`);
+  }
 }
