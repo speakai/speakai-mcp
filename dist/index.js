@@ -283,7 +283,7 @@ var init_auth = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/automation.js
-var AutomationTrigger, AutomationAction, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
+var AutomationTrigger, AutomationAction, AutomationStepType, AutomationRunStatus, AutomationIOType, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
 var init_automation = __esm({
   "node_modules/@speakai/shared/dist/enums/automation.js"() {
     "use strict";
@@ -291,11 +291,38 @@ var init_automation = __esm({
       AutomationTrigger2["FOLDERS"] = "folders";
       AutomationTrigger2["TAGS"] = "tags";
       AutomationTrigger2["KEYWORDS"] = "keywords";
+      AutomationTrigger2["COMPOSIO"] = "composio";
+      AutomationTrigger2["WEBHOOK"] = "webhook";
     })(AutomationTrigger || (AutomationTrigger = {}));
     (function(AutomationAction2) {
       AutomationAction2["MAGIC_PROMPT"] = "magic-prompt";
       AutomationAction2["TRANSLATION"] = "translation";
     })(AutomationAction || (AutomationAction = {}));
+    (function(AutomationStepType2) {
+      AutomationStepType2["TRIGGER"] = "trigger";
+      AutomationStepType2["MAGIC_PROMPT"] = "magic-prompt";
+      AutomationStepType2["TRANSLATION"] = "translation";
+      AutomationStepType2["COMPOSIO_ACTION"] = "composio-action";
+      AutomationStepType2["FILTER"] = "filter";
+      AutomationStepType2["SPEAK_UPLOAD"] = "speak-upload";
+      AutomationStepType2["NOTIFY"] = "notify";
+      AutomationStepType2["OUTBOUND_WEBHOOK"] = "outbound-webhook";
+      AutomationStepType2["CONDITION"] = "condition";
+    })(AutomationStepType || (AutomationStepType = {}));
+    (function(AutomationRunStatus2) {
+      AutomationRunStatus2["PENDING"] = "pending";
+      AutomationRunStatus2["RUNNING"] = "running";
+      AutomationRunStatus2["COMPLETED"] = "completed";
+      AutomationRunStatus2["FAILED"] = "failed";
+      AutomationRunStatus2["KILLED"] = "killed";
+    })(AutomationRunStatus || (AutomationRunStatus = {}));
+    (function(AutomationIOType2) {
+      AutomationIOType2["FILE"] = "file";
+      AutomationIOType2["MEDIA"] = "media";
+      AutomationIOType2["INSIGHT"] = "insight";
+      AutomationIOType2["NOTIFY"] = "notify";
+      AutomationIOType2["DATA"] = "data";
+    })(AutomationIOType || (AutomationIOType = {}));
     (function(AutomationRunType2) {
       AutomationRunType2["INSTANT"] = "instant";
       AutomationRunType2["SCHEDULE"] = "schedule";
@@ -387,6 +414,7 @@ var init_embed = __esm({
     (function(EmbedType2) {
       EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
       EmbedType2["REPOSITORY"] = "repository";
+      EmbedType2["DASHBOARD"] = "dashboard";
     })(EmbedType || (EmbedType = {}));
     (function(ImageSelectionType2) {
       ImageSelectionType2["LOGO"] = "logo";
@@ -483,6 +511,18 @@ var init_filter = __esm({
       FilterCondition2["AND"] = "and";
       FilterCondition2["OR"] = "or";
     })(FilterCondition || (FilterCondition = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/integration.js
+var IntegrationAuthType;
+var init_integration = __esm({
+  "node_modules/@speakai/shared/dist/enums/integration.js"() {
+    "use strict";
+    (function(IntegrationAuthType2) {
+      IntegrationAuthType2["OAUTH"] = "oauth";
+      IntegrationAuthType2["API_KEY"] = "api_key";
+    })(IntegrationAuthType || (IntegrationAuthType = {}));
   }
 });
 
@@ -963,7 +1003,69 @@ var init_webhook = __esm({
     (function(WebhookEventSource2) {
       WebhookEventSource2["SPEAK"] = "speak";
       WebhookEventSource2["ZAPIER"] = "zapier";
+      WebhookEventSource2["N8N"] = "n8n";
+      WebhookEventSource2["PIPEDREAM"] = "pipedream";
+      WebhookEventSource2["MAKE"] = "make";
     })(WebhookEventSource || (WebhookEventSource = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/llm.js
+var LLMProvider, LLMModels;
+var init_llm = __esm({
+  "node_modules/@speakai/shared/dist/enums/llm.js"() {
+    "use strict";
+    (function(LLMProvider2) {
+      LLMProvider2["OPENAI"] = "openai";
+      LLMProvider2["GOOGLE"] = "google";
+      LLMProvider2["ANTHROPIC"] = "anthropic";
+      LLMProvider2["OPENROUTER"] = "openrouter";
+    })(LLMProvider || (LLMProvider = {}));
+    (function(LLMModels2) {
+      LLMModels2["GPT_3_5"] = "gpt-3.5";
+      LLMModels2["GPT_3_5_TURBO_16K"] = "gpt-3.5-turbo-16k";
+      LLMModels2["GPT_3_5_TURBO_0125"] = "gpt-3.5-turbo-0125";
+      LLMModels2["GPT_4"] = "gpt-4";
+      LLMModels2["GPT_4_1106_PREVIEW"] = "gpt-4-1106-preview";
+      LLMModels2["GPT_4_TURBO"] = "gpt-4-turbo";
+      LLMModels2["GPT_4_O_2024_05_13"] = "gpt-4o-2024-05-13";
+      LLMModels2["GPT_4O"] = "gpt-4o";
+      LLMModels2["GPT_4O_MINI"] = "gpt-4o-mini";
+      LLMModels2["GPT_4_O_2024_08_06"] = "gpt-4o-2024-08-06";
+      LLMModels2["GPT_4_MINI_2024_07_18"] = "gpt-4o-mini-2024-07-18";
+      LLMModels2["GPT_4_1_2025_04_14"] = "gpt-4.1-2025-04-14";
+      LLMModels2["GPT_5_1_2025_11_13"] = "gpt-5.1-2025-11-13";
+      LLMModels2["GPT_5_2"] = "gpt-5.2";
+      LLMModels2["GPT_5_4"] = "gpt-5.4";
+      LLMModels2["GPT_5_4_MINI"] = "gpt-5.4-mini";
+      LLMModels2["GPT_5_4_MINI_2026_03_17"] = "gpt-5.4-mini-2026-03-17";
+      LLMModels2["GPT_5_4_NANO"] = "gpt-5.4-nano";
+      LLMModels2["GPT_5_5"] = "gpt-5.5";
+      LLMModels2["GPT_5_5_THINKING"] = "gpt-5.5-thinking";
+      LLMModels2["GPT_5_6_SOL"] = "gpt-5.6-sol";
+      LLMModels2["GPT_5_6_TERRA"] = "gpt-5.6-terra";
+      LLMModels2["GPT_5_6_LUNA"] = "gpt-5.6-luna";
+      LLMModels2["CLAUDE_2"] = "claude-2";
+      LLMModels2["CLAUDE_3_5_SONNET"] = "claude-3-5-sonnet";
+      LLMModels2["CLAUDE_3_5_SONNET_20241022"] = "claude-3-5-sonnet-20241022";
+      LLMModels2["CLAUDE_3_7_SONNET_LATEST"] = "claude-3-7-sonnet-latest";
+      LLMModels2["CLAUDE_HAIKU_4_5"] = "claude-haiku-4-5";
+      LLMModels2["CLAUDE_SONNET_4_6"] = "claude-sonnet-4-6";
+      LLMModels2["CLAUDE_SONNET_5"] = "claude-sonnet-5";
+      LLMModels2["CLAUDE_OPUS_4_8"] = "claude-opus-4-8";
+      LLMModels2["GEMINI_1_5_PRO"] = "gemini-1.5-pro";
+      LLMModels2["GEMINI_1_5_FLASH"] = "gemini-1.5-flash";
+      LLMModels2["GEMINI_2_0_FLASH"] = "gemini-2.0-flash";
+      LLMModels2["GEMINI_2_5_PRO"] = "gemini-2.5-pro";
+      LLMModels2["GEMINI_2_5_FLASH"] = "gemini-2.5-flash";
+      LLMModels2["GEMINI_2_5_FLASH_LITE"] = "gemini-2.5-flash-lite";
+      LLMModels2["GEMINI_3_FLASH_PREVIEW"] = "gemini-3-flash-preview";
+      LLMModels2["GEMINI_3_1_FLASH_LITE"] = "gemini-3.1-flash-lite";
+      LLMModels2["GEMINI_3_1_PRO_PREVIEW"] = "gemini-3.1-pro-preview";
+      LLMModels2["GEMINI_3_5_FLASH"] = "gemini-3.5-flash";
+      LLMModels2["GROK_4_5"] = "x-ai/grok-4.5";
+      LLMModels2["GLM_5_2"] = "z-ai/glm-5.2";
+    })(LLMModels || (LLMModels = {}));
   }
 });
 
@@ -981,6 +1083,7 @@ var init_enums = __esm({
     init_export();
     init_fields();
     init_filter();
+    init_integration();
     init_media();
     init_meeting();
     init_notification();
@@ -993,6 +1096,7 @@ var init_enums = __esm({
     init_translation();
     init_user();
     init_webhook();
+    init_llm();
   }
 });
 
@@ -1027,6 +1131,13 @@ var init_text = __esm({
 // node_modules/@speakai/shared/dist/interfaces/folder.js
 var init_folder = __esm({
   "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/integration.js
+var init_integration2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/integration.js"() {
     "use strict";
   }
 });
@@ -1122,6 +1233,21 @@ var init_clip2 = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/utils/dashboard-spec.js
+var init_dashboard_spec = __esm({
+  "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/dashboard.js
+var init_dashboard = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
+    "use strict";
+    init_dashboard_spec();
+  }
+});
+
 // node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
   "node_modules/@speakai/shared/dist/interfaces/index.js"() {
@@ -1131,6 +1257,7 @@ var init_interfaces = __esm({
     init_transcript();
     init_text();
     init_folder();
+    init_integration2();
     init_recorder2();
     init_embed2();
     init_automation2();
@@ -1144,6 +1271,7 @@ var init_interfaces = __esm({
     init_calendar2();
     init_category();
     init_clip2();
+    init_dashboard();
   }
 });
 
@@ -1154,6 +1282,70 @@ var init_transcript2 = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/pricing/modelPricing.js
+var MODEL_PRICING;
+var init_modelPricing = __esm({
+  "node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
+    "use strict";
+    init_llm();
+    MODEL_PRICING = {
+      // ═══════════════ OpenAI ═══════════════
+      // Deprecated
+      [LLMModels.GPT_3_5]: { inputPerMillion: 0.5, outputPerMillion: 1.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_3_5_TURBO_16K]: { inputPerMillion: 3, outputPerMillion: 4, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_3_5_TURBO_0125]: { inputPerMillion: 0.5, outputPerMillion: 1.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4]: { inputPerMillion: 30, outputPerMillion: 60, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_1106_PREVIEW]: { inputPerMillion: 10, outputPerMillion: 30, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_TURBO]: { inputPerMillion: 10, outputPerMillion: 30, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_O_2024_05_13]: { inputPerMillion: 5, outputPerMillion: 15, provider: LLMProvider.OPENAI },
+      // Live
+      [LLMModels.GPT_4O]: { inputPerMillion: 2.5, outputPerMillion: 10, cachedInputPerMillion: 1.25, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4O_MINI]: { inputPerMillion: 0.15, outputPerMillion: 0.6, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_O_2024_08_06]: { inputPerMillion: 2.5, outputPerMillion: 10, cachedInputPerMillion: 1.25, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_MINI_2024_07_18]: { inputPerMillion: 0.15, outputPerMillion: 0.6, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_1_2025_04_14]: { inputPerMillion: 2, outputPerMillion: 8, cachedInputPerMillion: 0.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_1_2025_11_13]: { inputPerMillion: 1.25, outputPerMillion: 10, cachedInputPerMillion: 0.125, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_2]: { inputPerMillion: 1.75, outputPerMillion: 14, cachedInputPerMillion: 0.175, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4]: { inputPerMillion: 2.5, outputPerMillion: 15, cachedInputPerMillion: 0.25, longContextThresholdTokens: 272e3, inputPerMillionLong: 5, outputPerMillionLong: 22.5, cachedInputPerMillionLong: 0.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4_MINI]: { inputPerMillion: 0.75, outputPerMillion: 4.5, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4_MINI_2026_03_17]: { inputPerMillion: 0.75, outputPerMillion: 4.5, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4_NANO]: { inputPerMillion: 0.2, outputPerMillion: 1.25, cachedInputPerMillion: 0.02, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_5]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, longContextThresholdTokens: 272e3, inputPerMillionLong: 10, outputPerMillionLong: 45, cachedInputPerMillionLong: 1, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_5_THINKING]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, longContextThresholdTokens: 272e3, inputPerMillionLong: 10, outputPerMillionLong: 45, cachedInputPerMillionLong: 1, provider: LLMProvider.OPENAI },
+      // gpt-5.5 reasoning mode (same rate)
+      [LLMModels.GPT_5_6_SOL]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_6_TERRA]: { inputPerMillion: 2.5, outputPerMillion: 15, cachedInputPerMillion: 0.25, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_6_LUNA]: { inputPerMillion: 1, outputPerMillion: 6, cachedInputPerMillion: 0.1, provider: LLMProvider.OPENAI },
+      // ═══════════════ Anthropic (cache read = 0.1x input) ═══════════════
+      // Deprecated
+      [LLMModels.CLAUDE_2]: { inputPerMillion: 8, outputPerMillion: 24, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_3_5_SONNET]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_3_5_SONNET_20241022]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_3_7_SONNET_LATEST]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      // Live
+      [LLMModels.CLAUDE_HAIKU_4_5]: { inputPerMillion: 1, outputPerMillion: 5, cachedInputPerMillion: 0.1, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_SONNET_4_6]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_SONNET_5]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_OPUS_4_8]: { inputPerMillion: 5, outputPerMillion: 25, cachedInputPerMillion: 0.5, provider: LLMProvider.ANTHROPIC },
+      // ═══════════════ Google Gemini ═══════════════
+      // Deprecated
+      [LLMModels.GEMINI_1_5_PRO]: { inputPerMillion: 1.25, outputPerMillion: 5, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_1_5_FLASH]: { inputPerMillion: 0.075, outputPerMillion: 0.3, cachedInputPerMillion: 0.01875, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_2_0_FLASH]: { inputPerMillion: 0.1, outputPerMillion: 0.4, cachedInputPerMillion: 0.025, provider: LLMProvider.GOOGLE },
+      // Live
+      [LLMModels.GEMINI_2_5_PRO]: { inputPerMillion: 1.25, outputPerMillion: 10, longContextThresholdTokens: 2e5, inputPerMillionLong: 2.5, outputPerMillionLong: 15, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_2_5_FLASH]: { inputPerMillion: 0.3, outputPerMillion: 2.5, cachedInputPerMillion: 0.03, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_2_5_FLASH_LITE]: { inputPerMillion: 0.1, outputPerMillion: 0.4, cachedInputPerMillion: 0.01, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_FLASH_PREVIEW]: { inputPerMillion: 0.5, outputPerMillion: 3, cachedInputPerMillion: 0.05, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_1_FLASH_LITE]: { inputPerMillion: 0.25, outputPerMillion: 1.5, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_1_PRO_PREVIEW]: { inputPerMillion: 2, outputPerMillion: 12, longContextThresholdTokens: 2e5, inputPerMillionLong: 4, outputPerMillionLong: 18, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_5_FLASH]: { inputPerMillion: 1.5, outputPerMillion: 9, cachedInputPerMillion: 0.15, provider: LLMProvider.GOOGLE },
+      [LLMModels.GROK_4_5]: { inputPerMillion: 2.2, outputPerMillion: 6.6, cachedInputPerMillion: 0.22, provider: LLMProvider.OPENROUTER },
+      [LLMModels.GLM_5_2]: { inputPerMillion: 1.023, outputPerMillion: 3.3, cachedInputPerMillion: 0.1023, provider: LLMProvider.OPENROUTER }
+    };
+  }
+});
+
 // node_modules/@speakai/shared/dist/index.js
 var init_dist = __esm({
   "node_modules/@speakai/shared/dist/index.js"() {
@@ -1161,6 +1353,8 @@ var init_dist = __esm({
     init_enums();
     init_interfaces();
     init_transcript2();
+    init_dashboard_spec();
+    init_modelPricing();
   }
 });
 
@@ -2654,7 +2848,7 @@ function register5(server, client) {
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ recorderId }) => {
       try {

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.19.0 (2026-08-07)
+
+- fix(ci): release on deterministic commit parsing, and sync every derived surface (#54)
+
 ## v1.18.0 (2026-07-30)
 
 - Added a new tool hint for the recorder
