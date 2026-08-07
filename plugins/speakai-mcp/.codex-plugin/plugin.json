@@ -20,7 +20,12 @@
     "research"
   ],
   "skills": "./skills/",
-  "mcpServers": "./.mcp.json",
+  "mcpServers": {
+    "speakai": {
+      "type": "streamable-http",
+      "url": "https://api.speakai.co/v1/mcp"
+    }
+  },
   "interface": {
     "displayName": "Speak AI",
     "shortDescription": "Capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows — all from your AI assistant.",
