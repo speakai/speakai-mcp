@@ -5,12 +5,12 @@ A portable plugin that connects an AI agent to Speak AI. It follows the open
 client can load it, and it also ships the Claude Code and Codex manifests those clients
 expect.
 
-The plugin gives an agent 112 Speak AI tools, 5 resources, and 3 prompts, plus five skills
+The plugin gives an agent 112 Speak AI tools, 5 resources, and 3 prompts, plus seven skills
 that teach it how to use them. Access alone is not much use: the skills are what turn "this
 agent can call 112 tools" into "this agent knows which three to call, in what order, and
 what to do when a recording is still processing".
 
-Full documentation: <https://docs.speakai.co/plugin>
+Full documentation: <https://docs.speakai.co/mcp/plugin>
 
 ## What is in here
 
@@ -18,12 +18,14 @@ Full documentation: <https://docs.speakai.co/plugin>
 plugins/speakai-mcp/
 ├── plugin.json                 # Agent Plugins manifest, the portable identity
 ├── mcp.json                    # Agent Plugins MCP config, the remote Speak AI server
-├── skills/                     # Five skills, discovered at this fixed location
+├── skills/                     # Seven skills, discovered at this fixed location
 │   ├── getting-started/
 │   ├── meeting-summaries/
 │   ├── research-analysis/
 │   ├── clips-and-captions/
-│   └── automations-and-webhooks/
+│   ├── automations-and-webhooks/
+│   ├── surveys-and-recorders/
+│   └── dashboards-and-reporting/
 ├── .claude-plugin/plugin.json  # Claude Code's own manifest format
 ├── .codex-plugin/plugin.json   # Codex's own manifest format
 └── .mcp.json                   # stdio server config, used by Claude Code
@@ -52,7 +54,7 @@ reads `plugin.json`, connects the server in `mcp.json`, and loads everything und
 That endpoint uses OAuth 2.1 with Dynamic Client Registration. You approve access once in a
 consent screen and no API key is ever stored in the plugin. This is deliberate: the Agent
 Plugins standard has no mechanism for user-supplied secrets, so a portable manifest cannot
-carry a key. See [the reference page](https://docs.speakai.co/plugin/reference) for why.
+carry a key.
 
 ### Claude Code
 
@@ -74,6 +76,8 @@ endpoint instead. Create one at <https://app.speakai.co/developers/apikeys>.
 | `research-analysis` | Themes, verbatim quotes and sentiment across many interviews, with citations |
 | `clips-and-captions` | Finding a moment in a transcript, cutting a clip, exporting captions and embeds |
 | `automations-and-webhooks` | Triggers and actions, and receiving events reliably over webhooks |
+| `surveys-and-recorders` | Running async voice and video surveys, then analyzing what comes back |
+| `dashboards-and-reporting` | Building, sharing and scoping analytics dashboards |
 
 Skills load progressively. The name and description of each load at startup, the body loads
 only when the agent activates that skill, and anything under `references/` loads only when
