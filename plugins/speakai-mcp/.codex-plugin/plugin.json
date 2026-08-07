@@ -1,6 +1,6 @@
 {
   "name": "speakai-mcp",
-  "version": "1.6.0",
+  "version": "1.18.0",
   "description": "Capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows — all from your AI assistant.",
   "author": {
     "name": "Vatsal Shah",
@@ -20,7 +20,12 @@
     "research"
   ],
   "skills": "./skills/",
-  "mcpServers": "./.mcp.json",
+  "mcpServers": {
+    "speakai": {
+      "type": "streamable-http",
+      "url": "https://api.speakai.co/v1/mcp"
+    }
+  },
   "interface": {
     "displayName": "Speak AI",
     "shortDescription": "Capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows — all from your AI assistant.",
@@ -34,11 +39,9 @@
     "websiteURL": "https://mcp.speakai.co",
     "privacyPolicyURL": "https://speakai.co/privacy",
     "defaultPrompt": [
-      "Use Speak AI to find the last 10 customer interviews that mention pricing, group the feedback by theme, and cite the source recordings.",
-      "Use Speak AI to summarize this week's team meetings into decisions, action items, owners, and unresolved risks.",
-      "Use Speak AI to pull exact customer quotes about onboarding friction from recent research calls and format them for a product brief.",
-      "Use Speak AI to analyze the latest sales calls and summarize objections, buying signals, next steps, and open questions.",
-      "Use Speak AI to find a strong 30-second highlight from the latest webinar, create a clip, and export captions."
+      "Summarize this week's meetings into decisions and action items.",
+      "Find customer quotes about pricing, with the source recordings.",
+      "Clip the best 30 seconds of the latest webinar and export captions."
     ],
     "brandColor": "#2563EB"
   }

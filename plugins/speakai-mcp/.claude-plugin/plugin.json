@@ -27,7 +27,8 @@
       "type": "string",
       "title": "Speak AI API key",
       "description": "Generate an API key at https://app.speakai.co/developers/apikeys.",
-      "sensitive": true
+      "sensitive": true,
+      "required": true
     },
     "speak_base_url": {
       "type": "string",
