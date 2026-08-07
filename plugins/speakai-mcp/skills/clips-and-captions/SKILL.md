@@ -27,7 +27,7 @@ the whole library. It searches transcripts, insights, and metadata, and returns
 matching media with excerpts, tags, and sentiment.
 
 ```sh
-export SPEAK_API_KEY="sk-speak-example-0000000000"
+export SPEAK_API_KEY="speak_sk_example_000000000000"
 
 speakai-mcp call search_media '{
   "query": "pricing objection",
@@ -112,7 +112,7 @@ API key to `/v1/auth/accessToken` first.
 
 ```sh
 curl -X POST https://api.speakai.co/v1/clips \
-  -H "x-speakai-key: sk-speak-example-0000000000" \
+  -H "x-speakai-key: speak_sk_example_000000000000" \
   -H "x-access-token: eyJhbG-example-access-token" \
   -H "Content-Type: application/json" \
   -d '{

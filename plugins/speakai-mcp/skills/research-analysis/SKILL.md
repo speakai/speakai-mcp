@@ -42,7 +42,7 @@ You do not need raw REST for this skill, since the tools cover it. If you do cal
 directly, the exchange looks like this:
 
 ```sh
-export SPEAK_API_KEY="sk-speak-example-0000000000000000"
+export SPEAK_API_KEY="speak_sk_example_000000000000"
 
 # Step 1: exchange the API key for an access token.
 curl -s -X POST https://api.speakai.co/v1/auth/accessToken \

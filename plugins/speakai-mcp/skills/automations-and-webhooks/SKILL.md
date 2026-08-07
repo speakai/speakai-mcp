@@ -2,8 +2,8 @@
 name: automations-and-webhooks
 description: Build, test, and operate Speak AI automations and webhooks through MCP. Use this when the user wants recurring work to happen on its own, for example when a recording finishes processing and should be summarized, translated, routed to a folder, or pushed to another system, when an external system should post data into Speak, or when a server needs to receive Speak events in real time. Covers discovering the trigger and action catalog, building an automation with build_automation or create_automation, running it manually, reading run history, provisioning inbound webhooks and mapping their payload tokens, and registering outbound webhooks with idempotent delivery handling. Keywords include automation, workflow, trigger, action, step, webhook, inbound webhook, outbound webhook, callback URL, event delivery, retry, run history.
 metadata:
-  version: "1.18.0"
-  category: "automations, webhooks"
+  server-version: "1.18.0"
+  categories: "automations, webhooks"
   tool_count: "22"
 ---
 
@@ -189,7 +189,7 @@ a Bearer token. Exchange your API key at `/v1/auth/accessToken` to get the acces
 
 ```sh
 curl -X POST https://api.speakai.co/v1/webhook \
-  -H "x-speakai-key: sk_speak_example_0000000000000000" \
+  -H "x-speakai-key: speak_sk_example_000000000000" \
   -H "x-access-token: eyJhbG-example-access-token" \
   -H "Content-Type: application/json" \
   -d '{
@@ -201,7 +201,7 @@ curl -X POST https://api.speakai.co/v1/webhook \
 Or through the CLI, which calls the same tool:
 
 ```sh
-export SPEAK_API_KEY="sk_speak_example_0000000000000000"
+export SPEAK_API_KEY="speak_sk_example_000000000000"
 speakai-mcp call create_webhook '{"callbackUrl":"https://example.com/hooks/speak"}'
 ```
 
