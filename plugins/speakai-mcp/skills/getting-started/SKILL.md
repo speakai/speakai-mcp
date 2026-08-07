@@ -42,6 +42,7 @@ The portable plugin ships this remote server and nothing else. Its `mcp.json` is
 
 ```json
 {
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
   "mcpServers": {
     "speakai": {
       "type": "streamable-http",
@@ -141,9 +142,10 @@ Prefer these over hand-built tool chains when the request matches.
 ### Transcribe a recording and read the results
 
 1. `upload_and_analyze` with a direct file URL or a shareable video link. It returns
-   `media_id` right away. For a file on disk use `upload_local_file`. For a two-step
+   `mediaId` right away. For a file on disk use `upload_local_file`. For a two-step
    upload use `get_signed_upload_url`, PUT the bytes, then `upload_media`.
-2. `get_media_status` with that id. States run `pending`, `transcribing`, `analyzing`,
+2. `get_media_status` with that id. States run `queued`, `preparing`, `processing`,
+   `preparingAnalysis`,
    `processed`, or `failed`. Poll every 15 to 30 seconds. Audio under 60 minutes usually
    finishes in 1 to 3 minutes.
 3. `get_transcript` for speaker labels and timestamps, or `get_captions` for subtitle
@@ -184,7 +186,8 @@ Docs: <https://docs.speakai.co/mcp/tools/magic-prompt/ask_ai_chat/>
 
 1. Confirm the meeting URL and start time with the user, and say plainly that the
    assistant records the call.
-2. `schedule_meeting_event` with the Zoom, Google Meet, or Microsoft Teams URL.
+2. `schedule_meeting_event` with `title` and `meetingURL`, the Zoom, Google Meet, or
+   Microsoft Teams link. Both are required. `startTime` is optional.
 3. While the meeting runs, call `get_live_meeting_transcript` with
    `meetingAssistantEventId`. Pass the previous response's `nextCursor` as
    `sinceEndInSec` so you only get new sentences.
@@ -197,7 +200,8 @@ Docs: <https://docs.speakai.co/mcp/tools/magic-prompt/ask_ai_chat/>
 1. `create_recorder` with the questions.
 2. `generate_recorder_url` and give the link to the user to share.
 3. `get_recorder_recordings` to list submissions, then treat each one as normal media.
-4. `check_recorder_status` if submissions are not appearing.
+4. `check_recorder_status` if submissions are not appearing. It takes the recorder's
+   `token`, not the recorder id, so carry the token from `create_recorder`.
 
 ## Edge cases that actually bite
 

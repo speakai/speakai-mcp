@@ -140,13 +140,13 @@ transcripts inline, and page through.
 ## Step 2. Confirm the recordings are readable
 
 Call `get_media_status` for anything you plan to quote or analyze. The states run
-pending, then transcribing, then analyzing, then processed, or failed.
+queued, then preparing, then processing, then preparingAnalysis, then processed, or failed.
 
 Only `processed` media has insights. `get_media_insights` needs the processed state.
 `get_transcript` is more forgiving: it works on processed media and also returns the
 partial in progress transcript while a meeting bot is still recording.
 
-If a file is still transcribing, do not treat it as absent and do not silently drop it.
+If a file is still processing, do not treat it as absent and do not silently drop it.
 Tell the user which files are not ready, run the analysis on the ones that are, and say
 so in the answer. A synthesis over 11 of 14 interviews is useful. A synthesis that
 quietly claims to cover 14 is not.

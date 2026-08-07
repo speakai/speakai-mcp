@@ -31,9 +31,10 @@ substitute similar sounding names.
 
 ### Step 1. Get the assistant into the call
 
-Use `schedule_meeting_event`. Give it the meeting join URL and the start time in ISO
-8601 with a timezone offset. It works with Zoom, Google Meet, and Microsoft Teams
-links.
+Use `schedule_meeting_event`. Two arguments are required: `title`, a display name for
+the event, and `meetingURL`, the join link. `startTime` is optional, an ISO 8601
+datetime with a timezone offset; leave it out to join now. It works with Zoom,
+Google Meet, and Microsoft Teams links.
 
 You get back a meeting assistant event. Keep the event id. Everything later in the
 live path keys off it.
@@ -83,7 +84,8 @@ This is the step that goes wrong most often. A meeting ends, the media exists, a
 insights are not there yet.
 
 Use `get_media_status` with the media id. The states run
-`pending`, then `transcribing`, then `analyzing`, then `processed`. A run can also end
+`queued`, then `preparing`, then `processing`, then `preparingAnalysis`, then
+`processed`. A run can also end
 in `failed`.
 
 Rules:
@@ -93,7 +95,7 @@ Rules:
 - Poll with backoff. Start at about 15 seconds, grow to 60 seconds, and stop after a
   few minutes of no state change. Tell the user where it got stuck instead of
   polling forever.
-- A long meeting takes longer. A 90 minute call can sit in `transcribing` for a
+- A long meeting takes longer. A 90 minute call can sit in `processing` for a
   while. That is normal, not a failure.
 - On `failed`, do not retry `get_media_status` in a loop. Report the failure. If the
   user wants another attempt at analysis on media that transcribed but analyzed
@@ -142,7 +144,8 @@ Supporting tools in the same category:
 
 - `list_prompts` lists the available templates. Use a template id with the
   `assistantTemplateId` parameter when you set `assistantType` to `custom`.
-- `retry_ai_chat` retries a failed or incomplete answer. Use it once. If it fails
+- `retry_ai_chat` retries a failed or incomplete answer. It requires both `promptId`
+  and `messageId`, so keep them from the original response. Use it once. If it fails
   again, narrow the media set and ask a smaller question.
 - `get_chat_messages` returns the full message history for a conversation, including
   references. Use it when the user asks where an answer came from.

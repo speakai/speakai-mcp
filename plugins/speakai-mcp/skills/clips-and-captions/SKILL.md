@@ -20,18 +20,7 @@ Per-tool reference pages follow the pattern
 `https://docs.speakai.co/mcp/tools/<category-id>/<tool_name>/`, for example
 <https://docs.speakai.co/mcp/tools/clips/create_clip/>.
 
-## Step 1: Confirm the media is ready
-
-Call `get_media_status` with `mediaId`. The states are `pending`,
-`transcribing`, `analyzing`, `processed`, and `failed`. Only `processed` media
-has a complete transcript, and a clip or export built from anything earlier is
-incomplete or empty.
-
-If the state is not `processed` and not `failed`, wait and poll again. If the
-state is `failed`, stop and tell the user. Do not create a clip from failed
-media.
-
-## Step 2: Find the media
+## Step 1: Find the media
 
 Use `search_media` when you are looking for a topic, a phrase, or a theme across
 the whole library. It searches transcripts, insights, and metadata, and returns
@@ -53,6 +42,17 @@ there.
 
 Use `list_media` instead when you already know the folder, the name, or the date
 range and you just want the ids.
+
+## Step 2: Confirm the media is ready
+
+Call `get_media_status` with `mediaId`. The states are `queued`,
+`preparing`, `processing`, `preparingAnalysis`, `processed`, and `failed`. Only `processed` media
+has a complete transcript, and a clip or export built from anything earlier is
+incomplete or empty.
+
+If the state is not `processed` and not `failed`, wait and poll again. If the
+state is `failed`, stop and tell the user. Do not create a clip from failed
+media.
 
 ## Step 3: Find the moment
 

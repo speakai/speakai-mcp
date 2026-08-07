@@ -17,7 +17,7 @@
  *   npx tsx scripts/sync-plugin.ts           # rewrite derived surfaces
  *   npx tsx scripts/sync-plugin.ts --check   # exit 1 on drift, for CI
  */
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, readdirSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 
@@ -81,15 +81,64 @@ const CARD_GROUPS: Record<string, string[]> = {
 const NOT_ON_HOMEPAGE = ["users-team", "dashboards"];
 
 const knownIds: string[] = toolsJson.categories.map((c: { id: string }) => c.id);
-const covered = new Set([...Object.values(CARD_GROUPS).flat(), ...NOT_ON_HOMEPAGE]);
-const uncovered = knownIds.filter((id) => !covered.has(id));
-if (uncovered.length) {
-  console.error(
-    `sync-plugin: tools.json categor${uncovered.length === 1 ? "y" : "ies"} ` +
-      `${uncovered.map((c) => `"${c}"`).join(", ")} not listed in CARD_GROUPS or ` +
-      `NOT_ON_HOMEPAGE in this script. Decide where it belongs on the homepage.`,
+const knownTools: string[] = toolsJson.categories.flatMap((c: { tools: { name: string }[] }) =>
+  c.tools.map((t) => t.name),
+);
+
+const assertCovered = (covered: Set<string>, label: string, hint: string) => {
+  const uncovered = knownIds.filter((id) => !covered.has(id));
+  if (uncovered.length) {
+    console.error(
+      `sync-plugin: tools.json categor${uncovered.length === 1 ? "y" : "ies"} ` +
+        `${uncovered.map((c) => `"${c}"`).join(", ")} ${label}. ${hint}`,
+    );
+    process.exit(1);
+  }
+};
+
+assertCovered(
+  new Set([...Object.values(CARD_GROUPS).flat(), ...NOT_ON_HOMEPAGE]),
+  "not listed in CARD_GROUPS or NOT_ON_HOMEPAGE in this script",
+  "Decide where it belongs on the homepage.",
+);
+
+/**
+ * README.md documents tools in `<details>` sections whose tables list the tool
+ * names, and it does not follow the tools.json category split: it separates
+ * search from statistics, for instance. So rather than map display names to
+ * category ids, each section's count is taken from its own table, and the union
+ * of every section is checked against the registry. That catches a tool the
+ * README never documented, which a category-level map would not.
+ */
+const readmeSections = (text: string) =>
+  [...text.matchAll(/<summary>([^(<]+?) \((\d+) tools?\)<\/summary>([\s\S]*?)<\/details>/g)].map(
+    (m) => ({
+      whole: m[0],
+      label: m[1].trim(),
+      stated: Number(m[2]),
+      tools: [...m[3].matchAll(/^\|\s*`([a-z0-9_]+)`\s*\|/gm)].map((r) => r[1]),
+    }),
   );
-  process.exit(1);
+
+{
+  const documented = new Set(readmeSections(read("README.md")).flatMap((s) => s.tools));
+  const undocumented = knownTools.filter((t) => !documented.has(t));
+  const unknown = [...documented].filter((t) => !knownTools.includes(t));
+  if (undocumented.length || unknown.length) {
+    if (undocumented.length) {
+      console.error(
+        `sync-plugin: README.md documents no row for ${undocumented.length} registered ` +
+          `tool(s): ${undocumented.join(", ")}. Add them to the right section.`,
+      );
+    }
+    if (unknown.length) {
+      console.error(
+        `sync-plugin: README.md documents ${unknown.length} tool(s) that are not ` +
+          `registered: ${unknown.join(", ")}. Remove them, or register them.`,
+      );
+    }
+    process.exit(1);
+  }
 }
 
 const groupTotal = (groupId: string): number =>
@@ -143,11 +192,39 @@ const RULES: Rule[] = [
 
   {
     file: "README.md",
+    edit: (t) => {
+      let out = t
+        .replace(/### MCP Tools \(\d+\)/, `### MCP Tools (${toolCount})`)
+        .replace(/\bships \d+ tools\b/, `ships ${toolCount} tools`);
+
+      // Each section states the number of rows in its own table.
+      for (const section of readmeSections(out)) {
+        const actual = section.tools.length;
+        if (actual === section.stated) continue;
+        out = out.replace(
+          `<summary>${section.label} (${section.stated} tool${section.stated === 1 ? "" : "s"})</summary>`,
+          `<summary>${section.label} (${actual} tool${actual === 1 ? "" : "s"})</summary>`,
+        );
+      }
+
+      return out;
+    },
+  },
+
+  {
+    file: "tools.html",
     edit: (t) =>
       t
-        .replace(/### MCP Tools \(\d+\)/, `### MCP Tools (${toolCount})`)
-        .replace(/\bships \d+ tools\b/, `ships ${toolCount} tools`),
+        .replace(/\b\d+ tools across \d+ categories\b/g, `${toolCount} tools across ${categoryCount} categories`)
+        .replace(/\b\d+ tools\b/g, `${toolCount} tools`),
   },
+
+  jsonRule(".claude-plugin/marketplace.json", (d) => {
+    for (const plugin of d.plugins ?? []) {
+      if (plugin.version) plugin.version = version;
+    }
+    if (d.version) d.version = version;
+  }),
 
   {
     file: "llms.txt",
@@ -191,19 +268,20 @@ const RULES: Rule[] = [
 
 // Every skill that states a total. Per-category counts inside a skill are left
 // alone; they describe one category and are checked by check-skill-counts below.
-for (const skill of [
-  "getting-started",
-  "meeting-summaries",
-  "research-analysis",
-  "clips-and-captions",
-  "automations-and-webhooks",
-]) {
+const SKILLS_DIR = "plugins/speakai-mcp/skills";
+const skillNames = readdirSync(path.join(ROOT, SKILLS_DIR), { withFileTypes: true })
+  .filter((e) => e.isDirectory())
+  .map((e) => e.name);
+
+for (const skill of skillNames) {
   RULES.push({
-    file: `plugins/speakai-mcp/skills/${skill}/SKILL.md`,
+    file: `${SKILLS_DIR}/${skill}/SKILL.md`,
     edit: (t) =>
       t
         .replace(/\b\d+ MCP tools\b/g, `${toolCount} MCP tools`)
-        .replace(/\b\d+ tools across\b/g, `${toolCount} tools across`),
+        .replace(/\b\d+ tools across\b/g, `${toolCount} tools across`)
+        // The server version in frontmatter metadata, under either key spelling.
+        .replace(/^(\s+(?:server-)?version:\s*")[\d.]+(")$/gm, `$1${version}$2`),
   });
 }
 
@@ -237,7 +315,14 @@ for (const rule of RULES) {
  * the markup that carries them: `<span class="count">` in index.html and
  * `<summary>` rows in README.md.
  */
-const AUDIT_FILES = ["README.md", "llms.txt", "index.html", "plugins/speakai-mcp/README.md"];
+const AUDIT_FILES = [
+  "README.md",
+  "llms.txt",
+  "index.html",
+  "tools.html",
+  "plugins/speakai-mcp/README.md",
+  ...skillNames.map((s) => `${SKILLS_DIR}/${s}/SKILL.md`),
+];
 const stale: string[] = [];
 
 for (const file of AUDIT_FILES) {
@@ -253,11 +338,60 @@ for (const file of AUDIT_FILES) {
   // yet, so they are skipped and reported separately by check-category-counts.
   text = text.replace(/<article[\s\S]*?<\/article>/g, "");
 
+  // Skills cite per-category counts as `category-id (N tools)`, and prose wraps,
+  // so the pair can straddle a line break. Validate those against the registry
+  // over the whole text, then blank them out so the per-line total check below
+  // does not mistake a category count for a stale total.
+  text = text.replace(/\b([a-z][a-z-]+)\s+\((\d+) tools?\)/g, (whole, id, count) => {
+    const category = toolsJson.categories.find((c: { id: string }) => c.id === id);
+    if (!category) return whole;
+    if (category.tools.length !== Number(count)) {
+      stale.push(
+        `  ${file}  "${whole.replace(/\s+/g, " ")}" should say ${category.tools.length} tools`,
+      );
+    }
+    return whole.replace(/\S/g, " ");
+  });
+
   text.split("\n").forEach((line, i) => {
     if (line.includes('class="count"') || line.includes("<summary>")) return;
-    for (const m of line.matchAll(/\b(\d+) tools\b/g)) {
+    // "N tools", "N MCP tools" and the singular all state the total.
+    for (const m of line.matchAll(/\b(\d+) (?:MCP )?tools?\b/g)) {
       if (Number(m[1]) !== toolCount) {
         stale.push(`  ${file}:${i + 1}  "${m[0]}" should be "${toolCount} tools"`);
+      }
+    }
+  });
+}
+
+/**
+ * The same trap for versions. Nine files state the package version and the rules
+ * above only reach the ones someone remembered, so this catches the rest.
+ */
+// marketplace.json carries a catalog version of its own, which is not the
+// package version, so it is synced but not audited against it.
+const VERSION_AUDIT_FILES = [
+  "server.json",
+  "plugins/speakai-mcp/plugin.json",
+  "plugins/speakai-mcp/.claude-plugin/plugin.json",
+  "plugins/speakai-mcp/.codex-plugin/plugin.json",
+  "plugins/speakai-mcp/.mcp.json",
+  ...skillNames.map((s) => `${SKILLS_DIR}/${s}/SKILL.md`),
+];
+
+for (const file of VERSION_AUDIT_FILES) {
+  let text: string;
+  try {
+    text = read(file);
+  } catch {
+    continue;
+  }
+  text.split("\n").forEach((line, i) => {
+    // A semver-shaped token that is not the current version, anywhere these
+    // files talk about the server or the package.
+    for (const m of line.matchAll(/\b\d+\.\d+\.\d+\b/g)) {
+      if (m[0] !== version && !line.includes("schemas/")) {
+        stale.push(`  ${file}:${i + 1}  version "${m[0]}" should be "${version}"`);
       }
     }
   });

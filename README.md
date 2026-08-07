@@ -397,7 +397,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 ### MCP Tools (112)
 
 <details>
-<summary>Media (16 tools)</summary>
+<summary>Media (17 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -408,6 +408,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `list_media` | List and search media files with filters, pagination, and optional inline data (transcripts, speakers, keywords) via `include` param |
 | `get_media_insights` | Get AI insights — topics, sentiment, summaries, action items |
 | `get_transcript` | Get full transcript with speaker labels and timestamps |
+| `update_transcription` | Edit the official transcript text of a media file by finding and replacing text |
 | `get_captions` | Get subtitle-formatted captions for a media file |
 | `update_transcript_speakers` | Rename speaker labels in a transcript |
 | `bulk_update_transcript_speakers` | Rename speaker labels across multiple media files in one call (max 500) |
@@ -426,7 +427,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | Tool | Description |
 |---|---|
 | `ask_ai_chat` | Ask AI questions about media, folders, or your whole workspace |
-| `retry_magic_prompt` | Retry a failed or incomplete AI response |
+| `retry_ai_chat` | Retry a failed or incomplete AI Chat response |
 | `get_chat_history` | List recent AI Chat conversations |
 | `get_chat_messages` | Get full message history for conversations |
 | `delete_chat_message` | Delete a specific chat message |
@@ -478,11 +479,12 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Automations (14 tools)</summary>
+<summary>Automations (15 tools)</summary>
 
 | Tool | Description |
 |---|---|
 | `list_automations` | List automation rules with paging and filters |
+| `build_automation` | Create or update an automation from a friendly spec, without the wire format |
 | `list_automation_names` | List automations as lightweight name + id pairs |
 | `get_automation` | Get automation details (trigger + step graph) |
 | `get_automation_runs` | Get an automation's run history |
@@ -524,11 +526,14 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Webhooks (4 tools)</summary>
+<summary>Webhooks (7 tools)</summary>
 
 | Tool | Description |
 |---|---|
 | `create_webhook` | Create a webhook for event notifications |
+| `provision_inbound_webhook` | Provision a standalone inbound webhook and get its public receive URL |
+| `get_inbound_webhook` | Get an inbound webhook's receive URL, sample payload, and trigger tokens |
+| `get_webhook_attempts` | Get the delivery log for an inbound webhook, with acknowledgement status |
 | `list_webhooks` | List all webhooks |
 | `update_webhook` | Update a webhook |
 | `delete_webhook` | Delete a webhook |
