@@ -182,7 +182,9 @@ for (const skill of skillNames) {
         .replace(/\b\d+ MCP tools\b/g, `${toolCount} MCP tools`)
         .replace(/\b\d+ tools across\b/g, `${toolCount} tools across`)
         // The server version in frontmatter metadata, under either key spelling.
-        .replace(/^(\s+(?:server-)?version:\s*")[\d.]+(")$/gm, `$1${version}$2`),
+        .replace(/^(\s+(?:server-)?version:\s*")[\d.]+(")$/gm, `$1${version}$2`)
+        // Pinned installs in prose and config samples.
+        .replace(/@speakai\/mcp-server@[\d.]+/g, `@speakai/mcp-server@${version}`),
   });
 }
 
