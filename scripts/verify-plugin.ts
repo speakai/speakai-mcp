@@ -85,12 +85,35 @@ check("mcp.json matches the Agent Plugins schema", () => {
 });
 
 check("mcp.json carries no unresolvable placeholder", () => {
-  const raw = read("mcp.json");
   // Only ${PLUGIN_ROOT} and ${PLUGIN_DATA} expand. Anything else, notably a
   // client-native ${user_config.*}, reaches the server as a literal string.
-  const found = [...raw.matchAll(/\$\{([^}]+)\}/g)].map((m) => m[1]);
+  const found = [...read("mcp.json").matchAll(/\$\{([^}]+)\}/g)].map((m) => m[1]);
   const bad = found.filter((v) => !/^PLUGIN_(ROOT|DATA)(\/.*)?$/.test(v));
   return bad.length ? `placeholders no client will expand: ${bad.join(", ")}` : null;
+});
+
+check("every client-native placeholder has a manifest that fills it", () => {
+  // .mcp.json interpolates ${user_config.*}, which is filled from a userConfig
+  // block. A manifest pointing at it without one leaves the value unresolved.
+  const keys = [...read(".mcp.json").matchAll(/\$\{user_config\.([a-z0-9_]+)\}/gi)].map((m) => m[1]);
+  if (!keys.length) return null;
+
+  const problems: string[] = [];
+  for (const manifest of [".claude-plugin/plugin.json", ".codex-plugin/plugin.json"]) {
+    let d: any;
+    try {
+      d = json(manifest);
+    } catch {
+      continue;
+    }
+    if (d.mcpServers !== "./.mcp.json") continue;
+    const declared = Object.keys(d.userConfig ?? {});
+    const unfilled = keys.filter((k) => !declared.includes(k));
+    if (unfilled.length) {
+      problems.push(`${manifest} uses .mcp.json but declares no userConfig for ${unfilled.join(", ")}`);
+    }
+  }
+  return problems.length ? problems.join("; ") : null;
 });
 
 /* --------------------------------------------------- Agent Skills spec ---- */
