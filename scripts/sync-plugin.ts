@@ -32,7 +32,6 @@ const toolNamesSrc = read("src/tool-names.ts");
 const toolCount = (toolNamesSrc.match(/^\s*"[a-z0-9_]+",\s*$/gm) ?? []).length;
 
 const toolsJson = JSON.parse(read("tools.json"));
-const categoryCount: number = toolsJson.categories.length;
 const toolsJsonTotal: number = toolsJson.totalTools;
 
 if (toolCount === 0) {
@@ -50,46 +49,11 @@ if (toolsJsonTotal !== toolCount) {
   process.exit(1);
 }
 
-/* --------------------------------------------------------------- rules ---- */
-
-/**
- * Homepage cards group several tools.json categories into one card, keyed by the
- * category id in each card's "View N tools" link. A category listed in neither
- * this map nor NOT_ON_HOMEPAGE fails the check.
- */
-const CARD_GROUPS: Record<string, string[]> = {
-  media: ["media"],
-  "magic-prompt": ["magic-prompt"],
-  "search-analytics": ["search-analytics"],
-  "folders-views": ["folders-views"],
-  "recorders-surveys": ["recorders-surveys"],
-  "clips-exports": ["clips", "exports"],
-  "meeting-bot": ["meeting-bot"],
-  "automations-webhooks": ["automations", "webhooks"],
-  "text-fields": ["text-notes", "custom-fields"],
-  "embed-other": ["embed-other"],
-};
-
-/** Real categories the homepage deliberately does not show a card for. */
-const NOT_ON_HOMEPAGE = ["users-team", "dashboards"];
-
-const knownIds: string[] = toolsJson.categories.map((c: { id: string }) => c.id);
 const knownTools: string[] = toolsJson.categories.flatMap((c: { tools: { name: string }[] }) =>
   c.tools.map((t) => t.name),
 );
 
-{
-  const placed = new Set([...Object.values(CARD_GROUPS).flat(), ...NOT_ON_HOMEPAGE]);
-  const unplaced = knownIds.filter((id) => !placed.has(id));
-  if (unplaced.length) {
-    console.error(
-      `sync-plugin: tools.json categor${unplaced.length === 1 ? "y" : "ies"} ` +
-        `${unplaced.map((c) => `"${c}"`).join(", ")} not listed in CARD_GROUPS or ` +
-        `NOT_ON_HOMEPAGE. Decide where they belong on the homepage.`,
-    );
-    process.exit(1);
-  }
-}
+/* --------------------------------------------------------------- rules ---- */
 
 /**
  * README sections do not follow the tools.json category split, so each section's
@@ -124,16 +88,6 @@ const readmeSections = (text: string) =>
     process.exit(1);
   }
 }
-
-const groupTotal = (groupId: string): number =>
-  CARD_GROUPS[groupId].reduce((sum, id) => {
-    const category = toolsJson.categories.find((c: { id: string }) => c.id === id);
-    if (!category) {
-      console.error(`sync-plugin: CARD_GROUPS references unknown category "${id}"`);
-      process.exit(1);
-    }
-    return sum + category.tools.length;
-  }, 0);
 
 type Rule = { file: string; edit: (text: string) => string };
 
@@ -195,13 +149,6 @@ const RULES: Rule[] = [
     },
   },
 
-  {
-    file: "tools.html",
-    edit: (t) =>
-      t
-        .replace(/\b\d+ tools across \d+ categories\b/g, `${toolCount} tools across ${categoryCount} categories`)
-        .replace(/\b\d+ tools\b/g, `${toolCount} tools`),
-  },
 
   jsonRule(".claude-plugin/marketplace.json", (d) => {
     for (const plugin of d.plugins ?? []) {
@@ -218,36 +165,6 @@ const RULES: Rule[] = [
         .replace(/\baccess to \d+ tools\b/, `access to ${toolCount} tools`),
   },
 
-  {
-    file: "index.html",
-    edit: (t) => {
-      let out = t
-        .replace(
-          /<h2>\d+ tools across \d+ categories\.<\/h2>/,
-          `<h2>${toolCount} tools across ${categoryCount} categories.</h2>`,
-        )
-        .replace(/Browse all \d+ tools/, `Browse all ${toolCount} tools`)
-        .replace(/<h2>\d+ tools\. Zero memorization\.<\/h2>/, `<h2>${toolCount} tools. Zero memorization.</h2>`);
-
-      // Each capability card is one <article> carrying its category id in the
-      // "View N tools in detail" link. Rewrite every count inside that article
-      // from tools.json, so a category gaining a tool updates the card too.
-      out = out.replace(/<article[\s\S]*?<\/article>/g, (article) => {
-        const id = article.match(/href="tools\.html#category-([a-z-]+)"/)?.[1];
-        if (!id) return article;
-        if (!CARD_GROUPS[id]) {
-          console.error(
-            `sync-plugin: index.html has a card for "${id}" which is not in CARD_GROUPS. ` +
-              `Add it, or fix the link.`,
-          );
-          process.exit(1);
-        }
-        return article.replace(/\b\d+ tools\b/g, `${groupTotal(id)} tools`);
-      });
-
-      return out;
-    },
-  },
 ];
 
 // Every skill that states a total. Per-category counts inside a skill are left
@@ -291,15 +208,12 @@ for (const rule of RULES) {
 /* ----------------------------------------------------------------- audit -- */
 
 /**
- * Catches counts in phrasings no rule covers. Per-category counts are excluded
- * by the markup carrying them: `class="count"` in index.html, `<summary>` in
- * README.md.
+ * Catches counts in phrasings no rule covers. Per-category counts in README
+ * `<summary>` rows are excluded, since the rule above derives those.
  */
 const AUDIT_FILES = [
   "README.md",
   "llms.txt",
-  "index.html",
-  "tools.html",
   "plugins/speakai-mcp/README.md",
   ...skillNames.map((s) => `${SKILLS_DIR}/${s}/SKILL.md`),
 ];
@@ -312,12 +226,6 @@ for (const file of AUDIT_FILES) {
   } catch {
     continue;
   }
-  // Per-category counts are legitimately different numbers. In index.html they
-  // are rewritten from tools.json by the rule above, so drop those articles
-  // before auditing. In README.md they sit in <summary> rows that no rule owns
-  // yet, so they are skipped and reported separately by check-category-counts.
-  text = text.replace(/<article[\s\S]*?<\/article>/g, "");
-
   // Skills cite per-category counts as `category-id (N tools)`, and prose wraps,
   // so the pair can straddle a line break. Validate those against the registry
   // over the whole text, then blank them out so the per-line total check below
@@ -334,7 +242,7 @@ for (const file of AUDIT_FILES) {
   });
 
   text.split("\n").forEach((line, i) => {
-    if (line.includes('class="count"') || line.includes("<summary>")) return;
+    if (line.includes("<summary>")) return;
     // "N tools", "N MCP tools" and the singular all state the total.
     for (const m of line.matchAll(/\b(\d+) (?:MCP )?tools?\b/g)) {
       if (Number(m[1]) !== toolCount) {
