@@ -7,7 +7,7 @@
     "email": "accounts@speakai.co",
     "url": "https://speakai.co"
   },
-  "homepage": "https://mcp.speakai.co",
+  "homepage": "https://docs.speakai.co/mcp",
   "repository": "https://github.com/speakai/speakai-mcp",
   "license": "MIT",
   "keywords": [
@@ -36,7 +36,7 @@
       "Read",
       "Write"
     ],
-    "websiteURL": "https://mcp.speakai.co",
+    "websiteURL": "https://docs.speakai.co/mcp",
     "privacyPolicyURL": "https://speakai.co/privacy",
     "defaultPrompt": [
       "Summarize this week's meetings into decisions and action items.",
