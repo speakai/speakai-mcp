@@ -179,8 +179,10 @@ Docs: <https://docs.speakai.co/mcp/tools/magic-prompt/ask_ai_chat/>
 2. `create_clip` with one or more time ranges. Clips process asynchronously through
    `queued`, `processing`, `completed`, and `failed`. Total clip length caps at 30
    minutes. Poll `get_clips` for the state.
-3. `export_media` for one file or `export_multiple_media` for a batch. Formats are pdf,
-   docx, srt, vtt, txt, and csv.
+3. `export_media` for one file or `export_multiple_media` for a batch. The common
+   formats are pdf, docx, srt, vtt, txt, and csv. The full set also accepts
+   csv-insights, csv-transcript, csv-transcript-sentiment, csv-text-sentiment,
+   html, json, md, sourceFile, ttml, and mp4.
 
 ### Record a live meeting
 
