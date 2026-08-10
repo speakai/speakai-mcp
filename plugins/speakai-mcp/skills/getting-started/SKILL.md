@@ -3,7 +3,7 @@ name: getting-started
 description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the 112 MCP tools across 15 categories, the 5 resources, the 3 built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
 metadata:
   server-version: "1.19.0"
-  openclaw-homepage: "https://mcp.speakai.co"
+  openclaw-homepage: "https://docs.speakai.co/mcp"
   openclaw-emoji: "🎙️"
 ---
 
@@ -31,7 +31,7 @@ once in a browser popup and no API key is handled anywhere.
 - **ChatGPT:** Settings, then Apps and Connectors, then Advanced, then turn on developer
   mode. Choose Create, paste the URL, pick OAuth, and authorize. Enable it per chat from
   the plus menu.
-- **Cursor and VS Code:** use the one-click install buttons on <https://mcp.speakai.co>.
+- **Cursor and VS Code:** use the one-click install buttons on <https://docs.speakai.co/mcp/setup/>.
 - **Claude Code:**
 
   ```sh
@@ -279,7 +279,7 @@ meeting events, and `update_embed` or `delete_clip` for shared assets.
 
 ## Where to go next
 
-- Install guide and one-click buttons: <https://mcp.speakai.co>
+- Install guide and one-click buttons: <https://docs.speakai.co/mcp/setup/>
 - Tool reference: <https://docs.speakai.co/mcp/tools/>
 - API reference: <https://docs.speakai.co>
 - API keys: <https://app.speakai.co/developers/apikeys>

@@ -4,10 +4,10 @@
   "title": "Speak AI",
   "description": "Search recordings, summarize meetings, create clips, and automate workflows from your AI assistant.",
   "version": "1.19.0",
-  "websiteUrl": "https://mcp.speakai.co",
+  "websiteUrl": "https://docs.speakai.co/mcp",
   "icons": [
     {
-      "src": "https://mcp.speakai.co/assets/logo.png",
+      "src": "https://docs.speakai.co/speak-logo-light.png",
       "mimeType": "image/png"
     }
   ],
