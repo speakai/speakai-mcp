@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 112,
+  "totalTools": 113,
   "categories": [
     {
       "id": "media",
@@ -173,7 +173,7 @@
         {
           "name": "ask_ai_chat",
           "title": "Ask AI Chat",
-          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions.",
+          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone. That is a premium feature and costs credits per hour of media — call get_analysis_quote first to check eligibility and price.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -276,6 +276,15 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_analysis_quote",
+          "title": "Get Analysis Quote",
+          "description": "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason — an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
           "openWorldHint": false
         }
       ]

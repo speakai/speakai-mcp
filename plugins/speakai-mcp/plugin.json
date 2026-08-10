@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "speakai-mcp",
   "version": "1.20.0",
-  "description": "Capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows with Speak AI. 112 MCP tools, 5 resources, 3 prompts, and 7 skills.",
+  "description": "Capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows with Speak AI. 113 MCP tools, 5 resources, 3 prompts, and 7 skills.",
   "author": {
     "name": "Vatsal Shah",
     "email": "accounts@speakai.co",

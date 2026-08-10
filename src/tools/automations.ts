@@ -9,6 +9,7 @@ import {
   resolveAutomationInboundWebhook,
   unwrapData,
 } from "./inbound-webhook-utils.js";
+import { MULTIMODAL_DISABLED_MESSAGE, multimodalCapability } from "../capabilities.js";
 
 // Shared write-schema fields for create/update. The server (speak-server
 // @speak-automations) validates these with Joi `automationCreateUpdate` and
@@ -38,7 +39,10 @@ const STEPS_DESCRIPTION =
   "onNoMatch: \"create\"|\"default\" (create a folder named after the value, or fall back to folderId) } }\n" +
   "- magic-prompt -> magicPrompt: { prompt (required unless fieldIds given, max 20000), title?, " +
   "assistantType? (\"general\"|\"researcher\"|\"marketer\"|\"sales\"|\"recruiter\"|\"custom\", default \"general\"), " +
-  "assistantTemplateId? (required if assistantType=\"custom\"), fieldIds?: string[] (max 10 — extract answers into these custom fields) }\n" +
+  "assistantTemplateId? (required if assistantType=\"custom\"), fieldIds?: string[] (max 10 — extract answers into these custom fields), " +
+  "analysisInput? (\"transcript\" (default) | \"audio\" | \"video\") — what the model receives. \"audio\" lets it hear tone and delivery, " +
+  "\"video\" also lets it see what is on screen; on a video file \"audio\" extracts the audio track first. " +
+  "Premium: requires the account's audio/video analysis opt-in, and costs credits per hour of media }\n" +
   "- translation -> translation: { targetLanguage: region-qualified locale code, e.g. \"es-ES\", \"fr-FR\" (bare codes like \"es\" are rejected) }\n" +
   "- filter -> filter: { logic: \"AND\"|\"OR\" (default \"AND\"), rules: [{ field, op, value? }] (1-20) } — " +
   "the run continues only when the rules match, otherwise it stops silently\n" +
@@ -103,6 +107,38 @@ const writeSchema = {
       "Required when runType=\"schedule\": { timePeriod: \"today\"|\"yesterday\"|\"last7days\"|\"last14days\"|\"thisWeek\", repeatAt: string }",
     ),
 } as const;
+
+/** Does any magic-prompt step ask for a media pass? `transcript` and empty are the default and never gated. */
+function stepsRequestMediaAnalysis(steps: unknown): boolean {
+  if (!Array.isArray(steps)) return false;
+  return steps.some((step) => {
+    const magicPrompt = (step as { magicPrompt?: { analysisInput?: unknown } })?.magicPrompt;
+    const input = magicPrompt?.analysisInput;
+    return typeof input === "string" && (input === "audio" || input === "video");
+  });
+}
+
+/**
+ * Refuse a write that would be accepted and then silently ignored.
+ *
+ * The automations API does not check the company's multimodal opt-in — it validates the enum,
+ * returns 200, and stores the value. At run time the gate fails and the step runs on the
+ * transcript with no error, no skip reason and no charge, so the user sees an automation
+ * configured for video that never once analyses video. Returns null when the write may proceed.
+ */
+async function refuseUngatedAnalysis(
+  api: AxiosInstance,
+  steps: unknown,
+): Promise<{ content: { type: "text"; text: string }[]; isError: true } | null> {
+  if (!stepsRequestMediaAnalysis(steps)) return null;
+  // `unknown` proceeds: we could not ask, and refusing on a failed probe would break accounts
+  // that do have the feature.
+  if ((await multimodalCapability(api)) !== "disabled") return null;
+  return {
+    content: [{ type: "text", text: `Error: ${MULTIMODAL_DISABLED_MESSAGE}` }],
+    isError: true,
+  };
+}
 
 /**
  * After a create/update of an inbound-webhook automation, attach the bound
@@ -271,6 +307,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async (body) => {
       try {
+        const refusal = await refuseUngatedAnalysis(api, body.steps);
+        if (refusal) return refusal;
+
         const result = await api.post("/v1/automations/", body);
         let data: unknown = result.data;
         if (isInboundWebhookTrigger(body.trigger)) {
@@ -306,6 +345,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async ({ automationId, ...body }) => {
       try {
+        const refusal = await refuseUngatedAnalysis(api, body.steps);
+        if (refusal) return refusal;
+
         const result = await api.put(`/v1/automations/${automationId}`, body);
         let data: unknown = result.data;
         if (isInboundWebhookTrigger(body.trigger)) {

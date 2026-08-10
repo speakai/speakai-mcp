@@ -61,6 +61,7 @@ for (const cat of json.categories) {
 
 // New tools appended to an existing category.
 const additions: Record<string, string[]> = {
+  "magic-prompt": ["get_analysis_quote"],
   "automations-webhooks": [
     "list_automation_names",
     "get_automation_runs",
