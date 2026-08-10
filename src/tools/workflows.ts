@@ -7,6 +7,7 @@ import { MediaType } from "@speakai/shared";
 import * as fs from "fs";
 import * as path from "path";
 import { getMimeType, isVideoFile, detectMediaType } from "../media-utils.js";
+import { MULTIMODAL_DISABLED_MESSAGE, multimodalCapability } from "../capabilities.js";
 import {
   fetchInboundWebhookInfo,
   resolveAutomationInboundWebhook,
@@ -125,7 +126,10 @@ const STEP_SPEC_DESCRIPTION =
   "(writes payload values into custom fields on the uploaded media) }\n" +
   "- { do: \"ai_chat\", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] " +
   "(max 10 — values are extracted into these custom fields; prompt may be omitted for extraction-only steps), " +
-  "model? (a Speak-supported LLM id, e.g. \"gemini-2.5-flash\", \"claude-sonnet-4-6\"; omit for the workspace default) }\n" +
+  "model? (a Speak-supported LLM id, e.g. \"gemini-2.5-flash\", \"claude-sonnet-4-6\"; omit for the workspace default), " +
+  "analyse?: \"transcript\" (default) | \"audio\" | \"video\" — what the model receives. \"audio\" lets it hear tone and " +
+  "delivery, \"video\" also lets it see the screen; on a video file \"audio\" extracts the audio track first. Premium: " +
+  "requires the account's audio/video analysis opt-in and costs credits per hour of media }\n" +
   "- { do: \"translate\", language: region-qualified code like \"es-ES\", \"fr-FR\" }\n" +
   "- { do: \"notify\", message (required, tokens allowed), channel?: \"in_app\"|\"email\"|\"slack\" (default in_app; " +
   "email currently falls back to an in-app notification), target? (reserved — not yet used for delivery) }\n" +
@@ -346,6 +350,17 @@ export function register(server: McpServer, client?: AxiosInstance): void {
             const magicPrompt: Dict = { prompt: spec.prompt ?? "", assistantType: "general" };
             if (spec.title) magicPrompt.title = spec.title;
             if (spec.model) magicPrompt.modelId = spec.model;
+            if (spec.analyse || spec.analyze) {
+              // Two spellings because the model picks either; the wire name is analysisInput.
+              const analysis = String(spec.analyse ?? spec.analyze);
+              if (!["transcript", "audio", "video"].includes(analysis)) {
+                throw new Error(
+                  `Step ${i + 1} (ai_chat): analyse must be "transcript", "audio" or "video", got "${analysis}"`,
+                );
+              }
+              // transcript is the default; sending it would persist a key that means nothing.
+              if (analysis !== "transcript") magicPrompt.analysisInput = analysis;
+            }
             if (Array.isArray(spec.saveToFields) && spec.saveToFields.length) {
               if (spec.saveToFields.length > 10) {
                 throw new Error(`Step ${i + 1} (ai_chat): saveToFields supports at most 10 fields`);
@@ -409,6 +424,21 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           const entries: Dict[] = [];
           for (const spec of orTriggers) entries.push(await buildTrigger(spec as Dict, false));
           body.triggers = entries;
+        }
+
+        // Same gate as create_automation/update_automation: the server accepts analysisInput
+        // from an ungated account and then silently ignores it at run time.
+        if (
+          wireSteps.some((s) => {
+            const input = (s as { magicPrompt?: { analysisInput?: unknown } })?.magicPrompt?.analysisInput;
+            return input === "audio" || input === "video";
+          }) &&
+          (await multimodalCapability(api)) === "disabled"
+        ) {
+          return {
+            content: [{ type: "text" as const, text: `Error: ${MULTIMODAL_DISABLED_MESSAGE}` }],
+            isError: true as const,
+          };
         }
 
         const result = automationId

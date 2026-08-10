@@ -283,7 +283,7 @@ var init_auth = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/automation.js
-var AutomationTrigger, AutomationAction, AutomationStepType, AutomationRunStatus, AutomationIOType, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
+var AutomationTrigger, AutomationAction, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
 var init_automation = __esm({
   "node_modules/@speakai/shared/dist/enums/automation.js"() {
     "use strict";
@@ -291,38 +291,11 @@ var init_automation = __esm({
       AutomationTrigger2["FOLDERS"] = "folders";
       AutomationTrigger2["TAGS"] = "tags";
       AutomationTrigger2["KEYWORDS"] = "keywords";
-      AutomationTrigger2["COMPOSIO"] = "composio";
-      AutomationTrigger2["WEBHOOK"] = "webhook";
     })(AutomationTrigger || (AutomationTrigger = {}));
     (function(AutomationAction2) {
       AutomationAction2["MAGIC_PROMPT"] = "magic-prompt";
       AutomationAction2["TRANSLATION"] = "translation";
     })(AutomationAction || (AutomationAction = {}));
-    (function(AutomationStepType2) {
-      AutomationStepType2["TRIGGER"] = "trigger";
-      AutomationStepType2["MAGIC_PROMPT"] = "magic-prompt";
-      AutomationStepType2["TRANSLATION"] = "translation";
-      AutomationStepType2["COMPOSIO_ACTION"] = "composio-action";
-      AutomationStepType2["FILTER"] = "filter";
-      AutomationStepType2["SPEAK_UPLOAD"] = "speak-upload";
-      AutomationStepType2["NOTIFY"] = "notify";
-      AutomationStepType2["OUTBOUND_WEBHOOK"] = "outbound-webhook";
-      AutomationStepType2["CONDITION"] = "condition";
-    })(AutomationStepType || (AutomationStepType = {}));
-    (function(AutomationRunStatus2) {
-      AutomationRunStatus2["PENDING"] = "pending";
-      AutomationRunStatus2["RUNNING"] = "running";
-      AutomationRunStatus2["COMPLETED"] = "completed";
-      AutomationRunStatus2["FAILED"] = "failed";
-      AutomationRunStatus2["KILLED"] = "killed";
-    })(AutomationRunStatus || (AutomationRunStatus = {}));
-    (function(AutomationIOType2) {
-      AutomationIOType2["FILE"] = "file";
-      AutomationIOType2["MEDIA"] = "media";
-      AutomationIOType2["INSIGHT"] = "insight";
-      AutomationIOType2["NOTIFY"] = "notify";
-      AutomationIOType2["DATA"] = "data";
-    })(AutomationIOType || (AutomationIOType = {}));
     (function(AutomationRunType2) {
       AutomationRunType2["INSTANT"] = "instant";
       AutomationRunType2["SCHEDULE"] = "schedule";
@@ -414,7 +387,6 @@ var init_embed = __esm({
     (function(EmbedType2) {
       EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
       EmbedType2["REPOSITORY"] = "repository";
-      EmbedType2["DASHBOARD"] = "dashboard";
     })(EmbedType || (EmbedType = {}));
     (function(ImageSelectionType2) {
       ImageSelectionType2["LOGO"] = "logo";
@@ -511,18 +483,6 @@ var init_filter = __esm({
       FilterCondition2["AND"] = "and";
       FilterCondition2["OR"] = "or";
     })(FilterCondition || (FilterCondition = {}));
-  }
-});
-
-// node_modules/@speakai/shared/dist/enums/integration.js
-var IntegrationAuthType;
-var init_integration = __esm({
-  "node_modules/@speakai/shared/dist/enums/integration.js"() {
-    "use strict";
-    (function(IntegrationAuthType2) {
-      IntegrationAuthType2["OAUTH"] = "oauth";
-      IntegrationAuthType2["API_KEY"] = "api_key";
-    })(IntegrationAuthType || (IntegrationAuthType = {}));
   }
 });
 
@@ -1003,69 +963,7 @@ var init_webhook = __esm({
     (function(WebhookEventSource2) {
       WebhookEventSource2["SPEAK"] = "speak";
       WebhookEventSource2["ZAPIER"] = "zapier";
-      WebhookEventSource2["N8N"] = "n8n";
-      WebhookEventSource2["PIPEDREAM"] = "pipedream";
-      WebhookEventSource2["MAKE"] = "make";
     })(WebhookEventSource || (WebhookEventSource = {}));
-  }
-});
-
-// node_modules/@speakai/shared/dist/enums/llm.js
-var LLMProvider, LLMModels;
-var init_llm = __esm({
-  "node_modules/@speakai/shared/dist/enums/llm.js"() {
-    "use strict";
-    (function(LLMProvider2) {
-      LLMProvider2["OPENAI"] = "openai";
-      LLMProvider2["GOOGLE"] = "google";
-      LLMProvider2["ANTHROPIC"] = "anthropic";
-      LLMProvider2["OPENROUTER"] = "openrouter";
-    })(LLMProvider || (LLMProvider = {}));
-    (function(LLMModels2) {
-      LLMModels2["GPT_3_5"] = "gpt-3.5";
-      LLMModels2["GPT_3_5_TURBO_16K"] = "gpt-3.5-turbo-16k";
-      LLMModels2["GPT_3_5_TURBO_0125"] = "gpt-3.5-turbo-0125";
-      LLMModels2["GPT_4"] = "gpt-4";
-      LLMModels2["GPT_4_1106_PREVIEW"] = "gpt-4-1106-preview";
-      LLMModels2["GPT_4_TURBO"] = "gpt-4-turbo";
-      LLMModels2["GPT_4_O_2024_05_13"] = "gpt-4o-2024-05-13";
-      LLMModels2["GPT_4O"] = "gpt-4o";
-      LLMModels2["GPT_4O_MINI"] = "gpt-4o-mini";
-      LLMModels2["GPT_4_O_2024_08_06"] = "gpt-4o-2024-08-06";
-      LLMModels2["GPT_4_MINI_2024_07_18"] = "gpt-4o-mini-2024-07-18";
-      LLMModels2["GPT_4_1_2025_04_14"] = "gpt-4.1-2025-04-14";
-      LLMModels2["GPT_5_1_2025_11_13"] = "gpt-5.1-2025-11-13";
-      LLMModels2["GPT_5_2"] = "gpt-5.2";
-      LLMModels2["GPT_5_4"] = "gpt-5.4";
-      LLMModels2["GPT_5_4_MINI"] = "gpt-5.4-mini";
-      LLMModels2["GPT_5_4_MINI_2026_03_17"] = "gpt-5.4-mini-2026-03-17";
-      LLMModels2["GPT_5_4_NANO"] = "gpt-5.4-nano";
-      LLMModels2["GPT_5_5"] = "gpt-5.5";
-      LLMModels2["GPT_5_5_THINKING"] = "gpt-5.5-thinking";
-      LLMModels2["GPT_5_6_SOL"] = "gpt-5.6-sol";
-      LLMModels2["GPT_5_6_TERRA"] = "gpt-5.6-terra";
-      LLMModels2["GPT_5_6_LUNA"] = "gpt-5.6-luna";
-      LLMModels2["CLAUDE_2"] = "claude-2";
-      LLMModels2["CLAUDE_3_5_SONNET"] = "claude-3-5-sonnet";
-      LLMModels2["CLAUDE_3_5_SONNET_20241022"] = "claude-3-5-sonnet-20241022";
-      LLMModels2["CLAUDE_3_7_SONNET_LATEST"] = "claude-3-7-sonnet-latest";
-      LLMModels2["CLAUDE_HAIKU_4_5"] = "claude-haiku-4-5";
-      LLMModels2["CLAUDE_SONNET_4_6"] = "claude-sonnet-4-6";
-      LLMModels2["CLAUDE_SONNET_5"] = "claude-sonnet-5";
-      LLMModels2["CLAUDE_OPUS_4_8"] = "claude-opus-4-8";
-      LLMModels2["GEMINI_1_5_PRO"] = "gemini-1.5-pro";
-      LLMModels2["GEMINI_1_5_FLASH"] = "gemini-1.5-flash";
-      LLMModels2["GEMINI_2_0_FLASH"] = "gemini-2.0-flash";
-      LLMModels2["GEMINI_2_5_PRO"] = "gemini-2.5-pro";
-      LLMModels2["GEMINI_2_5_FLASH"] = "gemini-2.5-flash";
-      LLMModels2["GEMINI_2_5_FLASH_LITE"] = "gemini-2.5-flash-lite";
-      LLMModels2["GEMINI_3_FLASH_PREVIEW"] = "gemini-3-flash-preview";
-      LLMModels2["GEMINI_3_1_FLASH_LITE"] = "gemini-3.1-flash-lite";
-      LLMModels2["GEMINI_3_1_PRO_PREVIEW"] = "gemini-3.1-pro-preview";
-      LLMModels2["GEMINI_3_5_FLASH"] = "gemini-3.5-flash";
-      LLMModels2["GROK_4_5"] = "x-ai/grok-4.5";
-      LLMModels2["GLM_5_2"] = "z-ai/glm-5.2";
-    })(LLMModels || (LLMModels = {}));
   }
 });
 
@@ -1083,7 +981,6 @@ var init_enums = __esm({
     init_export();
     init_fields();
     init_filter();
-    init_integration();
     init_media();
     init_meeting();
     init_notification();
@@ -1096,7 +993,6 @@ var init_enums = __esm({
     init_translation();
     init_user();
     init_webhook();
-    init_llm();
   }
 });
 
@@ -1131,13 +1027,6 @@ var init_text = __esm({
 // node_modules/@speakai/shared/dist/interfaces/folder.js
 var init_folder = __esm({
   "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
-    "use strict";
-  }
-});
-
-// node_modules/@speakai/shared/dist/interfaces/integration.js
-var init_integration2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/integration.js"() {
     "use strict";
   }
 });
@@ -1233,21 +1122,6 @@ var init_clip2 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/dashboard-spec.js
-var init_dashboard_spec = __esm({
-  "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
-    "use strict";
-  }
-});
-
-// node_modules/@speakai/shared/dist/interfaces/dashboard.js
-var init_dashboard = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
-    "use strict";
-    init_dashboard_spec();
-  }
-});
-
 // node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
   "node_modules/@speakai/shared/dist/interfaces/index.js"() {
@@ -1257,7 +1131,6 @@ var init_interfaces = __esm({
     init_transcript();
     init_text();
     init_folder();
-    init_integration2();
     init_recorder2();
     init_embed2();
     init_automation2();
@@ -1271,7 +1144,6 @@ var init_interfaces = __esm({
     init_calendar2();
     init_category();
     init_clip2();
-    init_dashboard();
   }
 });
 
@@ -1282,70 +1154,6 @@ var init_transcript2 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/pricing/modelPricing.js
-var MODEL_PRICING;
-var init_modelPricing = __esm({
-  "node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
-    "use strict";
-    init_llm();
-    MODEL_PRICING = {
-      // ═══════════════ OpenAI ═══════════════
-      // Deprecated
-      [LLMModels.GPT_3_5]: { inputPerMillion: 0.5, outputPerMillion: 1.5, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_3_5_TURBO_16K]: { inputPerMillion: 3, outputPerMillion: 4, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_3_5_TURBO_0125]: { inputPerMillion: 0.5, outputPerMillion: 1.5, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_4]: { inputPerMillion: 30, outputPerMillion: 60, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_4_1106_PREVIEW]: { inputPerMillion: 10, outputPerMillion: 30, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_4_TURBO]: { inputPerMillion: 10, outputPerMillion: 30, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_4_O_2024_05_13]: { inputPerMillion: 5, outputPerMillion: 15, provider: LLMProvider.OPENAI },
-      // Live
-      [LLMModels.GPT_4O]: { inputPerMillion: 2.5, outputPerMillion: 10, cachedInputPerMillion: 1.25, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_4O_MINI]: { inputPerMillion: 0.15, outputPerMillion: 0.6, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_4_O_2024_08_06]: { inputPerMillion: 2.5, outputPerMillion: 10, cachedInputPerMillion: 1.25, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_4_MINI_2024_07_18]: { inputPerMillion: 0.15, outputPerMillion: 0.6, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_4_1_2025_04_14]: { inputPerMillion: 2, outputPerMillion: 8, cachedInputPerMillion: 0.5, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_5_1_2025_11_13]: { inputPerMillion: 1.25, outputPerMillion: 10, cachedInputPerMillion: 0.125, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_5_2]: { inputPerMillion: 1.75, outputPerMillion: 14, cachedInputPerMillion: 0.175, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_5_4]: { inputPerMillion: 2.5, outputPerMillion: 15, cachedInputPerMillion: 0.25, longContextThresholdTokens: 272e3, inputPerMillionLong: 5, outputPerMillionLong: 22.5, cachedInputPerMillionLong: 0.5, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_5_4_MINI]: { inputPerMillion: 0.75, outputPerMillion: 4.5, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_5_4_MINI_2026_03_17]: { inputPerMillion: 0.75, outputPerMillion: 4.5, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_5_4_NANO]: { inputPerMillion: 0.2, outputPerMillion: 1.25, cachedInputPerMillion: 0.02, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_5_5]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, longContextThresholdTokens: 272e3, inputPerMillionLong: 10, outputPerMillionLong: 45, cachedInputPerMillionLong: 1, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_5_5_THINKING]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, longContextThresholdTokens: 272e3, inputPerMillionLong: 10, outputPerMillionLong: 45, cachedInputPerMillionLong: 1, provider: LLMProvider.OPENAI },
-      // gpt-5.5 reasoning mode (same rate)
-      [LLMModels.GPT_5_6_SOL]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_5_6_TERRA]: { inputPerMillion: 2.5, outputPerMillion: 15, cachedInputPerMillion: 0.25, provider: LLMProvider.OPENAI },
-      [LLMModels.GPT_5_6_LUNA]: { inputPerMillion: 1, outputPerMillion: 6, cachedInputPerMillion: 0.1, provider: LLMProvider.OPENAI },
-      // ═══════════════ Anthropic (cache read = 0.1x input) ═══════════════
-      // Deprecated
-      [LLMModels.CLAUDE_2]: { inputPerMillion: 8, outputPerMillion: 24, provider: LLMProvider.ANTHROPIC },
-      [LLMModels.CLAUDE_3_5_SONNET]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
-      [LLMModels.CLAUDE_3_5_SONNET_20241022]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
-      [LLMModels.CLAUDE_3_7_SONNET_LATEST]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
-      // Live
-      [LLMModels.CLAUDE_HAIKU_4_5]: { inputPerMillion: 1, outputPerMillion: 5, cachedInputPerMillion: 0.1, provider: LLMProvider.ANTHROPIC },
-      [LLMModels.CLAUDE_SONNET_4_6]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
-      [LLMModels.CLAUDE_SONNET_5]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
-      [LLMModels.CLAUDE_OPUS_4_8]: { inputPerMillion: 5, outputPerMillion: 25, cachedInputPerMillion: 0.5, provider: LLMProvider.ANTHROPIC },
-      // ═══════════════ Google Gemini ═══════════════
-      // Deprecated
-      [LLMModels.GEMINI_1_5_PRO]: { inputPerMillion: 1.25, outputPerMillion: 5, provider: LLMProvider.GOOGLE },
-      [LLMModels.GEMINI_1_5_FLASH]: { inputPerMillion: 0.075, outputPerMillion: 0.3, cachedInputPerMillion: 0.01875, provider: LLMProvider.GOOGLE },
-      [LLMModels.GEMINI_2_0_FLASH]: { inputPerMillion: 0.1, outputPerMillion: 0.4, cachedInputPerMillion: 0.025, provider: LLMProvider.GOOGLE },
-      // Live
-      [LLMModels.GEMINI_2_5_PRO]: { inputPerMillion: 1.25, outputPerMillion: 10, longContextThresholdTokens: 2e5, inputPerMillionLong: 2.5, outputPerMillionLong: 15, provider: LLMProvider.GOOGLE },
-      [LLMModels.GEMINI_2_5_FLASH]: { inputPerMillion: 0.3, outputPerMillion: 2.5, cachedInputPerMillion: 0.03, provider: LLMProvider.GOOGLE },
-      [LLMModels.GEMINI_2_5_FLASH_LITE]: { inputPerMillion: 0.1, outputPerMillion: 0.4, cachedInputPerMillion: 0.01, provider: LLMProvider.GOOGLE },
-      [LLMModels.GEMINI_3_FLASH_PREVIEW]: { inputPerMillion: 0.5, outputPerMillion: 3, cachedInputPerMillion: 0.05, provider: LLMProvider.GOOGLE },
-      [LLMModels.GEMINI_3_1_FLASH_LITE]: { inputPerMillion: 0.25, outputPerMillion: 1.5, provider: LLMProvider.GOOGLE },
-      [LLMModels.GEMINI_3_1_PRO_PREVIEW]: { inputPerMillion: 2, outputPerMillion: 12, longContextThresholdTokens: 2e5, inputPerMillionLong: 4, outputPerMillionLong: 18, provider: LLMProvider.GOOGLE },
-      [LLMModels.GEMINI_3_5_FLASH]: { inputPerMillion: 1.5, outputPerMillion: 9, cachedInputPerMillion: 0.15, provider: LLMProvider.GOOGLE },
-      [LLMModels.GROK_4_5]: { inputPerMillion: 2.2, outputPerMillion: 6.6, cachedInputPerMillion: 0.22, provider: LLMProvider.OPENROUTER },
-      [LLMModels.GLM_5_2]: { inputPerMillion: 1.023, outputPerMillion: 3.3, cachedInputPerMillion: 0.1023, provider: LLMProvider.OPENROUTER }
-    };
-  }
-});
-
 // node_modules/@speakai/shared/dist/index.js
 var init_dist = __esm({
   "node_modules/@speakai/shared/dist/index.js"() {
@@ -1353,8 +1161,6 @@ var init_dist = __esm({
     init_enums();
     init_interfaces();
     init_transcript2();
-    init_dashboard_spec();
-    init_modelPricing();
   }
 });
 
@@ -3149,7 +2955,10 @@ function register7(server, client) {
     "Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media.",
     "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
     "To continue a conversation, pass the promptId from a previous response.",
-    "Returns a promptId \u2014 save it to continue the conversation with follow-up questions."
+    "Returns a promptId \u2014 save it to continue the conversation with follow-up questions.",
+    "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
+    "reading the transcript alone. That is a premium feature and costs credits per hour of media \u2014",
+    "call get_analysis_quote first to check eligibility and price."
   ].join(" ");
   const askAiChatInputSchema = {
     prompt: import_zod8.z.string().min(1).describe("The question or prompt to ask about the media"),
@@ -3166,7 +2975,9 @@ function register7(server, client) {
     isIndividualPrompt: import_zod8.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
     fieldId: import_zod8.z.string().optional().describe("Scope the prompt to a single custom field"),
     fieldIds: import_zod8.z.array(import_zod8.z.string()).max(10).optional().describe("Scope the prompt to multiple custom fields (max 10)"),
-    filters: import_zod8.z.record(import_zod8.z.unknown()).optional().describe("Advanced filter object to scope which media the prompt runs over")
+    filters: import_zod8.z.record(import_zod8.z.unknown()).optional().describe("Advanced filter object to scope which media the prompt runs over"),
+    analysisMediaId: import_zod8.z.string().optional().describe("Media to analyse as audio/video rather than transcript. Must also appear in mediaIds, and must be sent together with analysisInput. Premium feature."),
+    analysisInput: import_zod8.z.enum(["audio", "video"]).optional().describe("'audio' lets the model hear tone, pacing and delivery; 'video' also lets it see what is on screen. Omit for transcript-only, which is the default and costs nothing extra. 'transcript' is not a valid value here \u2014 omitting the field IS transcript-only.")
   };
   const askAiChatAnnotations = {
     title: "Ask AI Chat",
@@ -3175,11 +2986,52 @@ function register7(server, client) {
     idempotentHint: false,
     openWorldHint: false
   };
-  const askAiChatHandler = async (params) => {
+  const ANALYSIS_TIMEOUT_MS = 6 * 60 * 1e3;
+  const refuse = (message) => ({
+    content: [{ type: "text", text: `Error: ${message}` }],
+    isError: true
+  });
+  const withAnalysisOutcome = async (payload, messageId) => {
+    if (!messageId) return payload;
     try {
-      const result = await api.post("/v1/prompt", params);
+      const res = await api.get("/v1/prompt/messages", { params: { messageId } });
+      const messages = res.data?.data?.messages ?? res.data?.data ?? [];
+      const list = Array.isArray(messages) ? messages : [];
+      const match = list.find((m) => m?.messageId === messageId) ?? list[0];
+      const analysis = match?.analysis;
+      if (!analysis) return payload;
+      const downgraded = analysis.requested && analysis.used && analysis.requested !== analysis.used;
       return {
-        content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        ...payload,
+        analysis,
+        ...downgraded ? {
+          analysisWarning: `Requested ${analysis.requested} analysis but the answer came from the ${analysis.used}. ` + (analysis.skippedReason ?? "No reason was given.")
+        } : {}
+      };
+    } catch {
+      return payload;
+    }
+  };
+  const askAiChatHandler = async (params) => {
+    const body = params ?? {};
+    const analysisMediaId = typeof body.analysisMediaId === "string" ? body.analysisMediaId.trim() : "";
+    const analysisInput = typeof body.analysisInput === "string" ? body.analysisInput.trim() : "";
+    if (Boolean(analysisMediaId) !== Boolean(analysisInput)) {
+      return refuse(
+        "analysisMediaId and analysisInput must be provided together. Pass both to analyse audio/video, or neither for a transcript-only answer."
+      );
+    }
+    const mediaIds = Array.isArray(body.mediaIds) ? body.mediaIds.map(String) : [];
+    if (analysisMediaId && !mediaIds.includes(analysisMediaId)) {
+      return refuse(
+        `analysisMediaId "${analysisMediaId}" must also appear in mediaIds. mediaIds is currently ${mediaIds.length ? JSON.stringify(mediaIds) : "empty"}.`
+      );
+    }
+    try {
+      const result = analysisInput ? await api.post("/v1/prompt", params, { timeout: ANALYSIS_TIMEOUT_MS }) : await api.post("/v1/prompt", params);
+      const payload = analysisInput ? await withAnalysisOutcome(result.data, result.data?.data?.messageId) : result.data;
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }]
       };
     } catch (err) {
       return {
@@ -3195,6 +3047,36 @@ function register7(server, client) {
     askAiChatInputSchema,
     askAiChatAnnotations,
     askAiChatHandler
+  );
+  registerSpeakTool(
+    server,
+    "get_analysis_quote",
+    "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason \u2014 an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
+    {
+      mediaId: import_zod8.z.string().min(1).describe("Media file to price"),
+      analysisInput: import_zod8.z.enum(["audio", "video"]).describe("'audio' to hear the recording, 'video' to also see it. Video costs substantially more because frames dominate."),
+      modelId: import_zod8.z.string().optional().describe("Optional model id to price against. Omit for the workspace default.")
+    },
+    {
+      title: "Get Analysis Quote",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/prompt/analysisQuote", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
   );
   registerSpeakTool(
     server,
@@ -3978,11 +3860,50 @@ var init_inbound_webhook_utils = __esm({
   }
 });
 
+// src/capabilities.ts
+async function multimodalCapability(api) {
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  let value = "unknown";
+  try {
+    const res = await api.get("/v1/user/profile");
+    const flag = res.data?.data?.isMultimodalAnalysis;
+    if (typeof flag === "boolean") value = flag ? "enabled" : "disabled";
+  } catch {
+  }
+  cached = { value, expiresAt: Date.now() + TTL_MS };
+  return value;
+}
+var TTL_MS, cached, MULTIMODAL_DISABLED_MESSAGE;
+var init_capabilities = __esm({
+  "src/capabilities.ts"() {
+    "use strict";
+    TTL_MS = 10 * 60 * 1e3;
+    cached = null;
+    MULTIMODAL_DISABLED_MESSAGE = "Audio and video analysis is not enabled for this account. The step would be saved but would silently run on the transcript only, so it is refused here. Remove analysisInput from the step, or contact Speak AI to enable the feature.";
+  }
+});
+
 // src/tools/automations.ts
 var automations_exports = {};
 __export(automations_exports, {
   register: () => register10
 });
+function stepsRequestMediaAnalysis(steps) {
+  if (!Array.isArray(steps)) return false;
+  return steps.some((step) => {
+    const magicPrompt = step?.magicPrompt;
+    const input = magicPrompt?.analysisInput;
+    return typeof input === "string" && (input === "audio" || input === "video");
+  });
+}
+async function refuseUngatedAnalysis(api, steps) {
+  if (!stepsRequestMediaAnalysis(steps)) return null;
+  if (await multimodalCapability(api) !== "disabled") return null;
+  return {
+    content: [{ type: "text", text: `Error: ${MULTIMODAL_DISABLED_MESSAGE}` }],
+    isError: true
+  };
+}
 async function withInboundWebhookInfo(api, responseData, automationId) {
   try {
     if (!automationId) return responseData;
@@ -4130,6 +4051,8 @@ function register10(server, client) {
     },
     async (body) => {
       try {
+        const refusal = await refuseUngatedAnalysis(api, body.steps);
+        if (refusal) return refusal;
         const result = await api.post("/v1/automations/", body);
         let data = result.data;
         if (isInboundWebhookTrigger(body.trigger)) {
@@ -4164,6 +4087,8 @@ function register10(server, client) {
     },
     async ({ automationId, ...body }) => {
       try {
+        const refusal = await refuseUngatedAnalysis(api, body.steps);
+        if (refusal) return refusal;
         const result = await api.put(`/v1/automations/${automationId}`, body);
         let data = result.data;
         if (isInboundWebhookTrigger(body.trigger)) {
@@ -4414,8 +4339,19 @@ var init_automations = __esm({
     init_helpers();
     init_client();
     init_inbound_webhook_utils();
+    init_capabilities();
     TOKEN_SYNTAX_NOTE = "Token syntax (usable in fields marked 'tokens allowed'): {{trigger.payload.<path>}} reads the inbound webhook payload (dot paths and [n] array indices; paths are relative to trigger.childKey when set \u2014 discover valid paths with get_inbound_webhook after sending a test payload); {{step.<index>.<path>}} or {{step.<stepId>.<path>}} reads a previous step's output (speak-upload -> mediaId, magic-prompt -> answer, outbound-webhook -> status/response).";
-    STEPS_DESCRIPTION = 'Ordered array of graph steps (1-20). Each step is an object: { stepId: string (unique within the array), stepType: one of "speak-upload" | "magic-prompt" | "translation" | "filter" | "condition" | "notify" | "outbound-webhook" | "composio-action", dependsOn?: string[] (stepIds this step runs after), branch?: "true"|"false" (which outcome of an upstream condition step this step belongs to) } plus ONE config key matching stepType:\n- speak-upload -> speakUpload: { sourceMode: "url"|"file", sourceUrl (required when sourceMode="url"; tokens allowed \u2014 if the token resolves to an object, the first http(s) URL inside it is used), folderId (required, unless folderRouting.mode="dynamic" where it becomes the optional fallback), name? (tokens allowed, mixable with static text), language? (language code or token), fieldsMap?: { <customFieldId>: "<value>" } (writes payload values into Speak custom fields on the uploaded media; values are usually {{trigger.payload.<path>}} tokens \u2014 get field ids from list_fields), folderRouting?: { mode: "static"|"dynamic", sourceKey (payload key holding the destination folder name, required when dynamic), onNoMatch: "create"|"default" (create a folder named after the value, or fall back to folderId) } }\n- magic-prompt -> magicPrompt: { prompt (required unless fieldIds given, max 20000), title?, assistantType? ("general"|"researcher"|"marketer"|"sales"|"recruiter"|"custom", default "general"), assistantTemplateId? (required if assistantType="custom"), fieldIds?: string[] (max 10 \u2014 extract answers into these custom fields) }\n- translation -> translation: { targetLanguage: region-qualified locale code, e.g. "es-ES", "fr-FR" (bare codes like "es" are rejected) }\n- filter -> filter: { logic: "AND"|"OR" (default "AND"), rules: [{ field, op, value? }] (1-20) } \u2014 the run continues only when the rules match, otherwise it stops silently\n- condition -> condition: same { logic, rules } shape as filter, but instead of stopping it routes: downstream steps marked branch:"true"/"false" run according to the outcome\n- notify -> notify: { channel: "in_app"|"email"|"slack", target?, message (required, tokens allowed) }\n- outbound-webhook -> outboundWebhook: { url (required, tokens allowed), method? ("GET"|"POST"|"PUT"|"PATCH"|"DELETE", default "POST"), headers?: { <name>: <value> }, bodyTemplate?: string | object (tokens allowed) }\n- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)\nFilter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers or a custom field id; INSIGHT -> answer; inbound-webhook DATA -> any payload path (e.g. "contact.status"). Ops by field type \u2014 text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists ("exists" takes no value; gt/lt values are numbers).\n' + TOKEN_SYNTAX_NOTE;
+    STEPS_DESCRIPTION = `Ordered array of graph steps (1-20). Each step is an object: { stepId: string (unique within the array), stepType: one of "speak-upload" | "magic-prompt" | "translation" | "filter" | "condition" | "notify" | "outbound-webhook" | "composio-action", dependsOn?: string[] (stepIds this step runs after), branch?: "true"|"false" (which outcome of an upstream condition step this step belongs to) } plus ONE config key matching stepType:
+- speak-upload -> speakUpload: { sourceMode: "url"|"file", sourceUrl (required when sourceMode="url"; tokens allowed \u2014 if the token resolves to an object, the first http(s) URL inside it is used), folderId (required, unless folderRouting.mode="dynamic" where it becomes the optional fallback), name? (tokens allowed, mixable with static text), language? (language code or token), fieldsMap?: { <customFieldId>: "<value>" } (writes payload values into Speak custom fields on the uploaded media; values are usually {{trigger.payload.<path>}} tokens \u2014 get field ids from list_fields), folderRouting?: { mode: "static"|"dynamic", sourceKey (payload key holding the destination folder name, required when dynamic), onNoMatch: "create"|"default" (create a folder named after the value, or fall back to folderId) } }
+- magic-prompt -> magicPrompt: { prompt (required unless fieldIds given, max 20000), title?, assistantType? ("general"|"researcher"|"marketer"|"sales"|"recruiter"|"custom", default "general"), assistantTemplateId? (required if assistantType="custom"), fieldIds?: string[] (max 10 \u2014 extract answers into these custom fields), analysisInput? ("transcript" (default) | "audio" | "video") \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see what is on screen; on a video file "audio" extracts the audio track first. Premium: requires the account's audio/video analysis opt-in, and costs credits per hour of media }
+- translation -> translation: { targetLanguage: region-qualified locale code, e.g. "es-ES", "fr-FR" (bare codes like "es" are rejected) }
+- filter -> filter: { logic: "AND"|"OR" (default "AND"), rules: [{ field, op, value? }] (1-20) } \u2014 the run continues only when the rules match, otherwise it stops silently
+- condition -> condition: same { logic, rules } shape as filter, but instead of stopping it routes: downstream steps marked branch:"true"/"false" run according to the outcome
+- notify -> notify: { channel: "in_app"|"email"|"slack", target?, message (required, tokens allowed) }
+- outbound-webhook -> outboundWebhook: { url (required, tokens allowed), method? ("GET"|"POST"|"PUT"|"PATCH"|"DELETE", default "POST"), headers?: { <name>: <value> }, bodyTemplate?: string | object (tokens allowed) }
+- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)
+Filter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers or a custom field id; INSIGHT -> answer; inbound-webhook DATA -> any payload path (e.g. "contact.status"). Ops by field type \u2014 text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists ("exists" takes no value; gt/lt values are numbers).
+` + TOKEN_SYNTAX_NOTE;
     TRIGGER_DESCRIPTION = `Trigger object (the automation's root). Always include triggerSlug. Supported shapes:
 - Media analyzed in folder(s): { type: "folders", triggerSlug: "media_analyzed", folderIds: string[] (min 1) }
 - Inbound webhook (receive external payloads): { type: "folders", triggerSlug: "inbound_webhook", webhookId? (from provision_inbound_webhook; omit to auto-provision a new one on create), childKey? (dot-path narrowing which part of the payload feeds the automation, e.g. "data") }. The create/update response includes inboundWebhook.inboundUrl \u2014 the public URL to POST payloads to.
@@ -5147,6 +5083,15 @@ function register14(server, client) {
             const magicPrompt = { prompt: spec.prompt ?? "", assistantType: "general" };
             if (spec.title) magicPrompt.title = spec.title;
             if (spec.model) magicPrompt.modelId = spec.model;
+            if (spec.analyse || spec.analyze) {
+              const analysis = String(spec.analyse ?? spec.analyze);
+              if (!["transcript", "audio", "video"].includes(analysis)) {
+                throw new Error(
+                  `Step ${i + 1} (ai_chat): analyse must be "transcript", "audio" or "video", got "${analysis}"`
+                );
+              }
+              if (analysis !== "transcript") magicPrompt.analysisInput = analysis;
+            }
             if (Array.isArray(spec.saveToFields) && spec.saveToFields.length) {
               if (spec.saveToFields.length > 10) {
                 throw new Error(`Step ${i + 1} (ai_chat): saveToFields supports at most 10 fields`);
@@ -5208,6 +5153,15 @@ function register14(server, client) {
           const entries = [];
           for (const spec of orTriggers) entries.push(await buildTrigger(spec, false));
           body.triggers = entries;
+        }
+        if (wireSteps.some((s) => {
+          const input = s?.magicPrompt?.analysisInput;
+          return input === "audio" || input === "video";
+        }) && await multimodalCapability(api) === "disabled") {
+          return {
+            content: [{ type: "text", text: `Error: ${MULTIMODAL_DISABLED_MESSAGE}` }],
+            isError: true
+          };
         }
         const result = automationId ? await api.put(`/v1/automations/${automationId}`, body) : await api.post("/v1/automations/", body);
         const resolvedId = unwrapData(result.data)?.automationId ?? automationId;
@@ -5406,6 +5360,7 @@ var init_workflows = __esm({
     fs = __toESM(require("fs"));
     path2 = __toESM(require("path"));
     init_media_utils();
+    init_capabilities();
     init_inbound_webhook_utils();
     CANONICAL_FILTER_FIELDS = /* @__PURE__ */ new Set([
       "name",
@@ -5422,7 +5377,7 @@ var init_workflows = __esm({
     ]);
     ID_PATTERN = /^[0-9a-f]{12}$/;
     TRIGGER_SPEC_DESCRIPTION = 'What starts the automation. Object with:\n- on (required): "media_analyzed" | "inbound_webhook" | "field_updated"\n- folders: array of folder names or ids (required for media_analyzed; missing folders are created)\n- childKey: dot-path narrowing the webhook payload root, e.g. "data" (inbound_webhook only)\n- webhookId: reuse a webhook from provision_inbound_webhook (inbound_webhook only; omit to auto-provision)\n- watchFields: array of { field: name-or-id, values?: string[] } (required for field_updated \u2014 fires when the field changes; values restricts to specific new values)\n- matchLogic: "AND"|"OR" for combining multiple watchFields value matches (default OR)';
-    STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match. Fields: media flows use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; webhook payloads use payload paths like "contact.status". Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic? } \u2014 like filter but routes instead of stopping; later steps with runWhen: "true"|"false" only run on that outcome. NOTE: branch routing requires the server\'s DAG runner (feature-flagged); when it is off, steps run in order and runWhen markers are ignored \u2014 prefer filter for guaranteed gating\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default) }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nSteps may also set runWhen (after a branch step). Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
+    STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match. Fields: media flows use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; webhook payloads use payload paths like "contact.status". Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic? } \u2014 like filter but routes instead of stopping; later steps with runWhen: "true"|"false" only run on that outcome. NOTE: branch routing requires the server\'s DAG runner (feature-flagged); when it is off, steps run in order and runWhen markers are ignored \u2014 prefer filter for guaranteed gating\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default), analyse?: "transcript" (default) | "audio" | "video" \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see the screen; on a video file "audio" extracts the audio track first. Premium: requires the account\'s audio/video analysis opt-in and costs credits per hour of media }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nSteps may also set runWhen (after a branch step). Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
     buildAutomationSchema = {
       name: import_zod15.z.string().min(1).max(150).describe("Display name for the automation"),
       trigger: import_zod15.z.record(import_zod15.z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
@@ -6725,6 +6680,7 @@ var init_tool_names = __esm({
       "get_live_meeting_transcript",
       // prompt
       "ask_ai_chat",
+      "get_analysis_quote",
       "list_prompts",
       "get_favorite_prompts",
       "toggle_prompt_favorite",
