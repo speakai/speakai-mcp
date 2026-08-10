@@ -5,7 +5,7 @@ license: MIT
 metadata:
   server: "@speakai/mcp-server"
   server-version: "1.19.0"
-  category: "research"
+  categories: "research"
 ---
 
 # Research analysis across many recordings
@@ -300,6 +300,24 @@ https://docs.speakai.co/mcp/tools/folders-views/get_folder_info/
   both `promptId` and `messageId`.
 - `create_folder_view` saves a column layout for a folder so the next person opens the
   study with the right fields visible. `get_folder_views` lists what already exists.
+
+## Bringing in written feedback
+
+Research is not only recordings. Survey free text, support tickets, and pasted notes
+answer the same questions, and Speak AI treats them the same way once they are in.
+
+`create_text_note` takes the text and stores it as media. `get_text_insight` returns the
+same shape of analysis a recording gets: topics, sentiment, keywords, entities.
+`reanalyze_text` regenerates that analysis after the content changes, and
+`update_text_note` edits the note's name, content, or metadata.
+
+Because a text note becomes media, it lands in the same folders, matches the same
+`search_media` queries, and can be scoped into the same `ask_ai_chat` question as the
+recordings. So a study can cover fifteen interviews and two hundred survey comments in one
+answer rather than two disconnected ones.
+
+Analyze the note before asking about it. A note that has not finished analyzing returns
+empty insights, the same as a recording.
 
 ## Edge cases that actually bite
 

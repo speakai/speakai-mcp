@@ -115,6 +115,12 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 | `users-team` | 5 | Workspace members and groups | `list_users`, `list_user_groups` |
 | `dashboards` | 9 | Analytics dashboards and widgets | `list_dashboards`, `get_dashboard` |
 
+Users and groups are supporting tools rather than a workflow of their own. You reach for
+`list_users` to get the ids other calls need, such as `notifyUsers` on a recorder or the
+owner of an action item, and for `list_user_groups`, `create_user_group`,
+`update_user_group` and `delete_user_group` when a user asks to change who is grouped with
+whom. Group changes affect other people's access, so confirm before running one.
+
 ### Resources (5)
 
 Read these directly when you only need a list or a single document. They cost less than
