@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.20.0 (2026-08-10)
+
+- feat(plugin): add survey and dashboard skills, closing the workflow gaps
+
 ## v1.19.0 (2026-08-07)
 
 - fix(ci): release on deterministic commit parsing, and sync every derived surface (#54)
