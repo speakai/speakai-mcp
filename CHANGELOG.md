@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.21.0 (2026-08-10)
+
+- feat(analysis): support audio and video analysis, gated on the premium opt-in (#58)
+
 ## v1.20.0 (2026-08-10)
 
 - feat(plugin): add survey and dashboard skills, closing the workflow gaps
