@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.21.1 (2026-08-11)
+
+- fix(plugin): state the tool count as 113 in both places (#59)
+
 ## v1.21.0 (2026-08-10)
 
 - feat(analysis): support audio and video analysis, gated on the premium opt-in (#58)
