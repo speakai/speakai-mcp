@@ -5,7 +5,7 @@ A portable plugin that connects an AI agent to Speak AI. It follows the open
 client can load it, and it also ships the Claude Code and Codex manifests those clients
 expect.
 
-The plugin gives an agent 112 Speak AI tools, 5 resources, and 3 prompts, plus seven skills
+The plugin gives an agent 113 Speak AI tools, 5 resources, and 3 prompts, plus seven skills
 that teach it how to use them. Access alone is not much use: the skills are what turn "this
 agent can call 113 tools" into "this agent knows which three to call, in what order, and
 what to do when a recording is still processing".
