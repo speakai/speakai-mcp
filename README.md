@@ -643,6 +643,18 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 
 </details>
 
+<details>
+<summary>Voice agents (4 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `list_voice_agents` | List the company's voice agents (newest first) with their config |
+| `get_voice_agent` | Get a single voice agent by agentId |
+| `list_voice_conversations` | List conversations handled by voice agents (filter by agentId) |
+| `get_voice_conversation` | Get a single conversation by conversationId |
+
+</details>
+
 ### MCP Resources (5)
 
 Resources provide direct data access without tool calls. Clients can read these URIs directly.
