@@ -17,6 +17,7 @@ import * as clips from "./clips.js";
 import * as workflows from "./workflows.js";
 import * as users from "./users.js";
 import * as dashboards from "./dashboards.js";
+import * as voice from "./voice.js";
 
 const modules = [
   media,
@@ -35,6 +36,7 @@ const modules = [
   workflows,
   users,
   dashboards,
+  voice,
 ];
 
 /**

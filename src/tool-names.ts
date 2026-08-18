@@ -156,6 +156,12 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "duplicate_dashboard",
   "share_dashboard",
   "get_dashboard_speakers_insight",
+
+  // voice (read-only: agents + conversations)
+  "list_voice_agents",
+  "get_voice_agent",
+  "list_voice_conversations",
+  "get_voice_conversation",
 ] as const satisfies readonly string[];
 
 export type SpeakMcpToolName = (typeof SPEAK_MCP_TOOL_NAMES)[number];
