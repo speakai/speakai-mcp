@@ -7,7 +7,7 @@ expect.
 
 The plugin gives an agent 113 Speak AI tools, 5 resources, and 3 prompts, plus seven skills
 that teach it how to use them. Access alone is not much use: the skills are what turn "this
-agent can call 113 tools" into "this agent knows which three to call, in what order, and
+agent can call 117 tools" into "this agent knows which three to call, in what order, and
 what to do when a recording is still processing".
 
 Full documentation: <https://docs.speakai.co/mcp/plugin>

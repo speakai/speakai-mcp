@@ -9,7 +9,7 @@ metadata:
 
 # Automations and webhooks
 
-The Speak AI MCP server exposes 113 tools in 15 categories. This skill covers two of
+The Speak AI MCP server exposes 117 tools in 15 categories. This skill covers two of
 them: automations (15 tools) and webhooks (7 tools). Automations run work inside Speak.
 Webhooks move data across the boundary, either into Speak or out to your own server.
 

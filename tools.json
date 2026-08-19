@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 113,
+  "totalTools": 117,
   "categories": [
     {
       "id": "media",
@@ -1133,6 +1133,50 @@
           "name": "get_dashboard_speakers_insight",
           "title": "Get Dashboard Speakers Insight",
           "description": "Compute a speakers breakdown for a given folder scope, date range, and field filters. Standalone analytics — does not require a dashboard to exist.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "voice-agents",
+      "name": "Voice agents",
+      "iconKey": "voice-agents",
+      "shortDescription": "List voice agents and review their conversations.",
+      "tools": [
+        {
+          "name": "list_voice_agents",
+          "title": "List Voice Agents",
+          "description": "List the voice agents in the company (newest first). Each agent includes its agentId, name, personality/instructions, and voice/stt/llm/avatar configuration. Use the returned agentId with get_voice_agent or to filter list_voice_conversations.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_agent",
+          "title": "Get Voice Agent",
+          "description": "Fetch a single voice agent by its agentId. Returns the full agent configuration. A cross-company agentId returns 404.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_conversations",
+          "title": "List Voice Conversations",
+          "description": "List the company's voice conversations (newest first). Optionally filter to a single agent. Each conversation includes its conversationId, agentId, status, duration, transcript summary, and usage/costs. Use conversationId with get_voice_conversation for the full record.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_conversation",
+          "title": "Get Voice Conversation",
+          "description": "Fetch a single voice conversation by its conversationId, including transcript, usage, costs, and analysis. A cross-company conversationId returns 404.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,

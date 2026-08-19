@@ -82,6 +82,13 @@ const additions: Record<string, string[]> = {
 // Brand-new categories.
 const newCategories = [
   {
+    id: "voice-agents",
+    name: "Voice agents",
+    iconKey: "voice-agents",
+    shortDescription: "List voice agents and review their conversations.",
+    tools: ["list_voice_agents", "get_voice_agent", "list_voice_conversations", "get_voice_conversation"],
+  },
+  {
     id: "users-team",
     name: "Users & teams",
     iconKey: "users-team",
