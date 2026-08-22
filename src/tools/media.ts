@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, speakerHintsShape } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 
@@ -87,6 +87,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         )
         .optional()
         .describe("Custom field values to attach to the media"),
+      ...speakerHintsShape,
     },
     {
       title: "Upload Media from URL",
@@ -422,6 +423,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .string()
         .optional()
         .describe("User ID to assign management of this media to"),
+      ...speakerHintsShape,
     },
     {
       title: "Update Media Metadata",

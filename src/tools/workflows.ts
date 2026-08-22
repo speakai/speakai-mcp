@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, speakerHintsShape } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType } from "@speakai/shared";
 import * as fs from "fs";
@@ -496,6 +496,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       sourceLanguage: z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: z.string().optional().describe("Folder ID to place the media in"),
       tags: z.string().optional().describe("Comma-separated tags"),
+      ...speakerHintsShape,
     },
     {
       title: "Upload and Analyze Media",
@@ -519,6 +520,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         if (params.sourceLanguage) uploadBody.sourceLanguage = params.sourceLanguage;
         if (params.folderId) uploadBody.folderId = params.folderId;
         if (params.tags) uploadBody.tags = params.tags;
+        if (params.speakerHints) uploadBody.speakerHints = params.speakerHints;
 
         const uploadRes = await api.post("/v1/media/upload", uploadBody);
         const mediaId = uploadRes.data?.data?.mediaId;
@@ -569,6 +571,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       sourceLanguage: z.string().optional().describe("BCP-47 language code (e.g., 'en-US')"),
       folderId: z.string().optional().describe("Folder ID to place the media in"),
       tags: z.string().optional().describe("Comma-separated tags"),
+      ...speakerHintsShape,
     },
     {
       title: "Upload Local File",
@@ -626,6 +629,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         if (params.sourceLanguage) createBody.sourceLanguage = params.sourceLanguage;
         if (params.folderId) createBody.folderId = params.folderId;
         if (params.tags) createBody.tags = params.tags;
+        if (params.speakerHints) createBody.speakerHints = params.speakerHints;
 
         const createRes = await api.post("/v1/media/upload", createBody);
         const data = createRes.data?.data;
