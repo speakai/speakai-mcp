@@ -484,8 +484,8 @@
         },
         {
           "name": "generate_recorder_url",
-          "title": "Generate Recorder Share URL",
-          "description": "Generate a shareable public URL for a recorder/survey.",
+          "title": "Get Recorder Share URL",
+          "description": "Retrieve the existing shareable URL and embed iframe code for a recorder/survey. Read-only lookup: returns the recorder's pre-existing share link; it does not create, modify, or publish anything.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
