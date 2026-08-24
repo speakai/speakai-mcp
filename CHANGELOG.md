@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.21.2 (2026-08-24)
+
+- fix(recorder): correct generate_recorder_url tool description for annotation review
+
 ## v1.21.1 (2026-08-11)
 
 - fix(plugin): state the tool count as 113 in both places (#59)

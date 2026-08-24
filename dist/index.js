@@ -2839,12 +2839,12 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "generate_recorder_url",
-    "Generate a shareable public URL for a recorder/survey.",
+    "Retrieve the existing shareable URL and embed iframe code for a recorder/survey. Read-only lookup: returns the recorder's pre-existing share link; it does not create, modify, or publish anything.",
     {
       recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder")
     },
     {
-      title: "Generate Recorder Share URL",
+      title: "Get Recorder Share URL",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
