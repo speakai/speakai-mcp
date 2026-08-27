@@ -9,7 +9,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   registerSpeakTool(server, 
     "list_fields",
-    "List all custom fields defined in the workspace.",
+    "List all custom fields defined in the workspace. Each field returns a `slug` (for example " +
+      "`regulator_comment`) alongside its `id`, `name`, and `type`. Put `{{field.<slug>}}` in the prompt text " +
+      "you send and Speak substitutes that field's value for the media before the model sees it. A slug is " +
+      "unique per company and never changes when the field is renamed, so prefer it over the field name. A " +
+      "field with no slug yet resolves by `id` in the same token.",
     {},
     {
       title: "List Custom Fields",
