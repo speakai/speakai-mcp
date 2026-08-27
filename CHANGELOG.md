@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.22.0 (2026-08-27)
+
+- feat(fields): surface the field slug so a prompt can inject its value
+
 ## v1.21.2 (2026-08-24)
 
 - fix(recorder): correct generate_recorder_url tool description for annotation review

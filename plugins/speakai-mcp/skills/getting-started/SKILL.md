@@ -2,7 +2,7 @@
 name: getting-started
 description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the 113 MCP tools across 15 categories, the 5 resources, the 3 built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
 metadata:
-  server-version: "1.21.2"
+  server-version: "1.22.0"
   openclaw-homepage: "https://docs.speakai.co/mcp"
   openclaw-emoji: "🎙️"
 ---
@@ -71,7 +71,7 @@ reach the user without review.
   "mcpServers": {
     "speakai": {
       "command": "npx",
-      "args": ["-y", "@speakai/mcp-server@1.21.2"],
+      "args": ["-y", "@speakai/mcp-server@1.22.0"],
       "env": {
         "SPEAK_API_KEY": "speak_sk_example_000000000000"
       }
@@ -89,7 +89,7 @@ reach the user without review.
 Check the connection before you do real work:
 
 ```sh
-SPEAK_API_KEY=speak_sk_example_000000000000 npx @speakai/mcp-server@1.21.2 config test
+SPEAK_API_KEY=speak_sk_example_000000000000 npx @speakai/mcp-server@1.22.0 config test
 ```
 
 ## What the 113 tools cover
@@ -280,7 +280,7 @@ meeting events, and `update_embed` or `delete_clip` for shared assets.
    <https://api.speakai.co/v1/oauth/connections>. Reconnect if it was revoked.
 3. For stdio, confirm `SPEAK_API_KEY` is set, `node --version` reports 22 or newer, and
    the pinned version in the config matches what you installed.
-4. Run `npx @speakai/mcp-server@1.21.2 config test` to validate the key and reach the API.
+4. Run `npx @speakai/mcp-server@1.22.0 config test` to validate the key and reach the API.
 5. On 401 or 403, rotate the key at <https://app.speakai.co/developers/apikeys> and
    reconfigure.
 6. If you overrode `SPEAK_BASE_URL`, point it back at `https://api.speakai.co`.
