@@ -280,6 +280,11 @@ describe("Fields tools", () => {
     expect(mockGet).toHaveBeenCalledWith("/v1/fields");
   });
 
+  it("list_fields tells the model a field's slug is the prompt token", () => {
+    const tool = (server as any)._registeredTools["list_fields"];
+    expect(tool.description).toContain("{{field.<slug>}}");
+  });
+
   it("create_field calls POST /v1/fields", async () => {
     const cb = getToolCallback(server, "create_field");
     await cb({ name: "Priority", type: "select", options: ["High", "Low"] });
