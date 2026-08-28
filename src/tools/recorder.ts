@@ -4,36 +4,6 @@ import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
-/**
- * Recorder capture options are stored under `meta.type` on the server, and the
- * read responses have no top-level `options`. Surface `options` (mirrored from
- * `meta.type`, boolean-coerced) so MCP consumers get the same shape they send
- * on write. `meta.type` is left intact.
- */
-function optionsFromMetaType(metaType: any) {
-  const bool = (v: unknown, fallback: boolean) => (typeof v === "boolean" ? v : fallback);
-  const upload = metaType?.upload ?? {};
-  return {
-    audio: bool(metaType?.audio, true),
-    video: bool(metaType?.video, true),
-    screenShare: bool(metaType?.screenShare, false),
-    upload: {
-      file: bool(upload.file, true),
-      multiple: bool(upload.multiple, false),
-      url: bool(upload.url, false),
-    },
-    liveTranscription: bool(metaType?.liveTranscription, false),
-  };
-}
-
-/** Adds a top-level `options` (from `meta.type`) to a recorder object in place. */
-function addRecorderOptions(recorder: any) {
-  if (recorder && typeof recorder === "object") {
-    recorder.options = optionsFromMetaType(recorder.meta?.type);
-  }
-  return recorder;
-}
-
 // Valid recorder question answer types. Source of truth: RecorderAnswerType in
 // @speakai/shared (see speak-server @speak-common/types/enum/recorder.ts).
 // NOTE: there is no free-text / rating / number type — choice types cover input.
@@ -140,7 +110,6 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async (body) => {
       try {
         const result = await api.post("/v1/recorder/create", body);
-        addRecorderOptions(result.data?.data?.recorderData);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -171,7 +140,6 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async (params) => {
       try {
         const result = await api.get("/v1/recorder", { params });
-        result.data?.data?.recorderList?.forEach?.(addRecorderOptions);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -231,7 +199,6 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async ({ recorderId }) => {
       try {
         const result = await api.get(`/v1/recorder/${recorderId}`);
-        addRecorderOptions(result.data?.data);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -318,7 +285,6 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async ({ recorderId, ...body }) => {
       try {
         const result = await api.put(`/v1/recorder/settings/${recorderId}`, body);
-        addRecorderOptions(result.data?.data?.recorderData);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
