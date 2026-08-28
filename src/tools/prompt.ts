@@ -65,6 +65,18 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .boolean()
         .optional()
         .describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
+      analysisInput: z
+        .enum(["audio", "video"])
+        .optional()
+        .describe(
+          "Send the media itself to a multimodal model, not just its transcript. 'audio' analyses tone, pacing, and delivery; 'video' analyses on-screen visuals, gestures, and slides. Requires analysisMediaId. The workspace must have multimodal analysis enabled and the file must be a supported container within the duration limit, otherwise the turn runs transcript-only."
+        ),
+      analysisMediaId: z
+        .string()
+        .optional()
+        .describe(
+          "The mediaId to analyse multimodally this turn. Required together with analysisInput, and it must be one of the ids in mediaIds; either field alone is rejected."
+        ),
     },
     {
       title: "Ask AI About Your Recordings",
