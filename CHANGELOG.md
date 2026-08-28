@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.23.1 (2026-08-28)
+
+- Maintenance release
+
 ## v1.23.0 (2026-08-28)
 
 - feat(mcp): multimodal analysis on ask_magic_prompt; infer media type from filename
