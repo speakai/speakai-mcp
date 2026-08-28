@@ -1,11 +1,95 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
+
+/**
+ * Recorder capture options are stored under `meta.type` on the server, and the
+ * read responses have no top-level `options`. Surface `options` (mirrored from
+ * `meta.type`, boolean-coerced) so MCP consumers get the same shape they send
+ * on write. `meta.type` is left intact.
+ */
+function optionsFromMetaType(metaType: any) {
+  const bool = (v: unknown, fallback: boolean) => (typeof v === "boolean" ? v : fallback);
+  const upload = metaType?.upload ?? {};
+  return {
+    audio: bool(metaType?.audio, true),
+    video: bool(metaType?.video, true),
+    screenShare: bool(metaType?.screenShare, false),
+    upload: {
+      file: bool(upload.file, true),
+      multiple: bool(upload.multiple, false),
+      url: bool(upload.url, false),
+    },
+    liveTranscription: bool(metaType?.liveTranscription, false),
+  };
+}
+
+/** Adds a top-level `options` (from `meta.type`) to a recorder object in place. */
+function addRecorderOptions(recorder: any) {
+  if (recorder && typeof recorder === "object") {
+    recorder.options = optionsFromMetaType(recorder.meta?.type);
+  }
+  return recorder;
+}
+
+// Valid recorder question answer types. Source of truth: RecorderAnswerType in
+// @speakai/shared (see speak-server @speak-common/types/enum/recorder.ts).
+// NOTE: there is no free-text / rating / number type — choice types cover input.
+const RECORDER_ANSWER_TYPES = [
+  "single",
+  "multiple",
+  "checkbox",
+  "radiobutton",
+  "dropdownlist",
+  "date",
+  "time",
+  "datetime",
+] as const;
+
+// Reusable description of a survey question, incl. the allowed answerType values.
+const QUESTION_SHAPE_DESC =
+  `Each: { question, isRequired, answerType, options?, includeOther?, fieldId? }. ` +
+  `answerType must be one of: ${RECORDER_ANSWER_TYPES.map((t) => `"${t}"`).join(", ")}. ` +
+  `Choice types (single, multiple, checkbox, radiobutton, dropdownlist) take options:string[] ` +
+  `and includeOther:boolean (adds a free-text "Other"). date/time/datetime take no options. ` +
+  `There is no free-text/rating/number answerType.`;
+
+// Config keys shared by create_recorder and update_recorder_settings.
+// Nested objects use z.record to keep TS type-inference light; the exact keys
+// are documented in each .describe() and validated server-side.
+const recorderConfigShape = {
+  description: z.string().optional().describe("Recorder description"),
+  sourceLanguage: z.string().optional().describe("Transcription language code (e.g. en-US)"),
+  folderId: z.string().optional().describe("Folder to store recordings in"),
+  isAutoAnalyze: z.boolean().optional().describe("Whether to auto-analyze submissions"),
+  notifyUsers: z.array(z.string()).optional().describe("User IDs to notify on new submissions"),
+  duration: z
+    .record(z.unknown())
+    .optional()
+    .describe("Recording duration: { minDuration, maxDuration } in seconds"),
+  options: z
+    .record(z.unknown())
+    .optional()
+    .describe(
+      "Capture options: { audio, video, screenShare, liveTranscription, upload:{ file, text, multiple, url } } — all booleans",
+    ),
+  notification: z
+    .record(z.unknown())
+    .optional()
+    .describe("Notification toggles: { upload, client } — booleans"),
+  meta: z
+    .record(z.unknown())
+    .optional()
+    .describe(
+      "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }",
+    ),
+};
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(server, 
     "check_recorder_status",
     "Check whether a recorder/survey is active and accepting submissions.",
     {
@@ -33,13 +117,18 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "create_recorder",
     "Create a new recorder or survey for collecting audio/video submissions.",
     {
-      name: z.string().optional().describe("Display name for the recorder"),
-      folderId: z.string().optional().describe("Folder to store recordings in"),
-      settings: z.record(z.unknown()).optional().describe("Recorder configuration settings"),
+      name: z.string().describe("Display name for the recorder"),
+      ...recorderConfigShape,
+      clientInformation: z
+        .record(z.unknown())
+        .optional()
+        .describe(
+          `Respondent info & questions: { name:boolean, email:boolean, questions:[…], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }. Question shape — ${QUESTION_SHAPE_DESC}`,
+        ),
     },
     {
       title: "Create Recorder",
@@ -51,6 +140,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async (body) => {
       try {
         const result = await api.post("/v1/recorder/create", body);
+        addRecorderOptions(result.data?.data?.recorderData);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -63,7 +153,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "list_recorders",
     "List all recorders/surveys in the workspace.",
     {
@@ -81,6 +171,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async (params) => {
       try {
         const result = await api.get("/v1/recorder", { params });
+        result.data?.data?.recorderList?.forEach?.(addRecorderOptions);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -93,11 +184,14 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "clone_recorder",
     "Duplicate an existing recorder including all its settings and questions.",
     {
       recorderId: z.string().min(1).describe("ID of the recorder to clone"),
+      name: z.string().optional().describe("Name for the cloned recorder"),
+      description: z.string().optional().describe("Description for the cloned recorder"),
+      folderId: z.string().optional().describe("Folder for the cloned recorder"),
     },
     {
       title: "Clone Recorder",
@@ -121,7 +215,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_recorder_info",
     "Get detailed information about a specific recorder including its settings and questions.",
     {
@@ -137,6 +231,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async ({ recorderId }) => {
       try {
         const result = await api.get(`/v1/recorder/${recorderId}`);
+        addRecorderOptions(result.data?.data);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -149,7 +244,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_recorder_recordings",
     "List all submissions/recordings collected by a specific recorder.",
     {
@@ -177,18 +272,18 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "generate_recorder_url",
-    "Generate a shareable public URL for a recorder/survey.",
+    "Retrieve the existing shareable URL and embed iframe code for a recorder/survey. Read-only lookup: returns the recorder's pre-existing share link; it does not create, modify, or publish anything.",
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder"),
     },
     {
-      title: "Generate Recorder Share URL",
+      title: "Get Recorder Share URL",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
     },
     async ({ recorderId }) => {
       try {
@@ -205,12 +300,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_recorder_settings",
-    "Update configuration settings for a recorder (branding, permissions, etc.).",
+    "Update configuration settings for a recorder (branding, capture options, etc.). `name` must always be supplied.",
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder"),
-      settings: z.record(z.unknown()).describe("Settings object with updated values"),
+      name: z.string().describe("Display name for the recorder"),
+      ...recorderConfigShape,
     },
     {
       title: "Update Recorder Settings",
@@ -219,9 +315,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       idempotentHint: true,
       openWorldHint: true,
     },
-    async ({ recorderId, settings }) => {
+    async ({ recorderId, ...body }) => {
       try {
-        const result = await api.put(`/v1/recorder/settings/${recorderId}`, settings);
+        const result = await api.put(`/v1/recorder/settings/${recorderId}`, body);
+        addRecorderOptions(result.data?.data?.recorderData);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -234,14 +331,24 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_recorder_questions",
-    "Update the survey questions for a recorder.",
+    "Update the survey questions and respondent-info settings for a recorder.",
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder"),
+      name: z.boolean().optional().describe("Whether to collect the respondent's name"),
+      email: z.boolean().optional().describe("Whether to collect the respondent's email"),
       questions: z
         .array(z.record(z.unknown()))
-        .describe("Array of question objects"),
+        .describe(
+          `Survey questions. ${QUESTION_SHAPE_DESC} (id? may also be passed to update an existing question.)`,
+        ),
+      consent: z
+        .record(z.unknown())
+        .optional()
+        .describe(
+          "Consent screen: { isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? }",
+        ),
     },
     {
       title: "Update Recorder Questions",
@@ -250,9 +357,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       idempotentHint: true,
       openWorldHint: true,
     },
-    async ({ recorderId, questions }) => {
+    async ({ recorderId, ...body }) => {
       try {
-        const result = await api.put(`/v1/recorder/questions/${recorderId}`, { questions });
+        const result = await api.put(`/v1/recorder/questions/${recorderId}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -265,7 +372,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "delete_recorder",
     "Permanently delete a recorder/survey. Existing recordings are preserved.",
     {

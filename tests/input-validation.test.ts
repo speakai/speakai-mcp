@@ -121,7 +121,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
         const callback = getToolCallback(server, "list_media");
         await callback({ from: "2025-01-01", to: "2025-12-31" });
         expect(mockGet).toHaveBeenCalledWith("/v1/media", {
-          params: { from: "2025-01-01", to: "2025-12-31" },
+          params: { from: "2025-01-01", to: "2025-12-31", pageSize: 25 },
         });
       });
 
@@ -129,7 +129,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
         const callback = getToolCallback(server, "list_media");
         await callback({ isFavorites: true });
         expect(mockGet).toHaveBeenCalledWith("/v1/media", {
-          params: { isFavorites: true },
+          params: { isFavorites: true, pageSize: 25 },
         });
       });
     });
@@ -174,12 +174,10 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
             { id: "speaker_1", name: "Bob" },
           ],
         });
-        expect(mockPut).toHaveBeenCalledWith("/v1/media/speakers/abc", {
-          speakers: [
-            { id: "speaker_0", name: "Alice" },
-            { id: "speaker_1", name: "Bob" },
-          ],
-        });
+        expect(mockPut).toHaveBeenCalledWith("/v1/media/speakers/abc", [
+          { id: "speaker_0", name: "Alice" },
+          { id: "speaker_1", name: "Bob" },
+        ]);
       });
     });
 
@@ -218,8 +216,8 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       register(server, mockClient);
     });
 
-    it("ask_magic_prompt sends all params", async () => {
-      const callback = getToolCallback(server, "ask_magic_prompt");
+    it("ask_ai_chat sends all params", async () => {
+      const callback = getToolCallback(server, "ask_ai_chat");
       await callback({
         prompt: "Summarize the key points",
         mediaIds: ["id1", "id2"],
@@ -232,8 +230,8 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       });
     });
 
-    it("ask_magic_prompt works with prompt only (workspace-wide)", async () => {
-      const callback = getToolCallback(server, "ask_magic_prompt");
+    it("ask_ai_chat works with prompt only (workspace-wide)", async () => {
+      const callback = getToolCallback(server, "ask_ai_chat");
       await callback({ prompt: "What common themes exist?" });
       expect(mockPost).toHaveBeenCalledWith("/v1/prompt", {
         prompt: "What common themes exist?",
@@ -279,11 +277,11 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       await callback({
         folderId: "f1",
         name: "My View",
-        filters: { mediaType: "audio" },
+        columns: [{ name: "Name", type: "name", order: 0 }],
       });
-      expect(mockPost).toHaveBeenCalledWith("/v1/folders/f1/views", {
+      expect(mockPost).toHaveBeenCalledWith("/v1/folder/f1/views", {
         name: "My View",
-        filters: { mediaType: "audio" },
+        columns: [{ name: "Name", type: "name", order: 0 }],
       });
     });
   });
@@ -559,13 +557,13 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
 
     it("create_webhook schema rejects non-URL string", () => {
       const schema = getToolInputSchema(server, "create_webhook");
-      const result = schema.safeParse({ url: "not-a-url" });
+      const result = schema.safeParse({ callbackUrl: "not-a-url" });
       expect(result.success).toBe(false);
     });
 
     it("create_webhook schema accepts valid HTTPS URL", () => {
       const schema = getToolInputSchema(server, "create_webhook");
-      const result = schema.safeParse({ url: "https://example.com/webhook" });
+      const result = schema.safeParse({ callbackUrl: "https://example.com/webhook" });
       expect(result.success).toBe(true);
     });
 
@@ -582,14 +580,14 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
       register(server, mockClient);
     });
 
-    it("ask_magic_prompt schema rejects empty prompt", () => {
-      const schema = getToolInputSchema(server, "ask_magic_prompt");
+    it("ask_ai_chat schema rejects empty prompt", () => {
+      const schema = getToolInputSchema(server, "ask_ai_chat");
       const result = schema.safeParse({ prompt: "" });
       expect(result.success).toBe(false);
     });
 
-    it("retry_magic_prompt schema rejects empty promptId", () => {
-      const schema = getToolInputSchema(server, "retry_magic_prompt");
+    it("retry_ai_chat schema rejects empty promptId", () => {
+      const schema = getToolInputSchema(server, "retry_ai_chat");
       const result = schema.safeParse({ promptId: "", messageId: "msg1" });
       expect(result.success).toBe(false);
     });

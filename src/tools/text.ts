@@ -1,11 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(server, 
     "create_text_note",
     "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
     {
@@ -39,7 +40,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -58,7 +59,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_text_insight",
     "Retrieve AI-generated insights for a text note, including topics, sentiment, summaries, and action items.",
     {
@@ -88,7 +89,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "reanalyze_text",
     "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models.",
     {
@@ -120,7 +121,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_text_note",
     "Update an existing text note's name, content, or metadata. Updating text content will trigger re-analysis.",
     {

@@ -63,7 +63,7 @@ describe("Automations tools", () => {
   it("list_automations calls GET /v1/automations", async () => {
     const cb = getToolCallback(server, "list_automations");
     await cb({});
-    expect(mockGet).toHaveBeenCalledWith("/v1/automations");
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations", { params: {} });
   });
 
   it("get_automation calls GET /v1/automations/:id", async () => {
@@ -74,11 +74,74 @@ describe("Automations tools", () => {
 
   it("create_automation calls POST /v1/automations/", async () => {
     const cb = getToolCallback(server, "create_automation");
-    await cb({ name: "My Rule", trigger: { type: "upload" } });
-    expect(mockPost).toHaveBeenCalledWith("/v1/automations/", {
+    const body = {
       name: "My Rule",
-      trigger: { type: "upload" },
+      trigger: { type: "folders", folderIds: ["f1"] },
+      steps: [{ stepId: "s1", stepType: "translation", translation: { targetLanguage: "es" } }],
+    };
+    await cb(body);
+    expect(mockPost).toHaveBeenCalledWith("/v1/automations/", body);
+    // Non-webhook automations skip the inbound-webhook enrichment lookups.
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it("create_automation enriches inbound-webhook automations with the receive URL and tokens", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: { status: "success", data: { automationId: "auto1", message: "created" } },
     });
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/automations/auto1") {
+        return Promise.resolve({
+          data: { status: "success", data: { trigger: { webhookId: "wh1", childKey: "data" } } },
+        });
+      }
+      return Promise.resolve({
+        data: {
+          status: "success",
+          data: {
+            webhookData: {
+              inboundUrl: "https://api.test/v1/webhook/in/tok",
+              samplePayload: { data: { url: "https://x.mp3", name: "Call" } },
+              flattenedPaths: ["data.url", "data.name"],
+            },
+          },
+        },
+      });
+    });
+    const cb = getToolCallback(server, "create_automation");
+    const result = await cb({
+      name: "Webhook Rule",
+      trigger: { type: "folders", triggerSlug: "inbound_webhook", childKey: "data" },
+      steps: [
+        {
+          stepId: "s1",
+          stepType: "speak-upload",
+          speakUpload: { sourceMode: "url", sourceUrl: "{{trigger.payload.url}}", folderId: "f1" },
+        },
+      ],
+    });
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations/auto1");
+    expect(mockGet).toHaveBeenCalledWith("/v1/webhook/wh1");
+    const text = result.content[0].text;
+    expect(text).toContain("auto1");
+    expect(text).toContain("https://api.test/v1/webhook/in/tok");
+    expect(text).toContain("{{trigger.payload.url}}");
+    expect(result.isError).toBeUndefined();
+  });
+
+  it("create_automation still succeeds when webhook enrichment fails", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: { status: "success", data: { automationId: "auto2", message: "created" } },
+    });
+    mockGet.mockRejectedValue(new Error("boom"));
+    const cb = getToolCallback(server, "create_automation");
+    const result = await cb({
+      name: "Webhook Rule",
+      trigger: { type: "folders", triggerSlug: "inbound_webhook" },
+      steps: [{ stepId: "s1", stepType: "translation", translation: { targetLanguage: "es" } }],
+    });
+    expect(result.isError).toBeUndefined();
+    expect(result.content[0].text).toContain("auto2");
   });
 
   it("update_automation calls PUT /v1/automations/:id", async () => {
@@ -87,10 +150,10 @@ describe("Automations tools", () => {
     expect(mockPut).toHaveBeenCalledWith("/v1/automations/auto1", { name: "Updated" });
   });
 
-  it("toggle_automation_status calls PUT /v1/automations/status/:id", async () => {
+  it("toggle_automation_status calls PUT /v1/automations/status/:id (no body — pure toggle)", async () => {
     const cb = getToolCallback(server, "toggle_automation_status");
-    await cb({ automationId: "auto1", enabled: false });
-    expect(mockPut).toHaveBeenCalledWith("/v1/automations/status/auto1", { enabled: false });
+    await cb({ automationId: "auto1" });
+    expect(mockPut).toHaveBeenCalledWith("/v1/automations/status/auto1");
   });
 
   it("handles error on list_automations", async () => {
@@ -116,23 +179,23 @@ describe("Embed tools", () => {
 
   it("create_embed calls POST /v1/embed", async () => {
     const cb = getToolCallback(server, "create_embed");
-    await cb({ mediaId: "m1", settings: { autoplay: true } });
+    await cb({ mediaId: "m1", folderIds: ["f1"] });
     expect(mockPost).toHaveBeenCalledWith("/v1/embed", {
       mediaId: "m1",
-      settings: { autoplay: true },
+      folderIds: ["f1"],
     });
   });
 
   it("update_embed calls PUT /v1/embed/:id", async () => {
     const cb = getToolCallback(server, "update_embed");
-    await cb({ embedId: "e1", settings: { theme: "dark" } });
-    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", { settings: { theme: "dark" } });
+    await cb({ embedId: "e1", meta: { primaryColor: "#000" } });
+    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", { meta: { primaryColor: "#000" } });
   });
 
-  it("check_embed calls GET /v1/embed/:mediaId", async () => {
+  it("check_embed calls GET /v1/embed with mediaId query param", async () => {
     const cb = getToolCallback(server, "check_embed");
     await cb({ mediaId: "m1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/embed/m1");
+    expect(mockGet).toHaveBeenCalledWith("/v1/embed", { params: { mediaId: "m1" } });
   });
 
   it("get_embed_iframe_url calls GET /v1/embed/iframe with params", async () => {
@@ -217,6 +280,11 @@ describe("Fields tools", () => {
     expect(mockGet).toHaveBeenCalledWith("/v1/fields");
   });
 
+  it("list_fields tells the model a field's slug is the prompt token", () => {
+    const tool = (server as any)._registeredTools["list_fields"];
+    expect(tool.description).toContain("{{field.<slug>}}");
+  });
+
   it("create_field calls POST /v1/fields", async () => {
     const cb = getToolCallback(server, "create_field");
     await cb({ name: "Priority", type: "select", options: ["High", "Low"] });
@@ -227,11 +295,12 @@ describe("Fields tools", () => {
     });
   });
 
-  it("update_multiple_fields calls POST /v1/fields/multi", async () => {
+  it("update_multiple_fields calls POST /v1/fields/batch", async () => {
     const cb = getToolCallback(server, "update_multiple_fields");
-    await cb({ fields: [{ id: "f1", name: "Updated" }] });
-    expect(mockPost).toHaveBeenCalledWith("/v1/fields/multi", {
-      fields: [{ id: "f1", name: "Updated" }],
+    await cb({ mediaIds: ["m1"], fields: [{ id: "f1", value: "Updated" }] });
+    expect(mockPost).toHaveBeenCalledWith("/v1/fields/batch", {
+      mediaIds: ["m1"],
+      fields: [{ id: "f1", value: "Updated" }],
     });
   });
 
@@ -280,13 +349,12 @@ describe("Meeting tools", () => {
     });
   });
 
-  it("remove_assistant_from_meeting calls PUT with params", async () => {
+  it("remove_assistant_from_meeting calls POST with body", async () => {
     const cb = getToolCallback(server, "remove_assistant_from_meeting");
     await cb({ meetingAssistantEventId: "evt1" });
-    expect(mockPut).toHaveBeenCalledWith(
+    expect(mockPost).toHaveBeenCalledWith(
       "/v1/meeting-assistant/events/remove",
-      null,
-      { params: { meetingAssistantEventId: "evt1" } }
+      { meetingAssistantEventId: "evt1" }
     );
   });
 
@@ -370,8 +438,11 @@ describe("Recorder tools", () => {
 
   it("update_recorder_settings calls PUT /v1/recorder/settings/:id", async () => {
     const cb = getToolCallback(server, "update_recorder_settings");
-    await cb({ recorderId: "r1", settings: { branding: true } });
-    expect(mockPut).toHaveBeenCalledWith("/v1/recorder/settings/r1", { branding: true });
+    await cb({ recorderId: "r1", name: "My Recorder", description: "desc" });
+    expect(mockPut).toHaveBeenCalledWith("/v1/recorder/settings/r1", {
+      name: "My Recorder",
+      description: "desc",
+    });
   });
 
   it("update_recorder_questions calls PUT /v1/recorder/questions/:id", async () => {
@@ -494,6 +565,92 @@ describe("Webhook tools", () => {
     const cb = getToolCallback(server, "create_webhook");
     const result = await cb({ url: "https://example.com/hook" });
     expect(result.isError).toBe(true);
+  });
+
+  it("provision_inbound_webhook calls POST /v1/webhook/inbound/provision and returns nextSteps", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: { status: "success", data: { webhookId: "wh1", inboundUrl: "https://api.test/v1/webhook/in/tok" } },
+    });
+    const cb = getToolCallback(server, "provision_inbound_webhook");
+    const result = await cb({});
+    expect(mockPost).toHaveBeenCalledWith("/v1/webhook/inbound/provision", {});
+    const text = result.content[0].text;
+    expect(text).toContain("https://api.test/v1/webhook/in/tok");
+    expect(text).toContain("nextSteps");
+  });
+
+  it("get_inbound_webhook with webhookId calls GET /v1/webhook/:id and maps payload tokens", async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          webhookData: {
+            inboundUrl: "https://api.test/v1/webhook/in/tok",
+            samplePayload: { data: { url: "https://x.mp3" } },
+            flattenedPaths: ["data.url", "data.name", "other"],
+          },
+        },
+      },
+    });
+    const cb = getToolCallback(server, "get_inbound_webhook");
+    const result = await cb({ webhookId: "wh1", childKey: "data" });
+    expect(mockGet).toHaveBeenCalledWith("/v1/webhook/wh1");
+    const text = result.content[0].text;
+    expect(text).toContain("{{trigger.payload.url}}");
+    expect(text).toContain("{{trigger.payload.name}}");
+    expect(text).not.toContain("{{trigger.payload.other}}");
+    expect(text).toContain("https://api.test/v1/webhook/in/tok");
+  });
+
+  it("get_inbound_webhook with automationId resolves the bound webhook and childKey", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/automations/auto1") {
+        return Promise.resolve({
+          data: { status: "success", data: { trigger: { webhookId: "wh9", childKey: "data" } } },
+        });
+      }
+      return Promise.resolve({
+        data: {
+          status: "success",
+          data: {
+            webhookData: {
+              inboundUrl: "https://api.test/v1/webhook/in/tok9",
+              samplePayload: { data: { url: "https://x.mp3" } },
+              flattenedPaths: ["data.url"],
+            },
+          },
+        },
+      });
+    });
+    const cb = getToolCallback(server, "get_inbound_webhook");
+    const result = await cb({ automationId: "auto1" });
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations/auto1");
+    expect(mockGet).toHaveBeenCalledWith("/v1/webhook/wh9");
+    expect(result.content[0].text).toContain("{{trigger.payload.url}}");
+  });
+
+  it("get_inbound_webhook errors when neither webhookId nor automationId is given", async () => {
+    const cb = getToolCallback(server, "get_inbound_webhook");
+    const result = await cb({});
+    expect(result.isError).toBe(true);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it("get_inbound_webhook errors when the automation has no inbound webhook", async () => {
+    mockGet.mockResolvedValueOnce({
+      data: { status: "success", data: { trigger: { type: "folders", folderIds: ["f1"] } } },
+    });
+    const cb = getToolCallback(server, "get_inbound_webhook");
+    const result = await cb({ automationId: "auto1" });
+    expect(result.isError).toBe(true);
+  });
+
+  it("get_webhook_attempts calls GET /v1/webhook/:id/attempts with paging", async () => {
+    const cb = getToolCallback(server, "get_webhook_attempts");
+    await cb({ webhookId: "wh1", page: 1, pageSize: 20 });
+    expect(mockGet).toHaveBeenCalledWith("/v1/webhook/wh1/attempts", {
+      params: { page: 1, pageSize: 20 },
+    });
   });
 });
 
@@ -643,8 +800,8 @@ describe("Prompt tools — remaining untested endpoints", () => {
     register(server, mockClient);
   });
 
-  it("retry_magic_prompt calls POST /v1/prompt/retry", async () => {
-    const cb = getToolCallback(server, "retry_magic_prompt");
+  it("retry_ai_chat calls POST /v1/prompt/retry", async () => {
+    const cb = getToolCallback(server, "retry_ai_chat");
     await cb({ promptId: "p1", messageId: "msg1" });
     expect(mockPost).toHaveBeenCalledWith("/v1/prompt/retry", {
       promptId: "p1",
@@ -794,27 +951,49 @@ describe("Folder tools", () => {
     expect(mockDelete).toHaveBeenCalledWith("/v1/folder/f1");
   });
 
-  it("create_folder_view calls POST /v1/folders/:folderId/views", async () => {
+  it("create_folder_view calls POST /v1/folder/:folderId/views", async () => {
     const cb = getToolCallback(server, "create_folder_view");
-    await cb({ folderId: "f1", name: "My View", filters: { status: "active" } });
-    expect(mockPost).toHaveBeenCalledWith("/v1/folders/f1/views", {
+    await cb({
+      folderId: "f1",
       name: "My View",
-      filters: { status: "active" },
+      columns: [{ name: "Name", type: "name", order: 0 }],
+    });
+    expect(mockPost).toHaveBeenCalledWith("/v1/folder/f1/views", {
+      name: "My View",
+      columns: [{ name: "Name", type: "name", order: 0 }],
     });
   });
 
-  it("update_folder_view calls PUT /v1/folders/:folderId/views/:viewId", async () => {
+  it("update_folder_view calls PUT /v1/folder/:folderId/views/:viewId", async () => {
     const cb = getToolCallback(server, "update_folder_view");
-    await cb({ folderId: "f1", viewId: "v1", name: "Updated View" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/folders/f1/views/v1", {
+    await cb({
+      folderId: "f1",
+      viewId: "v1",
       name: "Updated View",
+      isDefault: true,
+      columns: [{ name: "Name", type: "name", order: 0 }],
+    });
+    expect(mockPut).toHaveBeenCalledWith("/v1/folder/f1/views/v1", {
+      name: "Updated View",
+      isDefault: true,
+      columns: [{ name: "Name", type: "name", order: 0 }],
     });
   });
 
-  it("clone_folder_view calls POST /v1/folders/views/clone", async () => {
+  it("clone_folder_view calls POST /v1/folder/views/clone", async () => {
     const cb = getToolCallback(server, "clone_folder_view");
-    await cb({ viewId: "v1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/folders/views/clone", { viewId: "v1" });
+    await cb({
+      sourceFolderId: "f1",
+      targetFolderId: "f2",
+      viewId: "v1",
+      name: "Cloned View",
+    });
+    expect(mockPost).toHaveBeenCalledWith("/v1/folder/views/clone", {
+      sourceFolderId: "f1",
+      targetFolderId: "f2",
+      viewId: "v1",
+      name: "Cloned View",
+    });
   });
 
   it("handles error on get_folder_info", async () => {
@@ -847,15 +1026,15 @@ describe("Media tools — additional endpoints", () => {
     });
   });
 
-  it("update_transcript_speakers calls PUT /v1/media/speakers/:mediaId", async () => {
+  it("update_transcript_speakers calls PUT /v1/media/speakers/:mediaId with a bare array", async () => {
     const cb = getToolCallback(server, "update_transcript_speakers");
     await cb({
       mediaId: "m1",
       speakers: [{ id: "s1", name: "Alice" }],
     });
-    expect(mockPut).toHaveBeenCalledWith("/v1/media/speakers/m1", {
-      speakers: [{ id: "s1", name: "Alice" }],
-    });
+    expect(mockPut).toHaveBeenCalledWith("/v1/media/speakers/m1", [
+      { id: "s1", name: "Alice" },
+    ]);
   });
 
   it("update_media_metadata calls PUT /v1/media/:mediaId", async () => {
@@ -887,14 +1066,17 @@ describe("Media tools — additional endpoints", () => {
 
   it("toggle_media_favorite calls POST /v1/media/favorites", async () => {
     const cb = getToolCallback(server, "toggle_media_favorite");
-    await cb({ mediaId: "m1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/media/favorites", { mediaId: "m1" });
+    await cb({ mediaIds: ["m1"], isFavorite: true });
+    expect(mockPost).toHaveBeenCalledWith("/v1/media/favorites", {
+      mediaIds: ["m1"],
+      isFavorite: true,
+    });
   });
 
-  it("reanalyze_media calls POST /v1/media/reanalyze/:mediaId", async () => {
+  it("reanalyze_media calls GET /v1/media/reanalyze/:mediaId", async () => {
     const cb = getToolCallback(server, "reanalyze_media");
     await cb({ mediaId: "m1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/media/reanalyze/m1", {});
+    expect(mockGet).toHaveBeenCalledWith("/v1/media/reanalyze/m1", { params: {} });
   });
 
   it("bulk_move_media calls PUT /v1/media/move", async () => {
@@ -911,5 +1093,257 @@ describe("Media tools — additional endpoints", () => {
     const cb = getToolCallback(server, "get_captions");
     const result = await cb({ mediaId: "m1" });
     expect(result.isError).toBe(true);
+  });
+});
+
+describe("build_automation workflow", () => {
+  let server: McpServer;
+
+  const FOLDERS = { status: "success", data: { folderList: [{ folderId: "fld1", name: "Sales Calls" }] } };
+  const FIELDS = {
+    status: "success",
+    data: [
+      { id: "fldA", name: "Customer Name" },
+      { id: "fldB", name: "Deal Stage" },
+    ],
+  };
+
+  beforeEach(async () => {
+    vi.resetAllMocks();
+    mockGet.mockResolvedValue({ data: { data: {} } });
+    mockPost.mockResolvedValue({ data: { data: {} } });
+    mockPut.mockResolvedValue({ data: { data: {} } });
+    server = new McpServer({ name: "test", version: "1.0.0" });
+    const { register } = await import("../src/tools/workflows.js");
+    register(server, mockClient);
+  });
+
+  it("resolves folder/field names, converts payload shorthand, and assembles the wire body", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a1" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Friendly build",
+      trigger: { on: "media_analyzed", folders: ["Sales Calls"] },
+      steps: [
+        { do: "filter", rules: [{ field: "name", op: "contains", value: "Acme" }] },
+        { do: "ai_chat", prompt: "Summarize", saveToFields: ["Customer Name"] },
+        { do: "notify", message: "Done: payload.name" },
+      ],
+    });
+
+    expect(result.isError).toBeUndefined();
+    const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
+    expect(body.trigger).toEqual({
+      type: "folders",
+      provider: "speak",
+      app: "speak",
+      triggerSlug: "media_analyzed",
+      folderIds: ["fld1"],
+    });
+    expect(body.steps[0]).toMatchObject({ stepType: "filter", filter: { logic: "AND" } });
+    expect(body.steps[1].magicPrompt.fieldIds).toEqual(["fldA"]);
+    expect(body.steps[2].notify.message).toBe("Done: payload.name"); // literal — not payload-prefixed shorthand form
+  });
+
+  it("creates a missing folder and reports it", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: { status: "success", data: { folderId: "fldNew" } } });
+      return Promise.resolve({ data: { status: "success", data: { automationId: "a2" } } });
+    });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "New folder build",
+      trigger: { on: "media_analyzed", folders: ["Webhook Inbox"] },
+      steps: [{ do: "translate", language: "fr-FR" }],
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(mockPost).toHaveBeenCalledWith("/v1/folder", { name: "Webhook Inbox" });
+    expect(result.content[0].text).toContain("Webhook Inbox (fldNew)");
+  });
+
+  it("builds a webhook automation with token shorthand, dynamic routing, and enrichment", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      if (url === "/v1/automations/a3") {
+        return Promise.resolve({ data: { status: "success", data: { trigger: { webhookId: "wh1", childKey: "data" } } } });
+      }
+      if (url === "/v1/webhook/wh1") {
+        return Promise.resolve({
+          data: {
+            status: "success",
+            data: { webhookData: { inboundUrl: "https://api.test/v1/webhook/in/tok", samplePayload: { x: 1 }, flattenedPaths: ["data.url"] } },
+          },
+        });
+      }
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a3" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Webhook build",
+      trigger: { on: "inbound_webhook", childKey: "data" },
+      steps: [
+        {
+          do: "upload",
+          source: "payload.url",
+          name: "payload.name",
+          folderFromPayload: "payload.clinic",
+          mapFields: { "Deal Stage": "payload.stage" },
+        },
+      ],
+    });
+
+    expect(result.isError).toBeUndefined();
+    const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
+    expect(body.trigger).toEqual({
+      type: "folders",
+      provider: "speak",
+      app: "speak",
+      triggerSlug: "inbound_webhook",
+      folderIds: [],
+      childKey: "data",
+    });
+    expect(body.steps[0].speakUpload.waitForProcessing).toBe(true);
+    expect(body.steps[0].speakUpload.sourceUrl).toBe("{{trigger.payload.url}}");
+    expect(body.steps[0].speakUpload.folderRouting).toEqual({
+      mode: "dynamic",
+      sourceKey: "{{trigger.payload.clinic}}",
+      onNoMatch: "create",
+    });
+    expect(body.steps[0].speakUpload.fieldsMap).toEqual({ fldB: "{{trigger.payload.stage}}" });
+    expect(result.content[0].text).toContain("https://api.test/v1/webhook/in/tok");
+  });
+
+  it("supports branch + runWhen wiring and field_updated triggers with Or-triggers", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a4" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Branchy",
+      trigger: { on: "field_updated", watchFields: [{ field: "Deal Stage", values: ["Closed"] }], matchLogic: "AND" },
+      orTriggers: [{ on: "media_analyzed", folders: ["Sales Calls"] }],
+      steps: [
+        { do: "branch", rules: [{ field: "name", op: "contains", value: "Acme" }] },
+        { do: "notify", message: "Acme deal closed", runWhen: "true" },
+      ],
+    });
+
+    expect(result.isError).toBeUndefined();
+    const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
+    expect(body.trigger).toMatchObject({
+      triggerSlug: "field_updated",
+      values: ["fldB"],
+      fieldValueMatches: [{ fieldId: "fldB", values: ["Closed"] }],
+      fieldMatchLogic: "AND",
+    });
+    expect(body.triggers).toEqual([
+      { type: "folders", provider: "speak", app: "speak", triggerSlug: "media_analyzed", folderIds: ["fld1"] },
+    ]);
+    expect(body.steps[1]).toMatchObject({ branch: "true", dependsOn: ["s1"], stepType: "notify" });
+  });
+
+  it("resolves filter fields by flow position: payload paths on DATA flow, field names after upload (MEDIA flow)", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a6" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Flow-aware filters",
+      trigger: { on: "inbound_webhook" },
+      steps: [
+        { do: "filter", rules: [{ field: "status", op: "eq", value: "completed" }] },
+        { do: "upload", source: "payload.url", folder: "Sales Calls" },
+        { do: "filter", rules: [{ field: "Deal Stage", op: "eq", value: "Closed" }] },
+      ],
+    });
+
+    expect(result.isError).toBeUndefined();
+    const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
+    // Before the upload the webhook payload (DATA) flows: field stays a payload path.
+    expect(body.steps[0].filter.rules[0].field).toBe("status");
+    // After the upload MEDIA flows: the custom-field name resolves to its id.
+    expect(body.steps[2].filter.rules[0].field).toBe("fldB");
+  });
+
+  it("rejects an unknown folder id instead of creating a folder named after it", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Typo id",
+      trigger: { on: "media_analyzed", folders: ["aaaabbbbcccc"] },
+      steps: [{ do: "translate", language: "fr-FR" }],
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain('Folder id "aaaabbbbcccc" not found');
+    expect(mockPost).not.toHaveBeenCalledWith("/v1/folder", expect.anything());
+  });
+
+  it("updates via PUT when automationId is given", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPut.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a5" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      automationId: "a5",
+      name: "Updated build",
+      trigger: { on: "media_analyzed", folders: ["fld1"] },
+      steps: [{ do: "translate", language: "es-ES" }],
+    });
+
+    expect(result.isError).toBeUndefined();
+    expect(mockPut).toHaveBeenCalledWith("/v1/automations/a5", expect.objectContaining({ name: "Updated build" }));
+  });
+
+  it("returns a helpful error for unknown fields and unknown step types", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    const cb = getToolCallback(server, "build_automation");
+
+    const badField = await cb({
+      name: "x",
+      trigger: { on: "field_updated", watchFields: [{ field: "Nope" }] },
+      steps: [{ do: "translate", language: "es-ES" }],
+    });
+    expect(badField.isError).toBe(true);
+    expect(badField.content[0].text).toContain('Unknown custom field "Nope"');
+    expect(badField.content[0].text).toContain("Customer Name");
+
+    const badStep = await cb({
+      name: "x",
+      trigger: { on: "inbound_webhook" },
+      steps: [{ do: "teleport" }],
+    });
+    expect(badStep.isError).toBe(true);
+    expect(badStep.content[0].text).toContain('unknown `do`: "teleport"');
   });
 });

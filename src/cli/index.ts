@@ -693,7 +693,7 @@ export function createCli(): Command {
       }
     });
 
-  // ── Magic Prompt ───────────────────────────────────────────────────
+  // ── AI Chat ────────────────────────────────────────────────────────
 
   program
     .command("ask")
@@ -748,7 +748,7 @@ export function createCli(): Command {
 
   program
     .command("chat-history")
-    .description("List past Magic Prompt conversations")
+    .description("List past AI Chat conversations")
     .option("--json", "Output raw JSON")
     .action(async (opts) => {
       requireApiKey();
@@ -921,7 +921,7 @@ export function createCli(): Command {
     .command("update")
     .description("Update media metadata")
     .argument("<mediaId>", "Media file ID to update")
-    .option("-n, --name <name>", "New display name")
+    .requiredOption("-n, --name <name>", "Display name (required by the API)")
     .option("-d, --description <text>", "New description")
     .option("--tags <tags...>", "New tags")
     .option("-f, --folder <id>", "Move to folder ID")
@@ -1004,15 +1004,22 @@ export function createCli(): Command {
 
   program
     .command("favorites")
-    .description("Toggle favorite status for a media file")
+    .description("Mark or unmark a media file as a favorite")
     .argument("<mediaId>", "Media file ID")
-    .action(async (mediaId: string) => {
+    .option("--off", "Unmark as favorite (default: mark as favorite)")
+    .action(async (mediaId: string, opts) => {
       requireApiKey();
       const client = await getClient();
       try {
-        const res = await client.post("/v1/media/favorites", { mediaId });
+        const isFavorite = !opts.off;
+        const res = await client.post("/v1/media/favorites", {
+          mediaIds: [mediaId],
+          isFavorite,
+        });
         const data = res.data?.data;
-        printSuccess(data?.message ?? `Favorite toggled for ${mediaId}`);
+        printSuccess(
+          data?.message ?? `${isFavorite ? "Favorited" : "Unfavorited"} ${mediaId}`,
+        );
       } catch (err: any) {
         printError(err.response?.data?.message ?? err.message);
         process.exit(1);
@@ -1128,6 +1135,58 @@ export function createCli(): Command {
       }
     });
 
+  // ── List meeting events ────────────────────────────────────────────
+
+  program
+    .command("list-meeting-events")
+    .description("List scheduled or completed meeting assistant events")
+    .option("-P, --platform <type>", "Filter by platform: zoom, googleMeet, microsoftTeams, webex (comma-separate for multiple)")
+    .option("-S, --status <status>", "Filter by meeting status (comma-separate for multiple)")
+    .option("-p, --page <n>", "Page number (0-based)", "0")
+    .option("-s, --page-size <n>", "Results per page", "20")
+    .option("--sort <field>", "Sort field", "startTime:desc")
+    .option("--json", "Output raw JSON")
+    .action(async (opts) => {
+      requireApiKey();
+      const client = await getClient();
+      try {
+        const params: Record<string, unknown> = {
+          page: parseInt(opts.page),
+          pageSize: parseInt(opts.pageSize),
+          sortBy: opts.sort,
+        };
+        if (opts.platform) params.platformType = opts.platform;
+        if (opts.status) params.meetingStatus = opts.status;
+
+        const res = await client.get("/v1/meeting-assistant/events", { params });
+        const data = res.data?.data;
+
+        if (opts.json) {
+          printJson(data);
+          return;
+        }
+
+        const events = (data?.events ?? []) as Array<{
+          meetingAssistantEventId?: string;
+          title?: string;
+          platform?: string;
+          currentStatus?: string;
+          startTime?: string;
+        }>;
+        console.log(`Total: ${data?.totalCount ?? events.length}\n`);
+        printTable(events, [
+          { key: "meetingAssistantEventId", label: "Event ID", width: 24 },
+          { key: "title", label: "Title", width: 32 },
+          { key: "platform", label: "Platform", width: 16 },
+          { key: "currentStatus", label: "Status", width: 18 },
+          { key: "startTime", label: "Start", width: 20 },
+        ]);
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
   // ── Schedule meeting ───────────────────────────────────────────────
 
   program
@@ -1167,5 +1226,171 @@ export function createCli(): Command {
       }
     });
 
+  // ── Live meeting transcript ────────────────────────────────────────
+
+  program
+    .command("live-transcript")
+    .description("Fetch new sentences from an in-progress or just-ended meeting")
+    .option("-e, --event-id <id>", "Meeting assistant event id (use `speakai-mcp list-meeting-events` to find it)")
+    .option("-m, --media-id <id>", "Media id (alternative to --event-id)")
+    .option("-s, --since-end-in-sec <seconds>", "nextCursor from previous call; omit on first call", parseFloat)
+    .option("--json", "Output raw JSON")
+    .action(async (opts) => {
+      requireApiKey();
+      const client = await getClient();
+      if (!opts.eventId && !opts.mediaId) {
+        printError("Provide --event-id or --media-id");
+        process.exit(1);
+      }
+      try {
+        let resolvedMediaId: string | undefined = opts.mediaId;
+        let meetingStatus: string | null = null;
+        let meetingName: string | undefined;
+
+        if (opts.eventId) {
+          const eventsRes = await client.get("/v1/meeting-assistant/events", {
+            params: { pageSize: 50, sortBy: "startTime:desc" },
+          });
+          const events = (eventsRes.data?.data?.events ?? eventsRes.data?.events ?? []) as Array<{
+            meetingAssistantEventId?: string;
+            currentStatus?: string;
+            title?: string;
+            mediaId?: { mediaId?: string } | string | null;
+          }>;
+          const event = events.find((e) => e.meetingAssistantEventId === opts.eventId);
+          if (!event) {
+            printError(`Meeting event not found: ${opts.eventId}`);
+            process.exit(1);
+          }
+          meetingStatus = event.currentStatus ?? null;
+          meetingName = event.title;
+          const mediaRef = event.mediaId;
+          resolvedMediaId = typeof mediaRef === "string" ? mediaRef : mediaRef?.mediaId;
+          if (!resolvedMediaId) {
+            printError("Meeting has no linked media yet — bot has not joined or started recording.");
+            process.exit(1);
+          }
+        }
+
+        const transcriptRes = await client.get(`/v1/media/transcript/${resolvedMediaId}`, {
+          params: Number.isFinite(opts.sinceEndInSec) ? { sinceEndInSec: opts.sinceEndInSec } : undefined,
+        });
+        const data = transcriptRes.data?.data ?? transcriptRes.data ?? {};
+        const sentences = (data?.insight?.transcript ?? []) as Array<{
+          text?: string;
+          speakerId?: string | number;
+          instances?: Array<{ endInSec?: number }>;
+        }>;
+        const maxEnd = sentences.reduce((m, s) => Math.max(m, s.instances?.[0]?.endInSec ?? 0), 0);
+        const nextCursor = sentences.length > 0 ? maxEnd : (opts.sinceEndInSec ?? 0);
+        const payload = {
+          mediaId: resolvedMediaId,
+          name: data?.name ?? meetingName ?? null,
+          meetingStatus,
+          isLive: meetingStatus === "inCallRecording",
+          newSentences: sentences,
+          nextCursor,
+        };
+
+        if (opts.json) {
+          printJson(payload);
+        } else {
+          console.log(`Meeting: ${payload.name ?? resolvedMediaId}`);
+          console.log(`Status: ${payload.meetingStatus ?? "unknown"} (isLive=${payload.isLive})`);
+          console.log(`New sentences: ${sentences.length} • nextCursor: ${nextCursor}`);
+          for (const s of sentences) {
+            console.log(`  [${s.speakerId ?? "?"}] ${s.text ?? ""}`);
+          }
+        }
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
+  // ── Generic tool dispatch (1:1 with the MCP tool surface) ───────────
+  // Every MCP tool is callable from the CLI by name via `call`, so the CLI
+  // stays in lockstep with the tool surface automatically — no per-tool command
+  // to maintain. The curated commands above are ergonomic shortcuts on top.
+
+  /** Register all tools against a stub server, capturing each tool's callback by name. */
+  async function loadToolHandlers() {
+    const client = await getClient();
+    const handlers: Record<string, (args: Record<string, unknown>) => Promise<any>> = {};
+    const stub = {
+      registerTool: (name: string, _def: unknown, cb: (args: Record<string, unknown>) => Promise<any>) => {
+        handlers[name] = cb;
+        return {};
+      },
+    };
+    const { registerAllTools } = await import("../tools/index.js");
+    registerAllTools(stub as any, client);
+    return handlers;
+  }
+
+  program
+    .command("tools")
+    .description("List every MCP tool callable via `call`")
+    .option("--json", "Output raw JSON")
+    .action(async (opts) => {
+      const { SPEAK_MCP_TOOL_NAMES } = await import("../tool-names.js");
+      const names = [...SPEAK_MCP_TOOL_NAMES].sort();
+      if (opts.json) {
+        printJson(names);
+      } else {
+        console.log(`${names.length} tools:\n`);
+        for (const n of names) console.log(`  ${n}`);
+      }
+    });
+
+  program
+    .command("call")
+    .description("Call any MCP tool by name with JSON arguments")
+    .argument("<tool>", "Tool name (see `speakai-mcp tools`)")
+    .argument("[json]", "Arguments as a JSON object", "{}")
+    .action(async (tool: string, json: string) => {
+      requireApiKey();
+      let args: Record<string, unknown>;
+      try {
+        args = JSON.parse(json);
+      } catch {
+        printError(`Invalid JSON arguments: ${json}`);
+        process.exit(1);
+        return;
+      }
+
+      const handlers = await loadToolHandlers();
+      const handler = handlers[tool];
+      if (!handler) {
+        printError(`Unknown tool "${tool}". Run "speakai-mcp tools" to list them.`);
+        process.exit(1);
+        return;
+      }
+
+      try {
+        const result = await handler(args);
+        const text = result?.content?.find((c: any) => c.type === "text")?.text;
+        if (result?.isError) {
+          printError(text ?? "Tool call failed");
+          process.exit(1);
+          return;
+        }
+        const data = result?.structuredContent?.data ?? (text ? safeParse(text) : result);
+        printJson(data);
+      } catch (err: any) {
+        printError(err.response?.data?.message ?? err.message);
+        process.exit(1);
+      }
+    });
+
   return program;
+}
+
+/** Parse JSON, falling back to the raw string when it isn't JSON. */
+function safeParse(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }

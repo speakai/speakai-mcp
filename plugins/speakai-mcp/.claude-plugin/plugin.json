@@ -1,13 +1,13 @@
 {
   "name": "speakai-mcp",
   "description": "Capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows — all from your AI assistant.",
-  "version": "1.7.10",
+  "version": "1.22.0",
   "author": {
     "name": "Vatsal Shah",
     "email": "accounts@speakai.co",
     "url": "https://speakai.co"
   },
-  "homepage": "https://mcp.speakai.co",
+  "homepage": "https://docs.speakai.co/mcp",
   "repository": "https://github.com/speakai/speakai-mcp",
   "license": "MIT",
   "keywords": [
@@ -27,7 +27,8 @@
       "type": "string",
       "title": "Speak AI API key",
       "description": "Generate an API key at https://app.speakai.co/developers/apikeys.",
-      "sensitive": true
+      "sensitive": true,
+      "required": true
     },
     "speak_base_url": {
       "type": "string",

@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { FilterFieldName, FilterOperator, FilterCondition } from "@speakai/shared";
 
@@ -16,7 +17,7 @@ function withDefaultSearchDateRange<T extends { startDate?: string; endDate?: st
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
 
-  server.tool(
+  registerSpeakTool(server, 
     "search_media",
     [
       "Deep search across all media transcripts, insights, and metadata.",

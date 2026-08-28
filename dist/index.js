@@ -202,6 +202,49 @@ var init_client = __esm({
   }
 });
 
+// src/tools/_helpers.ts
+function registerSpeakTool(server, name, description, inputSchema, annotations, handler) {
+  const { title, ...toolAnnotations } = annotations;
+  return server.registerTool(
+    name,
+    {
+      title,
+      description,
+      inputSchema,
+      outputSchema: passthroughOutputSchema,
+      annotations: toolAnnotations
+    },
+    (async (...args2) => {
+      const result = await handler(...args2);
+      if (result.isError || result.structuredContent) {
+        return result;
+      }
+      const textContent = result.content?.find(
+        (item) => item.type === "text" && typeof item.text === "string"
+      );
+      if (!textContent) {
+        return { ...result, structuredContent: { data: null } };
+      }
+      try {
+        return { ...result, structuredContent: { data: JSON.parse(textContent.text) } };
+      } catch {
+        return { ...result, structuredContent: { data: textContent.text } };
+      }
+    })
+  );
+}
+var import_zod, passthroughOutputSchema;
+var init_helpers = __esm({
+  "src/tools/_helpers.ts"() {
+    "use strict";
+    import_zod = require("zod");
+    init_client();
+    passthroughOutputSchema = {
+      data: import_zod.z.unknown().describe("Response payload from the Speak AI API")
+    };
+  }
+});
+
 // node_modules/@speakai/shared/dist/enums/activities.js
 var ActivityType;
 var init_activities = __esm({
@@ -240,7 +283,7 @@ var init_auth = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/automation.js
-var AutomationTrigger, AutomationAction, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
+var AutomationTrigger, AutomationAction, AutomationStepType, AutomationRunStatus, AutomationIOType, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
 var init_automation = __esm({
   "node_modules/@speakai/shared/dist/enums/automation.js"() {
     "use strict";
@@ -248,11 +291,38 @@ var init_automation = __esm({
       AutomationTrigger2["FOLDERS"] = "folders";
       AutomationTrigger2["TAGS"] = "tags";
       AutomationTrigger2["KEYWORDS"] = "keywords";
+      AutomationTrigger2["COMPOSIO"] = "composio";
+      AutomationTrigger2["WEBHOOK"] = "webhook";
     })(AutomationTrigger || (AutomationTrigger = {}));
     (function(AutomationAction2) {
       AutomationAction2["MAGIC_PROMPT"] = "magic-prompt";
       AutomationAction2["TRANSLATION"] = "translation";
     })(AutomationAction || (AutomationAction = {}));
+    (function(AutomationStepType2) {
+      AutomationStepType2["TRIGGER"] = "trigger";
+      AutomationStepType2["MAGIC_PROMPT"] = "magic-prompt";
+      AutomationStepType2["TRANSLATION"] = "translation";
+      AutomationStepType2["COMPOSIO_ACTION"] = "composio-action";
+      AutomationStepType2["FILTER"] = "filter";
+      AutomationStepType2["SPEAK_UPLOAD"] = "speak-upload";
+      AutomationStepType2["NOTIFY"] = "notify";
+      AutomationStepType2["OUTBOUND_WEBHOOK"] = "outbound-webhook";
+      AutomationStepType2["CONDITION"] = "condition";
+    })(AutomationStepType || (AutomationStepType = {}));
+    (function(AutomationRunStatus2) {
+      AutomationRunStatus2["PENDING"] = "pending";
+      AutomationRunStatus2["RUNNING"] = "running";
+      AutomationRunStatus2["COMPLETED"] = "completed";
+      AutomationRunStatus2["FAILED"] = "failed";
+      AutomationRunStatus2["KILLED"] = "killed";
+    })(AutomationRunStatus || (AutomationRunStatus = {}));
+    (function(AutomationIOType2) {
+      AutomationIOType2["FILE"] = "file";
+      AutomationIOType2["MEDIA"] = "media";
+      AutomationIOType2["INSIGHT"] = "insight";
+      AutomationIOType2["NOTIFY"] = "notify";
+      AutomationIOType2["DATA"] = "data";
+    })(AutomationIOType || (AutomationIOType = {}));
     (function(AutomationRunType2) {
       AutomationRunType2["INSTANT"] = "instant";
       AutomationRunType2["SCHEDULE"] = "schedule";
@@ -344,6 +414,7 @@ var init_embed = __esm({
     (function(EmbedType2) {
       EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
       EmbedType2["REPOSITORY"] = "repository";
+      EmbedType2["DASHBOARD"] = "dashboard";
     })(EmbedType || (EmbedType = {}));
     (function(ImageSelectionType2) {
       ImageSelectionType2["LOGO"] = "logo";
@@ -367,6 +438,7 @@ var init_export = __esm({
       ExportFormatType2["DOCX"] = "docx";
       ExportFormatType2["HTML"] = "html";
       ExportFormatType2["JSON"] = "json";
+      ExportFormatType2["MD"] = "md";
       ExportFormatType2["PDF"] = "pdf";
       ExportFormatType2["SOURCEFILE"] = "sourceFile";
       ExportFormatType2["SRT"] = "srt";
@@ -439,6 +511,18 @@ var init_filter = __esm({
       FilterCondition2["AND"] = "and";
       FilterCondition2["OR"] = "or";
     })(FilterCondition || (FilterCondition = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/integration.js
+var IntegrationAuthType;
+var init_integration = __esm({
+  "node_modules/@speakai/shared/dist/enums/integration.js"() {
+    "use strict";
+    (function(IntegrationAuthType2) {
+      IntegrationAuthType2["OAUTH"] = "oauth";
+      IntegrationAuthType2["API_KEY"] = "api_key";
+    })(IntegrationAuthType || (IntegrationAuthType = {}));
   }
 });
 
@@ -710,7 +794,7 @@ var init_recorder = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/subscription.js
-var SubscriptionStatus, SubscriptionDuration;
+var SubscriptionStatus, SubscriptionDuration, TrialTier;
 var init_subscription = __esm({
   "node_modules/@speakai/shared/dist/enums/subscription.js"() {
     "use strict";
@@ -730,6 +814,11 @@ var init_subscription = __esm({
       SubscriptionDuration2["9Months"] = "9months";
       SubscriptionDuration2["Yearly"] = "yearly";
     })(SubscriptionDuration || (SubscriptionDuration = {}));
+    (function(TrialTier2) {
+      TrialTier2["T0"] = "T0";
+      TrialTier2["T1"] = "T1";
+      TrialTier2["T2"] = "T2";
+    })(TrialTier || (TrialTier = {}));
   }
 });
 
@@ -837,7 +926,7 @@ var init_translation = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/user.js
-var UserRole, UserPermissionType, UserActionType;
+var UserRole, UserType, UserPermissionType, UserActionType;
 var init_user = __esm({
   "node_modules/@speakai/shared/dist/enums/user.js"() {
     "use strict";
@@ -846,6 +935,10 @@ var init_user = __esm({
       UserRole2["OWNER"] = "owner";
       UserRole2["MEMBER"] = "member";
     })(UserRole || (UserRole = {}));
+    (function(UserType2) {
+      UserType2["Individual"] = "I";
+      UserType2["Company"] = "C";
+    })(UserType || (UserType = {}));
     (function(UserPermissionType2) {
       UserPermissionType2["FOLDER"] = "folder";
       UserPermissionType2["RECORDER"] = "recorder";
@@ -910,7 +1003,69 @@ var init_webhook = __esm({
     (function(WebhookEventSource2) {
       WebhookEventSource2["SPEAK"] = "speak";
       WebhookEventSource2["ZAPIER"] = "zapier";
+      WebhookEventSource2["N8N"] = "n8n";
+      WebhookEventSource2["PIPEDREAM"] = "pipedream";
+      WebhookEventSource2["MAKE"] = "make";
     })(WebhookEventSource || (WebhookEventSource = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/llm.js
+var LLMProvider, LLMModels;
+var init_llm = __esm({
+  "node_modules/@speakai/shared/dist/enums/llm.js"() {
+    "use strict";
+    (function(LLMProvider2) {
+      LLMProvider2["OPENAI"] = "openai";
+      LLMProvider2["GOOGLE"] = "google";
+      LLMProvider2["ANTHROPIC"] = "anthropic";
+      LLMProvider2["OPENROUTER"] = "openrouter";
+    })(LLMProvider || (LLMProvider = {}));
+    (function(LLMModels2) {
+      LLMModels2["GPT_3_5"] = "gpt-3.5";
+      LLMModels2["GPT_3_5_TURBO_16K"] = "gpt-3.5-turbo-16k";
+      LLMModels2["GPT_3_5_TURBO_0125"] = "gpt-3.5-turbo-0125";
+      LLMModels2["GPT_4"] = "gpt-4";
+      LLMModels2["GPT_4_1106_PREVIEW"] = "gpt-4-1106-preview";
+      LLMModels2["GPT_4_TURBO"] = "gpt-4-turbo";
+      LLMModels2["GPT_4_O_2024_05_13"] = "gpt-4o-2024-05-13";
+      LLMModels2["GPT_4O"] = "gpt-4o";
+      LLMModels2["GPT_4O_MINI"] = "gpt-4o-mini";
+      LLMModels2["GPT_4_O_2024_08_06"] = "gpt-4o-2024-08-06";
+      LLMModels2["GPT_4_MINI_2024_07_18"] = "gpt-4o-mini-2024-07-18";
+      LLMModels2["GPT_4_1_2025_04_14"] = "gpt-4.1-2025-04-14";
+      LLMModels2["GPT_5_1_2025_11_13"] = "gpt-5.1-2025-11-13";
+      LLMModels2["GPT_5_2"] = "gpt-5.2";
+      LLMModels2["GPT_5_4"] = "gpt-5.4";
+      LLMModels2["GPT_5_4_MINI"] = "gpt-5.4-mini";
+      LLMModels2["GPT_5_4_MINI_2026_03_17"] = "gpt-5.4-mini-2026-03-17";
+      LLMModels2["GPT_5_4_NANO"] = "gpt-5.4-nano";
+      LLMModels2["GPT_5_5"] = "gpt-5.5";
+      LLMModels2["GPT_5_5_THINKING"] = "gpt-5.5-thinking";
+      LLMModels2["GPT_5_6_SOL"] = "gpt-5.6-sol";
+      LLMModels2["GPT_5_6_TERRA"] = "gpt-5.6-terra";
+      LLMModels2["GPT_5_6_LUNA"] = "gpt-5.6-luna";
+      LLMModels2["CLAUDE_2"] = "claude-2";
+      LLMModels2["CLAUDE_3_5_SONNET"] = "claude-3-5-sonnet";
+      LLMModels2["CLAUDE_3_5_SONNET_20241022"] = "claude-3-5-sonnet-20241022";
+      LLMModels2["CLAUDE_3_7_SONNET_LATEST"] = "claude-3-7-sonnet-latest";
+      LLMModels2["CLAUDE_HAIKU_4_5"] = "claude-haiku-4-5";
+      LLMModels2["CLAUDE_SONNET_4_6"] = "claude-sonnet-4-6";
+      LLMModels2["CLAUDE_SONNET_5"] = "claude-sonnet-5";
+      LLMModels2["CLAUDE_OPUS_4_8"] = "claude-opus-4-8";
+      LLMModels2["GEMINI_1_5_PRO"] = "gemini-1.5-pro";
+      LLMModels2["GEMINI_1_5_FLASH"] = "gemini-1.5-flash";
+      LLMModels2["GEMINI_2_0_FLASH"] = "gemini-2.0-flash";
+      LLMModels2["GEMINI_2_5_PRO"] = "gemini-2.5-pro";
+      LLMModels2["GEMINI_2_5_FLASH"] = "gemini-2.5-flash";
+      LLMModels2["GEMINI_2_5_FLASH_LITE"] = "gemini-2.5-flash-lite";
+      LLMModels2["GEMINI_3_FLASH_PREVIEW"] = "gemini-3-flash-preview";
+      LLMModels2["GEMINI_3_1_FLASH_LITE"] = "gemini-3.1-flash-lite";
+      LLMModels2["GEMINI_3_1_PRO_PREVIEW"] = "gemini-3.1-pro-preview";
+      LLMModels2["GEMINI_3_5_FLASH"] = "gemini-3.5-flash";
+      LLMModels2["GROK_4_5"] = "x-ai/grok-4.5";
+      LLMModels2["GLM_5_2"] = "z-ai/glm-5.2";
+    })(LLMModels || (LLMModels = {}));
   }
 });
 
@@ -928,6 +1083,7 @@ var init_enums = __esm({
     init_export();
     init_fields();
     init_filter();
+    init_integration();
     init_media();
     init_meeting();
     init_notification();
@@ -940,6 +1096,7 @@ var init_enums = __esm({
     init_translation();
     init_user();
     init_webhook();
+    init_llm();
   }
 });
 
@@ -974,6 +1131,13 @@ var init_text = __esm({
 // node_modules/@speakai/shared/dist/interfaces/folder.js
 var init_folder = __esm({
   "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/integration.js
+var init_integration2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/integration.js"() {
     "use strict";
   }
 });
@@ -1062,6 +1226,28 @@ var init_category = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/interfaces/clip.js
+var init_clip2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/clip.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/utils/dashboard-spec.js
+var init_dashboard_spec = __esm({
+  "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/dashboard.js
+var init_dashboard = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
+    "use strict";
+    init_dashboard_spec();
+  }
+});
+
 // node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
   "node_modules/@speakai/shared/dist/interfaces/index.js"() {
@@ -1071,6 +1257,7 @@ var init_interfaces = __esm({
     init_transcript();
     init_text();
     init_folder();
+    init_integration2();
     init_recorder2();
     init_embed2();
     init_automation2();
@@ -1083,6 +1270,79 @@ var init_interfaces = __esm({
     init_subscription2();
     init_calendar2();
     init_category();
+    init_clip2();
+    init_dashboard();
+  }
+});
+
+// node_modules/@speakai/shared/dist/utils/transcript.js
+var init_transcript2 = __esm({
+  "node_modules/@speakai/shared/dist/utils/transcript.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/pricing/modelPricing.js
+var MODEL_PRICING;
+var init_modelPricing = __esm({
+  "node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
+    "use strict";
+    init_llm();
+    MODEL_PRICING = {
+      // ═══════════════ OpenAI ═══════════════
+      // Deprecated
+      [LLMModels.GPT_3_5]: { inputPerMillion: 0.5, outputPerMillion: 1.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_3_5_TURBO_16K]: { inputPerMillion: 3, outputPerMillion: 4, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_3_5_TURBO_0125]: { inputPerMillion: 0.5, outputPerMillion: 1.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4]: { inputPerMillion: 30, outputPerMillion: 60, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_1106_PREVIEW]: { inputPerMillion: 10, outputPerMillion: 30, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_TURBO]: { inputPerMillion: 10, outputPerMillion: 30, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_O_2024_05_13]: { inputPerMillion: 5, outputPerMillion: 15, provider: LLMProvider.OPENAI },
+      // Live
+      [LLMModels.GPT_4O]: { inputPerMillion: 2.5, outputPerMillion: 10, cachedInputPerMillion: 1.25, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4O_MINI]: { inputPerMillion: 0.15, outputPerMillion: 0.6, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_O_2024_08_06]: { inputPerMillion: 2.5, outputPerMillion: 10, cachedInputPerMillion: 1.25, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_MINI_2024_07_18]: { inputPerMillion: 0.15, outputPerMillion: 0.6, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_1_2025_04_14]: { inputPerMillion: 2, outputPerMillion: 8, cachedInputPerMillion: 0.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_1_2025_11_13]: { inputPerMillion: 1.25, outputPerMillion: 10, cachedInputPerMillion: 0.125, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_2]: { inputPerMillion: 1.75, outputPerMillion: 14, cachedInputPerMillion: 0.175, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4]: { inputPerMillion: 2.5, outputPerMillion: 15, cachedInputPerMillion: 0.25, longContextThresholdTokens: 272e3, inputPerMillionLong: 5, outputPerMillionLong: 22.5, cachedInputPerMillionLong: 0.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4_MINI]: { inputPerMillion: 0.75, outputPerMillion: 4.5, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4_MINI_2026_03_17]: { inputPerMillion: 0.75, outputPerMillion: 4.5, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4_NANO]: { inputPerMillion: 0.2, outputPerMillion: 1.25, cachedInputPerMillion: 0.02, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_5]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, longContextThresholdTokens: 272e3, inputPerMillionLong: 10, outputPerMillionLong: 45, cachedInputPerMillionLong: 1, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_5_THINKING]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, longContextThresholdTokens: 272e3, inputPerMillionLong: 10, outputPerMillionLong: 45, cachedInputPerMillionLong: 1, provider: LLMProvider.OPENAI },
+      // gpt-5.5 reasoning mode (same rate)
+      [LLMModels.GPT_5_6_SOL]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_6_TERRA]: { inputPerMillion: 2.5, outputPerMillion: 15, cachedInputPerMillion: 0.25, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_6_LUNA]: { inputPerMillion: 1, outputPerMillion: 6, cachedInputPerMillion: 0.1, provider: LLMProvider.OPENAI },
+      // ═══════════════ Anthropic (cache read = 0.1x input) ═══════════════
+      // Deprecated
+      [LLMModels.CLAUDE_2]: { inputPerMillion: 8, outputPerMillion: 24, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_3_5_SONNET]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_3_5_SONNET_20241022]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_3_7_SONNET_LATEST]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      // Live
+      [LLMModels.CLAUDE_HAIKU_4_5]: { inputPerMillion: 1, outputPerMillion: 5, cachedInputPerMillion: 0.1, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_SONNET_4_6]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_SONNET_5]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_OPUS_4_8]: { inputPerMillion: 5, outputPerMillion: 25, cachedInputPerMillion: 0.5, provider: LLMProvider.ANTHROPIC },
+      // ═══════════════ Google Gemini ═══════════════
+      // Deprecated
+      [LLMModels.GEMINI_1_5_PRO]: { inputPerMillion: 1.25, outputPerMillion: 5, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_1_5_FLASH]: { inputPerMillion: 0.075, outputPerMillion: 0.3, cachedInputPerMillion: 0.01875, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_2_0_FLASH]: { inputPerMillion: 0.1, outputPerMillion: 0.4, cachedInputPerMillion: 0.025, provider: LLMProvider.GOOGLE },
+      // Live
+      [LLMModels.GEMINI_2_5_PRO]: { inputPerMillion: 1.25, outputPerMillion: 10, longContextThresholdTokens: 2e5, inputPerMillionLong: 2.5, outputPerMillionLong: 15, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_2_5_FLASH]: { inputPerMillion: 0.3, outputPerMillion: 2.5, cachedInputPerMillion: 0.03, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_2_5_FLASH_LITE]: { inputPerMillion: 0.1, outputPerMillion: 0.4, cachedInputPerMillion: 0.01, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_FLASH_PREVIEW]: { inputPerMillion: 0.5, outputPerMillion: 3, cachedInputPerMillion: 0.05, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_1_FLASH_LITE]: { inputPerMillion: 0.25, outputPerMillion: 1.5, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_1_PRO_PREVIEW]: { inputPerMillion: 2, outputPerMillion: 12, longContextThresholdTokens: 2e5, inputPerMillionLong: 4, outputPerMillionLong: 18, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_5_FLASH]: { inputPerMillion: 1.5, outputPerMillion: 9, cachedInputPerMillion: 0.15, provider: LLMProvider.GOOGLE },
+      [LLMModels.GROK_4_5]: { inputPerMillion: 2.2, outputPerMillion: 6.6, cachedInputPerMillion: 0.22, provider: LLMProvider.OPENROUTER },
+      [LLMModels.GLM_5_2]: { inputPerMillion: 1.023, outputPerMillion: 3.3, cachedInputPerMillion: 0.1023, provider: LLMProvider.OPENROUTER }
+    };
   }
 });
 
@@ -1092,23 +1352,29 @@ var init_dist = __esm({
     "use strict";
     init_enums();
     init_interfaces();
+    init_transcript2();
+    init_dashboard_spec();
+    init_modelPricing();
   }
 });
 
 // src/tools/media.ts
 var media_exports = {};
 __export(media_exports, {
+  LIST_MEDIA_DEFAULT_PAGE_SIZE: () => LIST_MEDIA_DEFAULT_PAGE_SIZE,
+  LIST_MEDIA_MAX_PAGE_SIZE: () => LIST_MEDIA_MAX_PAGE_SIZE,
   register: () => register
 });
 function register(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_signed_upload_url",
     "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
-      isVideo: import_zod.z.boolean().describe("Set true for video files, false for audio files"),
-      filename: import_zod.z.string().min(1).describe("Original filename including extension"),
-      mimeType: import_zod.z.string().describe('MIME type of the file, e.g. "audio/mp4" or "video/mp4"')
+      isVideo: import_zod2.z.boolean().describe("Set true for video files, false for audio files"),
+      filename: import_zod2.z.string().min(1).describe("Original filename including extension"),
+      mimeType: import_zod2.z.string().describe('MIME type of the file, e.g. "audio/mp4" or "video/mp4"')
     },
     {
       title: "Get Signed Upload URL",
@@ -1135,22 +1401,23 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "upload_media",
-    "Upload media from a publicly accessible URL. Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
+    "Upload media from a URL \u2014 a direct/public file URL, a pre-signed S3 URL, or a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar) which Speak resolves to the underlying media automatically. Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file. (Vimeo links are not yet supported.)",
     {
-      name: import_zod.z.string().min(1).describe("Display name for the media file"),
-      url: import_zod.z.string().describe("Publicly accessible URL of the media file (or pre-signed S3 URL)"),
-      mediaType: import_zod.z.enum([MediaType.AUDIO, MediaType.VIDEO]).describe('Type of media: "audio" or "video"'),
-      description: import_zod.z.string().optional().describe("Description of the media file"),
-      sourceLanguage: import_zod.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
-      tags: import_zod.z.string().optional().describe("Comma-separated tags for the media"),
-      folderId: import_zod.z.string().optional().describe("ID of the folder to place the media in"),
-      callbackUrl: import_zod.z.string().optional().describe("Webhook callback URL for this specific upload"),
-      fields: import_zod.z.array(
-        import_zod.z.object({
-          id: import_zod.z.string().min(1).describe("Custom field ID"),
-          value: import_zod.z.string().min(1).describe("Custom field value")
+      name: import_zod2.z.string().min(1).describe("Display name for the media file"),
+      url: import_zod2.z.string().describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link (e.g. an Instagram reel or TikTok URL) \u2014 page links are resolved to the underlying media server-side."),
+      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).describe('Type of media: "audio" or "video"'),
+      description: import_zod2.z.string().optional().describe("Description of the media file"),
+      sourceLanguage: import_zod2.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
+      tags: import_zod2.z.string().optional().describe("Comma-separated tags for the media"),
+      folderId: import_zod2.z.string().optional().describe("ID of the folder to place the media in"),
+      callbackUrl: import_zod2.z.string().optional().describe("Webhook callback URL for this specific upload"),
+      fields: import_zod2.z.array(
+        import_zod2.z.object({
+          id: import_zod2.z.string().min(1).describe("Custom field ID"),
+          value: import_zod2.z.string().min(1).describe("Custom field value")
         })
       ).optional().describe("Custom field values to attach to the media")
     },
@@ -1177,22 +1444,25 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "list_media",
-    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_magic_prompt. For deep full-text search across transcripts, use search_media instead.",
+    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_ai_chat. For deep full-text search across transcripts, use search_media instead.",
     {
-      mediaType: import_zod.z.enum([MediaType.AUDIO, MediaType.VIDEO, MediaType.TEXT]).optional().describe('Filter by media type: "audio", "video", or "text"'),
-      page: import_zod.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
-      pageSize: import_zod.z.number().int().min(1).max(500).optional().describe("Number of results per page (default: 20, max: 500)"),
-      sortBy: import_zod.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc" or "name:asc"'),
-      filterMedia: import_zod.z.number().int().optional().describe("Filter: 0=Uploaded, 1=Assigned, 2=Both (default: 2)"),
-      filterName: import_zod.z.string().optional().describe("Filter media by partial name match"),
-      folderId: import_zod.z.string().optional().describe("Filter media within a specific folder"),
-      from: import_zod.z.string().optional().describe("Start date for date range filter (ISO 8601)"),
-      to: import_zod.z.string().optional().describe("End date for date range filter (ISO 8601)"),
-      isFavorites: import_zod.z.boolean().optional().describe("Filter to only show favorited media"),
-      include: import_zod.z.array(
-        import_zod.z.enum([
+      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO, MediaType.TEXT]).optional().describe('Filter by media type: "audio", "video", or "text"'),
+      page: import_zod2.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
+      pageSize: import_zod2.z.number().int().min(1).max(LIST_MEDIA_MAX_PAGE_SIZE).optional().describe(
+        "Number of results per page (default: 25, max: 100). Page through larger sets rather than raising this \u2014 with include: ['transcription'] each result carries a full transcript, and an oversized response is rejected outright."
+      ),
+      sortBy: import_zod2.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc" or "name:asc"'),
+      filterMedia: import_zod2.z.number().int().optional().describe("Filter: 0=Uploaded, 1=Assigned, 2=Both (default: 2)"),
+      filterName: import_zod2.z.string().optional().describe("Filter media by partial name match"),
+      folderId: import_zod2.z.string().optional().describe("Filter media within a specific folder"),
+      from: import_zod2.z.string().optional().describe("Start date for date range filter (ISO 8601)"),
+      to: import_zod2.z.string().optional().describe("End date for date range filter (ISO 8601)"),
+      isFavorites: import_zod2.z.boolean().optional().describe("Filter to only show favorited media"),
+      include: import_zod2.z.array(
+        import_zod2.z.enum([
           "transcription",
           "keywords",
           "speakers",
@@ -1217,11 +1487,10 @@ function register(server, client) {
         if (include?.length) {
           queryParams.requestTypes = include.join(",");
         }
+        queryParams.pageSize = params.pageSize ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
         const result = await api.get("/v1/media", { params: queryParams });
         return {
-          content: [
-            { type: "text", text: JSON.stringify(result.data, null, 2) }
-          ]
+          content: [{ type: "text", text: JSON.stringify(result.data) }]
         };
       } catch (err) {
         return {
@@ -1231,11 +1500,12 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_media_insights",
-    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_magic_prompt instead.",
+    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead.",
     {
-      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
     },
     {
       title: "Get Media Insights",
@@ -1260,11 +1530,12 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_transcript",
-    "Retrieve the full transcript for a processed media file with speaker labels and timestamps. The media must be in 'processed' state. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
+    "Retrieve the full transcript for a media file with speaker labels and timestamps. Works on processed media and also returns the partial, in-progress transcript while a meeting bot is still recording (LIVE_TRANSCRIPT state). To fetch only the new sentences added since your previous call during a live meeting, use get_live_meeting_transcript instead. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
     {
-      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
     },
     {
       title: "Get Transcript",
@@ -1289,17 +1560,22 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_transcript_speakers",
-    "Update or rename speaker labels in a media transcript.",
+    "Update or rename speaker labels in a single media transcript. Call get_transcript first to read the speaker list \u2014 a speaker's label is whatever it was last renamed to, not a fixed value, so ids from an earlier turn may be stale. Renaming a speaker to a name another speaker already has is refused as a collision. Re-sending a rename that has already been applied is a safe no-op, so do not retry a call that reported success.",
     {
-      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file"),
-      speakers: import_zod.z.array(
-        import_zod.z.object({
-          id: import_zod.z.string().min(1).describe("Speaker identifier from the transcript"),
-          name: import_zod.z.string().min(1).describe("Display name to assign to the speaker")
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file"),
+      speakers: import_zod2.z.array(
+        import_zod2.z.object({
+          id: import_zod2.z.string().min(1).describe(
+            `Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. "Speaker 0", "Vatsal Shah"), or its numeric id from insight.speakers[].id (e.g. "0"). Not a fixed identifier \u2014 it changes when the speaker is renamed.`
+          ),
+          name: import_zod2.z.string().min(1).describe("New display name to assign to the speaker")
         })
-      ).describe("Array of speaker ID to name mappings")
+      ).describe(
+        "Speakers to rename. Each entry maps one existing speaker to its new name; speakers not listed are left untouched."
+      )
     },
     {
       title: "Rename Transcript Speakers",
@@ -1312,7 +1588,7 @@ function register(server, client) {
       try {
         const result = await api.put(
           `/v1/media/speakers/${mediaId}`,
-          { speakers }
+          speakers
         );
         return {
           content: [
@@ -1327,11 +1603,48 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
+    "update_transcription",
+    "Edit the official transcript text of a single media file by finding and replacing text. Replaces every occurrence of the original text with the replacement (leave replacement empty to delete the text) and reports how many occurrences were replaced. Use update_transcript_speakers to rename speaker labels instead.",
+    {
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file"),
+      original: import_zod2.z.string().min(1).describe("Text to find in the transcript"),
+      replacement: import_zod2.z.string().describe("Text to replace it with (empty string deletes the matched text)"),
+      caseSensitive: import_zod2.z.boolean().optional().describe("Match case exactly when finding the original text")
+    },
+    {
+      title: "Update Transcription Text",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async ({ mediaId, original, replacement, caseSensitive }) => {
+      try {
+        const result = await api.put(
+          `/v1/media/transcript/${mediaId}/replace`,
+          { original, replacement, caseSensitive }
+        );
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
     "get_media_status",
     "Check the processing status of a media file. States: pending \u2192 transcribing \u2192 analyzing \u2192 processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
     {
-      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
     },
     {
       title: "Get Media Status",
@@ -1356,23 +1669,24 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_media_metadata",
     "Update metadata fields (name, description, tags, status) for an existing media file.",
     {
-      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file"),
-      name: import_zod.z.string().optional().describe("New display name for the media"),
-      description: import_zod.z.string().optional().describe("Description or notes for the media"),
-      folderId: import_zod.z.string().optional().describe("Move media to this folder ID"),
-      tags: import_zod.z.array(import_zod.z.string()).optional().describe("Array of tags to assign to the media"),
-      status: import_zod.z.string().optional().describe("Media status value"),
-      remark: import_zod.z.string().optional().describe("Internal remark or note"),
-      manageBy: import_zod.z.string().optional().describe("User ID to assign management of this media to")
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file"),
+      name: import_zod2.z.string().describe("Display name for the media (required \u2014 the server replaces the metadata)"),
+      description: import_zod2.z.string().optional().describe("Description or notes for the media"),
+      folderId: import_zod2.z.string().optional().describe("Move media to this folder ID"),
+      tags: import_zod2.z.array(import_zod2.z.string()).optional().describe("Array of tags to assign to the media"),
+      status: import_zod2.z.string().optional().describe("Media status value"),
+      remark: import_zod2.z.string().optional().describe("Internal remark or note"),
+      manageBy: import_zod2.z.string().optional().describe("User ID to assign management of this media to")
     },
     {
       title: "Update Media Metadata",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -1392,11 +1706,12 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "delete_media",
     "Permanently delete a media file and all associated transcripts and insights.",
     {
-      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file to delete")
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file to delete")
     },
     {
       title: "Delete Media File",
@@ -1421,11 +1736,12 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_captions",
     "Get captions for a media file. Captions are separate from full transcripts and are formatted for display/subtitles.",
     {
-      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
     },
     {
       title: "Get Captions",
@@ -1450,7 +1766,8 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "list_supported_languages",
     "List all languages supported for transcription. Use the language codes when uploading media with a specific sourceLanguage.",
     {},
@@ -1477,7 +1794,8 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_media_statistics",
     "Get workspace-level media statistics \u2014 total counts, processing status breakdown, storage usage, etc.",
     {},
@@ -1504,11 +1822,13 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "toggle_media_favorite",
-    "Mark or unmark a media file as a favorite for quick access.",
+    "Mark or unmark media files as favorites for quick access.",
     {
-      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file")
+      mediaIds: import_zod2.z.array(import_zod2.z.string().min(1)).min(1).describe("Media file IDs to update"),
+      isFavorite: import_zod2.z.boolean().describe("true to mark as favorite, false to unmark")
     },
     {
       title: "Toggle Media Favorite",
@@ -1533,11 +1853,16 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "reanalyze_media",
-    "Re-run AI analysis on a media file using the latest models. Use this after Speak AI has updated its analysis capabilities or if the original analysis was incomplete.",
+    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
     {
-      mediaId: import_zod.z.string().min(1).describe("Unique identifier of the media file to re-analyze")
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
+      isInsights: import_zod2.z.boolean().optional().describe("Re-run insights analysis"),
+      isSentiment: import_zod2.z.boolean().optional().describe("Re-run sentiment analysis"),
+      isFillerWords: import_zod2.z.boolean().optional().describe("Re-run filler-word detection"),
+      isEmbeddings: import_zod2.z.boolean().optional().describe("Re-generate embeddings")
     },
     {
       title: "Re-analyze Media",
@@ -1546,9 +1871,9 @@ function register(server, client) {
       idempotentHint: false,
       openWorldHint: false
     },
-    async ({ mediaId }) => {
+    async ({ mediaId, ...params }) => {
       try {
-        const result = await api.post(`/v1/media/reanalyze/${mediaId}`, {});
+        const result = await api.get(`/v1/media/reanalyze/${mediaId}`, { params });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -1562,17 +1887,22 @@ function register(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "bulk_update_transcript_speakers",
-    "Update or rename speaker labels across multiple media files in a single operation. Applies the same speaker mappings to every specified media file. Use this instead of calling update_transcript_speakers repeatedly when renaming speakers across a project or folder.",
+    `Normalise speaker names that are ALREADY correct across multiple media files \u2014 for example changing "Frederik S." to "Frederik" everywhere. Applies the same mapping to every specified media file. NOT a way to identify a speaker across a project: neither the numeric id nor a default label such as "Speaker 1" refers to the same person in different files, because speakers are numbered per file in order of appearance. Renaming "Speaker 1" across many files will label a different person in each one. Identify the speakers in each file first (get_transcript, or an identify-speakers automation), then use this tool only to tidy up naming that is already correct. Match by the speaker's current LABEL, not by numeric id. A file whose speakers do not match the mapping is left unchanged and reported as failed. Re-sending a mapping that has already been applied is a safe no-op, so do not retry a call that reported success.`,
     {
-      mediaIds: import_zod.z.array(import_zod.z.string().min(1)).min(1).max(500).describe("Array of media IDs to update speakers for (max 500 per call)"),
-      speakers: import_zod.z.array(
-        import_zod.z.object({
-          id: import_zod.z.string().min(1).describe("Speaker identifier from the transcript"),
-          name: import_zod.z.string().min(1).describe("Display name to assign to the speaker")
+      mediaIds: import_zod2.z.array(import_zod2.z.string().min(1)).min(1).max(500).describe("Array of media IDs to update speakers for (max 500 per call)"),
+      speakers: import_zod2.z.array(
+        import_zod2.z.object({
+          id: import_zod2.z.string().min(1).describe(
+            `Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. "Vatsal Shah"). Only safe when that label already identifies the same person in every file listed \u2014 a default label like "Speaker 1", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed.`
+          ),
+          name: import_zod2.z.string().min(1).describe("New display name to assign to the speaker")
         })
-      ).describe("Array of speaker ID to name mappings to apply to all specified media files")
+      ).describe(
+        "Speaker mappings applied to every file in mediaIds. Speakers not listed, and files with no matching speaker, are left untouched."
+      )
     },
     {
       title: "Bulk Rename Speakers Across Files",
@@ -1585,7 +1915,7 @@ function register(server, client) {
       const results = [];
       for (const mediaId of mediaIds) {
         try {
-          await api.put(`/v1/media/speakers/${mediaId}`, { speakers });
+          await api.put(`/v1/media/speakers/${mediaId}`, speakers);
           results.push({ mediaId, success: true });
         } catch (err) {
           results.push({ mediaId, success: false, error: formatAxiosError(err) });
@@ -1608,12 +1938,13 @@ function register(server, client) {
       };
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "bulk_move_media",
     "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
     {
-      folderId: import_zod.z.string().min(1).describe("Target folder ID to move media into"),
-      mediaIds: import_zod.z.array(import_zod.z.string().min(1)).min(1).describe("Array of media IDs to move")
+      folderId: import_zod2.z.string().min(1).describe("Target folder ID to move media into"),
+      mediaIds: import_zod2.z.array(import_zod2.z.string().min(1)).min(1).describe("Array of media IDs to move")
     },
     {
       title: "Bulk Move Media Files",
@@ -1639,13 +1970,16 @@ function register(server, client) {
     }
   );
 }
-var import_zod;
+var import_zod2, LIST_MEDIA_DEFAULT_PAGE_SIZE, LIST_MEDIA_MAX_PAGE_SIZE;
 var init_media3 = __esm({
   "src/tools/media.ts"() {
     "use strict";
-    import_zod = require("zod");
+    import_zod2 = require("zod");
+    init_helpers();
     init_client();
     init_dist();
+    LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
+    LIST_MEDIA_MAX_PAGE_SIZE = 100;
   }
 });
 
@@ -1656,20 +1990,21 @@ __export(text_exports, {
 });
 function register2(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "create_text_note",
     "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
     {
-      name: import_zod2.z.string().min(1).describe("Title/name for the text note"),
-      text: import_zod2.z.string().optional().describe("Full text content to analyze"),
-      description: import_zod2.z.string().optional().describe("Description for the text note"),
-      folderId: import_zod2.z.string().optional().describe("ID of the folder to place the note in"),
-      tags: import_zod2.z.string().optional().describe("Comma-separated tags or array of tag strings"),
-      callbackUrl: import_zod2.z.string().optional().describe("Webhook callback URL for completion notification"),
-      fields: import_zod2.z.array(
-        import_zod2.z.object({
-          id: import_zod2.z.string().min(1).describe("Custom field ID"),
-          value: import_zod2.z.string().min(1).describe("Custom field value")
+      name: import_zod3.z.string().min(1).describe("Title/name for the text note"),
+      text: import_zod3.z.string().optional().describe("Full text content to analyze"),
+      description: import_zod3.z.string().optional().describe("Description for the text note"),
+      folderId: import_zod3.z.string().optional().describe("ID of the folder to place the note in"),
+      tags: import_zod3.z.string().optional().describe("Comma-separated tags or array of tag strings"),
+      callbackUrl: import_zod3.z.string().optional().describe("Webhook callback URL for completion notification"),
+      fields: import_zod3.z.array(
+        import_zod3.z.object({
+          id: import_zod3.z.string().min(1).describe("Custom field ID"),
+          value: import_zod3.z.string().min(1).describe("Custom field value")
         })
       ).optional().describe("Custom field values to attach to the text note")
     },
@@ -1678,7 +2013,7 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -1696,11 +2031,12 @@ function register2(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_text_insight",
     "Retrieve AI-generated insights for a text note, including topics, sentiment, summaries, and action items.",
     {
-      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the text note")
+      mediaId: import_zod3.z.string().min(1).describe("Unique identifier of the text note")
     },
     {
       title: "Get Text Note Insights",
@@ -1725,11 +2061,12 @@ function register2(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "reanalyze_text",
     "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models.",
     {
-      mediaId: import_zod2.z.string().describe("Unique identifier of the text note to reanalyze")
+      mediaId: import_zod3.z.string().describe("Unique identifier of the text note to reanalyze")
     },
     {
       title: "Re-analyze Text Note",
@@ -1754,16 +2091,17 @@ function register2(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_text_note",
     "Update an existing text note's name, content, or metadata. Updating text content will trigger re-analysis.",
     {
-      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the text note"),
-      name: import_zod2.z.string().optional().describe("New name for the text note"),
-      text: import_zod2.z.string().optional().describe("New text content (will trigger re-analysis)"),
-      description: import_zod2.z.string().optional().describe("Updated description"),
-      folderId: import_zod2.z.string().optional().describe("Move to a different folder"),
-      tags: import_zod2.z.string().optional().describe("Updated comma-separated tags")
+      mediaId: import_zod3.z.string().min(1).describe("Unique identifier of the text note"),
+      name: import_zod3.z.string().optional().describe("New name for the text note"),
+      text: import_zod3.z.string().optional().describe("New text content (will trigger re-analysis)"),
+      description: import_zod3.z.string().optional().describe("Updated description"),
+      folderId: import_zod3.z.string().optional().describe("Move to a different folder"),
+      tags: import_zod3.z.string().optional().describe("Updated comma-separated tags")
     },
     {
       title: "Update Text Note",
@@ -1792,11 +2130,12 @@ function register2(server, client) {
     }
   );
 }
-var import_zod2;
+var import_zod3;
 var init_text2 = __esm({
   "src/tools/text.ts"() {
     "use strict";
-    import_zod2 = require("zod");
+    import_zod3 = require("zod");
+    init_helpers();
     init_client();
   }
 });
@@ -1808,24 +2147,25 @@ __export(exports_exports, {
 });
 function register3(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "export_media",
     "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
     {
-      mediaId: import_zod3.z.string().min(1).describe("Unique identifier of the media file"),
-      fileType: import_zod3.z.enum(["pdf", "docx", "srt", "vtt", "txt", "csv"]).describe("Desired export format"),
-      isSpeakerNames: import_zod3.z.boolean().optional().describe("Include speaker names in export"),
-      isSpeakerEmail: import_zod3.z.boolean().optional().describe("Include speaker emails in export"),
-      isTimeStamps: import_zod3.z.boolean().optional().describe("Include timestamps in export"),
-      isInsightVisualized: import_zod3.z.boolean().optional().describe("Include insight visualizations"),
-      isRedacted: import_zod3.z.boolean().optional().describe("Apply PII redaction to export"),
-      redactedCategories: import_zod3.z.array(import_zod3.z.string()).optional().describe("Specific categories to redact")
+      mediaId: import_zod4.z.string().min(1).describe("Unique identifier of the media file"),
+      fileType: import_zod4.z.nativeEnum(ExportFormatType).describe("Desired export format"),
+      isSpeakerNames: import_zod4.z.boolean().optional().describe("Include speaker names in export"),
+      isSpeakerEmail: import_zod4.z.boolean().optional().describe("Include speaker emails in export"),
+      isTimeStamps: import_zod4.z.boolean().optional().describe("Include timestamps in export"),
+      isInsightVisualized: import_zod4.z.boolean().optional().describe("Include insight visualizations"),
+      isRedacted: import_zod4.z.boolean().optional().describe("Apply PII redaction to export"),
+      redactedCategories: import_zod4.z.array(import_zod4.z.string()).optional().describe("Specific categories to redact")
     },
     {
       title: "Export Media Transcript",
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false
     },
     async ({ mediaId, fileType, ...body }) => {
@@ -1847,25 +2187,26 @@ function register3(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "export_multiple_media",
     "Export multiple media files at once, optionally merged into a single file.",
     {
-      mediaIds: import_zod3.z.array(import_zod3.z.string()).describe("Array of media IDs to export"),
-      fileType: import_zod3.z.enum(["pdf", "docx", "srt", "vtt", "txt", "csv"]).describe("Desired export format"),
-      isSpeakerNames: import_zod3.z.boolean().optional().describe("Include speaker names in export"),
-      isSpeakerEmail: import_zod3.z.boolean().optional().describe("Include speaker emails in export"),
-      isTimeStamps: import_zod3.z.boolean().optional().describe("Include timestamps in export"),
-      isInsightVisualized: import_zod3.z.boolean().optional().describe("Include insight visualizations"),
-      isRedacted: import_zod3.z.boolean().optional().describe("Apply PII redaction to export"),
-      isMerged: import_zod3.z.boolean().optional().describe("Merge all exports into a single file"),
-      folderId: import_zod3.z.string().optional().describe("Folder ID for the merged export")
+      mediaIds: import_zod4.z.array(import_zod4.z.string()).describe("Array of media IDs to export"),
+      fileType: import_zod4.z.nativeEnum(ExportFormatType).describe("Desired export format"),
+      isSpeakerNames: import_zod4.z.boolean().optional().describe("Include speaker names in export"),
+      isSpeakerEmail: import_zod4.z.boolean().optional().describe("Include speaker emails in export"),
+      isTimeStamps: import_zod4.z.boolean().optional().describe("Include timestamps in export"),
+      isInsightVisualized: import_zod4.z.boolean().optional().describe("Include insight visualizations"),
+      isRedacted: import_zod4.z.boolean().optional().describe("Apply PII redaction to export"),
+      isMerged: import_zod4.z.boolean().optional().describe("Merge all exports into a single file"),
+      folderId: import_zod4.z.string().optional().describe("Folder ID for the merged export")
     },
     {
       title: "Export Multiple Media Files",
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false
     },
     async (body) => {
@@ -1888,12 +2229,14 @@ function register3(server, client) {
     }
   );
 }
-var import_zod3;
+var import_zod4;
 var init_exports = __esm({
   "src/tools/exports.ts"() {
     "use strict";
-    import_zod3 = require("zod");
+    import_zod4 = require("zod");
+    init_helpers();
     init_client();
+    init_dist();
   }
 });
 
@@ -1904,7 +2247,8 @@ __export(folders_exports, {
 });
 function register4(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_all_folder_views",
     "Retrieve all saved views across all folders.",
     {},
@@ -1917,7 +2261,7 @@ function register4(server, client) {
     },
     async () => {
       try {
-        const result = await api.get("/v1/folders/views");
+        const result = await api.get("/v1/folder/views");
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -1931,11 +2275,12 @@ function register4(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_folder_views",
     "Retrieve all saved views for a specific folder.",
     {
-      folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder")
+      folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder")
     },
     {
       title: "Get Folder Views",
@@ -1946,7 +2291,7 @@ function register4(server, client) {
     },
     async ({ folderId }) => {
       try {
-        const result = await api.get(`/v1/folders/${folderId}/views`);
+        const result = await api.get(`/v1/folder/${folderId}/views`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -1960,13 +2305,23 @@ function register4(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "create_folder_view",
-    "Create a new saved view for a folder with custom filters and display settings.",
+    "Create a new saved view for a folder with a custom set of display columns.",
     {
-      folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder"),
-      name: import_zod4.z.string().optional().describe("Display name for the view"),
-      filters: import_zod4.z.record(import_zod4.z.unknown()).optional().describe("Filter configuration object")
+      folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder"),
+      name: import_zod5.z.string().describe("Display name for the view"),
+      isDefault: import_zod5.z.boolean().optional().describe("Whether this view is the folder's default view"),
+      columns: import_zod5.z.array(
+        import_zod5.z.object({
+          fieldId: import_zod5.z.string().optional().describe("Field ID this column maps to (omit for built-in columns)"),
+          name: import_zod5.z.string().describe("Column display name"),
+          type: import_zod5.z.string().describe("Column type \u2014 a FieldType or a default view column"),
+          definition: import_zod5.z.string().optional().describe("Optional column definition"),
+          order: import_zod5.z.number().describe("Column display order")
+        })
+      ).describe("Ordered list of columns shown in the view")
     },
     {
       title: "Create Folder View",
@@ -1978,7 +2333,7 @@ function register4(server, client) {
     async ({ folderId, ...body }) => {
       try {
         const result = await api.post(
-          `/v1/folders/${folderId}/views`,
+          `/v1/folder/${folderId}/views`,
           body
         );
         return {
@@ -1994,26 +2349,36 @@ function register4(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_folder_view",
-    "Update an existing saved view's name, filters, or display settings.",
+    "Update an existing saved view. Replaces the whole view, so `name`, `isDefault` and `columns` must all be supplied.",
     {
-      folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder"),
-      viewId: import_zod4.z.string().min(1).describe("Unique identifier of the view to update"),
-      name: import_zod4.z.string().optional().describe("New display name for the view"),
-      filters: import_zod4.z.record(import_zod4.z.unknown()).optional().describe("Updated filter configuration")
+      folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder"),
+      viewId: import_zod5.z.string().min(1).describe("Unique identifier of the view to update"),
+      name: import_zod5.z.string().describe("Display name for the view"),
+      isDefault: import_zod5.z.boolean().describe("Whether this view is the folder's default view"),
+      columns: import_zod5.z.array(
+        import_zod5.z.object({
+          fieldId: import_zod5.z.string().optional().describe("Field ID this column maps to (omit for built-in columns)"),
+          name: import_zod5.z.string().describe("Column display name"),
+          type: import_zod5.z.string().describe("Column type \u2014 a FieldType or a default view column"),
+          definition: import_zod5.z.string().optional().describe("Optional column definition"),
+          order: import_zod5.z.number().describe("Column display order")
+        })
+      ).describe("Ordered list of columns shown in the view")
     },
     {
       title: "Update Folder View",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
     async ({ folderId, viewId, ...body }) => {
       try {
         const result = await api.put(
-          `/v1/folders/${folderId}/views/${viewId}`,
+          `/v1/folder/${folderId}/views/${viewId}`,
           body
         );
         return {
@@ -2029,11 +2394,16 @@ function register4(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "clone_folder_view",
-    "Duplicate an existing folder view.",
+    "Duplicate an existing folder view into a target folder.",
     {
-      viewId: import_zod4.z.string().min(1).describe("Unique identifier of the view to clone")
+      sourceFolderId: import_zod5.z.string().min(1).describe("Folder that currently holds the view"),
+      targetFolderId: import_zod5.z.string().min(1).describe("Folder to copy the view into (must differ from sourceFolderId)"),
+      viewId: import_zod5.z.string().min(1).describe("Unique identifier of the view to clone"),
+      name: import_zod5.z.string().describe("Display name for the cloned view"),
+      isDefault: import_zod5.z.boolean().optional().describe("Whether the cloned view becomes the target folder's default")
     },
     {
       title: "Clone Folder View",
@@ -2044,7 +2414,7 @@ function register4(server, client) {
     },
     async (body) => {
       try {
-        const result = await api.post("/v1/folders/views/clone", body);
+        const result = await api.post("/v1/folder/views/clone", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -2058,13 +2428,14 @@ function register4(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "list_folders",
     "List all folders in the workspace with pagination and sorting.",
     {
-      page: import_zod4.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
-      pageSize: import_zod4.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
-      sortBy: import_zod4.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc"')
+      page: import_zod5.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
+      pageSize: import_zod5.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
+      sortBy: import_zod5.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc"')
     },
     {
       title: "List Folders",
@@ -2089,11 +2460,12 @@ function register4(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_folder_info",
     "Get detailed information about a specific folder including its contents.",
     {
-      folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder")
+      folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder")
     },
     {
       title: "Get Folder Info",
@@ -2118,12 +2490,13 @@ function register4(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "create_folder",
     "Create a new folder in the workspace.",
     {
-      name: import_zod4.z.string().min(1).describe("Display name for the new folder"),
-      parentFolderId: import_zod4.z.string().optional().describe("ID of the parent folder for nesting")
+      name: import_zod5.z.string().min(1).describe("Display name for the new folder"),
+      description: import_zod5.z.string().optional().describe("Optional folder description")
     },
     {
       title: "Create Folder",
@@ -2148,11 +2521,16 @@ function register4(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "clone_folder",
     "Duplicate an existing folder and all of its contents.",
     {
-      folderId: import_zod4.z.string().min(1).describe("ID of the folder to clone")
+      folderId: import_zod5.z.string().min(1).describe("ID of the folder to clone"),
+      name: import_zod5.z.string().optional().describe("Name for the cloned folder"),
+      description: import_zod5.z.string().optional().describe("Description for the cloned folder"),
+      assignTo: import_zod5.z.array(import_zod5.z.string()).optional().describe("User IDs to assign the cloned folder to"),
+      isSaveDefaultView: import_zod5.z.boolean().optional().describe("Whether to copy the source folder's default view")
     },
     {
       title: "Clone Folder",
@@ -2177,17 +2555,19 @@ function register4(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_folder",
-    "Update a folder's name or other properties.",
+    "Update a folder. `name` must always be supplied (the server replaces the folder config).",
     {
-      folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder"),
-      name: import_zod4.z.string().optional().describe("New display name for the folder")
+      folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder"),
+      name: import_zod5.z.string().describe("Display name for the folder"),
+      description: import_zod5.z.string().optional().describe("Optional folder description")
     },
     {
       title: "Update Folder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -2207,11 +2587,12 @@ function register4(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "delete_folder",
     "Permanently delete a folder. Media within the folder will be moved, not deleted.",
     {
-      folderId: import_zod4.z.string().min(1).describe("Unique identifier of the folder to delete")
+      folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder to delete")
     },
     {
       title: "Delete Folder",
@@ -2237,11 +2618,12 @@ function register4(server, client) {
     }
   );
 }
-var import_zod4;
+var import_zod5;
 var init_folders = __esm({
   "src/tools/folders.ts"() {
     "use strict";
-    import_zod4 = require("zod");
+    import_zod5 = require("zod");
+    init_helpers();
     init_client();
   }
 });
@@ -2251,13 +2633,35 @@ var recorder_exports = {};
 __export(recorder_exports, {
   register: () => register5
 });
+function optionsFromMetaType(metaType) {
+  const bool = (v, fallback) => typeof v === "boolean" ? v : fallback;
+  const upload = metaType?.upload ?? {};
+  return {
+    audio: bool(metaType?.audio, true),
+    video: bool(metaType?.video, true),
+    screenShare: bool(metaType?.screenShare, false),
+    upload: {
+      file: bool(upload.file, true),
+      multiple: bool(upload.multiple, false),
+      url: bool(upload.url, false)
+    },
+    liveTranscription: bool(metaType?.liveTranscription, false)
+  };
+}
+function addRecorderOptions(recorder) {
+  if (recorder && typeof recorder === "object") {
+    recorder.options = optionsFromMetaType(recorder.meta?.type);
+  }
+  return recorder;
+}
 function register5(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "check_recorder_status",
     "Check whether a recorder/survey is active and accepting submissions.",
     {
-      token: import_zod5.z.string().min(1).describe("Unique token identifying the recorder")
+      token: import_zod6.z.string().min(1).describe("Unique token identifying the recorder")
     },
     {
       title: "Check Recorder Status",
@@ -2280,13 +2684,16 @@ function register5(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "create_recorder",
     "Create a new recorder or survey for collecting audio/video submissions.",
     {
-      name: import_zod5.z.string().optional().describe("Display name for the recorder"),
-      folderId: import_zod5.z.string().optional().describe("Folder to store recordings in"),
-      settings: import_zod5.z.record(import_zod5.z.unknown()).optional().describe("Recorder configuration settings")
+      name: import_zod6.z.string().describe("Display name for the recorder"),
+      ...recorderConfigShape,
+      clientInformation: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+        `Respondent info & questions: { name:boolean, email:boolean, questions:[\u2026], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }. Question shape \u2014 ${QUESTION_SHAPE_DESC}`
+      )
     },
     {
       title: "Create Recorder",
@@ -2298,6 +2705,7 @@ function register5(server, client) {
     async (body) => {
       try {
         const result = await api.post("/v1/recorder/create", body);
+        addRecorderOptions(result.data?.data?.recorderData);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2309,13 +2717,14 @@ function register5(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "list_recorders",
     "List all recorders/surveys in the workspace.",
     {
-      page: import_zod5.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
-      pageSize: import_zod5.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
-      sortBy: import_zod5.z.string().optional().describe('Sort field, e.g. "createdAt:desc"')
+      page: import_zod6.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
+      pageSize: import_zod6.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
+      sortBy: import_zod6.z.string().optional().describe('Sort field, e.g. "createdAt:desc"')
     },
     {
       title: "List Recorders",
@@ -2327,6 +2736,7 @@ function register5(server, client) {
     async (params) => {
       try {
         const result = await api.get("/v1/recorder", { params });
+        result.data?.data?.recorderList?.forEach?.(addRecorderOptions);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2338,11 +2748,15 @@ function register5(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "clone_recorder",
     "Duplicate an existing recorder including all its settings and questions.",
     {
-      recorderId: import_zod5.z.string().min(1).describe("ID of the recorder to clone")
+      recorderId: import_zod6.z.string().min(1).describe("ID of the recorder to clone"),
+      name: import_zod6.z.string().optional().describe("Name for the cloned recorder"),
+      description: import_zod6.z.string().optional().describe("Description for the cloned recorder"),
+      folderId: import_zod6.z.string().optional().describe("Folder for the cloned recorder")
     },
     {
       title: "Clone Recorder",
@@ -2365,11 +2779,12 @@ function register5(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_recorder_info",
     "Get detailed information about a specific recorder including its settings and questions.",
     {
-      recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder")
+      recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder")
     },
     {
       title: "Get Recorder Info",
@@ -2381,6 +2796,7 @@ function register5(server, client) {
     async ({ recorderId }) => {
       try {
         const result = await api.get(`/v1/recorder/${recorderId}`);
+        addRecorderOptions(result.data?.data);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2392,11 +2808,12 @@ function register5(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_recorder_recordings",
     "List all submissions/recordings collected by a specific recorder.",
     {
-      recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder")
+      recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder")
     },
     {
       title: "Get Recorder Submissions",
@@ -2419,18 +2836,19 @@ function register5(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "generate_recorder_url",
-    "Generate a shareable public URL for a recorder/survey.",
+    "Retrieve the existing shareable URL and embed iframe code for a recorder/survey. Read-only lookup: returns the recorder's pre-existing share link; it does not create, modify, or publish anything.",
     {
-      recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder")
+      recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder")
     },
     {
-      title: "Generate Recorder Share URL",
+      title: "Get Recorder Share URL",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ recorderId }) => {
       try {
@@ -2446,12 +2864,14 @@ function register5(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_recorder_settings",
-    "Update configuration settings for a recorder (branding, permissions, etc.).",
+    "Update configuration settings for a recorder (branding, capture options, etc.). `name` must always be supplied.",
     {
-      recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder"),
-      settings: import_zod5.z.record(import_zod5.z.unknown()).describe("Settings object with updated values")
+      recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder"),
+      name: import_zod6.z.string().describe("Display name for the recorder"),
+      ...recorderConfigShape
     },
     {
       title: "Update Recorder Settings",
@@ -2460,9 +2880,10 @@ function register5(server, client) {
       idempotentHint: true,
       openWorldHint: true
     },
-    async ({ recorderId, settings }) => {
+    async ({ recorderId, ...body }) => {
       try {
-        const result = await api.put(`/v1/recorder/settings/${recorderId}`, settings);
+        const result = await api.put(`/v1/recorder/settings/${recorderId}`, body);
+        addRecorderOptions(result.data?.data?.recorderData);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2474,12 +2895,20 @@ function register5(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_recorder_questions",
-    "Update the survey questions for a recorder.",
+    "Update the survey questions and respondent-info settings for a recorder.",
     {
-      recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder"),
-      questions: import_zod5.z.array(import_zod5.z.record(import_zod5.z.unknown())).describe("Array of question objects")
+      recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder"),
+      name: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's name"),
+      email: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's email"),
+      questions: import_zod6.z.array(import_zod6.z.record(import_zod6.z.unknown())).describe(
+        `Survey questions. ${QUESTION_SHAPE_DESC} (id? may also be passed to update an existing question.)`
+      ),
+      consent: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+        "Consent screen: { isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? }"
+      )
     },
     {
       title: "Update Recorder Questions",
@@ -2488,9 +2917,9 @@ function register5(server, client) {
       idempotentHint: true,
       openWorldHint: true
     },
-    async ({ recorderId, questions }) => {
+    async ({ recorderId, ...body }) => {
       try {
-        const result = await api.put(`/v1/recorder/questions/${recorderId}`, { questions });
+        const result = await api.put(`/v1/recorder/questions/${recorderId}`, body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2502,11 +2931,12 @@ function register5(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "delete_recorder",
     "Permanently delete a recorder/survey. Existing recordings are preserved.",
     {
-      recorderId: import_zod5.z.string().min(1).describe("Unique identifier of the recorder to delete")
+      recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder to delete")
     },
     {
       title: "Delete Recorder",
@@ -2530,12 +2960,39 @@ function register5(server, client) {
     }
   );
 }
-var import_zod5;
+var import_zod6, RECORDER_ANSWER_TYPES, QUESTION_SHAPE_DESC, recorderConfigShape;
 var init_recorder3 = __esm({
   "src/tools/recorder.ts"() {
     "use strict";
-    import_zod5 = require("zod");
+    import_zod6 = require("zod");
+    init_helpers();
     init_client();
+    RECORDER_ANSWER_TYPES = [
+      "single",
+      "multiple",
+      "checkbox",
+      "radiobutton",
+      "dropdownlist",
+      "date",
+      "time",
+      "datetime"
+    ];
+    QUESTION_SHAPE_DESC = `Each: { question, isRequired, answerType, options?, includeOther?, fieldId? }. answerType must be one of: ${RECORDER_ANSWER_TYPES.map((t) => `"${t}"`).join(", ")}. Choice types (single, multiple, checkbox, radiobutton, dropdownlist) take options:string[] and includeOther:boolean (adds a free-text "Other"). date/time/datetime take no options. There is no free-text/rating/number answerType.`;
+    recorderConfigShape = {
+      description: import_zod6.z.string().optional().describe("Recorder description"),
+      sourceLanguage: import_zod6.z.string().optional().describe("Transcription language code (e.g. en-US)"),
+      folderId: import_zod6.z.string().optional().describe("Folder to store recordings in"),
+      isAutoAnalyze: import_zod6.z.boolean().optional().describe("Whether to auto-analyze submissions"),
+      notifyUsers: import_zod6.z.array(import_zod6.z.string()).optional().describe("User IDs to notify on new submissions"),
+      duration: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Recording duration: { minDuration, maxDuration } in seconds"),
+      options: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+        "Capture options: { audio, video, screenShare, liveTranscription, upload:{ file, text, multiple, url } } \u2014 all booleans"
+      ),
+      notification: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client } \u2014 booleans"),
+      meta: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+        "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }"
+      )
+    };
   }
 });
 
@@ -2546,12 +3003,13 @@ __export(embed_exports, {
 });
 function register6(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "create_embed",
-    "Create an embeddable player/transcript widget for a media file.",
+    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed.",
     {
-      mediaId: import_zod6.z.string().min(1).describe("Unique identifier of the media file"),
-      settings: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Embed configuration settings")
+      mediaId: import_zod7.z.string().optional().describe("Media file to embed (for a single-media embed)"),
+      folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs to embed (for a folder/library embed)")
     },
     {
       title: "Create Embed Widget",
@@ -2574,12 +3032,19 @@ function register6(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_embed",
-    "Update settings for an existing embed widget.",
+    "Update an existing embed widget \u2014 appearance/feature toggles via `meta`, plus scope and privacy.",
     {
-      embedId: import_zod6.z.string().min(1).describe("Unique identifier of the embed"),
-      settings: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Updated embed settings")
+      embedId: import_zod7.z.string().min(1).describe("Unique identifier of the embed"),
+      mediaId: import_zod7.z.string().optional().describe("Media file the embed points to"),
+      folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs the embed covers"),
+      privacyMode: import_zod7.z.string().optional().describe("Privacy mode for the embed"),
+      embedType: import_zod7.z.string().optional().describe("Embed type"),
+      meta: import_zod7.z.record(import_zod7.z.unknown()).optional().describe(
+        "Embed appearance & feature toggles: { backgroundImg, logo, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }"
+      )
     },
     {
       title: "Update Embed Widget",
@@ -2602,11 +3067,12 @@ function register6(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "check_embed",
     "Check if an embed exists for a media file and retrieve its configuration.",
     {
-      mediaId: import_zod6.z.string().min(1).describe("Unique identifier of the media file")
+      mediaId: import_zod7.z.string().min(1).describe("Unique identifier of the media file")
     },
     {
       title: "Check Embed Exists",
@@ -2617,7 +3083,7 @@ function register6(server, client) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await api.get(`/v1/embed/${mediaId}`);
+        const result = await api.get("/v1/embed", { params: { mediaId } });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2629,11 +3095,12 @@ function register6(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_embed_iframe_url",
     "Get the iframe URL for embedding a media player/transcript on a webpage.",
     {
-      mediaId: import_zod6.z.string().min(1).describe("Unique identifier of the media file")
+      mediaId: import_zod7.z.string().min(1).describe("Unique identifier of the media file")
     },
     {
       title: "Get Embed Iframe URL",
@@ -2659,11 +3126,12 @@ function register6(server, client) {
     }
   );
 }
-var import_zod6;
+var import_zod7;
 var init_embed3 = __esm({
   "src/tools/embed.ts"() {
     "use strict";
-    import_zod6 = require("zod");
+    import_zod7 = require("zod");
+    init_helpers();
     init_client();
   }
 });
@@ -2675,40 +3143,124 @@ __export(prompt_exports, {
 });
 function register7(server, client) {
   const api = client ?? speakClient;
-  server.tool(
-    "ask_magic_prompt",
-    [
-      "Ask an AI-powered question about your media using Speak AI's Magic Prompt.",
-      "Supports querying a single file, multiple files, entire folders, or your whole workspace.",
-      "Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media.",
-      "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
-      "To continue a conversation, pass the promptId from a previous response.",
-      "Returns a promptId \u2014 save it to continue the conversation with follow-up questions."
-    ].join(" "),
+  const askAiChatDescription = [
+    "Ask an AI-powered question about your media using Speak AI's AI Chat.",
+    "Supports querying a single file, multiple files, entire folders, or your whole workspace.",
+    "Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media.",
+    "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
+    "To continue a conversation, pass the promptId from a previous response.",
+    "Returns a promptId \u2014 save it to continue the conversation with follow-up questions.",
+    "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
+    "reading the transcript alone. That is a premium feature and costs credits per hour of media \u2014",
+    "call get_analysis_quote first to check eligibility and price."
+  ].join(" ");
+  const askAiChatInputSchema = {
+    prompt: import_zod8.z.string().min(1).describe("The question or prompt to ask about the media"),
+    mediaIds: import_zod8.z.array(import_zod8.z.string()).optional().describe("Array of media IDs to query. Omit along with folderIds to search across all media in your workspace."),
+    folderIds: import_zod8.z.array(import_zod8.z.string()).optional().describe("Array of folder IDs to scope the query to. Omit along with mediaIds to search across all media."),
+    folderId: import_zod8.z.string().optional().describe("Single folder ID to scope the query to. Use folderIds for multiple folders."),
+    assistantType: import_zod8.z.enum(Object.values(AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
+    assistantTemplateId: import_zod8.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
+    promptId: import_zod8.z.string().optional().describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
+    speakers: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter to specific speaker IDs from the transcript"),
+    tags: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter media by tags"),
+    startDate: import_zod8.z.string().optional().describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
+    endDate: import_zod8.z.string().optional().describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
+    isIndividualPrompt: import_zod8.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
+    fieldId: import_zod8.z.string().optional().describe("Scope the prompt to a single custom field"),
+    fieldIds: import_zod8.z.array(import_zod8.z.string()).max(10).optional().describe("Scope the prompt to multiple custom fields (max 10)"),
+    filters: import_zod8.z.record(import_zod8.z.unknown()).optional().describe("Advanced filter object to scope which media the prompt runs over"),
+    analysisMediaId: import_zod8.z.string().optional().describe("Media to analyse as audio/video rather than transcript. Must also appear in mediaIds, and must be sent together with analysisInput. Premium feature."),
+    analysisInput: import_zod8.z.enum(["audio", "video"]).optional().describe("'audio' lets the model hear tone, pacing and delivery; 'video' also lets it see what is on screen. Omit for transcript-only, which is the default and costs nothing extra. 'transcript' is not a valid value here \u2014 omitting the field IS transcript-only.")
+  };
+  const askAiChatAnnotations = {
+    title: "Ask AI Chat",
+    readOnlyHint: false,
+    destructiveHint: false,
+    idempotentHint: false,
+    openWorldHint: false
+  };
+  const ANALYSIS_TIMEOUT_MS = 6 * 60 * 1e3;
+  const refuse = (message) => ({
+    content: [{ type: "text", text: `Error: ${message}` }],
+    isError: true
+  });
+  const withAnalysisOutcome = async (payload, messageId) => {
+    if (!messageId) return payload;
+    try {
+      const res = await api.get("/v1/prompt/messages", { params: { messageId } });
+      const messages = res.data?.data?.messages ?? res.data?.data ?? [];
+      const list = Array.isArray(messages) ? messages : [];
+      const match = list.find((m) => m?.messageId === messageId) ?? list[0];
+      const analysis = match?.analysis;
+      if (!analysis) return payload;
+      const downgraded = analysis.requested && analysis.used && analysis.requested !== analysis.used;
+      return {
+        ...payload,
+        analysis,
+        ...downgraded ? {
+          analysisWarning: `Requested ${analysis.requested} analysis but the answer came from the ${analysis.used}. ` + (analysis.skippedReason ?? "No reason was given.")
+        } : {}
+      };
+    } catch {
+      return payload;
+    }
+  };
+  const askAiChatHandler = async (params) => {
+    const body = params ?? {};
+    const analysisMediaId = typeof body.analysisMediaId === "string" ? body.analysisMediaId.trim() : "";
+    const analysisInput = typeof body.analysisInput === "string" ? body.analysisInput.trim() : "";
+    if (Boolean(analysisMediaId) !== Boolean(analysisInput)) {
+      return refuse(
+        "analysisMediaId and analysisInput must be provided together. Pass both to analyse audio/video, or neither for a transcript-only answer."
+      );
+    }
+    const mediaIds = Array.isArray(body.mediaIds) ? body.mediaIds.map(String) : [];
+    if (analysisMediaId && !mediaIds.includes(analysisMediaId)) {
+      return refuse(
+        `analysisMediaId "${analysisMediaId}" must also appear in mediaIds. mediaIds is currently ${mediaIds.length ? JSON.stringify(mediaIds) : "empty"}.`
+      );
+    }
+    try {
+      const result = analysisInput ? await api.post("/v1/prompt", params, { timeout: ANALYSIS_TIMEOUT_MS }) : await api.post("/v1/prompt", params);
+      const payload = analysisInput ? await withAnalysisOutcome(result.data, result.data?.data?.messageId) : result.data;
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }]
+      };
+    } catch (err) {
+      return {
+        content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+        isError: true
+      };
+    }
+  };
+  registerSpeakTool(
+    server,
+    "ask_ai_chat",
+    askAiChatDescription,
+    askAiChatInputSchema,
+    askAiChatAnnotations,
+    askAiChatHandler
+  );
+  registerSpeakTool(
+    server,
+    "get_analysis_quote",
+    "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason \u2014 an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
     {
-      prompt: import_zod7.z.string().min(1).describe("The question or prompt to ask about the media"),
-      mediaIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Array of media IDs to query. Omit along with folderIds to search across all media in your workspace."),
-      folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Array of folder IDs to scope the query to. Omit along with mediaIds to search across all media."),
-      folderId: import_zod7.z.string().optional().describe("Single folder ID to scope the query to. Use folderIds for multiple folders."),
-      assistantType: import_zod7.z.enum(Object.values(AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
-      assistantTemplateId: import_zod7.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
-      promptId: import_zod7.z.string().optional().describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
-      speakers: import_zod7.z.array(import_zod7.z.string()).optional().describe("Filter to specific speaker IDs from the transcript"),
-      tags: import_zod7.z.array(import_zod7.z.string()).optional().describe("Filter media by tags"),
-      startDate: import_zod7.z.string().optional().describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
-      endDate: import_zod7.z.string().optional().describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
-      isIndividualPrompt: import_zod7.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files.")
+      mediaId: import_zod8.z.string().min(1).describe("Media file to price"),
+      analysisInput: import_zod8.z.enum(["audio", "video"]).describe("'audio' to hear the recording, 'video' to also see it. Video costs substantially more because frames dominate."),
+      modelId: import_zod8.z.string().optional().describe("Optional model id to price against. Omit for the workspace default.")
     },
     {
-      title: "Ask AI About Your Recordings",
+      title: "Get Analysis Quote",
       readOnlyHint: true,
       destructiveHint: false,
-      idempotentHint: false,
+      idempotentHint: true,
       openWorldHint: false
     },
     async (params) => {
       try {
-        const result = await api.post("/v1/prompt", params);
+        const result = await api.get("/v1/prompt/analysisQuote", { params });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -2720,16 +3272,17 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
-    "retry_magic_prompt",
-    "Retry a failed or incomplete Magic Prompt response. Use when a previous ask_magic_prompt call returned an error or incomplete answer.",
+  registerSpeakTool(
+    server,
+    "retry_ai_chat",
+    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
     {
-      promptId: import_zod7.z.string().min(1).describe("ID of the conversation containing the failed message"),
-      messageId: import_zod7.z.string().min(1).describe("ID of the specific message to retry")
+      promptId: import_zod8.z.string().min(1).describe("ID of the conversation containing the failed message"),
+      messageId: import_zod8.z.string().min(1).describe("ID of the specific message to retry")
     },
     {
-      title: "Retry AI Question",
-      readOnlyHint: true,
+      title: "Retry AI Chat",
+      readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
@@ -2748,11 +3301,12 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_chat_history",
-    "Get a list of recent Magic Prompt conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_magic_prompt or retrieve full messages via get_chat_messages.",
+    "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_ai_chat or retrieve full messages via get_chat_messages.",
     {
-      limit: import_zod7.z.number().int().positive().optional().describe("Number of recent conversations to return (default: 10)")
+      limit: import_zod8.z.number().int().positive().optional().describe("Number of recent conversations to return (default: 10)")
     },
     {
       title: "Get Chat History",
@@ -2777,16 +3331,17 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_chat_messages",
     "Get full message history for conversations. Can filter by promptId for a specific conversation, by media/folder, or search across all chat messages. Returns questions, answers, references, and metadata.",
     {
-      promptId: import_zod7.z.string().optional().describe("Filter to a specific conversation by its ID"),
-      folderId: import_zod7.z.string().optional().describe("Filter messages by folder ID"),
-      mediaIds: import_zod7.z.string().optional().describe("Filter by media IDs (comma-separated)"),
-      query: import_zod7.z.string().optional().describe("Search text in prompts and answers"),
-      page: import_zod7.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
-      pageSize: import_zod7.z.number().int().min(1).max(500).optional().describe("Results per page (default: 25, max: 500)")
+      promptId: import_zod8.z.string().optional().describe("Filter to a specific conversation by its ID"),
+      folderId: import_zod8.z.string().optional().describe("Filter messages by folder ID"),
+      mediaIds: import_zod8.z.string().optional().describe("Filter by media IDs (comma-separated)"),
+      query: import_zod8.z.string().optional().describe("Search text in prompts and answers"),
+      page: import_zod8.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
+      pageSize: import_zod8.z.number().int().min(1).max(500).optional().describe("Results per page (default: 25, max: 500)")
     },
     {
       title: "Get Chat Messages",
@@ -2809,11 +3364,12 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "delete_chat_message",
     "Delete a specific chat message from conversation history.",
     {
-      promptId: import_zod7.z.string().min(1).describe("ID of the message to delete")
+      promptId: import_zod8.z.string().min(1).describe("ID of the message to delete")
     },
     {
       title: "Delete Chat Message",
@@ -2836,9 +3392,10 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "list_prompts",
-    "List all available Magic Prompt templates. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
+    "List all available AI Chat templates. Use template IDs with ask_ai_chat's assistantTemplateId parameter when using assistantType 'custom'.",
     {},
     {
       title: "List Prompt Templates",
@@ -2861,7 +3418,8 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_favorite_prompts",
     "Get all prompts and answers that have been marked as favorites. Useful for finding saved insights and important AI-generated analysis.",
     {},
@@ -2886,13 +3444,14 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "toggle_prompt_favorite",
     "Mark or unmark a chat message as a favorite for easy retrieval later.",
     {
-      promptId: import_zod7.z.string().min(1).describe("ID of the conversation"),
-      messageId: import_zod7.z.string().min(1).describe("ID of the specific message to favorite/unfavorite"),
-      isFavorite: import_zod7.z.boolean().describe("true to mark as favorite, false to remove")
+      promptId: import_zod8.z.string().min(1).describe("ID of the conversation"),
+      messageId: import_zod8.z.string().min(1).describe("ID of the specific message to favorite/unfavorite"),
+      isFavorite: import_zod8.z.boolean().describe("true to mark as favorite, false to remove")
     },
     {
       title: "Toggle Prompt Favorite",
@@ -2915,12 +3474,13 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_chat_title",
     "Update the title of a chat conversation for easier identification in history.",
     {
-      promptId: import_zod7.z.string().min(1).describe("ID of the conversation to rename"),
-      title: import_zod7.z.string().min(1).describe("New title for the conversation")
+      promptId: import_zod8.z.string().min(1).describe("ID of the conversation to rename"),
+      title: import_zod8.z.string().min(1).describe("New title for the conversation")
     },
     {
       title: "Rename Chat",
@@ -2943,14 +3503,15 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "submit_chat_feedback",
     "Submit feedback on a chat response (thumbs up/down). Helps improve AI answer quality.",
     {
-      promptId: import_zod7.z.string().min(1).describe("ID of the conversation"),
-      messageId: import_zod7.z.string().min(1).describe("ID of the message to rate"),
-      score: import_zod7.z.number().describe("Feedback score: 1 for thumbs up, -1 for thumbs down"),
-      reason: import_zod7.z.string().optional().describe("Optional explanation for the feedback")
+      promptId: import_zod8.z.string().min(1).describe("ID of the conversation"),
+      messageId: import_zod8.z.string().min(1).describe("ID of the message to rate"),
+      score: import_zod8.z.union([import_zod8.z.literal(1), import_zod8.z.literal(-1)]).describe("Feedback score: 1 for thumbs up, -1 for thumbs down"),
+      reason: import_zod8.z.string().optional().describe("Optional explanation for the feedback")
     },
     {
       title: "Submit Chat Feedback",
@@ -2973,12 +3534,13 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_chat_statistics",
-    "Get usage statistics for Magic Prompt / chat. Returns metrics on prompt usage, optionally filtered by date range.",
+    "Get usage statistics for AI Chat / chat. Returns metrics on prompt usage, optionally filtered by date range.",
     {
-      startDate: import_zod7.z.string().optional().describe("Start date for stats (ISO 8601)"),
-      endDate: import_zod7.z.string().optional().describe("End date for stats (ISO 8601)")
+      startDate: import_zod8.z.string().optional().describe("Start date for stats (ISO 8601)"),
+      endDate: import_zod8.z.string().optional().describe("End date for stats (ISO 8601)")
     },
     {
       title: "Get Chat Statistics",
@@ -3001,17 +3563,20 @@ function register7(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "export_chat_answer",
-    "Export a Magic Prompt conversation or answer. Useful for saving AI-generated summaries, reports, or analysis results.",
+    "Export a specific AI Chat answer. Useful for saving AI-generated summaries, reports, or analysis results.",
     {
-      promptId: import_zod7.z.string().min(1).describe("ID of the conversation to export")
+      promptId: import_zod8.z.string().min(1).describe("ID of the conversation to export"),
+      messageId: import_zod8.z.string().min(1).describe("ID of the specific message/answer to export"),
+      fileType: import_zod8.z.enum(["txt", "docx", "pdf", "md"]).describe("Export file format")
     },
     {
       title: "Export Chat Answer",
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false
     },
     async (body) => {
@@ -3029,11 +3594,12 @@ function register7(server, client) {
     }
   );
 }
-var import_zod7;
+var import_zod8;
 var init_prompt3 = __esm({
   "src/tools/prompt.ts"() {
     "use strict";
-    import_zod7 = require("zod");
+    import_zod8 = require("zod");
+    init_helpers();
     init_client();
     init_dist();
   }
@@ -3046,14 +3612,15 @@ __export(meeting_exports, {
 });
 function register8(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "list_meeting_events",
     "List scheduled or completed meeting assistant events with filtering and pagination.",
     {
-      platformType: import_zod8.z.string().optional().describe("Filter by platform (e.g. zoom, teams, meet)"),
-      meetingStatus: import_zod8.z.string().optional().describe("Filter by status (e.g. scheduled, completed, cancelled)"),
-      page: import_zod8.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
-      pageSize: import_zod8.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)")
+      platformType: import_zod9.z.string().optional().describe("Filter by platform. Allowed values: zoom, googleMeet, microsoftTeams, webex. Comma-separate for multiple. Must match these exact strings \u2014 server validates strictly."),
+      meetingStatus: import_zod9.z.string().optional().describe("Filter by status (e.g. scheduled, completed, cancelled)"),
+      page: import_zod9.z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
+      pageSize: import_zod9.z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)")
     },
     {
       title: "List Meeting Events",
@@ -3078,13 +3645,16 @@ function register8(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "schedule_meeting_event",
     "Schedule the Speak AI meeting assistant to join and record an upcoming meeting.",
     {
-      meetingUrl: import_zod8.z.string().min(1).describe("URL of the meeting to join"),
-      title: import_zod8.z.string().optional().describe("Display title for the event"),
-      scheduledAt: import_zod8.z.string().optional().describe("ISO 8601 datetime for when the meeting starts")
+      title: import_zod9.z.string().min(1).describe("Display title for the event"),
+      meetingURL: import_zod9.z.string().min(1).describe("URL of the meeting to join"),
+      meetingDate: import_zod9.z.string().optional().describe("ISO 8601 datetime for when the meeting starts"),
+      meetingLanguage: import_zod9.z.string().optional().describe("Transcription language code for the meeting (e.g. en-US)"),
+      folderId: import_zod9.z.string().optional().describe("Folder ID to store the recording in")
     },
     {
       title: "Schedule AI Meeting Assistant",
@@ -3110,11 +3680,12 @@ function register8(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "remove_assistant_from_meeting",
     "Remove the Speak AI assistant from an active or scheduled meeting.",
     {
-      meetingAssistantEventId: import_zod8.z.string().describe("Unique identifier of the meeting assistant event")
+      meetingAssistantEventId: import_zod9.z.string().describe("Unique identifier of the meeting assistant event")
     },
     {
       title: "Remove Assistant from Meeting",
@@ -3125,10 +3696,9 @@ function register8(server, client) {
     },
     async ({ meetingAssistantEventId }) => {
       try {
-        const result = await api.put(
+        const result = await api.post(
           "/v1/meeting-assistant/events/remove",
-          null,
-          { params: { meetingAssistantEventId } }
+          { meetingAssistantEventId }
         );
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
@@ -3141,11 +3711,12 @@ function register8(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "delete_scheduled_assistant",
     "Cancel and delete a scheduled meeting assistant event.",
     {
-      meetingAssistantEventId: import_zod8.z.string().describe("Unique identifier of the meeting assistant event to cancel")
+      meetingAssistantEventId: import_zod9.z.string().describe("Unique identifier of the meeting assistant event to cancel")
     },
     {
       title: "Cancel Scheduled Meeting Assistant",
@@ -3171,12 +3742,97 @@ function register8(server, client) {
       }
     }
   );
+  registerSpeakTool(
+    server,
+    "get_live_meeting_transcript",
+    "Fetch new sentences from an in-progress or just-ended meeting transcript. Identify the meeting via meetingAssistantEventId (preferred) or mediaId. Pass back the previous response's nextCursor as sinceEndInSec to receive only what's been added since.",
+    {
+      meetingAssistantEventId: import_zod9.z.string().optional().describe("Meeting assistant event id from list_meeting_events. Either this or mediaId is required."),
+      mediaId: import_zod9.z.string().optional().describe("Media id of the live meeting. Either this or meetingAssistantEventId is required."),
+      sinceEndInSec: import_zod9.z.number().min(0).optional().describe("Pass the nextCursor value from your previous response to skip already-seen sentences. Omit on the first call.")
+    },
+    {
+      title: "Get Live Meeting Transcript",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async ({ meetingAssistantEventId, mediaId, sinceEndInSec }) => {
+      if (!meetingAssistantEventId && !mediaId) {
+        return {
+          content: [{ type: "text", text: "Error: provide either meetingAssistantEventId or mediaId." }],
+          isError: true
+        };
+      }
+      try {
+        let resolvedMediaId = mediaId;
+        let meetingStatus = null;
+        let meetingName;
+        if (meetingAssistantEventId) {
+          const eventsRes = await api.get("/v1/meeting-assistant/events", {
+            params: { pageSize: 50, sortBy: "startTime:desc" }
+          });
+          const events = eventsRes.data?.data?.events ?? eventsRes.data?.events ?? [];
+          const event = events.find((e) => e.meetingAssistantEventId === meetingAssistantEventId);
+          if (!event) {
+            return {
+              content: [{ type: "text", text: JSON.stringify({ status: "not_found", meetingAssistantEventId }, null, 2) }],
+              structuredContent: { data: { status: "not_found", meetingAssistantEventId } }
+            };
+          }
+          meetingStatus = event.currentStatus ?? null;
+          meetingName = event.title;
+          const mediaRef = event.mediaId;
+          const linkedMediaId = typeof mediaRef === "string" ? mediaRef : mediaRef?.mediaId;
+          if (!linkedMediaId) {
+            const payload2 = {
+              status: "not_started",
+              meetingAssistantEventId,
+              meetingStatus,
+              message: "Meeting has no linked media yet \u2014 the bot may not have joined or started recording."
+            };
+            return {
+              content: [{ type: "text", text: JSON.stringify(payload2, null, 2) }],
+              structuredContent: { data: payload2 }
+            };
+          }
+          resolvedMediaId = linkedMediaId;
+        }
+        const transcriptRes = await api.get(`/v1/media/transcript/${resolvedMediaId}`, {
+          params: Number.isFinite(sinceEndInSec) ? { sinceEndInSec } : void 0
+        });
+        const data = transcriptRes.data?.data ?? transcriptRes.data ?? {};
+        const sentences = data?.insight?.transcript ?? [];
+        const maxEnd = sentences.reduce((m, s) => Math.max(m, s.instances?.[0]?.endInSec ?? 0), 0);
+        const nextCursor = sentences.length > 0 ? maxEnd : sinceEndInSec ?? 0;
+        const payload = {
+          mediaId: resolvedMediaId,
+          name: data?.name ?? meetingName ?? null,
+          meetingStatus,
+          isLive: meetingStatus === "inCallRecording",
+          newSentences: sentences,
+          nextCursor
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+          structuredContent: { data: payload }
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
 }
-var import_zod8;
+var import_zod9;
 var init_meeting3 = __esm({
   "src/tools/meeting.ts"() {
     "use strict";
-    import_zod8 = require("zod");
+    import_zod9 = require("zod");
+    init_helpers();
     init_client();
   }
 });
@@ -3188,9 +3844,10 @@ __export(fields_exports, {
 });
 function register9(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "list_fields",
-    "List all custom fields defined in the workspace.",
+    "List all custom fields defined in the workspace. Each field returns a `slug` (for example `regulator_comment`) alongside its `id`, `name`, and `type`. Put `{{field.<slug>}}` in the prompt text you send and Speak substitutes that field's value for the media before the model sees it. A slug is unique per company and never changes when the field is renamed, so prefer it over the field name. A field with no slug yet resolves by `id` in the same token.",
     {},
     {
       title: "List Custom Fields",
@@ -3213,13 +3870,20 @@ function register9(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "create_field",
     "Create a new custom field for categorizing and tagging media.",
     {
-      name: import_zod9.z.string().min(1).describe("Display name for the field"),
-      type: import_zod9.z.string().optional().describe("Field type (text, number, select, etc.)"),
-      options: import_zod9.z.array(import_zod9.z.string()).optional().describe("Options for select/multi-select field types")
+      name: import_zod10.z.string().min(1).describe("Display name for the field"),
+      type: import_zod10.z.string().describe("Field type (text, number, select, etc.)"),
+      description: import_zod10.z.string().optional().describe("Optional description for the field"),
+      prompt: import_zod10.z.string().optional().describe("AI prompt used to auto-populate the field"),
+      allowedValues: import_zod10.z.array(import_zod10.z.string()).optional().describe("Allowed values for select/multi-select field types"),
+      allowedValuesMode: import_zod10.z.nativeEnum(AllowedValuesMode).optional().describe("Whether one or multiple allowed values can be selected"),
+      otherValues: import_zod10.z.boolean().optional().describe("Whether values outside allowedValues are permitted"),
+      notApplicableValues: import_zod10.z.string().optional().describe("Value(s) treated as not-applicable"),
+      privacyMode: import_zod10.z.string().optional().describe("Privacy mode for the field")
     },
     {
       title: "Create Custom Field",
@@ -3242,22 +3906,30 @@ function register9(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_multiple_fields",
-    "Update multiple custom fields in a single batch operation.",
+    "Set custom field values across media in a single batch operation. Scope the update with `folderId` (all media in a folder) and/or `mediaIds`.",
     {
-      fields: import_zod9.z.array(import_zod9.z.record(import_zod9.z.unknown())).describe("Array of field objects to update")
+      folderId: import_zod10.z.string().optional().describe("Apply the field values to all media in this folder"),
+      mediaIds: import_zod10.z.array(import_zod10.z.string()).optional().describe("Apply the field values to these specific media files"),
+      fields: import_zod10.z.array(
+        import_zod10.z.object({
+          id: import_zod10.z.string().min(1).describe("Custom field ID"),
+          value: import_zod10.z.unknown().describe("Value to set for the field")
+        })
+      ).describe("Array of field id/value pairs to set")
     },
     {
-      title: "Bulk Update Custom Fields",
+      title: "Bulk Update Custom Field Values",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
-    async ({ fields }) => {
+    async (body) => {
       try {
-        const result = await api.post("/v1/fields/multi", { fields });
+        const result = await api.post("/v1/fields/batch", body);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -3269,19 +3941,26 @@ function register9(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_field",
-    "Update a specific custom field by ID.",
+    "Update a specific custom field by ID. `name` must always be supplied (the server replaces the field config).",
     {
-      id: import_zod9.z.string().min(1).describe("Unique identifier of the field"),
-      name: import_zod9.z.string().optional().describe("New display name"),
-      type: import_zod9.z.string().optional().describe("New field type"),
-      options: import_zod9.z.array(import_zod9.z.string()).optional().describe("Updated options for select types")
+      id: import_zod10.z.string().min(1).describe("Unique identifier of the field"),
+      name: import_zod10.z.string().describe("Display name for the field"),
+      type: import_zod10.z.string().optional().describe("Field type"),
+      description: import_zod10.z.string().optional().describe("Optional description for the field"),
+      prompt: import_zod10.z.string().optional().describe("AI prompt used to auto-populate the field"),
+      allowedValues: import_zod10.z.array(import_zod10.z.string()).optional().describe("Allowed values for select/multi-select field types"),
+      allowedValuesMode: import_zod10.z.nativeEnum(AllowedValuesMode).optional().describe("Whether one or multiple allowed values can be selected"),
+      otherValues: import_zod10.z.boolean().optional().describe("Whether values outside allowedValues are permitted"),
+      notApplicableValues: import_zod10.z.string().optional().describe("Value(s) treated as not-applicable"),
+      privacyMode: import_zod10.z.string().optional().describe("Privacy mode for the field")
     },
     {
       title: "Update Custom Field",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -3300,12 +3979,101 @@ function register9(server, client) {
     }
   );
 }
-var import_zod9;
+var import_zod10;
 var init_fields2 = __esm({
   "src/tools/fields.ts"() {
     "use strict";
-    import_zod9 = require("zod");
+    import_zod10 = require("zod");
+    init_helpers();
     init_client();
+    init_dist();
+  }
+});
+
+// src/tools/inbound-webhook-utils.ts
+function unwrapData(payload) {
+  const p = payload;
+  return p && typeof p === "object" && "status" in p && "data" in p ? p.data : p;
+}
+function narrowPathsToChildKey(paths, childKey) {
+  if (!childKey) return paths;
+  const prefix = `${childKey}.`;
+  const narrowed = paths.filter((p) => p.startsWith(prefix)).map((p) => p.slice(prefix.length)).filter(Boolean);
+  return narrowed.length ? narrowed : paths;
+}
+function buildHowToUse(inboundUrl, sampleCaptured) {
+  const url = inboundUrl ?? "<inboundUrl>";
+  const lines = [
+    `Send events with: curl -X POST '${url}' -H 'Content-Type: application/json' -d '{"url": "https://example.com/file.mp3", "name": "My recording"}'`,
+    `To capture/refresh a sample payload WITHOUT running the automation, POST to '${url}?test=1'.`,
+    "Reference payload values in step configs with {{trigger.payload.<path>}} tokens \u2014 see mappableTokens."
+  ];
+  if (!sampleCaptured) {
+    lines.unshift(
+      "No sample payload captured yet \u2014 send a test request first (see below) so payload paths become discoverable for mapping, then call get_inbound_webhook again."
+    );
+  }
+  return lines;
+}
+async function fetchInboundWebhookInfo(api, webhookId, childKey) {
+  const res = await api.get(`/v1/webhook/${webhookId}`);
+  const payload = unwrapData(res.data);
+  const wh = payload?.webhookData ?? payload ?? {};
+  const flattened = Array.isArray(wh.flattenedPaths) ? wh.flattenedPaths : [];
+  const sample = wh.samplePayload ?? null;
+  const sampleCaptured = sample != null && (typeof sample !== "object" || Object.keys(sample).length > 0);
+  const inboundUrl = typeof wh.inboundUrl === "string" ? wh.inboundUrl : null;
+  return {
+    webhookId,
+    inboundUrl,
+    sampleCaptured,
+    samplePayload: sample,
+    mappableTokens: narrowPathsToChildKey(flattened, childKey).map(
+      (p) => `{{trigger.payload.${p}}}`
+    ),
+    ...childKey ? { childKey } : {},
+    howToUse: buildHowToUse(inboundUrl, sampleCaptured)
+  };
+}
+async function resolveAutomationInboundWebhook(api, automationId) {
+  const res = await api.get(`/v1/automations/${automationId}`);
+  const automation = unwrapData(res.data);
+  const trigger = automation?.trigger ?? {};
+  return {
+    webhookId: typeof trigger.webhookId === "string" && trigger.webhookId ? trigger.webhookId : void 0,
+    childKey: typeof trigger.childKey === "string" && trigger.childKey ? trigger.childKey : void 0
+  };
+}
+function isInboundWebhookTrigger(trigger) {
+  const t = trigger;
+  return !!t && (t.triggerSlug === "inbound_webhook" || t.type === "webhook" || !!t.webhookId);
+}
+var init_inbound_webhook_utils = __esm({
+  "src/tools/inbound-webhook-utils.ts"() {
+    "use strict";
+  }
+});
+
+// src/capabilities.ts
+async function multimodalCapability(api) {
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  let value = "unknown";
+  try {
+    const res = await api.get("/v1/user/profile");
+    const flag = res.data?.data?.isMultimodalAnalysis;
+    if (typeof flag === "boolean") value = flag ? "enabled" : "disabled";
+  } catch {
+  }
+  cached = { value, expiresAt: Date.now() + TTL_MS };
+  return value;
+}
+var TTL_MS, cached, MULTIMODAL_DISABLED_MESSAGE;
+var init_capabilities = __esm({
+  "src/capabilities.ts"() {
+    "use strict";
+    TTL_MS = 10 * 60 * 1e3;
+    cached = null;
+    MULTIMODAL_DISABLED_MESSAGE = "Audio and video analysis is not enabled for this account. The step would be saved but would silently run on the transcript only, so it is refused here. Remove analysisInput from the step, or contact Speak AI to enable the feature.";
   }
 });
 
@@ -3314,12 +4082,49 @@ var automations_exports = {};
 __export(automations_exports, {
   register: () => register10
 });
+function stepsRequestMediaAnalysis(steps) {
+  if (!Array.isArray(steps)) return false;
+  return steps.some((step) => {
+    const magicPrompt = step?.magicPrompt;
+    const input = magicPrompt?.analysisInput;
+    return typeof input === "string" && (input === "audio" || input === "video");
+  });
+}
+async function refuseUngatedAnalysis(api, steps) {
+  if (!stepsRequestMediaAnalysis(steps)) return null;
+  if (await multimodalCapability(api) !== "disabled") return null;
+  return {
+    content: [{ type: "text", text: `Error: ${MULTIMODAL_DISABLED_MESSAGE}` }],
+    isError: true
+  };
+}
+async function withInboundWebhookInfo(api, responseData, automationId) {
+  try {
+    if (!automationId) return responseData;
+    const { webhookId, childKey } = await resolveAutomationInboundWebhook(api, automationId);
+    if (!webhookId) return responseData;
+    const inboundWebhook = await fetchInboundWebhookInfo(api, webhookId, childKey);
+    const base = responseData && typeof responseData === "object" ? responseData : { data: responseData };
+    return { ...base, inboundWebhook };
+  } catch {
+    return responseData;
+  }
+}
 function register10(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "list_automations",
-    "List all automation rules configured in the workspace.",
-    {},
+    "List automation rules in the workspace, with paging and filters.",
+    {
+      page: import_zod11.z.number().int().min(0).optional().describe("0-based page index"),
+      pageSize: import_zod11.z.number().int().min(1).max(100).optional().describe("Results per page"),
+      sortBy: import_zod11.z.string().optional().describe('Sort expression, e.g. "createdAt:desc"'),
+      query: import_zod11.z.string().optional().describe("Free-text search over automation names"),
+      folderIds: import_zod11.z.string().optional().describe("Comma-separated folder ids to filter by"),
+      isActive: import_zod11.z.boolean().optional().describe("Filter by active state"),
+      runType: import_zod11.z.enum(["instant", "schedule"]).optional().describe("Filter by run type")
+    },
     {
       title: "List Automations",
       readOnlyHint: true,
@@ -3327,9 +4132,9 @@ function register10(server, client) {
       idempotentHint: true,
       openWorldHint: false
     },
-    async () => {
+    async (params) => {
       try {
-        const result = await api.get("/v1/automations");
+        const result = await api.get("/v1/automations", { params });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -3341,11 +4146,38 @@ function register10(server, client) {
       }
     }
   );
-  server.tool(
-    "get_automation",
-    "Get detailed information about a specific automation rule.",
+  registerSpeakTool(
+    server,
+    "list_automation_names",
+    "List automations as lightweight { name, id } pairs \u2014 useful for pickers without fetching full configs.",
+    {},
     {
-      automationId: import_zod10.z.string().min(1).describe("Unique identifier of the automation")
+      title: "List Automation Names",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/automations/list");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_automation",
+    "Get detailed information about a specific automation rule, including its trigger and step graph.",
+    {
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation")
     },
     {
       title: "Get Automation Details",
@@ -3368,27 +4200,61 @@ function register10(server, client) {
       }
     }
   );
-  server.tool(
-    "create_automation",
-    "Create a new automation rule for automatic media processing workflows.",
+  registerSpeakTool(
+    server,
+    "get_automation_runs",
+    "Get the run history (executions) for an automation, with paging and optional status filter.",
     {
-      name: import_zod10.z.string().optional().describe("Display name for the automation"),
-      trigger: import_zod10.z.record(import_zod10.z.unknown()).optional().describe("Trigger configuration"),
-      actions: import_zod10.z.array(import_zod10.z.record(import_zod10.z.unknown())).optional().describe("Array of action configurations"),
-      config: import_zod10.z.record(import_zod10.z.unknown()).optional().describe("Full automation configuration object")
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
+      page: import_zod11.z.number().int().min(0).optional().describe("0-based page index"),
+      pageSize: import_zod11.z.number().int().min(1).max(100).optional().describe("Results per page"),
+      status: import_zod11.z.enum(["pending", "running", "completed", "failed", "killed"]).optional().describe("Filter runs by status")
     },
+    {
+      title: "Get Automation Runs",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ automationId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/automations/${automationId}/runs`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_automation",
+    "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) \u2014 recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
+    writeSchema,
     {
       title: "Create Automation",
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
+        const refusal = await refuseUngatedAnalysis(api, body.steps);
+        if (refusal) return refusal;
         const result = await api.post("/v1/automations/", body);
+        let data = result.data;
+        if (isInboundWebhookTrigger(body.trigger)) {
+          const automationId = unwrapData(result.data)?.automationId;
+          data = await withInboundWebhookInfo(api, data, automationId);
+        }
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
         };
       } catch (err) {
         return {
@@ -3398,29 +4264,58 @@ function register10(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_automation",
-    "Update an existing automation rule's configuration.",
+    "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes.",
     {
-      automationId: import_zod10.z.string().min(1).describe("Unique identifier of the automation"),
-      name: import_zod10.z.string().optional().describe("New display name"),
-      trigger: import_zod10.z.record(import_zod10.z.unknown()).optional().describe("Updated trigger configuration"),
-      actions: import_zod10.z.array(import_zod10.z.record(import_zod10.z.unknown())).optional().describe("Updated action configurations"),
-      config: import_zod10.z.record(import_zod10.z.unknown()).optional().describe("Full updated configuration object")
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
+      ...writeSchema
     },
     {
       title: "Update Automation",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ automationId, ...body }) => {
       try {
-        const result = await api.put(
-          `/v1/automations/${automationId}`,
-          body
-        );
+        const refusal = await refuseUngatedAnalysis(api, body.steps);
+        if (refusal) return refusal;
+        const result = await api.put(`/v1/automations/${automationId}`, body);
+        let data = result.data;
+        if (isInboundWebhookTrigger(body.trigger)) {
+          data = await withInboundWebhookInfo(api, data, automationId);
+        }
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "toggle_automation_status",
+    "Toggle an automation rule between active and inactive. This flips the current state \u2014 call get_automation first if you need to know which way it will flip.",
+    {
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation")
+    },
+    {
+      title: "Toggle Automation Status",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async ({ automationId }) => {
+      try {
+        const result = await api.put(`/v1/automations/status/${automationId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -3432,26 +4327,192 @@ function register10(server, client) {
       }
     }
   );
-  server.tool(
-    "toggle_automation_status",
-    "Enable or disable an automation rule.",
+  registerSpeakTool(
+    server,
+    "bulk_update_automation_status",
+    "Activate or deactivate multiple automations at once.",
     {
-      automationId: import_zod10.z.string().min(1).describe("Unique identifier of the automation"),
-      enabled: import_zod10.z.boolean().describe("Set to true to enable, false to disable")
+      automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
+      isActive: import_zod11.z.boolean().describe("true to activate, false to deactivate, for all listed automations")
     },
     {
-      title: "Enable or Disable Automation",
+      title: "Bulk Update Automation Status",
       readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
+    async (body) => {
+      try {
+        const result = await api.put("/v1/automations/bulk/status", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "bulk_assign_automation_folders",
+    "Set the folder scope for multiple automations at once. Pass an empty folderIds array to remove the folder restriction (run on all folders).",
+    {
+      automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
+      folderIds: import_zod11.z.array(import_zod11.z.string().min(1)).max(50).describe("Folder ids to scope the automations to. Empty array = all folders.")
+    },
+    {
+      title: "Bulk Assign Automation Folders",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true
+    },
+    async (body) => {
+      try {
+        const result = await api.put("/v1/automations/bulk/folders", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "run_automations",
+    "Manually run one or more automations against one or more media items now (outside the normal trigger).",
+    {
+      mediaIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).describe("Media ids to run the automations against"),
+      automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).describe("Automation ids to run")
+    },
+    {
+      title: "Run Automations",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/automations/run", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_automation",
+    "Permanently delete an automation rule.",
+    {
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation to delete")
+    },
+    {
+      title: "Delete Automation",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ automationId }) => {
+      try {
+        const result = await api.delete(`/v1/automations/${automationId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_automation_apps",
+    "List the apps available in the automation catalog (e.g. Speak native + connected integrations). Use to discover what triggers/actions exist before building an automation.",
+    {},
+    {
+      title: "List Automation Apps",
+      readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
       openWorldHint: false
     },
-    async ({ automationId, enabled }) => {
+    async () => {
       try {
-        const result = await api.put(
-          `/v1/automations/status/${automationId}`,
-          { enabled }
-        );
+        const result = await api.get("/v1/automations/catalog/apps");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_automation_triggers",
+    "List the trigger types available in the automation catalog. Optionally filter by app.",
+    {
+      app: import_zod11.z.string().min(1).max(100).optional().describe("Filter triggers to a specific app slug")
+    },
+    {
+      title: "List Automation Triggers",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/automations/catalog/triggers", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_automation_actions",
+    "List the action/step types available in the automation catalog. Optionally filter by app.",
+    {
+      app: import_zod11.z.string().min(1).max(100).optional().describe("Filter actions to a specific app slug")
+    },
+    {
+      title: "List Automation Actions",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/automations/catalog/actions", { params });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -3464,12 +4525,46 @@ function register10(server, client) {
     }
   );
 }
-var import_zod10;
+var import_zod11, TOKEN_SYNTAX_NOTE, STEPS_DESCRIPTION, TRIGGER_DESCRIPTION, OR_TRIGGERS_DESCRIPTION, writeSchema;
 var init_automations = __esm({
   "src/tools/automations.ts"() {
     "use strict";
-    import_zod10 = require("zod");
+    import_zod11 = require("zod");
+    init_helpers();
     init_client();
+    init_inbound_webhook_utils();
+    init_capabilities();
+    TOKEN_SYNTAX_NOTE = "Token syntax (usable in fields marked 'tokens allowed'): {{trigger.payload.<path>}} reads the inbound webhook payload (dot paths and [n] array indices; paths are relative to trigger.childKey when set \u2014 discover valid paths with get_inbound_webhook after sending a test payload); {{step.<index>.<path>}} or {{step.<stepId>.<path>}} reads a previous step's output (speak-upload -> mediaId, magic-prompt -> answer, outbound-webhook -> status/response).";
+    STEPS_DESCRIPTION = `Ordered array of graph steps (1-20). Each step is an object: { stepId: string (unique within the array), stepType: one of "speak-upload" | "magic-prompt" | "translation" | "filter" | "condition" | "notify" | "outbound-webhook" | "composio-action", dependsOn?: string[] (stepIds this step runs after), branch?: "true"|"false" (which outcome of an upstream condition step this step belongs to) } plus ONE config key matching stepType:
+- speak-upload -> speakUpload: { sourceMode: "url"|"file", sourceUrl (required when sourceMode="url"; tokens allowed \u2014 if the token resolves to an object, the first http(s) URL inside it is used), folderId (required, unless folderRouting.mode="dynamic" where it becomes the optional fallback), name? (tokens allowed, mixable with static text), language? (language code or token), fieldsMap?: { <customFieldId>: "<value>" } (writes payload values into Speak custom fields on the uploaded media; values are usually {{trigger.payload.<path>}} tokens \u2014 get field ids from list_fields), folderRouting?: { mode: "static"|"dynamic", sourceKey (payload key holding the destination folder name, required when dynamic), onNoMatch: "create"|"default" (create a folder named after the value, or fall back to folderId) } }
+- magic-prompt -> magicPrompt: { prompt (required unless fieldIds given, max 20000), title?, assistantType? ("general"|"researcher"|"marketer"|"sales"|"recruiter"|"custom", default "general"), assistantTemplateId? (required if assistantType="custom"), fieldIds?: string[] (max 10 \u2014 extract answers into these custom fields), analysisInput? ("transcript" (default) | "audio" | "video") \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see what is on screen; on a video file "audio" extracts the audio track first. Premium: requires the account's audio/video analysis opt-in, and costs credits per hour of media }
+- translation -> translation: { targetLanguage: region-qualified locale code, e.g. "es-ES", "fr-FR" (bare codes like "es" are rejected) }
+- filter -> filter: { logic: "AND"|"OR" (default "AND"), rules: [{ field, op, value? }] (1-20) } \u2014 the run continues only when the rules match, otherwise it stops silently
+- condition -> condition: same { logic, rules } shape as filter, but instead of stopping it routes: downstream steps marked branch:"true"/"false" run according to the outcome
+- notify -> notify: { channel: "in_app"|"email"|"slack", target?, message (required, tokens allowed) }
+- outbound-webhook -> outboundWebhook: { url (required, tokens allowed), method? ("GET"|"POST"|"PUT"|"PATCH"|"DELETE", default "POST"), headers?: { <name>: <value> }, bodyTemplate?: string | object (tokens allowed) }
+- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)
+Filter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers or a custom field id; INSIGHT -> answer; inbound-webhook DATA -> any payload path (e.g. "contact.status"). Ops by field type \u2014 text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists ("exists" takes no value; gt/lt values are numbers).
+` + TOKEN_SYNTAX_NOTE;
+    TRIGGER_DESCRIPTION = `Trigger object (the automation's root). Always include triggerSlug. Supported shapes:
+- Media analyzed in folder(s): { type: "folders", triggerSlug: "media_analyzed", folderIds: string[] (min 1) }
+- Inbound webhook (receive external payloads): { type: "folders", triggerSlug: "inbound_webhook", webhookId? (from provision_inbound_webhook; omit to auto-provision a new one on create), childKey? (dot-path narrowing which part of the payload feeds the automation, e.g. "data") }. The create/update response includes inboundWebhook.inboundUrl \u2014 the public URL to POST payloads to.
+- Custom field updated: { type: "folders", triggerSlug: "field_updated", values: string[] (watched custom field ids, min 1), fieldValueMatches?: [{ fieldId, values: string[] }] (fire only when the field changes TO one of these values; empty values = any change), fieldMatchLogic?: "AND"|"OR" (how multiple fieldValueMatches combine, default "OR") }
+- Composio app event: { type: "composio", provider: "composio", app, triggerSlug, connectedAccountId } (requires a connected account; may be behind a server flag)
+Notes: "tags"/"keywords" trigger types are rejected for graph automations. The server stores inbound-webhook triggers with type "webhook" internally \u2014 send type "folders" plus the slug as shown above.`;
+    OR_TRIGGERS_DESCRIPTION = 'Optional additional "Or" triggers (max 10): the automation runs when ANY of them fires, sharing the same steps. Each entry mirrors the trigger shapes above but cannot be an inbound webhook and carries no webhookId/childKey. Example: [{ type: "folders", triggerSlug: "field_updated", values: ["<fieldId>"] }]';
+    writeSchema = {
+      name: import_zod11.z.string().min(1).max(150).describe("Display name for the automation"),
+      trigger: import_zod11.z.record(import_zod11.z.unknown()).describe(TRIGGER_DESCRIPTION),
+      triggers: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).max(10).optional().describe(OR_TRIGGERS_DESCRIPTION),
+      steps: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).min(1).max(20).describe(STEPS_DESCRIPTION),
+      description: import_zod11.z.string().max(1e3).optional().describe("Optional description"),
+      isActive: import_zod11.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
+      runType: import_zod11.z.enum(["instant", "schedule"]).optional().describe('Run type: "instant" (default, runs on trigger) or "schedule" (cron)'),
+      schedule: import_zod11.z.record(import_zod11.z.unknown()).optional().describe(
+        'Required when runType="schedule": { timePeriod: "today"|"yesterday"|"last7days"|"last14days"|"thisWeek", repeatAt: string }'
+      )
+    };
   }
 });
 
@@ -3480,12 +4575,14 @@ __export(webhooks_exports, {
 });
 function register11(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "create_webhook",
     "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
     {
-      url: import_zod11.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
-      events: import_zod11.z.array(import_zod11.z.string()).optional().describe("Array of event types to subscribe to")
+      callbackUrl: import_zod12.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
+      events: import_zod12.z.array(import_zod12.z.string()).optional().describe("Array of event types to subscribe to"),
+      description: import_zod12.z.string().optional().describe("Optional description for the webhook")
     },
     {
       title: "Create Webhook",
@@ -3508,7 +4605,8 @@ function register11(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "list_webhooks",
     "List all configured webhooks in the workspace.",
     {},
@@ -3533,13 +4631,15 @@ function register11(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_webhook",
-    "Update an existing webhook's URL or subscribed events.",
+    "Update an existing webhook. This replaces the webhook config, so `callbackUrl` must always be supplied.",
     {
-      webhookId: import_zod11.z.string().min(1).describe("Unique identifier of the webhook"),
-      url: import_zod11.z.string().url().optional().describe("New endpoint URL"),
-      events: import_zod11.z.array(import_zod11.z.string()).optional().describe("Updated array of event types")
+      webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the webhook"),
+      callbackUrl: import_zod12.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
+      events: import_zod12.z.array(import_zod12.z.string()).optional().describe("Updated array of event types"),
+      description: import_zod12.z.string().optional().describe("Optional description for the webhook")
     },
     {
       title: "Update Webhook",
@@ -3562,11 +4662,132 @@ function register11(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
+    "provision_inbound_webhook",
+    "Provision a standalone inbound webhook and get its public receive URL (inboundUrl) BEFORE creating an automation. Webhook-first flow: provision, send a test payload to the URL (append ?test=1 to only capture a sample without running anything), inspect mappable payload paths with get_inbound_webhook, then pass the webhookId as trigger.webhookId to create_automation.",
+    {},
+    {
+      title: "Provision Inbound Webhook",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async () => {
+      try {
+        const result = await api.post("/v1/webhook/inbound/provision", {});
+        const payload = unwrapData(result.data) ?? {};
+        const inboundUrl = typeof payload.inboundUrl === "string" ? payload.inboundUrl : "<inboundUrl>";
+        const data = {
+          ...payload,
+          nextSteps: [
+            `Capture a sample payload (does not run anything): curl -X POST '${inboundUrl}?test=1' -H 'Content-Type: application/json' -d '{"url": "https://example.com/file.mp3", "name": "Test"}'`,
+            "Call get_inbound_webhook with this webhookId to see the captured sample and mappable {{trigger.payload.*}} tokens.",
+            'Create the automation with create_automation, passing this webhookId in trigger.webhookId (triggerSlug: "inbound_webhook").'
+          ]
+        };
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_inbound_webhook",
+    "Get an inbound webhook's public receive URL, captured sample payload, and the ready-to-paste {{trigger.payload.*}} tokens for mapping payload values into automation steps (speak-upload name/sourceUrl, fieldsMap custom-field values, notify/outbound-webhook templates). Pass either the webhookId or the automationId of an inbound-webhook automation. If no sample has been captured yet, send a test payload to the inboundUrl first (append ?test=1 to capture without running the automation).",
+    {
+      webhookId: import_zod12.z.string().min(1).optional().describe("Inbound webhook id (from provision_inbound_webhook or an automation's trigger.webhookId)"),
+      automationId: import_zod12.z.string().min(1).optional().describe("Automation id \u2014 resolves the bound webhookId and childKey automatically"),
+      childKey: import_zod12.z.string().optional().describe("Override the dot-path used to narrow mappable payload paths (defaults to the automation's trigger.childKey)")
+    },
+    {
+      title: "Get Inbound Webhook",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ webhookId, automationId, childKey }) => {
+      try {
+        let resolvedWebhookId = webhookId;
+        let resolvedChildKey = childKey;
+        if (!resolvedWebhookId && automationId) {
+          const resolved = await resolveAutomationInboundWebhook(api, automationId);
+          if (!resolved.webhookId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: automation ${automationId} has no inbound webhook bound to its trigger (it is not an inbound-webhook automation).`
+                }
+              ],
+              isError: true
+            };
+          }
+          resolvedWebhookId = resolved.webhookId;
+          resolvedChildKey = resolvedChildKey ?? resolved.childKey;
+        }
+        if (!resolvedWebhookId) {
+          return {
+            content: [{ type: "text", text: "Error: provide either webhookId or automationId." }],
+            isError: true
+          };
+        }
+        const info = await fetchInboundWebhookInfo(api, resolvedWebhookId, resolvedChildKey);
+        return {
+          content: [{ type: "text", text: JSON.stringify(info, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_webhook_attempts",
+    "Get the delivery log for an inbound webhook: each received request with its HTTP acknowledgement status (200 = sample captured, 202 = accepted and run started, 401/403 = rejected) and the automation run it started. Use get_automation_runs for the run outcomes themselves.",
+    {
+      webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the inbound webhook"),
+      page: import_zod12.z.number().int().min(0).optional().describe("0-based page index"),
+      pageSize: import_zod12.z.number().int().min(1).max(100).optional().describe("Results per page")
+    },
+    {
+      title: "Get Webhook Attempts",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ webhookId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/webhook/${webhookId}/attempts`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
     "delete_webhook",
     "Delete a webhook and stop receiving notifications at its endpoint.",
     {
-      webhookId: import_zod11.z.string().min(1).describe("Unique identifier of the webhook to delete")
+      webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the webhook to delete")
     },
     {
       title: "Delete Webhook",
@@ -3590,12 +4811,14 @@ function register11(server, client) {
     }
   );
 }
-var import_zod11;
+var import_zod12;
 var init_webhooks = __esm({
   "src/tools/webhooks.ts"() {
     "use strict";
-    import_zod11 = require("zod");
+    import_zod12 = require("zod");
+    init_helpers();
     init_client();
+    init_inbound_webhook_utils();
   }
 });
 
@@ -3614,7 +4837,8 @@ function withDefaultSearchDateRange(params) {
 }
 function register12(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "search_media",
     [
       "Deep search across all media transcripts, insights, and metadata.",
@@ -3624,15 +4848,15 @@ function register12(server, client) {
       "Results are scoped by date range \u2014 defaults to current year if not specified."
     ].join(" "),
     {
-      query: import_zod12.z.string().min(1).describe("Search query \u2014 searches across transcripts, insights, and metadata"),
-      startDate: import_zod12.z.string().optional().describe("Start date for search range (ISO 8601). Defaults to start of current year."),
-      endDate: import_zod12.z.string().optional().describe("End date for search range (ISO 8601). Defaults to now."),
-      filterList: import_zod12.z.array(
-        import_zod12.z.object({
-          fieldName: import_zod12.z.enum(Object.values(FilterFieldName)).describe("Field to filter on"),
-          fieldOperator: import_zod12.z.enum(Object.values(FilterOperator)).describe("Filter operator"),
-          fieldValue: import_zod12.z.array(import_zod12.z.string()).describe("Values to filter by"),
-          fieldCondition: import_zod12.z.enum(Object.values(FilterCondition)).describe("Condition linking multiple filters")
+      query: import_zod13.z.string().min(1).describe("Search query \u2014 searches across transcripts, insights, and metadata"),
+      startDate: import_zod13.z.string().optional().describe("Start date for search range (ISO 8601). Defaults to start of current year."),
+      endDate: import_zod13.z.string().optional().describe("End date for search range (ISO 8601). Defaults to now."),
+      filterList: import_zod13.z.array(
+        import_zod13.z.object({
+          fieldName: import_zod13.z.enum(Object.values(FilterFieldName)).describe("Field to filter on"),
+          fieldOperator: import_zod13.z.enum(Object.values(FilterOperator)).describe("Filter operator"),
+          fieldValue: import_zod13.z.array(import_zod13.z.string()).describe("Values to filter by"),
+          fieldCondition: import_zod13.z.enum(Object.values(FilterCondition)).describe("Condition linking multiple filters")
         })
       ).optional().describe("Advanced filters for narrowing search results by tags, speakers, media type, sentiment, folder, etc.")
     },
@@ -3658,11 +4882,12 @@ function register12(server, client) {
     }
   );
 }
-var import_zod12;
+var import_zod13;
 var init_analytics = __esm({
   "src/tools/analytics.ts"() {
     "use strict";
-    import_zod12 = require("zod");
+    import_zod13 = require("zod");
+    init_helpers();
     init_client();
     init_dist();
   }
@@ -3675,7 +4900,8 @@ __export(clips_exports, {
 });
 function register13(server, client) {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(
+    server,
     "create_clip",
     [
       "Create a highlight clip from one or more media files by specifying time ranges.",
@@ -3684,18 +4910,18 @@ function register13(server, client) {
       "Use multiple timeRanges to stitch segments from different media files together."
     ].join(" "),
     {
-      title: import_zod13.z.string().min(1).describe("Title for the clip"),
-      mediaType: import_zod13.z.enum([MediaType.AUDIO, MediaType.VIDEO]).describe("Output media type"),
-      timeRanges: import_zod13.z.array(
-        import_zod13.z.object({
-          mediaId: import_zod13.z.string().min(1).describe("Source media file ID"),
-          startTime: import_zod13.z.number().min(0).describe("Start time in seconds"),
-          endTime: import_zod13.z.number().min(0).describe("End time in seconds (must be > startTime)")
+      title: import_zod14.z.string().min(1).describe("Title for the clip"),
+      mediaType: import_zod14.z.enum([MediaType.AUDIO, MediaType.VIDEO]).describe("Output media type"),
+      timeRanges: import_zod14.z.array(
+        import_zod14.z.object({
+          mediaId: import_zod14.z.string().min(1).describe("Source media file ID"),
+          startTime: import_zod14.z.number().min(0).describe("Start time in seconds"),
+          endTime: import_zod14.z.number().min(0).describe("End time in seconds (must be > startTime)")
         })
       ).min(1).describe("Array of time ranges to include in the clip. Each specifies a source media and start/end times."),
-      description: import_zod13.z.string().optional().describe("Description of the clip"),
-      tags: import_zod13.z.array(import_zod13.z.string()).optional().describe("Tags for the clip"),
-      mergeStrategy: import_zod13.z.enum(["CONCATENATE"]).optional().describe("How to merge multiple segments (default: CONCATENATE)")
+      description: import_zod14.z.string().optional().describe("Description of the clip"),
+      tags: import_zod14.z.array(import_zod14.z.string()).optional().describe("Tags for the clip"),
+      mergeStrategy: import_zod14.z.enum(["CONCATENATE"]).optional().describe("How to merge multiple segments (default: CONCATENATE)")
     },
     {
       title: "Create Highlight Clip",
@@ -3718,13 +4944,14 @@ function register13(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "get_clips",
     "List clips, optionally filtered by folder or media files. If clipId is provided, returns a single clip with its download URL (when processed).",
     {
-      clipId: import_zod13.z.string().optional().describe("Get a specific clip by ID"),
-      folderId: import_zod13.z.string().optional().describe("Filter clips by folder ID"),
-      mediaIds: import_zod13.z.array(import_zod13.z.string()).optional().describe("Filter clips by source media file IDs")
+      clipId: import_zod14.z.string().optional().describe("Get a specific clip by ID"),
+      folderId: import_zod14.z.string().optional().describe("Filter clips by folder ID"),
+      mediaIds: import_zod14.z.array(import_zod14.z.string()).optional().describe("Filter clips by source media file IDs")
     },
     {
       title: "List Clips",
@@ -3748,14 +4975,15 @@ function register13(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "update_clip",
     "Update a clip's title, description, or tags.",
     {
-      clipId: import_zod13.z.string().min(1).describe("ID of the clip to update"),
-      title: import_zod13.z.string().optional().describe("New title"),
-      description: import_zod13.z.string().optional().describe("New description"),
-      tags: import_zod13.z.array(import_zod13.z.string()).optional().describe("New tags")
+      clipId: import_zod14.z.string().min(1).describe("ID of the clip to update"),
+      title: import_zod14.z.string().optional().describe("New title"),
+      description: import_zod14.z.string().optional().describe("New description"),
+      tags: import_zod14.z.array(import_zod14.z.string()).optional().describe("New tags")
     },
     {
       title: "Update Clip",
@@ -3778,11 +5006,12 @@ function register13(server, client) {
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "delete_clip",
     "Permanently delete a clip and its associated media file.",
     {
-      clipId: import_zod13.z.string().min(1).describe("ID of the clip to delete")
+      clipId: import_zod14.z.string().min(1).describe("ID of the clip to delete")
     },
     {
       title: "Delete Clip",
@@ -3806,11 +5035,12 @@ function register13(server, client) {
     }
   );
 }
-var import_zod13;
+var import_zod14;
 var init_clips = __esm({
   "src/tools/clips.ts"() {
     "use strict";
-    import_zod13 = require("zod");
+    import_zod14 = require("zod");
+    init_helpers();
     init_client();
     init_dist();
   }
@@ -3855,25 +5085,328 @@ var workflows_exports = {};
 __export(workflows_exports, {
   register: () => register14
 });
+function tokenize(value) {
+  if (typeof value !== "string") return value;
+  if (value.includes("{{")) return value;
+  if (value.startsWith("payload.")) return `{{trigger.payload.${value.slice("payload.".length)}}}`;
+  return value;
+}
+async function loadFolders(api) {
+  const res = await api.get("/v1/folder", { params: { pageSize: 500 } });
+  const data = unwrapData(res.data) ?? {};
+  const list = data.folderList ?? data.folders ?? (Array.isArray(data) ? data : []);
+  return list.map((f) => ({
+    folderId: String(f.folderId ?? f.id ?? ""),
+    name: String(f.name ?? "")
+  }));
+}
+async function loadFields(api) {
+  const res = await api.get("/v1/fields");
+  const data = unwrapData(res.data) ?? [];
+  return data.map((f) => ({
+    id: String(f.id ?? ""),
+    name: String(f.name ?? "")
+  }));
+}
+async function resolveFolder(api, ref, folders, createdFolders) {
+  const byId = folders.find((f) => f.folderId === ref);
+  if (byId) return byId.folderId;
+  const byName = folders.find((f) => f.name.toLowerCase() === ref.toLowerCase());
+  if (byName) return byName.folderId;
+  if (ID_PATTERN.test(ref)) {
+    throw new Error(`Folder id "${ref}" not found in this workspace (and it looks like an id, so it was not created as a folder name)`);
+  }
+  const res = await api.post("/v1/folder", { name: ref });
+  const folderId = unwrapData(res.data)?.folderId;
+  if (!folderId) throw new Error(`Could not create folder "${ref}"`);
+  folders.push({ folderId, name: ref });
+  createdFolders.push(`${ref} (${folderId})`);
+  return folderId;
+}
+function resolveField(ref, fields) {
+  const byId = fields.find((f) => f.id === ref);
+  if (byId) return byId.id;
+  const byName = fields.find((f) => f.name.toLowerCase() === ref.toLowerCase());
+  if (byName) return byName.id;
+  const available = fields.map((f) => f.name).slice(0, 25).join(", ");
+  throw new Error(`Unknown custom field "${ref}". Available fields: ${available || "(none \u2014 create one with create_field)"}`);
+}
 function register14(server, client) {
   const api = client ?? speakClient;
-  server.tool(
-    "upload_and_analyze",
-    "Upload media and return media_id immediately. After this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.",
+  registerSpeakTool(
+    server,
+    "build_automation",
+    "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. Prefer this over create_automation unless you need raw control.",
+    buildAutomationSchema,
     {
-      url: import_zod14.z.string().describe("Publicly accessible URL of the media file"),
-      name: import_zod14.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
-      mediaType: import_zod14.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (default: audio)"),
-      sourceLanguage: import_zod14.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
-      folderId: import_zod14.z.string().optional().describe("Folder ID to place the media in"),
-      tags: import_zod14.z.string().optional().describe("Comma-separated tags")
+      title: "Build Automation",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async (args2) => {
+      const { name, trigger, steps, automationId, description, isActive, orTriggers } = args2;
+      const createdFolders = [];
+      const dataFlowFilterFields = [];
+      try {
+        let folders = null;
+        let fields = null;
+        const getFolders = async () => folders ?? (folders = await loadFolders(api));
+        const getFields = async () => fields ?? (fields = await loadFields(api));
+        const buildTrigger = async (spec, allowWebhook) => {
+          const on = String(spec.on ?? "");
+          if (on === "media_analyzed") {
+            const refs = spec.folders ?? [];
+            if (!refs.length) throw new Error("media_analyzed trigger requires `folders` (names or ids)");
+            const folderIds = [];
+            for (const ref of refs) folderIds.push(await resolveFolder(api, String(ref), await getFolders(), createdFolders));
+            return { type: "folders", provider: "speak", app: "speak", triggerSlug: "media_analyzed", folderIds };
+          }
+          if (on === "inbound_webhook") {
+            if (!allowWebhook) throw new Error("inbound_webhook cannot be used as an Or-trigger \u2014 make it the primary trigger");
+            const t = { type: "folders", provider: "speak", app: "speak", triggerSlug: "inbound_webhook", folderIds: [] };
+            if (spec.webhookId) t.webhookId = spec.webhookId;
+            if (spec.childKey) t.childKey = spec.childKey;
+            return t;
+          }
+          if (on === "field_updated") {
+            const watch = spec.watchFields ?? [];
+            if (!watch.length) throw new Error("field_updated trigger requires `watchFields`: [{ field, values? }]");
+            const fieldList = await getFields();
+            const values = [];
+            const fieldValueMatches = [];
+            for (const w of watch) {
+              const fieldId = resolveField(String(w.field), fieldList);
+              values.push(fieldId);
+              if (Array.isArray(w.values) && w.values.length) {
+                fieldValueMatches.push({ fieldId, values: w.values.map(String) });
+              }
+            }
+            const t = { type: "folders", provider: "speak", app: "speak", triggerSlug: "field_updated", folderIds: [], values };
+            if (fieldValueMatches.length) t.fieldValueMatches = fieldValueMatches;
+            if (spec.matchLogic === "AND") t.fieldMatchLogic = "AND";
+            return t;
+          }
+          throw new Error(`Unknown trigger \`on\`: "${on}". Use media_analyzed, inbound_webhook, or field_updated.`);
+        };
+        const isWebhookAutomation = trigger.on === "inbound_webhook";
+        const buildRules = async (rules, flowing2, isFilterStep) => {
+          const out = [];
+          for (const r of rules) {
+            let field = String(r.field ?? "");
+            if (flowing2 === "media" && !CANONICAL_FILTER_FIELDS.has(field) && !field.includes(".")) {
+              field = resolveField(field, await getFields());
+            } else if (isFilterStep && flowing2 === "data" && !CANONICAL_FILTER_FIELDS.has(field)) {
+              dataFlowFilterFields.push(field);
+            }
+            const op = String(r.op ?? "eq");
+            const rule = { field, op };
+            if (r.value !== void 0) {
+              rule.value = (op === "gt" || op === "lt") && Number.isFinite(Number(r.value)) ? Number(r.value) : r.value;
+            }
+            out.push(rule);
+          }
+          return out;
+        };
+        const wireSteps = [];
+        let lastBranchStepId = null;
+        let flowing = isWebhookAutomation ? "data" : "media";
+        for (let i = 0; i < steps.length; i++) {
+          const spec = steps[i];
+          const stepId = `s${i + 1}`;
+          const doType = String(spec.do ?? "");
+          const step = { stepId };
+          if (spec.runWhen === "true" || spec.runWhen === "false") {
+            if (!lastBranchStepId) throw new Error(`Step ${i + 1}: runWhen requires an earlier branch step`);
+            step.branch = spec.runWhen;
+            step.dependsOn = [lastBranchStepId];
+          }
+          if (doType === "filter" || doType === "branch") {
+            step.stepType = doType === "filter" ? "filter" : "condition";
+            const block = {
+              logic: spec.logic === "OR" ? "OR" : "AND",
+              rules: await buildRules(spec.rules ?? [], flowing, doType === "filter")
+            };
+            step[doType === "filter" ? "filter" : "condition"] = block;
+            if (doType === "branch") lastBranchStepId = stepId;
+          } else if (doType === "upload") {
+            if (!spec.source) throw new Error(`Step ${i + 1} (upload): \`source\` is required (URL or payload.<path>)`);
+            const upload = {
+              sourceMode: "url",
+              sourceUrl: tokenize(spec.source),
+              // Always defer until the uploaded media is PROCESSED so downstream
+              // steps (ai_chat, translate) see the transcript — the web canvas
+              // hardcodes this too.
+              waitForProcessing: true
+            };
+            if (spec.name) upload.name = tokenize(spec.name);
+            if (spec.language) upload.language = tokenize(spec.language);
+            if (spec.folderFromPayload) {
+              const rawKey = String(spec.folderFromPayload);
+              const sourceKey = rawKey.includes("{{") ? rawKey : `{{trigger.payload.${rawKey.startsWith("payload.") ? rawKey.slice("payload.".length) : rawKey}}}`;
+              upload.folderRouting = {
+                mode: "dynamic",
+                sourceKey,
+                onNoMatch: spec.onNoFolderMatch === "default" ? "default" : "create"
+              };
+              if (spec.folder) upload.folderId = await resolveFolder(api, String(spec.folder), await getFolders(), createdFolders);
+            } else {
+              if (!spec.folder) throw new Error(`Step ${i + 1} (upload): provide \`folder\` (name or id) or \`folderFromPayload\``);
+              upload.folderId = await resolveFolder(api, String(spec.folder), await getFolders(), createdFolders);
+            }
+            if (spec.mapFields && typeof spec.mapFields === "object") {
+              const fieldList = await getFields();
+              const fieldsMap = {};
+              for (const [ref, value] of Object.entries(spec.mapFields)) {
+                if (value !== null && typeof value === "object") {
+                  throw new Error(`Step ${i + 1} (upload): mapFields["${ref}"] must be a string or number, not an object`);
+                }
+                fieldsMap[resolveField(ref, fieldList)] = tokenize(String(value));
+              }
+              if (Object.keys(fieldsMap).length) upload.fieldsMap = fieldsMap;
+            }
+            step.stepType = "speak-upload";
+            step.speakUpload = upload;
+            flowing = "media";
+          } else if (doType === "ai_chat") {
+            const hasSaveToFields = Array.isArray(spec.saveToFields) && spec.saveToFields.length > 0;
+            if (!spec.prompt && !hasSaveToFields) {
+              throw new Error(`Step ${i + 1} (ai_chat): provide \`prompt\`, \`saveToFields\`, or both`);
+            }
+            const magicPrompt = { prompt: spec.prompt ?? "", assistantType: "general" };
+            if (spec.title) magicPrompt.title = spec.title;
+            if (spec.model) magicPrompt.modelId = spec.model;
+            if (spec.analyse || spec.analyze) {
+              const analysis = String(spec.analyse ?? spec.analyze);
+              if (!["transcript", "audio", "video"].includes(analysis)) {
+                throw new Error(
+                  `Step ${i + 1} (ai_chat): analyse must be "transcript", "audio" or "video", got "${analysis}"`
+                );
+              }
+              if (analysis !== "transcript") magicPrompt.analysisInput = analysis;
+            }
+            if (Array.isArray(spec.saveToFields) && spec.saveToFields.length) {
+              if (spec.saveToFields.length > 10) {
+                throw new Error(`Step ${i + 1} (ai_chat): saveToFields supports at most 10 fields`);
+              }
+              const fieldList = await getFields();
+              magicPrompt.fieldIds = spec.saveToFields.map((ref) => resolveField(String(ref), fieldList));
+            }
+            step.stepType = "magic-prompt";
+            step.magicPrompt = magicPrompt;
+            flowing = "insight";
+          } else if (doType === "translate") {
+            if (!spec.language) throw new Error(`Step ${i + 1} (translate): \`language\` is required (e.g. "es-ES")`);
+            step.stepType = "translation";
+            step.translation = { targetLanguage: spec.language };
+            flowing = "media";
+          } else if (doType === "notify") {
+            if (!spec.message) throw new Error(`Step ${i + 1} (notify): \`message\` is required`);
+            const channel = spec.channel === void 0 ? "in_app" : String(spec.channel);
+            if (!["in_app", "email", "slack"].includes(channel)) {
+              throw new Error(`Step ${i + 1} (notify): channel must be "in_app", "email", or "slack" (got "${channel}")`);
+            }
+            const notify = { channel, message: tokenize(spec.message) };
+            if (spec.target) notify.target = String(spec.target);
+            step.stepType = "notify";
+            step.notify = notify;
+            flowing = "data";
+          } else if (doType === "call_webhook") {
+            if (!spec.url) throw new Error(`Step ${i + 1} (call_webhook): \`url\` is required`);
+            const method = spec.method === void 0 ? "POST" : String(spec.method).toUpperCase();
+            if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+              throw new Error(`Step ${i + 1} (call_webhook): method must be GET, POST, PUT, PATCH, or DELETE (got "${spec.method}")`);
+            }
+            const outbound = {
+              url: tokenize(spec.url),
+              method
+            };
+            if (spec.headers && typeof spec.headers === "object") outbound.headers = spec.headers;
+            if (spec.body !== void 0) {
+              outbound.bodyTemplate = typeof spec.body === "string" ? tokenize(spec.body) : spec.body;
+            }
+            step.stepType = "outbound-webhook";
+            step.outboundWebhook = outbound;
+            flowing = "data";
+          } else {
+            throw new Error(
+              `Step ${i + 1}: unknown \`do\`: "${doType}". Use filter, branch, upload, ai_chat, translate, notify, or call_webhook.`
+            );
+          }
+          wireSteps.push(step);
+        }
+        const body = {
+          name,
+          trigger: await buildTrigger(trigger, true),
+          steps: wireSteps
+        };
+        if (description) body.description = description;
+        if (isActive !== void 0) body.isActive = isActive;
+        if (orTriggers?.length) {
+          const entries = [];
+          for (const spec of orTriggers) entries.push(await buildTrigger(spec, false));
+          body.triggers = entries;
+        }
+        if (wireSteps.some((s) => {
+          const input = s?.magicPrompt?.analysisInput;
+          return input === "audio" || input === "video";
+        }) && await multimodalCapability(api) === "disabled") {
+          return {
+            content: [{ type: "text", text: `Error: ${MULTIMODAL_DISABLED_MESSAGE}` }],
+            isError: true
+          };
+        }
+        const result = automationId ? await api.put(`/v1/automations/${automationId}`, body) : await api.post("/v1/automations/", body);
+        const resolvedId = unwrapData(result.data)?.automationId ?? automationId;
+        const response = {
+          ...typeof result.data === "object" ? result.data : { data: result.data }
+        };
+        if (createdFolders.length) response.createdFolders = createdFolders;
+        if (isWebhookAutomation && resolvedId) {
+          try {
+            const resolved = await resolveAutomationInboundWebhook(api, resolvedId);
+            if (resolved.webhookId) {
+              response.inboundWebhook = await fetchInboundWebhookInfo(api, resolved.webhookId, resolved.childKey);
+            }
+          } catch {
+          }
+        }
+        return {
+          content: [{ type: "text", text: JSON.stringify(response, null, 2) }]
+        };
+      } catch (err) {
+        let message = formatAxiosError(err);
+        if (dataFlowFilterFields.length && message.includes("fieldIds do not belong")) {
+          message += `
+
+Likely cause: this server rejects filter rules on webhook payload fields (${dataFlowFilterFields.join(", ")}) at publish time (known server-side validation gap). Workarounds: move the filter AFTER the upload step and filter on media/custom fields instead, or filter in the sending system before it posts to the webhook.`;
+        }
+        return {
+          content: [{ type: "text", text: `Error: ${message}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "upload_and_analyze",
+    "Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar), which Speak resolves to the underlying media automatically. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts. (Vimeo links are not yet supported.)",
+    {
+      url: import_zod15.z.string().describe("Direct/public media file URL, or a shareable social/video page link (e.g. an Instagram reel, TikTok, YouTube, or X post URL) \u2014 page links are resolved to the underlying media server-side. Pass the URL the user gave you as-is."),
+      name: import_zod15.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
+      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (default: audio)"),
+      sourceLanguage: import_zod15.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
+      folderId: import_zod15.z.string().optional().describe("Folder ID to place the media in"),
+      tags: import_zod15.z.string().optional().describe("Comma-separated tags")
     },
     {
       title: "Upload and Analyze Media",
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (params) => {
       try {
@@ -3916,7 +5449,8 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       }
     }
   );
-  server.tool(
+  registerSpeakTool(
+    server,
     "upload_local_file",
     [
       "Upload a local file to Speak AI for transcription and analysis.",
@@ -3925,19 +5459,19 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       "After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights."
     ].join(" "),
     {
-      filePath: import_zod14.z.string().describe("Absolute path to the local audio or video file"),
-      name: import_zod14.z.string().optional().describe("Display name (defaults to filename)"),
-      mediaType: import_zod14.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (auto-detected from extension if omitted)"),
-      sourceLanguage: import_zod14.z.string().optional().describe("BCP-47 language code (e.g., 'en-US')"),
-      folderId: import_zod14.z.string().optional().describe("Folder ID to place the media in"),
-      tags: import_zod14.z.string().optional().describe("Comma-separated tags")
+      filePath: import_zod15.z.string().describe("Absolute path to the local audio or video file"),
+      name: import_zod15.z.string().optional().describe("Display name (defaults to filename)"),
+      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (auto-detected from extension if omitted)"),
+      sourceLanguage: import_zod15.z.string().optional().describe("BCP-47 language code (e.g., 'en-US')"),
+      folderId: import_zod15.z.string().optional().describe("Folder ID to place the media in"),
+      tags: import_zod15.z.string().optional().describe("Comma-separated tags")
     },
     {
       title: "Upload Local File",
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (params) => {
       try {
@@ -3956,8 +5490,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
           params: { isVideo, filename, mimeType }
         });
         const signedData = signedRes.data?.data;
-        const uploadUrl = signedData?.signedUrl ?? signedData?.url;
-        const s3Key = signedData?.key ?? signedData?.s3Key;
+        const uploadUrl = signedData?.preSignedUrl ?? signedData?.signedUrl ?? signedData?.url;
         if (!uploadUrl) {
           return {
             content: [{ type: "text", text: `Error: Could not get signed upload URL.
@@ -3977,10 +5510,9 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
         const createBody = {
           name: params.name ?? filename,
           url: uploadUrl.split("?")[0],
-          // S3 URL without query params
+          // S3 URL without query params; server re-signs via CloudFront
           mediaType
         };
-        if (s3Key) createBody.s3Key = s3Key;
         if (params.sourceLanguage) createBody.sourceLanguage = params.sourceLanguage;
         if (params.folderId) createBody.folderId = params.folderId;
         if (params.tags) createBody.tags = params.tags;
@@ -4011,16 +5543,975 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
     }
   );
 }
-var import_zod14, fs, path2;
+var import_zod15, fs, path2, CANONICAL_FILTER_FIELDS, ID_PATTERN, TRIGGER_SPEC_DESCRIPTION, STEP_SPEC_DESCRIPTION, buildAutomationSchema;
 var init_workflows = __esm({
   "src/tools/workflows.ts"() {
     "use strict";
-    import_zod14 = require("zod");
+    import_zod15 = require("zod");
+    init_helpers();
     init_client();
     init_dist();
     fs = __toESM(require("fs"));
     path2 = __toESM(require("path"));
     init_media_utils();
+    init_capabilities();
+    init_inbound_webhook_utils();
+    CANONICAL_FILTER_FIELDS = /* @__PURE__ */ new Set([
+      "name",
+      "duration",
+      "sourceLanguage",
+      "tags",
+      "transcript",
+      "speakers",
+      "answer",
+      // server-side aliases
+      "title",
+      "language",
+      "speakersCount"
+    ]);
+    ID_PATTERN = /^[0-9a-f]{12}$/;
+    TRIGGER_SPEC_DESCRIPTION = 'What starts the automation. Object with:\n- on (required): "media_analyzed" | "inbound_webhook" | "field_updated"\n- folders: array of folder names or ids (required for media_analyzed; missing folders are created)\n- childKey: dot-path narrowing the webhook payload root, e.g. "data" (inbound_webhook only)\n- webhookId: reuse a webhook from provision_inbound_webhook (inbound_webhook only; omit to auto-provision)\n- watchFields: array of { field: name-or-id, values?: string[] } (required for field_updated \u2014 fires when the field changes; values restricts to specific new values)\n- matchLogic: "AND"|"OR" for combining multiple watchFields value matches (default OR)';
+    STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match. Fields: media flows use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; webhook payloads use payload paths like "contact.status". Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic? } \u2014 like filter but routes instead of stopping; later steps with runWhen: "true"|"false" only run on that outcome. NOTE: branch routing requires the server\'s DAG runner (feature-flagged); when it is off, steps run in order and runWhen markers are ignored \u2014 prefer filter for guaranteed gating\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default), analyse?: "transcript" (default) | "audio" | "video" \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see the screen; on a video file "audio" extracts the audio track first. Premium: requires the account\'s audio/video analysis opt-in and costs credits per hour of media }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nSteps may also set runWhen (after a branch step). Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
+    buildAutomationSchema = {
+      name: import_zod15.z.string().min(1).max(150).describe("Display name for the automation"),
+      trigger: import_zod15.z.record(import_zod15.z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
+      steps: import_zod15.z.array(import_zod15.z.record(import_zod15.z.unknown())).min(1).max(20).describe(STEP_SPEC_DESCRIPTION),
+      automationId: import_zod15.z.string().optional().describe("Update this existing automation instead of creating a new one (full replace)"),
+      description: import_zod15.z.string().max(1e3).optional().describe("Optional description"),
+      isActive: import_zod15.z.boolean().optional().describe("Whether the automation is active (default true)"),
+      orTriggers: import_zod15.z.array(import_zod15.z.record(import_zod15.z.unknown())).max(10).optional().describe(
+        'Additional "Or" triggers (same shape as trigger, but inbound_webhook is not allowed here). The automation runs when ANY trigger fires.'
+      )
+    };
+  }
+});
+
+// src/tools/users.ts
+var users_exports = {};
+__export(users_exports, {
+  register: () => register15
+});
+function register15(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_users",
+    "List the users (members) in the workspace/company, with their ids, names, emails, and permissions. Use the returned _id values when assigning members to user groups.",
+    {
+      filterName: import_zod16.z.string().optional().describe(
+        'Search text. Plain text matches first/last name or email; prefix with "email:" or "name:" to scope, e.g. "email:jane@acme.com".'
+      ),
+      sortBy: import_zod16.z.string().optional().describe('Sort expression "field:asc" or "field:desc", e.g. "createdAt:desc", "email:asc"'),
+      page: import_zod16.z.number().int().min(0).optional().describe("0-based page index (default 0)"),
+      pageSize: import_zod16.z.number().int().min(1).max(200).optional().describe("Results per page (default 50)")
+    },
+    {
+      title: "List Users",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/admin/users", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_user_groups",
+    "List all user groups in the company. Each group includes its members (hydrated names/emails) and member ids. Use this to discover group ids and current membership before updating or deleting a group.",
+    {},
+    {
+      title: "List User Groups",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/admin/usergroup");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_user_group",
+    "Create a new user group and assign members. Member ids come from list_users. Fails with a 409 if a group with the same name already exists in the company.",
+    {
+      description: import_zod16.z.string().min(1).describe("Group name"),
+      users: import_zod16.z.array(import_zod16.z.string().min(1)).default([]).describe("User _id strings to add as members (fetch via list_users)")
+    },
+    {
+      title: "Create User Group",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/admin/usergroup", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_user_group",
+    "Update a user group's name and member list. NOTE: the users array is a FULL REPLACEMENT, not a delta \u2014 any member id you omit is removed from the group. Fetch the current members with list_user_groups first and send the complete list.",
+    {
+      _id: import_zod16.z.string().min(1).describe("Group _id to update (from list_user_groups)"),
+      description: import_zod16.z.string().min(1).describe("New group name"),
+      users: import_zod16.z.array(import_zod16.z.string().min(1)).describe("Full replacement list of member _id strings (omitted users are removed)")
+    },
+    {
+      title: "Update User Group",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.put("/v1/admin/usergroup", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_user_group",
+    "Delete a user group. This removes the group only; it does not delete the users themselves.",
+    {
+      id: import_zod16.z.string().min(1).describe("Group _id to delete (from list_user_groups)")
+    },
+    {
+      title: "Delete User Group",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ id }) => {
+      try {
+        const result = await api.delete(`/v1/admin/usergroup/${id}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+}
+var import_zod16;
+var init_users = __esm({
+  "src/tools/users.ts"() {
+    "use strict";
+    import_zod16 = require("zod");
+    init_helpers();
+    init_client();
+  }
+});
+
+// src/tools/dashboard-widgets.ts
+function defaultWidgetConfig(type) {
+  switch (type) {
+    case "narrative":
+      return { focus: "Summarize the key takeaways from this data." };
+    case "stat-cards":
+      return {
+        tiles: [
+          { metric: { kind: "builtin", name: "mediaCount" }, label: "Media files" },
+          { metric: { kind: "builtin", name: "totalDuration" }, label: "Total duration" },
+          { metric: { kind: "builtin", name: "wordCount" }, label: "Total words" },
+          { metric: { kind: "builtin", name: "speakerCount" }, label: "Unique speakers" }
+        ]
+      };
+    case "metric-chart":
+      return {
+        mark: "bar",
+        metric: { kind: "builtin", name: "mediaCount" },
+        groupBy: { kind: "folder" }
+      };
+    case "table":
+      return {
+        rowsAre: "groups",
+        groupBy: { kind: "folder" },
+        columns: [
+          { header: "Recordings", metric: { kind: "builtin", name: "mediaCount" } },
+          { header: "Duration", metric: { kind: "builtin", name: "totalDuration" } }
+        ],
+        sort: { column: "Recordings", dir: "desc" }
+      };
+    case "comparison":
+      return {
+        dimension: "folder",
+        a: {},
+        b: {},
+        metrics: [{ kind: "builtin", name: "mediaCount" }]
+      };
+    case "field-distribution":
+      throw new Error(
+        'field-distribution requires config.fieldName (a custom field NAME \u2014 not id \u2014 from list_fields), plus measure ("count" | "percent") and chartType ("bar" | "donut").'
+      );
+    case "sentiment-trend":
+      return { granularity: "week" };
+    case "themes":
+      return { limit: 10 };
+    case "people":
+      return { metrics: [{ kind: "builtin", name: "mediaCount" }], limit: 10 };
+    case "team-activity":
+      return { metrics: ["uploads", "minutes", "lastActive"] };
+    case "notes":
+      return { content: "Add notes or context for this dashboard." };
+  }
+}
+function buildDashboardWidgets(items, sections = []) {
+  for (const item of items) {
+    if (item.id !== void 0 && !KEBAB_ID.test(item.id)) {
+      throw new Error(
+        `widget id "${item.id}" must be kebab-case (lowercase letters, digits, single dashes)`
+      );
+    }
+  }
+  const widgets = items.map((item) => makeWidget(item));
+  const referenced = new Set(sections.flatMap((s) => s.widgetIds));
+  const known = new Set(widgets.map((w) => w.id));
+  for (const wid of referenced) {
+    if (!known.has(wid)) {
+      throw new Error(
+        `section widgetIds reference unknown widget id "${wid}". Give each sectioned widget an explicit kebab-case \`id\` and list that id in the section.`
+      );
+    }
+  }
+  const sectionOf = /* @__PURE__ */ new Map();
+  sections.forEach((s, i) => s.widgetIds.forEach((wid) => sectionOf.set(wid, i)));
+  const groups = [widgets.filter((w) => !sectionOf.has(w.id))];
+  sections.forEach(
+    (_, i) => groups.push(widgets.filter((w) => sectionOf.get(w.id) === i))
+  );
+  for (const group of groups) {
+    layoutGroup(group);
+  }
+  return widgets;
+}
+function layoutGroup(group) {
+  let y = group.reduce(
+    (bottom, w) => isAutoLayout(w) ? bottom : Math.max(bottom, w.layout.y + w.layout.h),
+    0
+  );
+  let rowX = 0;
+  let rowH = 0;
+  for (const widget of group) {
+    if (!isAutoLayout(widget)) continue;
+    const meta = WIDGET_META[widget.type];
+    const full = meta.w >= GRID_COLS;
+    if (full) {
+      if (rowX !== 0) {
+        y += rowH;
+        rowX = 0;
+        rowH = 0;
+      }
+      widget.layout = { x: 0, y, w: meta.w, h: meta.h };
+      y += meta.h;
+      continue;
+    }
+    if (rowX + meta.w > GRID_COLS) {
+      y += rowH;
+      rowX = 0;
+      rowH = 0;
+    }
+    widget.layout = { x: rowX, y, w: meta.w, h: meta.h };
+    rowX += meta.w;
+    rowH = Math.max(rowH, meta.h);
+    if (rowX >= GRID_COLS) {
+      y += rowH;
+      rowX = 0;
+      rowH = 0;
+    }
+  }
+}
+function isAutoLayout(widget) {
+  return widget.layout.w === 0;
+}
+function makeWidget(item) {
+  const meta = WIDGET_META[item.type];
+  const widget = {
+    id: item.id ?? (0, import_crypto.randomUUID)(),
+    type: item.type,
+    title: item.title ?? meta.titleDefault,
+    config: item.config ?? defaultWidgetConfig(item.type),
+    layout: item.layout ? { x: item.layout.x, y: item.layout.y, w: item.layout.w, h: item.layout.h } : { ...AUTO_LAYOUT }
+  };
+  if (item.binding && Object.keys(item.binding).length > 0) {
+    widget.binding = item.binding;
+  }
+  return widget;
+}
+var import_crypto, GRID_COLS, WIDGET_TYPES, DATE_RANGE_PRESETS, WIDGET_META, KEBAB_ID, AUTO_LAYOUT, WIDGET_CATALOG, SPEC_VOCABULARY, DESIGN_RULES, DASHBOARD_EXAMPLES;
+var init_dashboard_widgets = __esm({
+  "src/tools/dashboard-widgets.ts"() {
+    "use strict";
+    import_crypto = require("crypto");
+    GRID_COLS = 12;
+    WIDGET_TYPES = [
+      "narrative",
+      "stat-cards",
+      "metric-chart",
+      "table",
+      "comparison",
+      "field-distribution",
+      "sentiment-trend",
+      "themes",
+      "people",
+      "team-activity",
+      "notes"
+    ];
+    DATE_RANGE_PRESETS = [
+      "last7days",
+      "last30days",
+      "last3months",
+      "yearToDate",
+      "allTime"
+    ];
+    WIDGET_META = {
+      narrative: { w: GRID_COLS, h: 3, titleDefault: "Insights" },
+      "stat-cards": { w: GRID_COLS, h: 3, titleDefault: "Usage overview" },
+      "metric-chart": { w: 6, h: 4, titleDefault: "Metric chart" },
+      table: { w: GRID_COLS, h: 4, titleDefault: "Table" },
+      comparison: { w: 6, h: 3, titleDefault: "Comparison" },
+      "field-distribution": { w: 6, h: 4, titleDefault: "Field breakdown" },
+      "sentiment-trend": { w: 6, h: 4, titleDefault: "Sentiment over time" },
+      themes: { w: 6, h: 4, titleDefault: "Themes" },
+      people: { w: 6, h: 4, titleDefault: "People" },
+      "team-activity": { w: 6, h: 4, titleDefault: "Team activity" },
+      notes: { w: GRID_COLS, h: 2, titleDefault: "Note" }
+    };
+    KEBAB_ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+    AUTO_LAYOUT = { x: 0, y: 0, w: 0, h: 0 };
+    WIDGET_CATALOG = [
+      {
+        type: "narrative",
+        purpose: "AI-written insight narrative for the scope (full width).",
+        config: 'focus: string (1-400 chars) \u2014 what the narrative should analyse, e.g. "Summarize the key objections raised in these calls." The server generates the text.'
+      },
+      {
+        type: "stat-cards",
+        purpose: "Headline stat tiles for the scope (full width).",
+        config: "tiles: Array<{ metric: Metric, label: string (<=40), caption?: string (<=80), thresholds?: Threshold[] }> (1-6 tiles). See metricGrammar for the Metric shape."
+      },
+      {
+        type: "metric-chart",
+        purpose: "The chart workhorse: one metric, optionally grouped and split into series.",
+        config: 'mark: "line" | "bar" | "area" | "donut" | "stacked-bar"; metric: Metric; groupBy?: GroupBy; series?: GroupBy (2nd dimension, e.g. one line per person); sort?: "value-desc" | "value-asc" | "label"; limit?: number (1-100); thresholds?: Threshold[]'
+      },
+      {
+        type: "table",
+        purpose: "Tabular records or grouped aggregates (full width).",
+        config: 'rowsAre: "records" | "groups"; groupBy?: GroupBy (required when rowsAre="groups", forbidden when "records"); columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); searchable?: boolean; rowClick?: "openMedia" | "none"'
+      },
+      {
+        type: "comparison",
+        purpose: "Side-by-side A/B comparison of the same metrics across two scopes.",
+        config: 'dimension: "folder" | "time" | "fieldValue"; a: Binding; b: Binding (the two sides \u2014 see binding; {} inherits the dashboard scope); metrics: Metric[] (1-6)'
+      },
+      {
+        type: "field-distribution",
+        purpose: "Value-frequency breakdown for one custom field.",
+        config: 'fieldName: string \u2014 the custom field NAME (not id) from list_fields; measure: "count" | "percent"; chartType: "bar" | "donut". All three keys are required.'
+      },
+      {
+        type: "sentiment-trend",
+        purpose: "Sentiment over time.",
+        config: 'granularity: "day" | "week" | "month" (required)'
+      },
+      {
+        type: "themes",
+        purpose: "Dominant theme clusters.",
+        config: "limit: number (1-50, required)"
+      },
+      {
+        type: "people",
+        purpose: "Speaker/people breakdown ranked by metrics.",
+        config: "metrics: Metric[] (1-6, required); limit: number (1-100, required)"
+      },
+      {
+        type: "team-activity",
+        purpose: `Activity by team member. ONLY valid when the effective source is {type:"team"} (dashboard source or the widget's binding.source).`,
+        config: 'metrics: Array<"uploads" | "minutes" | "meetings" | "chatUsage" | "lastActive"> (1-5, required)'
+      },
+      {
+        type: "notes",
+        purpose: "Free-text note/context block (full width).",
+        config: "content: string (1-4000 chars, required)"
+      }
+    ];
+    SPEC_VOCABULARY = {
+      metricGrammar: {
+        builtin: '{ kind: "builtin", name: "mediaCount" | "totalDuration" | "avgSentiment" | "speakerCount" | "wordCount", filter?: Filter }',
+        field: '{ kind: "field", fieldName: string (custom field NAME from list_fields), agg: "sum" | "avg" | "min" | "max" | "median" | "count" | "countDistinct", filter?: Filter } \u2014 sum/avg/median/min/max require a number or currency field',
+        expr: '{ kind: "expr", expr: <one of the four ops>, filter?: Filter }. Ops (operands are builtin/field metrics, never nested exprs): { op: "ratio", numerator: Metric, denominator: Metric } | { op: "diff", a: Metric, b: Metric } | { op: "delta", metric: Metric, over: "first-to-last" | "prev-period" } | { op: "rank", metric: Metric, direction: "desc" | "asc" }'
+      },
+      groupBy: '{ kind: "field", fieldName } (non-date fields) | { kind: "time", fieldName, granularity: "record" | "day" | "week" | "month" | "quarter" } (date/datetime fields only) | { kind: "folder" } | { kind: "speaker" }',
+      binding: "Per-widget scope override, set as `binding` on any widget (omit a key to inherit the dashboard's value): { source?: Source, dateRange?: { preset }, filter?: Filter }",
+      filter: 'Predicate tree: { field, op: "eq" | "neq" | "in" | "gt" | "gte" | "lt" | "lte" | "exists" | "notExists", value? } (op "in" takes an array value; "exists"/"notExists" take none) \u2014 or { and: Filter[] } / { or: Filter[] } (1-10 branches, max depth 5)',
+      thresholds: 'Color bands for stat tiles, chart marks, and table columns (max 8): { when: { op: "gte" | "gt" | "lt" | "lte", value: number } | { op: "between", value: [low, high] }, status: "good" | "warn" | "critical" | "neutral", label?: string (<=40) }',
+      source: 'Dashboard data source: { type: "folders", folderIds: string[] (1-50) } | { type: "team" } | { type: "workspace" }',
+      dateRangePresets: DATE_RANGE_PRESETS,
+      sections: "Optional named groups of widgets rendered as tabs/sections (max 12): { id: kebab-case string, title: string (<=24), icon: kebab-case lucide icon name, widgetIds: string[] (<=24) }. Widget ids in sections must match explicit `id`s you set on the widgets; a widget may appear in at most one section; widgets in no section form the implicit Overview group."
+    };
+    DESIGN_RULES = [
+      "Lead with a narrative widget: on a new dashboard, make it the first widget of the first section \u2014 it is the headline insight.",
+      'Sections group widgets by the QUESTION they answer (e.g. "How is pipeline trending?"), not by widget type.',
+      "Layout must never overlap within a section; side-by-side is x:0,w:6 and x:6,w:6, and y restarts at 0 in each section. Omit `layout` and the auto-layout guarantees this \u2014 only pass explicit layout when you need a non-default arrangement.",
+      "Don't pad \u2014 every widget earns its place. Aim for 4-16 widgets on a full build.",
+      "If something can't be computed by the widget catalog, put it in a narrative widget's focus instead of faking it with the wrong widget."
+    ];
+    DASHBOARD_EXAMPLES = [
+      {
+        name: "Sales calls overview",
+        payload: {
+          title: "Customer Calls Overview",
+          description: "Volume, sentiment, and themes for closed-won calls",
+          source: { type: "folders", folderIds: ["<folderId>"] },
+          dateRange: { preset: "last30days" },
+          widgets: [
+            { type: "narrative", config: { focus: "Summarize the key wins and objections in these calls." } },
+            { type: "stat-cards" },
+            {
+              type: "metric-chart",
+              title: "Calls per week",
+              config: {
+                mark: "line",
+                metric: { kind: "builtin", name: "mediaCount" },
+                groupBy: { kind: "time", fieldName: "createdAt", granularity: "week" }
+              }
+            },
+            {
+              type: "field-distribution",
+              title: "Deals by stage",
+              config: { fieldName: "Stage", measure: "count", chartType: "bar" }
+            },
+            { type: "themes", config: { limit: 10 } },
+            { type: "sentiment-trend", config: { granularity: "week" } }
+          ]
+        }
+      },
+      {
+        name: "Sectioned revenue dashboard (explicit widget ids + sections)",
+        payload: {
+          title: "Deal Metrics",
+          source: { type: "workspace" },
+          dateRange: { preset: "last3months" },
+          widgets: [
+            {
+              id: "pipeline-stats",
+              type: "stat-cards",
+              title: "Pipeline",
+              config: {
+                tiles: [
+                  { metric: { kind: "field", fieldName: "Deal Size", agg: "sum" }, label: "Total pipeline" },
+                  { metric: { kind: "field", fieldName: "Deal Size", agg: "max" }, label: "Largest deal" },
+                  {
+                    metric: {
+                      kind: "expr",
+                      expr: {
+                        op: "ratio",
+                        numerator: { kind: "field", fieldName: "Deal Size", agg: "sum" },
+                        denominator: { kind: "builtin", name: "mediaCount" }
+                      }
+                    },
+                    label: "Revenue per call",
+                    thresholds: [{ when: { op: "gte", value: 5e3 }, status: "good" }]
+                  }
+                ]
+              }
+            },
+            {
+              id: "deals-table",
+              type: "table",
+              title: "Deals by folder",
+              config: {
+                rowsAre: "groups",
+                groupBy: { kind: "folder" },
+                columns: [
+                  { header: "Calls", metric: { kind: "builtin", name: "mediaCount" } },
+                  { header: "Pipeline", metric: { kind: "field", fieldName: "Deal Size", agg: "sum" } }
+                ],
+                sort: { column: "Pipeline", dir: "desc" }
+              }
+            },
+            {
+              id: "emea-vs-na",
+              type: "comparison",
+              title: "EMEA vs NA",
+              config: {
+                dimension: "folder",
+                a: { source: { type: "folders", folderIds: ["<emeaFolderId>"] } },
+                b: { source: { type: "folders", folderIds: ["<naFolderId>"] } },
+                metrics: [{ kind: "builtin", name: "mediaCount" }]
+              }
+            }
+          ],
+          sections: [
+            { id: "revenue", title: "Revenue", icon: "dollar-sign", widgetIds: ["pipeline-stats", "deals-table"] },
+            { id: "regions", title: "Regions", icon: "globe", widgetIds: ["emea-vs-na"] }
+          ]
+        }
+      }
+    ];
+  }
+});
+
+// src/tools/dashboards.ts
+var dashboards_exports = {};
+__export(dashboards_exports, {
+  register: () => register16
+});
+function buildSource(source) {
+  if (source.type === "folders") {
+    if (!source.folderIds?.length) {
+      throw new Error('source.type "folders" requires source.folderIds (1-50 folder ids)');
+    }
+    return { type: "folders", folderIds: source.folderIds };
+  }
+  return { type: source.type };
+}
+function buildSpec(input) {
+  const sections = input.sections ?? [];
+  const spec = {
+    title: input.title,
+    source: buildSource(input.source ?? { type: "workspace" }),
+    dateRange: input.dateRange ?? { preset: "last30days" },
+    sections,
+    widgets: buildDashboardWidgets(input.widgets ?? [], sections)
+  };
+  if (input.description !== void 0) spec.description = input.description;
+  return spec;
+}
+function pickMetadata(body) {
+  const out = {};
+  if (body.icon !== void 0) out.icon = body.icon;
+  if (body.assignTo !== void 0) out.assignTo = body.assignTo;
+  if (body.filters !== void 0) out.filters = body.filters;
+  if (body.isDefault !== void 0) out.isDefault = body.isDefault;
+  return out;
+}
+function register16(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_dashboards",
+    "List all analytics dashboards the caller can access, including share state and each dashboard's current `revision` (needed for update_dashboard).",
+    {},
+    {
+      title: "List Dashboards",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/dashboards");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_dashboard",
+    "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, and the current `revision` (pass that revision back to update_dashboard).",
+    {
+      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id (the dashboardId field from list_dashboards, not the Mongo _id)")
+    },
+    {
+      title: "Get Dashboard",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ dashboardId }) => {
+      try {
+        const result = await api.get(`/v1/dashboards/${dashboardId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_dashboard_widgets",
+    "Discovery + how-to helper for building and customizing dashboards. Returns every widget type with what it shows and the exact strict `config` shape it accepts, the shared vocabulary (metric grammar, groupBy, per-widget binding, filters, thresholds, sources, date-range presets, sections), design rules for composing a dashboard that reads well, two complete worked example payloads, and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
+    {},
+    {
+      title: "List Dashboard Widgets",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      const data = {
+        widgets: WIDGET_CATALOG,
+        vocabulary: SPEC_VOCABULARY,
+        designRules: DESIGN_RULES,
+        notes: [
+          "Pass widgets to create_dashboard as a simple ordered list; ids and grid layout are computed for you.",
+          "Widget configs are STRICT: unknown keys are rejected. Metrics reference custom fields by NAME (list_fields), not id.",
+          "field-distribution requires config.fieldName; most other widgets render on valid defaults with no config.",
+          `team-activity is only valid when the dashboard source (or the widget's binding.source) is {type:"team"}.`,
+          "To group widgets into sections, give each sectioned widget an explicit kebab-case `id` and reference those ids in sections[].widgetIds."
+        ],
+        managing: [
+          "To edit an existing dashboard, call get_dashboard, modify the widgets/sections, and send the FULL spec to update_dashboard including the `revision` you loaded (widgets are replaced, not merged).",
+          "To start from a working layout, duplicate_dashboard a good one, then update_dashboard to tweak it.",
+          "share_dashboard returns a public token; chain it after the dashboard is built."
+        ],
+        examples: DASHBOARD_EXAMPLES
+      };
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_dashboard",
+    `Create an analytics dashboard. Only \`title\` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad \u2014 every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples.`,
+    {
+      title: import_zod17.z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
+      ...specFields,
+      ...metadataFields
+    },
+    {
+      title: "Create Dashboard",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async ({ title, description, source, dateRange, sections, widgets, ...metadata }) => {
+      try {
+        const body = {
+          spec: buildSpec({
+            title,
+            description,
+            source,
+            dateRange,
+            sections,
+            widgets
+          }),
+          ...pickMetadata(metadata)
+        };
+        const result = await api.post("/v1/dashboards", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_dashboard",
+    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault \u2014 no spec fields, no revision needed. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision.",
+    {
+      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id"),
+      title: import_zod17.z.string().min(1).max(60).optional().describe("Dashboard name \u2014 required (with revision) when updating the spec"),
+      revision: import_zod17.z.number().int().nonnegative().optional().describe(
+        "The revision loaded from get_dashboard. Required for spec updates; mismatch returns a 409 conflict."
+      ),
+      ...specFields,
+      ...metadataFields
+    },
+    {
+      title: "Update Dashboard",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async ({ dashboardId, title, revision, description, source, dateRange, sections, widgets, ...metadata }) => {
+      try {
+        const specTouched = title !== void 0 || description !== void 0 || source !== void 0 || dateRange !== void 0 || sections !== void 0 || widgets !== void 0;
+        const body = pickMetadata(metadata);
+        if (specTouched) {
+          if (title === void 0 || revision === void 0) {
+            throw new Error(
+              "Spec updates replace the whole spec: call get_dashboard first, then pass the FULL spec (title, source, dateRange, sections, widgets) together with the loaded `revision`."
+            );
+          }
+          body.spec = {
+            ...buildSpec({
+              title,
+              description,
+              source,
+              dateRange,
+              sections,
+              widgets
+            }),
+            revision
+          };
+        }
+        if (Object.keys(body).length === 0) {
+          throw new Error("Nothing to update: pass spec fields (with revision) or metadata fields.");
+        }
+        const result = await api.put(`/v1/dashboards/${dashboardId}`, body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_dashboard",
+    "Soft-delete a dashboard. This also deactivates its public share link.",
+    {
+      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id to delete")
+    },
+    {
+      title: "Delete Dashboard",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ dashboardId }) => {
+      try {
+        const result = await api.delete(`/v1/dashboards/${dashboardId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "duplicate_dashboard",
+    'Clone an existing dashboard. The copy gets fresh widget ids, a "<name> (copy)" title, cleared sharing, and its revision reset to 0. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.',
+    {
+      dashboardId: import_zod17.z.string().min(1).describe("Source dashboard business id to clone")
+    },
+    {
+      title: "Duplicate Dashboard",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async ({ dashboardId }) => {
+      try {
+        const result = await api.post(`/v1/dashboards/${dashboardId}/duplicate`, {});
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "share_dashboard",
+    "Enable public sharing for a dashboard and return its share token + embed id. WARNING: by default the public link resolves with no passphrase, so anyone with the token can view the dashboard data until an owner sets one.",
+    {
+      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id to share")
+    },
+    {
+      title: "Share Dashboard",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: true
+    },
+    async ({ dashboardId }) => {
+      try {
+        const result = await api.put(`/v1/dashboards/${dashboardId}/share`, {});
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_dashboard_speakers_insight",
+    "Compute a speakers breakdown for a given folder scope, date range, and field filters. Standalone analytics \u2014 does not require a dashboard to exist.",
+    SPEAKERS_FILTER_SCHEMA,
+    {
+      title: "Get Dashboard Speakers Insight",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/dashboards/insights/speakers", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+}
+var import_zod17, FILTER_LIST_DESCRIPTION, widgetInputSchema, sectionInputSchema, sourceInputSchema, dateRangeInputSchema, metadataFields, specFields, SPEAKERS_FILTER_SCHEMA;
+var init_dashboards = __esm({
+  "src/tools/dashboards.ts"() {
+    "use strict";
+    import_zod17 = require("zod");
+    init_helpers();
+    init_client();
+    init_dashboard_widgets();
+    FILTER_LIST_DESCRIPTION = "Field filters. filters.filterList is an array of { fieldName, fieldOperator?, fieldValue?: string[], fieldCondition? }. Other keys pass through but only filterList is enforced.";
+    widgetInputSchema = import_zod17.z.object({
+      type: import_zod17.z.enum(WIDGET_TYPES).describe(
+        "Widget type: narrative | stat-cards | metric-chart | table | comparison | field-distribution | sentiment-trend | themes | people | team-activity | notes"
+      ),
+      id: import_zod17.z.string().max(64).optional().describe(
+        "Optional explicit widget id (kebab-case). Required if you reference the widget from sections[].widgetIds; auto-generated otherwise."
+      ),
+      title: import_zod17.z.string().min(1).max(40).optional().describe("Widget title, max 40 chars (defaults to a per-type label)"),
+      config: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
+        "Per-type config (STRICT \u2014 unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content. Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. Omit for a sensible valid default (except field-distribution, which needs fieldName)."
+      ),
+      binding: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
+        "Per-widget scope override: { source?, dateRange?: {preset}, filter? }. Omit any key to inherit the dashboard's value."
+      ),
+      layout: import_zod17.z.object({
+        x: import_zod17.z.number().int().min(0).max(11),
+        y: import_zod17.z.number().int().min(0).max(200),
+        w: import_zod17.z.number().int().min(1).max(12),
+        h: import_zod17.z.number().int().min(1).max(40)
+      }).optional().describe(
+        "Explicit 12-column grid position. Omit to auto-place two-per-row like the UI. Widgets must not overlap within a section group."
+      )
+    });
+    sectionInputSchema = import_zod17.z.object({
+      id: import_zod17.z.string().min(1).max(64).describe("Section id (kebab-case)"),
+      title: import_zod17.z.string().min(1).max(24).describe("Section title, max 24 chars"),
+      icon: import_zod17.z.string().min(1).max(40).describe('Kebab-case lucide icon name, e.g. "dollar-sign"'),
+      widgetIds: import_zod17.z.array(import_zod17.z.string().max(64)).max(24).describe("Widget ids in this section \u2014 must match explicit `id`s set on widgets[]")
+    });
+    sourceInputSchema = import_zod17.z.object({
+      type: import_zod17.z.enum(["folders", "team", "workspace"]).describe(
+        "folders = specific folder ids; team = the caller's team scope; workspace = everything accessible"
+      ),
+      folderIds: import_zod17.z.array(import_zod17.z.string().min(1).max(64)).min(1).max(50).optional().describe('Folder ids \u2014 required when type is "folders", forbidden otherwise')
+    }).describe(
+      'Data source: {type:"folders", folderIds:[...]} | {type:"team"} | {type:"workspace"}'
+    );
+    dateRangeInputSchema = import_zod17.z.object({
+      preset: import_zod17.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
+    }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
+    metadataFields = {
+      icon: import_zod17.z.string().max(200).optional().describe("Icon identifier"),
+      assignTo: import_zod17.z.array(import_zod17.z.string()).max(100).optional().describe('User ids, or group ids in the "<groupId> (G)" convention, to share view access with'),
+      filters: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
+      isDefault: import_zod17.z.boolean().optional().describe("Make this the company default dashboard")
+    };
+    specFields = {
+      description: import_zod17.z.string().max(280).optional().describe("Dashboard description, max 280 chars"),
+      source: sourceInputSchema.optional(),
+      dateRange: dateRangeInputSchema.optional(),
+      sections: import_zod17.z.array(sectionInputSchema).max(12).optional().describe(
+        "Optional named widget groups (tabs). Each references widgets by their explicit ids; widgets in no section form the implicit Overview group."
+      ),
+      widgets: import_zod17.z.array(widgetInputSchema).max(24).optional().describe(
+        "Widgets to place on the dashboard, in order (max 24). The MCP assigns ids and computes a tidy two-per-row grid layout matching the Speak UI unless you pass explicit id/layout."
+      )
+    };
+    SPEAKERS_FILTER_SCHEMA = {
+      folderScope: import_zod17.z.array(import_zod17.z.string().max(100)).max(100).optional().describe("Folder ids to scope to"),
+      startDate: import_zod17.z.string().optional().describe("ISO start date"),
+      endDate: import_zod17.z.string().optional().describe("ISO end date"),
+      filterList: import_zod17.z.array(
+        import_zod17.z.object({
+          fieldName: import_zod17.z.string().max(100),
+          fieldOperator: import_zod17.z.string().max(50).optional(),
+          fieldValue: import_zod17.z.array(import_zod17.z.string().max(500)).optional(),
+          fieldCondition: import_zod17.z.string().max(50).optional()
+        })
+      ).max(20).optional().describe("Field filter rules")
+    };
   }
 });
 
@@ -4052,6 +6543,8 @@ var init_tools = __esm({
     init_analytics();
     init_clips();
     init_workflows();
+    init_users();
+    init_dashboards();
     modules = [
       media_exports,
       text_exports,
@@ -4066,7 +6559,9 @@ var init_tools = __esm({
       webhooks_exports,
       analytics_exports,
       clips_exports,
-      workflows_exports
+      workflows_exports,
+      users_exports,
+      dashboards_exports
     ];
   }
 });
@@ -4183,8 +6678,8 @@ function registerPrompts(server) {
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
     {
-      url: import_zod15.z.string().describe("URL of the meeting recording"),
-      name: import_zod15.z.string().optional().describe("Meeting name (optional)")
+      url: import_zod18.z.string().describe("URL of the meeting recording \u2014 a direct file link or a shareable social/video link (resolved automatically)"),
+      name: import_zod18.z.string().optional().describe("Meeting name (optional)")
     },
     async ({ url, name }) => ({
       messages: [
@@ -4216,8 +6711,8 @@ function registerPrompts(server) {
     "research-across-media",
     "Search for themes, patterns, or topics across multiple recordings or your entire media library.",
     {
-      topic: import_zod15.z.string().describe("The topic, theme, or question to research"),
-      folder: import_zod15.z.string().optional().describe("Folder ID to scope the research (optional)")
+      topic: import_zod18.z.string().describe("The topic, theme, or question to research"),
+      folder: import_zod18.z.string().optional().describe("Folder ID to scope the research (optional)")
     },
     async ({ topic, folder }) => ({
       messages: [
@@ -4232,7 +6727,7 @@ function registerPrompts(server) {
               ``,
               `Steps:`,
               `1. Use search_media to find relevant media matching this topic`,
-              `2. For the most relevant results, use ask_magic_prompt with the matching mediaIds to ask: "${topic}"`,
+              `2. For the most relevant results, use ask_ai_chat with the matching mediaIds to ask: "${topic}"`,
               `3. Synthesize findings across all results:`,
               `   - Common themes and patterns`,
               `   - Notable quotes or data points`,
@@ -4250,8 +6745,8 @@ function registerPrompts(server) {
     "meeting-brief",
     "Prepare a brief from recent meetings \u2014 pull transcripts, extract decisions, and summarize open items.",
     {
-      days: import_zod15.z.string().optional().describe("Number of days to look back (default: 7)"),
-      folder: import_zod15.z.string().optional().describe("Folder ID to scope to (optional)")
+      days: import_zod18.z.string().optional().describe("Number of days to look back (default: 7)"),
+      folder: import_zod18.z.string().optional().describe("Folder ID to scope to (optional)")
     },
     async ({ days, folder }) => {
       const lookback = parseInt(days ?? "7");
@@ -4288,11 +6783,154 @@ function registerPrompts(server) {
     }
   );
 }
-var import_zod15;
+var import_zod18;
 var init_prompts = __esm({
   "src/prompts.ts"() {
     "use strict";
-    import_zod15 = require("zod");
+    import_zod18 = require("zod");
+  }
+});
+
+// src/tool-names.ts
+var tool_names_exports = {};
+__export(tool_names_exports, {
+  SPEAK_MCP_TOOL_NAMES: () => SPEAK_MCP_TOOL_NAMES
+});
+var SPEAK_MCP_TOOL_NAMES;
+var init_tool_names = __esm({
+  "src/tool-names.ts"() {
+    "use strict";
+    SPEAK_MCP_TOOL_NAMES = [
+      // analytics
+      "get_media_statistics",
+      // automations
+      "list_automations",
+      "list_automation_names",
+      "get_automation",
+      "get_automation_runs",
+      "create_automation",
+      "update_automation",
+      "toggle_automation_status",
+      "bulk_update_automation_status",
+      "bulk_assign_automation_folders",
+      "run_automations",
+      "delete_automation",
+      "list_automation_apps",
+      "list_automation_triggers",
+      "list_automation_actions",
+      // clips
+      "get_clips",
+      "create_clip",
+      "update_clip",
+      "delete_clip",
+      // embed
+      "create_embed",
+      "update_embed",
+      "check_embed",
+      "get_embed_iframe_url",
+      // exports
+      "export_media",
+      "export_multiple_media",
+      // fields
+      "list_fields",
+      "create_field",
+      "update_field",
+      "update_multiple_fields",
+      // folders
+      "list_folders",
+      "create_folder",
+      "update_folder",
+      "delete_folder",
+      "get_folder_info",
+      "clone_folder",
+      "get_folder_views",
+      "get_all_folder_views",
+      "create_folder_view",
+      "update_folder_view",
+      "clone_folder_view",
+      // media
+      "get_signed_upload_url",
+      "upload_media",
+      "get_media_status",
+      "get_media_insights",
+      "get_transcript",
+      "list_media",
+      "search_media",
+      "delete_media",
+      "update_media_metadata",
+      "toggle_media_favorite",
+      "reanalyze_media",
+      "get_captions",
+      "list_supported_languages",
+      "update_transcript_speakers",
+      "update_transcription",
+      "bulk_update_transcript_speakers",
+      "bulk_move_media",
+      // meeting
+      "list_meeting_events",
+      "schedule_meeting_event",
+      "remove_assistant_from_meeting",
+      "delete_scheduled_assistant",
+      "get_live_meeting_transcript",
+      // prompt
+      "ask_ai_chat",
+      "get_analysis_quote",
+      "list_prompts",
+      "get_favorite_prompts",
+      "toggle_prompt_favorite",
+      "get_chat_history",
+      "get_chat_messages",
+      "update_chat_title",
+      "delete_chat_message",
+      "submit_chat_feedback",
+      "retry_ai_chat",
+      "export_chat_answer",
+      "get_chat_statistics",
+      // recorder
+      "list_recorders",
+      "create_recorder",
+      "update_recorder_settings",
+      "update_recorder_questions",
+      "delete_recorder",
+      "generate_recorder_url",
+      "get_recorder_info",
+      "get_recorder_recordings",
+      "check_recorder_status",
+      "clone_recorder",
+      // text
+      "create_text_note",
+      "update_text_note",
+      "get_text_insight",
+      "reanalyze_text",
+      // webhooks
+      "list_webhooks",
+      "create_webhook",
+      "update_webhook",
+      "provision_inbound_webhook",
+      "get_inbound_webhook",
+      "get_webhook_attempts",
+      "delete_webhook",
+      // workflows (high-level wrappers around media + upload + automation tools)
+      "build_automation",
+      "upload_and_analyze",
+      "upload_local_file",
+      // users / team management
+      "list_users",
+      "list_user_groups",
+      "create_user_group",
+      "update_user_group",
+      "delete_user_group",
+      // dashboards
+      "list_dashboard_widgets",
+      "list_dashboards",
+      "get_dashboard",
+      "create_dashboard",
+      "update_dashboard",
+      "delete_dashboard",
+      "duplicate_dashboard",
+      "share_dashboard",
+      "get_dashboard_speakers_insight"
+    ];
   }
 });
 
@@ -4945,7 +7583,7 @@ function createCli() {
       process.exit(1);
     }
   });
-  program.command("chat-history").description("List past Magic Prompt conversations").option("--json", "Output raw JSON").action(async (opts) => {
+  program.command("chat-history").description("List past AI Chat conversations").option("--json", "Output raw JSON").action(async (opts) => {
     requireApiKey();
     const client = await getClient();
     try {
@@ -5063,7 +7701,7 @@ function createCli() {
       process.exit(1);
     }
   });
-  program.command("update").description("Update media metadata").argument("<mediaId>", "Media file ID to update").option("-n, --name <name>", "New display name").option("-d, --description <text>", "New description").option("--tags <tags...>", "New tags").option("-f, --folder <id>", "Move to folder ID").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
+  program.command("update").description("Update media metadata").argument("<mediaId>", "Media file ID to update").requiredOption("-n, --name <name>", "Display name (required by the API)").option("-d, --description <text>", "New description").option("--tags <tags...>", "New tags").option("-f, --folder <id>", "Move to folder ID").option("--json", "Output raw JSON").action(async (mediaId, opts) => {
     requireApiKey();
     const client = await getClient();
     try {
@@ -5120,13 +7758,19 @@ function createCli() {
       process.exit(1);
     }
   });
-  program.command("favorites").description("Toggle favorite status for a media file").argument("<mediaId>", "Media file ID").action(async (mediaId) => {
+  program.command("favorites").description("Mark or unmark a media file as a favorite").argument("<mediaId>", "Media file ID").option("--off", "Unmark as favorite (default: mark as favorite)").action(async (mediaId, opts) => {
     requireApiKey();
     const client = await getClient();
     try {
-      const res = await client.post("/v1/media/favorites", { mediaId });
+      const isFavorite = !opts.off;
+      const res = await client.post("/v1/media/favorites", {
+        mediaIds: [mediaId],
+        isFavorite
+      });
       const data = res.data?.data;
-      printSuccess(data?.message ?? `Favorite toggled for ${mediaId}`);
+      printSuccess(
+        data?.message ?? `${isFavorite ? "Favorited" : "Unfavorited"} ${mediaId}`
+      );
     } catch (err) {
       printError(err.response?.data?.message ?? err.message);
       process.exit(1);
@@ -5215,6 +7859,38 @@ function createCli() {
       process.exit(1);
     }
   });
+  program.command("list-meeting-events").description("List scheduled or completed meeting assistant events").option("-P, --platform <type>", "Filter by platform: zoom, googleMeet, microsoftTeams, webex (comma-separate for multiple)").option("-S, --status <status>", "Filter by meeting status (comma-separate for multiple)").option("-p, --page <n>", "Page number (0-based)", "0").option("-s, --page-size <n>", "Results per page", "20").option("--sort <field>", "Sort field", "startTime:desc").option("--json", "Output raw JSON").action(async (opts) => {
+    requireApiKey();
+    const client = await getClient();
+    try {
+      const params = {
+        page: parseInt(opts.page),
+        pageSize: parseInt(opts.pageSize),
+        sortBy: opts.sort
+      };
+      if (opts.platform) params.platformType = opts.platform;
+      if (opts.status) params.meetingStatus = opts.status;
+      const res = await client.get("/v1/meeting-assistant/events", { params });
+      const data = res.data?.data;
+      if (opts.json) {
+        printJson(data);
+        return;
+      }
+      const events = data?.events ?? [];
+      console.log(`Total: ${data?.totalCount ?? events.length}
+`);
+      printTable(events, [
+        { key: "meetingAssistantEventId", label: "Event ID", width: 24 },
+        { key: "title", label: "Title", width: 32 },
+        { key: "platform", label: "Platform", width: 16 },
+        { key: "currentStatus", label: "Status", width: 18 },
+        { key: "startTime", label: "Start", width: 20 }
+      ]);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
   program.command("schedule-meeting").description("Schedule AI assistant to join a meeting").argument("<url>", "Meeting URL (Zoom, Meet, Teams)").option("-t, --title <title>", "Meeting title").option("-d, --date <datetime>", "Meeting date/time (ISO 8601, omit to join now)").option("-l, --language <lang>", "Meeting language", "en-US").option("--json", "Output raw JSON").action(async (url, opts) => {
     requireApiKey();
     const client = await getClient();
@@ -5241,7 +7917,130 @@ function createCli() {
       process.exit(1);
     }
   });
+  program.command("live-transcript").description("Fetch new sentences from an in-progress or just-ended meeting").option("-e, --event-id <id>", "Meeting assistant event id (use `speakai-mcp list-meeting-events` to find it)").option("-m, --media-id <id>", "Media id (alternative to --event-id)").option("-s, --since-end-in-sec <seconds>", "nextCursor from previous call; omit on first call", parseFloat).option("--json", "Output raw JSON").action(async (opts) => {
+    requireApiKey();
+    const client = await getClient();
+    if (!opts.eventId && !opts.mediaId) {
+      printError("Provide --event-id or --media-id");
+      process.exit(1);
+    }
+    try {
+      let resolvedMediaId = opts.mediaId;
+      let meetingStatus = null;
+      let meetingName;
+      if (opts.eventId) {
+        const eventsRes = await client.get("/v1/meeting-assistant/events", {
+          params: { pageSize: 50, sortBy: "startTime:desc" }
+        });
+        const events = eventsRes.data?.data?.events ?? eventsRes.data?.events ?? [];
+        const event = events.find((e) => e.meetingAssistantEventId === opts.eventId);
+        if (!event) {
+          printError(`Meeting event not found: ${opts.eventId}`);
+          process.exit(1);
+        }
+        meetingStatus = event.currentStatus ?? null;
+        meetingName = event.title;
+        const mediaRef = event.mediaId;
+        resolvedMediaId = typeof mediaRef === "string" ? mediaRef : mediaRef?.mediaId;
+        if (!resolvedMediaId) {
+          printError("Meeting has no linked media yet \u2014 bot has not joined or started recording.");
+          process.exit(1);
+        }
+      }
+      const transcriptRes = await client.get(`/v1/media/transcript/${resolvedMediaId}`, {
+        params: Number.isFinite(opts.sinceEndInSec) ? { sinceEndInSec: opts.sinceEndInSec } : void 0
+      });
+      const data = transcriptRes.data?.data ?? transcriptRes.data ?? {};
+      const sentences = data?.insight?.transcript ?? [];
+      const maxEnd = sentences.reduce((m, s) => Math.max(m, s.instances?.[0]?.endInSec ?? 0), 0);
+      const nextCursor = sentences.length > 0 ? maxEnd : opts.sinceEndInSec ?? 0;
+      const payload = {
+        mediaId: resolvedMediaId,
+        name: data?.name ?? meetingName ?? null,
+        meetingStatus,
+        isLive: meetingStatus === "inCallRecording",
+        newSentences: sentences,
+        nextCursor
+      };
+      if (opts.json) {
+        printJson(payload);
+      } else {
+        console.log(`Meeting: ${payload.name ?? resolvedMediaId}`);
+        console.log(`Status: ${payload.meetingStatus ?? "unknown"} (isLive=${payload.isLive})`);
+        console.log(`New sentences: ${sentences.length} \u2022 nextCursor: ${nextCursor}`);
+        for (const s of sentences) {
+          console.log(`  [${s.speakerId ?? "?"}] ${s.text ?? ""}`);
+        }
+      }
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
+  async function loadToolHandlers() {
+    const client = await getClient();
+    const handlers = {};
+    const stub = {
+      registerTool: (name, _def, cb) => {
+        handlers[name] = cb;
+        return {};
+      }
+    };
+    const { registerAllTools: registerAllTools2 } = await Promise.resolve().then(() => (init_tools(), tools_exports));
+    registerAllTools2(stub, client);
+    return handlers;
+  }
+  program.command("tools").description("List every MCP tool callable via `call`").option("--json", "Output raw JSON").action(async (opts) => {
+    const { SPEAK_MCP_TOOL_NAMES: SPEAK_MCP_TOOL_NAMES2 } = await Promise.resolve().then(() => (init_tool_names(), tool_names_exports));
+    const names = [...SPEAK_MCP_TOOL_NAMES2].sort();
+    if (opts.json) {
+      printJson(names);
+    } else {
+      console.log(`${names.length} tools:
+`);
+      for (const n of names) console.log(`  ${n}`);
+    }
+  });
+  program.command("call").description("Call any MCP tool by name with JSON arguments").argument("<tool>", "Tool name (see `speakai-mcp tools`)").argument("[json]", "Arguments as a JSON object", "{}").action(async (tool, json) => {
+    requireApiKey();
+    let args2;
+    try {
+      args2 = JSON.parse(json);
+    } catch {
+      printError(`Invalid JSON arguments: ${json}`);
+      process.exit(1);
+      return;
+    }
+    const handlers = await loadToolHandlers();
+    const handler = handlers[tool];
+    if (!handler) {
+      printError(`Unknown tool "${tool}". Run "speakai-mcp tools" to list them.`);
+      process.exit(1);
+      return;
+    }
+    try {
+      const result = await handler(args2);
+      const text = result?.content?.find((c) => c.type === "text")?.text;
+      if (result?.isError) {
+        printError(text ?? "Tool call failed");
+        process.exit(1);
+        return;
+      }
+      const data = result?.structuredContent?.data ?? (text ? safeParse(text) : result);
+      printJson(data);
+    } catch (err) {
+      printError(err.response?.data?.message ?? err.message);
+      process.exit(1);
+    }
+  });
   return program;
+}
+function safeParse(text) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 var import_commander, import_readline;
 var init_cli = __esm({
@@ -5258,6 +8057,7 @@ var init_cli = __esm({
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
+  SPEAK_MCP_TOOL_NAMES: () => SPEAK_MCP_TOOL_NAMES,
   createSpeakClient: () => createSpeakClient,
   formatAxiosError: () => formatAxiosError,
   registerAllTools: () => registerAllTools,
@@ -5269,6 +8069,7 @@ init_tools();
 init_resources();
 init_prompts();
 init_client();
+init_tool_names();
 var args = process.argv.slice(2);
 var cliCommands = [
   "config",
@@ -5299,6 +8100,11 @@ var cliCommands = [
   "clips",
   "clip",
   "schedule-meeting",
+  "list-meeting-events",
+  "live-transcript",
+  "move",
+  "tools",
+  "call",
   "help"
 ];
 var isCliMode = args.length > 0 && (args[0].startsWith("-") || cliCommands.includes(args[0]));
@@ -5343,6 +8149,7 @@ if (isCliMode) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  SPEAK_MCP_TOOL_NAMES,
   createSpeakClient,
   formatAxiosError,
   registerAllTools,

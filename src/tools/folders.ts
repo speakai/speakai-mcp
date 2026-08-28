@@ -1,12 +1,13 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   // Folder Views
-  server.tool(
+  registerSpeakTool(server, 
     "get_all_folder_views",
     "Retrieve all saved views across all folders.",
     {},
@@ -19,7 +20,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async () => {
       try {
-        const result = await api.get("/v1/folders/views");
+        const result = await api.get("/v1/folder/views");
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -34,7 +35,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_folder_views",
     "Retrieve all saved views for a specific folder.",
     {
@@ -49,7 +50,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async ({ folderId }) => {
       try {
-        const result = await api.get(`/v1/folders/${folderId}/views`);
+        const result = await api.get(`/v1/folder/${folderId}/views`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -64,16 +65,30 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "create_folder_view",
-    "Create a new saved view for a folder with custom filters and display settings.",
+    "Create a new saved view for a folder with a custom set of display columns.",
     {
       folderId: z.string().min(1).describe("Unique identifier of the folder"),
-      name: z.string().optional().describe("Display name for the view"),
-      filters: z
-        .record(z.unknown())
+      name: z.string().describe("Display name for the view"),
+      isDefault: z
+        .boolean()
         .optional()
-        .describe("Filter configuration object"),
+        .describe("Whether this view is the folder's default view"),
+      columns: z
+        .array(
+          z.object({
+            fieldId: z
+              .string()
+              .optional()
+              .describe("Field ID this column maps to (omit for built-in columns)"),
+            name: z.string().describe("Column display name"),
+            type: z.string().describe("Column type — a FieldType or a default view column"),
+            definition: z.string().optional().describe("Optional column definition"),
+            order: z.number().describe("Column display order"),
+          }),
+        )
+        .describe("Ordered list of columns shown in the view"),
     },
     {
       title: "Create Folder View",
@@ -85,7 +100,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async ({ folderId, ...body }) => {
       try {
         const result = await api.post(
-          `/v1/folders/${folderId}/views`,
+          `/v1/folder/${folderId}/views`,
           body
         );
         return {
@@ -102,29 +117,40 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_folder_view",
-    "Update an existing saved view's name, filters, or display settings.",
+    "Update an existing saved view. Replaces the whole view, so `name`, `isDefault` and `columns` must all be supplied.",
     {
       folderId: z.string().min(1).describe("Unique identifier of the folder"),
       viewId: z.string().min(1).describe("Unique identifier of the view to update"),
-      name: z.string().optional().describe("New display name for the view"),
-      filters: z
-        .record(z.unknown())
-        .optional()
-        .describe("Updated filter configuration"),
+      name: z.string().describe("Display name for the view"),
+      isDefault: z.boolean().describe("Whether this view is the folder's default view"),
+      columns: z
+        .array(
+          z.object({
+            fieldId: z
+              .string()
+              .optional()
+              .describe("Field ID this column maps to (omit for built-in columns)"),
+            name: z.string().describe("Column display name"),
+            type: z.string().describe("Column type — a FieldType or a default view column"),
+            definition: z.string().optional().describe("Optional column definition"),
+            order: z.number().describe("Column display order"),
+          }),
+        )
+        .describe("Ordered list of columns shown in the view"),
     },
     {
       title: "Update Folder View",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
     async ({ folderId, viewId, ...body }) => {
       try {
         const result = await api.put(
-          `/v1/folders/${folderId}/views/${viewId}`,
+          `/v1/folder/${folderId}/views/${viewId}`,
           body
         );
         return {
@@ -141,11 +167,21 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "clone_folder_view",
-    "Duplicate an existing folder view.",
+    "Duplicate an existing folder view into a target folder.",
     {
+      sourceFolderId: z.string().min(1).describe("Folder that currently holds the view"),
+      targetFolderId: z
+        .string()
+        .min(1)
+        .describe("Folder to copy the view into (must differ from sourceFolderId)"),
       viewId: z.string().min(1).describe("Unique identifier of the view to clone"),
+      name: z.string().describe("Display name for the cloned view"),
+      isDefault: z
+        .boolean()
+        .optional()
+        .describe("Whether the cloned view becomes the target folder's default"),
     },
     {
       title: "Clone Folder View",
@@ -156,7 +192,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async (body) => {
       try {
-        const result = await api.post("/v1/folders/views/clone", body);
+        const result = await api.post("/v1/folder/views/clone", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -172,7 +208,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // Folders CRUD
-  server.tool(
+  registerSpeakTool(server, 
     "list_folders",
     "List all folders in the workspace with pagination and sorting.",
     {
@@ -207,7 +243,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "get_folder_info",
     "Get detailed information about a specific folder including its contents.",
     {
@@ -237,15 +273,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "create_folder",
     "Create a new folder in the workspace.",
     {
       name: z.string().min(1).describe("Display name for the new folder"),
-      parentFolderId: z
-        .string()
-        .optional()
-        .describe("ID of the parent folder for nesting"),
+      description: z.string().optional().describe("Optional folder description"),
     },
     {
       title: "Create Folder",
@@ -271,11 +304,21 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "clone_folder",
     "Duplicate an existing folder and all of its contents.",
     {
       folderId: z.string().min(1).describe("ID of the folder to clone"),
+      name: z.string().optional().describe("Name for the cloned folder"),
+      description: z.string().optional().describe("Description for the cloned folder"),
+      assignTo: z
+        .array(z.string())
+        .optional()
+        .describe("User IDs to assign the cloned folder to"),
+      isSaveDefaultView: z
+        .boolean()
+        .optional()
+        .describe("Whether to copy the source folder's default view"),
     },
     {
       title: "Clone Folder",
@@ -301,17 +344,18 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "update_folder",
-    "Update a folder's name or other properties.",
+    "Update a folder. `name` must always be supplied (the server replaces the folder config).",
     {
       folderId: z.string().min(1).describe("Unique identifier of the folder"),
-      name: z.string().optional().describe("New display name for the folder"),
+      name: z.string().describe("Display name for the folder"),
+      description: z.string().optional().describe("Optional folder description"),
     },
     {
       title: "Update Folder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
@@ -332,7 +376,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "delete_folder",
     "Permanently delete a folder. Media within the folder will be moved, not deleted.",
     {

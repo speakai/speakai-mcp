@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://mcp.speakai.co"><strong>Installation guide at mcp.speakai.co →</strong></a>
+  <a href="https://docs.speakai.co/mcp"><strong>Installation guide at docs.speakai.co/mcp →</strong></a>
 </p>
 
 <p align="center">
@@ -236,23 +236,24 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 **You shouldn't need to be technical to install this.** If anything is confusing or doesn't work:
 
 - Email [success@speakai.co](mailto:success@speakai.co) — we'll respond within 24 hours
-- [Book a demo with us](https://calendly.com/speak-ai/demo) and we'll set it up together
+- [Book a demo with us](https://calendly.com/speak-ai/demo?utm_source=mcp&utm_medium=readme&utm_campaign=booking-cta) and we'll set it up together
 
 ---
 
 ## What you can do once installed
 
-Speak AI ships 83 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 113 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
-| "Find customer interviews about pricing and group the feedback by theme" | `search_media`, `ask_magic_prompt` |
+| "Find customer interviews about pricing and group the feedback by theme" | `search_media`, `ask_ai_chat` |
 | "Summarize this week's meetings into decisions, owners, and risks" | `list_media`, `get_media_insights` |
-| "Pull action items from yesterday's call" | `get_media_insights`, `ask_magic_prompt` |
+| "Pull action items from yesterday's call" | `get_media_insights`, `ask_ai_chat` |
 | "Schedule the AI to join my 2pm Zoom" | `schedule_meeting_event` |
+| "Pull the live transcript from my current MS Teams meeting since last fetch" | `list_meeting_events`, `get_live_meeting_transcript` |
 | "Find a 30-second webinar highlight and export captions" | `create_clip`, `export_media` |
 | "Export the transcript as a PDF and captions as SRT" | `export_media` |
-| "Compare Q1 sales calls against Q2 sales calls and summarize changed objections" | `search_media`, `ask_magic_prompt` |
+| "Compare Q1 sales calls against Q2 sales calls and summarize changed objections" | `search_media`, `ask_ai_chat` |
 
 Full tool catalog is in the developer reference below.
 
@@ -271,7 +272,7 @@ Get a Speak AI API key at [app.speakai.co/developers/apikeys](https://app.speaka
 
 The `@speakai/mcp-server` npm package provides:
 
-- A CLI (`speakai-mcp`) for scripting and pipelines (28 commands).
+- A CLI (`speakai-mcp`) for scripting and pipelines (30 commands).
 - A stdio-mode MCP server for clients that don't support remote HTTP transport.
 - An auto-setup wizard that detects installed MCP clients and configures them.
 
@@ -393,20 +394,21 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (83)
+### MCP Tools (113)
 
 <details>
-<summary>Media (16 tools)</summary>
+<summary>Media (17 tools)</summary>
 
 | Tool | Description |
 |---|---|
 | `get_signed_upload_url` | Get a pre-signed S3 URL for direct file upload |
-| `upload_media` | Upload media from a public URL for transcription |
+| `upload_media` | Upload media from a URL — a direct/public file URL or a social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, …) resolved automatically. |
 | `upload_local_file` | Upload a local file directly from disk |
-| `upload_and_analyze` | Upload media and return its `media_id` immediately. Poll `get_media_status` until `processed`, then call `get_media_insights` for AI summaries. |
+| `upload_and_analyze` | Upload media from a URL (direct file or social/video link, resolved automatically) and return its `media_id` immediately. Poll `get_media_status` until `processed`, then call `get_media_insights` for AI summaries. |
 | `list_media` | List and search media files with filters, pagination, and optional inline data (transcripts, speakers, keywords) via `include` param |
 | `get_media_insights` | Get AI insights — topics, sentiment, summaries, action items |
 | `get_transcript` | Get full transcript with speaker labels and timestamps |
+| `update_transcription` | Edit the official transcript text of a media file by finding and replacing text |
 | `get_captions` | Get subtitle-formatted captions for a media file |
 | `update_transcript_speakers` | Rename speaker labels in a transcript |
 | `bulk_update_transcript_speakers` | Rename speaker labels across multiple media files in one call (max 500) |
@@ -420,13 +422,14 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Magic Prompt / AI Chat (12 tools)</summary>
+<summary>AI Chat (13 tools)</summary>
 
 | Tool | Description |
 |---|---|
-| `ask_magic_prompt` | Ask AI questions about media, folders, or your whole workspace |
-| `retry_magic_prompt` | Retry a failed or incomplete AI response |
-| `get_chat_history` | List recent Magic Prompt conversations |
+| `ask_ai_chat` | Ask AI questions about media, folders, or your whole workspace |
+| `get_analysis_quote` | Check if a file can be analysed as audio/video and what it costs |
+| `retry_ai_chat` | Retry a failed or incomplete AI Chat response |
+| `get_chat_history` | List recent AI Chat conversations |
 | `get_chat_messages` | Get full message history for conversations |
 | `delete_chat_message` | Delete a specific chat message |
 | `list_prompts` | List available AI prompt templates |
@@ -434,7 +437,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `toggle_prompt_favorite` | Mark or unmark a chat message as favorite |
 | `update_chat_title` | Rename a chat conversation |
 | `submit_chat_feedback` | Rate a chat response (thumbs up/down) |
-| `get_chat_statistics` | Get Magic Prompt usage statistics |
+| `get_chat_statistics` | Get AI Chat usage statistics |
 | `export_chat_answer` | Export a conversation or answer |
 
 </details>
@@ -477,15 +480,25 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Automations (5 tools)</summary>
+<summary>Automations (15 tools)</summary>
 
 | Tool | Description |
 |---|---|
-| `list_automations` | List automation rules |
-| `get_automation` | Get automation details |
-| `create_automation` | Create an automation rule |
-| `update_automation` | Update an automation |
+| `list_automations` | List automation rules with paging and filters |
+| `build_automation` | Create or update an automation from a friendly spec, without the wire format |
+| `list_automation_names` | List automations as lightweight name + id pairs |
+| `get_automation` | Get automation details (trigger + step graph) |
+| `get_automation_runs` | Get an automation's run history |
+| `create_automation` | Create an automation rule (V2 trigger + steps graph) |
+| `update_automation` | Update an automation (replaces trigger + steps) |
 | `toggle_automation_status` | Enable or disable an automation |
+| `bulk_update_automation_status` | Activate/deactivate multiple automations |
+| `bulk_assign_automation_folders` | Set folder scope for multiple automations |
+| `run_automations` | Manually run automations against media now |
+| `delete_automation` | Permanently delete an automation |
+| `list_automation_apps` | List catalog apps (native + integrations) |
+| `list_automation_triggers` | List catalog trigger types (optionally by app) |
+| `list_automation_actions` | List catalog action/step types (optionally by app) |
 
 </details>
 
@@ -514,11 +527,14 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Webhooks (4 tools)</summary>
+<summary>Webhooks (7 tools)</summary>
 
 | Tool | Description |
 |---|---|
 | `create_webhook` | Create a webhook for event notifications |
+| `provision_inbound_webhook` | Provision a standalone inbound webhook and get its public receive URL |
+| `get_inbound_webhook` | Get an inbound webhook's receive URL, sample payload, and trigger tokens |
+| `get_webhook_attempts` | Get the delivery log for an inbound webhook, with acknowledgement status |
 | `list_webhooks` | List all webhooks |
 | `update_webhook` | Update a webhook |
 | `delete_webhook` | Delete a webhook |
@@ -526,7 +542,37 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Meeting Assistant (4 tools)</summary>
+<summary>Users &amp; Teams (5 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `list_users` | List workspace members with ids, emails, and permissions |
+| `list_user_groups` | List user groups with hydrated members |
+| `create_user_group` | Create a user group and assign members |
+| `update_user_group` | Update a group's name and members (full replace) |
+| `delete_user_group` | Delete a user group |
+
+</details>
+
+<details>
+<summary>Dashboards (9 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `list_dashboard_widgets` | List widget types, their config keys, and an example payload |
+| `list_dashboards` | List analytics dashboards you can access |
+| `get_dashboard` | Get a dashboard's full config (widgets, filters, scope) |
+| `create_dashboard` | Create a dashboard with auto-laid-out widgets |
+| `update_dashboard` | Update a dashboard (partial; widgets are replaced) |
+| `delete_dashboard` | Soft-delete a dashboard and its share link |
+| `duplicate_dashboard` | Clone a dashboard with fresh widget ids |
+| `share_dashboard` | Enable public sharing and return the share token |
+| `get_dashboard_speakers_insight` | Speakers breakdown for a folder/date/filter scope |
+
+</details>
+
+<details>
+<summary>Meeting Assistant (5 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -534,6 +580,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `schedule_meeting_event` | Schedule AI assistant to join a meeting |
 | `remove_assistant_from_meeting` | Remove assistant from active meeting |
 | `delete_scheduled_assistant` | Cancel a scheduled meeting assistant |
+| `get_live_meeting_transcript` | Pull only the new sentences added to a live (or just-ended) meeting transcript since your previous call. Works on Zoom / Google Meet / MS Teams while the bot is recording. |
 
 </details>
 
@@ -636,7 +683,7 @@ Parameters: days (optional, default: 7), folder (optional)
 
 **Example:** "Use the meeting-brief prompt with days=14 to cover the last two weeks"
 
-### CLI (28 Commands)
+### CLI (30 Commands)
 
 Install globally and configure once:
 
@@ -682,7 +729,7 @@ npx @speakai/mcp-server config set-key
 | Command | Description |
 |---|---|
 | `ask <prompt>` | Ask AI about media, folders, or your whole workspace |
-| `chat-history` | List past Magic Prompt conversations |
+| `chat-history` | List past AI Chat conversations |
 | `search <query>` | Full-text search across transcripts and insights |
 
 #### Folders & Clips
@@ -701,7 +748,9 @@ npx @speakai/mcp-server config set-key
 |---|---|
 | `stats` | Show workspace media statistics |
 | `languages` | List supported transcription languages |
+| `list-meeting-events` | List scheduled/completed meeting events (`--platform`, `--status`, `--sort`) |
 | `schedule-meeting <url>` | Schedule AI assistant to join a meeting |
+| `live-transcript` | Fetch new sentences from an in-progress meeting (`--event-id` or `--media-id`, `--since-end-in-sec`) |
 | `create-text <name>` | Create a text note (`--text` or pipe via stdin) |
 
 #### CLI options
@@ -779,7 +828,7 @@ You: "What themes came up across all our customer interviews this month?"
 
 AI: Let me search your media library.
     → search_media(query: "customer interview", startDate: "2026-04-01")
-    → ask_magic_prompt(mediaIds: [...], prompt: "What are the recurring themes?")
+    → ask_ai_chat(mediaIds: [...], prompt: "What are the recurring themes?")
 
     Across 12 interviews, the top themes were:
     1. Pricing sensitivity (mentioned in 8/12)
@@ -799,7 +848,7 @@ AI: → schedule_meeting_event(meetingUrl, scheduledAt: "2026-04-25T14:00:00Z")
 
     [After the meeting]
     → get_media_insights(mediaId)
-    → ask_magic_prompt(mediaIds: [...], prompt: "List all action items with owners")
+    → ask_ai_chat(mediaIds: [...], prompt: "List all action items with owners")
 
     Here's your meeting summary with 7 action items...
 ```
@@ -919,7 +968,7 @@ npm run build  # Production build
 
 ## Resources
 
-- [mcp.speakai.co](https://mcp.speakai.co) — installation walkthrough with screenshots and video
+- [docs.speakai.co/mcp](https://docs.speakai.co/mcp) — installation walkthrough with screenshots and video
 - [Speak AI Platform](https://app.speakai.co) — main product
 - [API Documentation](https://docs.speakai.co)
 - [MCP Protocol](https://modelcontextprotocol.io)

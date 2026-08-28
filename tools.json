@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 83,
+  "totalTools": 113,
   "categories": [
     {
       "id": "media",
@@ -9,6 +9,15 @@
       "iconKey": "media",
       "shortDescription": "Upload audio or video, fetch transcripts, get AI insights, organize, favorite, export.",
       "tools": [
+        {
+          "name": "update_transcription",
+          "title": "Update Transcription Text",
+          "description": "Edit the official transcript text of a single media file by finding and replacing text. Replaces every occurrence of the original text with the replacement (leave replacement empty to delete the text) and reports how many occurrences were replaced. Use update_transcript_speakers to rename speaker labels instead.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
         {
           "name": "get_signed_upload_url",
           "title": "Get Signed Upload URL",
@@ -21,7 +30,7 @@
         {
           "name": "upload_media",
           "title": "Upload Media from URL",
-          "description": "Upload media from a publicly accessible URL. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
+          "description": "Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar) which Speak resolves to the underlying media automatically. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file. (Vimeo links are not yet supported.)",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -34,21 +43,21 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "upload_and_analyze",
           "title": "Upload and Analyze Media",
-          "description": "Upload media and return media_id immediately. After this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
+          "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar), which Speak resolves to the underlying media automatically. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts. (Vimeo links are not yet supported.)",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "list_media",
           "title": "List Media Files",
-          "description": "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_magic_prompt. For deep full-text search across transcripts, use search_media instead.",
+          "description": "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_ai_chat. For deep full-text search across transcripts, use search_media instead.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -57,7 +66,7 @@
         {
           "name": "get_media_insights",
           "title": "Get Media Insights",
-          "description": "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_magic_prompt instead.",
+          "description": "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -66,7 +75,7 @@
         {
           "name": "get_transcript",
           "title": "Get Transcript",
-          "description": "Retrieve the full transcript for a processed media file with speaker labels and timestamps. The media must be in 'processed' state. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
+          "description": "Retrieve the full transcript for a media file with speaker labels and timestamps. Works on processed media and also returns the partial, in-progress transcript while a meeting bot is still recording (LIVE_TRANSCRIPT state). To fetch only the new sentences added since your previous call during a live meeting, use get_live_meeting_transcript instead. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -84,7 +93,7 @@
         {
           "name": "update_transcript_speakers",
           "title": "Rename Transcript Speakers",
-          "description": "Update or rename speaker labels in a media transcript.",
+          "description": "Update or rename speaker labels in a single media transcript. Call get_transcript first to read the speaker list — a speaker's label is whatever it was last renamed to, not a fixed value, so ids from an earlier turn may be stale. Renaming a speaker to a name another speaker already has is refused as a collision. Re-sending a rename that has already been applied is a safe no-op, so do not retry a call that reported success.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -93,7 +102,7 @@
         {
           "name": "bulk_update_transcript_speakers",
           "title": "Bulk Rename Speakers Across Files",
-          "description": "Update or rename speaker labels across multiple media files in a single operation. Applies the same speaker mappings to every specified media file. Use this instead of calling update_transcript_speakers repeatedly when renaming speakers across a project or folder.",
+          "description": "Normalise speaker names that are ALREADY correct across multiple media files — for example changing \"Frederik S.\" to \"Frederik\" everywhere. Applies the same mapping to every specified media file. NOT a way to identify a speaker across a project: neither the numeric id nor a default label such as \"Speaker 1\" refers to the same person in different files, because speakers are numbered per file in order of appearance. Renaming \"Speaker 1\" across many files will label a different person in each one. Identify the speakers in each file first (get_transcript, or an identify-speakers automation), then use this tool only to tidy up naming that is already correct. Match by the speaker's current LABEL, not by numeric id. A file whose speakers do not match the mapping is left unchanged and reported as failed. Re-sending a mapping that has already been applied is a safe no-op, so do not retry a call that reported success.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -113,7 +122,7 @@
           "title": "Update Media Metadata",
           "description": "Update metadata fields (name, description, tags, status) for an existing media file.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -129,7 +138,7 @@
         {
           "name": "toggle_media_favorite",
           "title": "Toggle Media Favorite",
-          "description": "Mark or unmark a media file as a favorite for quick access.",
+          "description": "Mark or unmark media files as favorites for quick access.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -138,7 +147,7 @@
         {
           "name": "reanalyze_media",
           "title": "Re-analyze Media",
-          "description": "Re-run AI analysis on a media file using the latest models. Use this after Speak AI has updated its analysis capabilities or if the original analysis was incomplete.",
+          "description": "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -157,24 +166,24 @@
     },
     {
       "id": "magic-prompt",
-      "name": "Ask AI (Magic Prompt)",
+      "name": "Ask AI Chat",
       "iconKey": "magic-prompt",
       "shortDescription": "Run AI prompts across one file, a folder, or your whole workspace. Save favorites.",
       "tools": [
         {
-          "name": "ask_magic_prompt",
-          "title": "Ask AI About Your Recordings",
-          "description": "Ask an AI-powered question about your media using Speak AI's Magic Prompt. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions.",
-          "readOnlyHint": true,
+          "name": "ask_ai_chat",
+          "title": "Ask AI Chat",
+          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone. That is a premium feature and costs credits per hour of media — call get_analysis_quote first to check eligibility and price.",
+          "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": false
         },
         {
-          "name": "retry_magic_prompt",
-          "title": "Retry AI Question",
-          "description": "Retry a failed or incomplete Magic Prompt response. Use when a previous ask_magic_prompt call returned an error or incomplete answer.",
-          "readOnlyHint": true,
+          "name": "retry_ai_chat",
+          "title": "Retry AI Chat",
+          "description": "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
+          "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": false
@@ -182,7 +191,7 @@
         {
           "name": "get_chat_history",
           "title": "Get Chat History",
-          "description": "Get a list of recent Magic Prompt conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_magic_prompt or retrieve full messages via get_chat_messages.",
+          "description": "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_ai_chat or retrieve full messages via get_chat_messages.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -209,7 +218,7 @@
         {
           "name": "list_prompts",
           "title": "List Prompt Templates",
-          "description": "List all available Magic Prompt templates. Use template IDs with ask_magic_prompt's assistantTemplateId parameter when using assistantType 'custom'.",
+          "description": "List all available AI Chat templates. Use template IDs with ask_ai_chat's assistantTemplateId parameter when using assistantType 'custom'.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -254,7 +263,7 @@
         {
           "name": "get_chat_statistics",
           "title": "Get Chat Statistics",
-          "description": "Get usage statistics for Magic Prompt / chat. Returns metrics on prompt usage, optionally filtered by date range.",
+          "description": "Get usage statistics for AI Chat / chat. Returns metrics on prompt usage, optionally filtered by date range.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -263,7 +272,16 @@
         {
           "name": "export_chat_answer",
           "title": "Export Chat Answer",
-          "description": "Export a Magic Prompt conversation or answer. Useful for saving AI-generated summaries, reports, or analysis results.",
+          "description": "Export a specific AI Chat answer. Useful for saving AI-generated summaries, reports, or analysis results.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_analysis_quote",
+          "title": "Get Analysis Quote",
+          "description": "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason — an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -280,7 +298,7 @@
         {
           "name": "search_media",
           "title": "Search Media Library",
-          "description": "Deep search across all media transcripts, insights, and metadata. Returns matching media with sentiment data, tags, and content excerpts. Use this to find specific topics, keywords, or themes across your entire library. For filtering by media type, folder, tags, or speakers, use the filterList parameter. Results are scoped by date range — defaults to current month if not specified.",
+          "description": "Deep search across all media transcripts, insights, and metadata. Returns matching media with sentiment data, tags, and content excerpts. Use this to find specific topics, keywords, or themes across your entire library. For filtering by media type, folder, tags, or speakers, use the filterList parameter. Results are scoped by date range — defaults to current year if not specified.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -351,9 +369,9 @@
         {
           "name": "update_folder",
           "title": "Update Folder",
-          "description": "Update a folder's name or other properties.",
+          "description": "Update a folder. `name` must always be supplied (the server replaces the folder config).",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -387,7 +405,7 @@
         {
           "name": "create_folder_view",
           "title": "Create Folder View",
-          "description": "Create a new saved view for a folder with custom filters and display settings.",
+          "description": "Create a new saved view for a folder with a custom set of display columns.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -396,16 +414,16 @@
         {
           "name": "update_folder_view",
           "title": "Update Folder View",
-          "description": "Update an existing saved view's name, filters, or display settings.",
+          "description": "Update an existing saved view. Replaces the whole view, so `name`, `isDefault` and `columns` must all be supplied.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
         {
           "name": "clone_folder_view",
           "title": "Clone Folder View",
-          "description": "Duplicate an existing folder view.",
+          "description": "Duplicate an existing folder view into a target folder.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -466,17 +484,17 @@
         },
         {
           "name": "generate_recorder_url",
-          "title": "Generate Recorder Share URL",
-          "description": "Generate a shareable public URL for a recorder/survey.",
+          "title": "Get Recorder Share URL",
+          "description": "Retrieve the existing shareable URL and embed iframe code for a recorder/survey. Read-only lookup: returns the recorder's pre-existing share link; it does not create, modify, or publish anything.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "update_recorder_settings",
           "title": "Update Recorder Settings",
-          "description": "Update configuration settings for a recorder (branding, permissions, etc.).",
+          "description": "Update configuration settings for a recorder (branding, capture options, etc.). `name` must always be supplied.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -485,7 +503,7 @@
         {
           "name": "update_recorder_questions",
           "title": "Update Recorder Questions",
-          "description": "Update the survey questions for a recorder.",
+          "description": "Update the survey questions and respondent-info settings for a recorder.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -512,15 +530,15 @@
       ]
     },
     {
-      "id": "clips-exports",
-      "name": "Clips & exports",
+      "id": "clips",
+      "name": "Clips",
       "iconKey": "clips-exports",
       "shortDescription": "Highlight clips from any time range. Export PDF, DOCX, SRT, VTT, TXT, CSV.",
       "tools": [
         {
           "name": "create_clip",
           "title": "Create Highlight Clip",
-          "description": "Create a highlight clip from one or more media files by specifying time ranges. Clips are processed asynchronously (states: pending, processing, processed, failed) — use get_clips to check status. Maximum total clip duration is 30 minutes. Use multiple timeRanges to stitch segments from different media files together.",
+          "description": "Create a highlight clip from one or more media files by specifying time ranges. Clips are processed asynchronously (states: queued, processing, completed, failed) — use get_clips to check status. Maximum total clip duration is 30 minutes. Use multiple timeRanges to stitch segments from different media files together.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -552,23 +570,31 @@
           "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
-        },
+        }
+      ]
+    },
+    {
+      "id": "exports",
+      "name": "Exports",
+      "iconKey": "clips-exports",
+      "shortDescription": "Highlight clips from any time range. Export PDF, DOCX, SRT, VTT, TXT, CSV.",
+      "tools": [
         {
           "name": "export_media",
           "title": "Export Media Transcript",
           "description": "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
-          "readOnlyHint": true,
+          "readOnlyHint": false,
           "destructiveHint": false,
-          "idempotentHint": true,
+          "idempotentHint": false,
           "openWorldHint": false
         },
         {
           "name": "export_multiple_media",
           "title": "Export Multiple Media Files",
           "description": "Export multiple media files at once, optionally merged into a single file.",
-          "readOnlyHint": true,
+          "readOnlyHint": false,
           "destructiveHint": false,
-          "idempotentHint": true,
+          "idempotentHint": false,
           "openWorldHint": false
         }
       ]
@@ -614,19 +640,28 @@
           "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": true
+        },
+        {
+          "name": "get_live_meeting_transcript",
+          "title": "Get Live Meeting Transcript",
+          "description": "Fetch new sentences from an in-progress or just-ended meeting transcript. Identify the meeting via meetingAssistantEventId (preferred) or mediaId. Pass back the previous response's nextCursor as sinceEndInSec to receive only what's been added since.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
         }
       ]
     },
     {
-      "id": "automations-webhooks",
-      "name": "Automations & webhooks",
+      "id": "automations",
+      "name": "Automations",
       "iconKey": "automations-webhooks",
       "shortDescription": "Trigger actions on new recordings. Send events to your own backend.",
       "tools": [
         {
           "name": "list_automations",
           "title": "List Automations",
-          "description": "List all automation rules configured in the workspace.",
+          "description": "List automation rules in the workspace, with paging and filters.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -635,7 +670,7 @@
         {
           "name": "get_automation",
           "title": "Get Automation Details",
-          "description": "Get detailed information about a specific automation rule.",
+          "description": "Get detailed information about a specific automation rule, including its trigger and step graph.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -644,30 +679,128 @@
         {
           "name": "create_automation",
           "title": "Create Automation",
-          "description": "Create a new automation rule for automatic media processing workflows.",
+          "description": "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) — recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_automation",
           "title": "Update Automation",
-          "description": "Update an existing automation rule's configuration.",
+          "description": "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes.",
           "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        {
+          "name": "toggle_automation_status",
+          "title": "Toggle Automation Status",
+          "description": "Toggle an automation rule between active and inactive. This flips the current state — call get_automation first if you need to know which way it will flip.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "list_automation_names",
+          "title": "List Automation Names",
+          "description": "List automations as lightweight { name, id } pairs — useful for pickers without fetching full configs.",
+          "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
           "openWorldHint": false
         },
         {
-          "name": "toggle_automation_status",
-          "title": "Enable or Disable Automation",
-          "description": "Enable or disable an automation rule.",
-          "readOnlyHint": false,
+          "name": "get_automation_runs",
+          "title": "Get Automation Runs",
+          "description": "Get the run history (executions) for an automation, with paging and optional status filter.",
+          "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
           "openWorldHint": false
         },
+        {
+          "name": "bulk_update_automation_status",
+          "title": "Bulk Update Automation Status",
+          "description": "Activate or deactivate multiple automations at once.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        {
+          "name": "bulk_assign_automation_folders",
+          "title": "Bulk Assign Automation Folders",
+          "description": "Set the folder scope for multiple automations at once. Pass an empty folderIds array to remove the folder restriction (run on all folders).",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        {
+          "name": "run_automations",
+          "title": "Run Automations",
+          "description": "Manually run one or more automations against one or more media items now (outside the normal trigger).",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "delete_automation",
+          "title": "Delete Automation",
+          "description": "Permanently delete an automation rule.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_automation_apps",
+          "title": "List Automation Apps",
+          "description": "List the apps available in the automation catalog (e.g. Speak native + connected integrations). Use to discover what triggers/actions exist before building an automation.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_automation_triggers",
+          "title": "List Automation Triggers",
+          "description": "List the trigger types available in the automation catalog. Optionally filter by app.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_automation_actions",
+          "title": "List Automation Actions",
+          "description": "List the action/step types available in the automation catalog. Optionally filter by app.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "build_automation",
+          "title": "Build Automation",
+          "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. Prefer this over create_automation unless you need raw control.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        }
+      ]
+    },
+    {
+      "id": "webhooks",
+      "name": "Webhooks",
+      "iconKey": "automations-webhooks",
+      "shortDescription": "Trigger actions on new recordings. Send events to your own backend.",
+      "tools": [
         {
           "name": "create_webhook",
           "title": "Create Webhook",
@@ -689,7 +822,7 @@
         {
           "name": "update_webhook",
           "title": "Update Webhook",
-          "description": "Update an existing webhook's URL or subscribed events.",
+          "description": "Update an existing webhook. This replaces the webhook config, so `callbackUrl` must always be supplied.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -703,12 +836,39 @@
           "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": true
+        },
+        {
+          "name": "provision_inbound_webhook",
+          "title": "Provision Inbound Webhook",
+          "description": "Provision a standalone inbound webhook and get its public receive URL (inboundUrl) BEFORE creating an automation. Webhook-first flow: provision, send a test payload to the URL (append ?test=1 to only capture a sample without running anything), inspect mappable payload paths with get_inbound_webhook, then pass the webhookId as trigger.webhookId to create_automation.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "get_inbound_webhook",
+          "title": "Get Inbound Webhook",
+          "description": "Get an inbound webhook's public receive URL, captured sample payload, and the ready-to-paste {{trigger.payload.*}} tokens for mapping payload values into automation steps (speak-upload name/sourceUrl, fieldsMap custom-field values, notify/outbound-webhook templates). Pass either the webhookId or the automationId of an inbound-webhook automation. If no sample has been captured yet, send a test payload to the inboundUrl first (append ?test=1 to capture without running the automation).",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_webhook_attempts",
+          "title": "Get Webhook Attempts",
+          "description": "Get the delivery log for an inbound webhook: each received request with its HTTP acknowledgement status (200 = sample captured, 202 = accepted and run started, 401/403 = rejected) and the automation run it started. Use get_automation_runs for the run outcomes themselves.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
         }
       ]
     },
     {
-      "id": "text-fields",
-      "name": "Text notes & custom fields",
+      "id": "text-notes",
+      "name": "Text notes",
       "iconKey": "text-fields",
       "shortDescription": "Standalone AI-analyzed text notes plus custom fields you can tag any media file with.",
       "tools": [
@@ -719,7 +879,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_text_insight",
@@ -747,11 +907,19 @@
           "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
-        },
+        }
+      ]
+    },
+    {
+      "id": "custom-fields",
+      "name": "Custom fields",
+      "iconKey": "text-fields",
+      "shortDescription": "Standalone AI-analyzed text notes plus custom fields you can tag any media file with.",
+      "tools": [
         {
           "name": "list_fields",
           "title": "List Custom Fields",
-          "description": "List all custom fields defined in the workspace.",
+          "description": "List all custom fields defined in the workspace. Each field returns a `slug` (for example `regulator_comment`) alongside its `id`, `name`, and `type`. Put `{{field.<slug>}}` in the prompt text you send and Speak substitutes that field's value for the media before the model sees it. A slug is unique per company and never changes when the field is renamed, so prefer it over the field name. A field with no slug yet resolves by `id` in the same token.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -769,18 +937,18 @@
         {
           "name": "update_field",
           "title": "Update Custom Field",
-          "description": "Update a specific custom field by ID.",
+          "description": "Update a specific custom field by ID. `name` must always be supplied (the server replaces the field config).",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
         {
           "name": "update_multiple_fields",
-          "title": "Bulk Update Custom Fields",
-          "description": "Update multiple custom fields in a single batch operation.",
+          "title": "Bulk Update Custom Field Values",
+          "description": "Set custom field values across media in a single batch operation. Scope the update with `folderId` (all media in a folder) and/or `mediaIds`.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         }
@@ -795,7 +963,7 @@
         {
           "name": "create_embed",
           "title": "Create Embed Widget",
-          "description": "Create an embeddable player/transcript widget for a media file.",
+          "description": "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -804,7 +972,7 @@
         {
           "name": "update_embed",
           "title": "Update Embed Widget",
-          "description": "Update settings for an existing embed widget.",
+          "description": "Update an existing embed widget — appearance/feature toggles via `meta`, plus scope and privacy.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -823,6 +991,148 @@
           "name": "get_embed_iframe_url",
           "title": "Get Embed Iframe URL",
           "description": "Get the iframe URL for embedding a media player/transcript on a webpage.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "users-team",
+      "name": "Users & teams",
+      "iconKey": "users-team",
+      "shortDescription": "List workspace members and manage user groups.",
+      "tools": [
+        {
+          "name": "list_users",
+          "title": "List Users",
+          "description": "List the users (members) in the workspace/company, with their ids, names, emails, and permissions. Use the returned _id values when assigning members to user groups.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_user_groups",
+          "title": "List User Groups",
+          "description": "List all user groups in the company. Each group includes its members (hydrated names/emails) and member ids. Use this to discover group ids and current membership before updating or deleting a group.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_user_group",
+          "title": "Create User Group",
+          "description": "Create a new user group and assign members. Member ids come from list_users. Fails with a 409 if a group with the same name already exists in the company.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_user_group",
+          "title": "Update User Group",
+          "description": "Update a user group's name and member list. NOTE: the users array is a FULL REPLACEMENT, not a delta — any member id you omit is removed from the group. Fetch the current members with list_user_groups first and send the complete list.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "delete_user_group",
+          "title": "Delete User Group",
+          "description": "Delete a user group. This removes the group only; it does not delete the users themselves.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "dashboards",
+      "name": "Dashboards",
+      "iconKey": "dashboards",
+      "shortDescription": "Create and manage analytics dashboards, widgets, and public sharing.",
+      "tools": [
+        {
+          "name": "list_dashboard_widgets",
+          "title": "List Dashboard Widgets",
+          "description": "Discovery + how-to helper for building and customizing dashboards. Returns every widget type with what it shows and the exact strict `config` shape it accepts, the shared vocabulary (metric grammar, groupBy, per-widget binding, filters, thresholds, sources, date-range presets, sections), design rules for composing a dashboard that reads well, two complete worked example payloads, and tips for managing dashboards. Call this before create_dashboard / update_dashboard.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_dashboards",
+          "title": "List Dashboards",
+          "description": "List all analytics dashboards the caller can access, including share state and each dashboard's current `revision` (needed for update_dashboard).",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_dashboard",
+          "title": "Get Dashboard",
+          "description": "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, and the current `revision` (pass that revision back to update_dashboard).",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_dashboard",
+          "title": "Create Dashboard",
+          "description": "Create an analytics dashboard. Only `title` is required — source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_dashboard",
+          "title": "Update Dashboard",
+          "description": "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault — no spec fields, no revision needed. (2) Spec update: pass the FULL spec — title, source, dateRange, sections, widgets — plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first — re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "delete_dashboard",
+          "title": "Delete Dashboard",
+          "description": "Soft-delete a dashboard. This also deactivates its public share link.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "duplicate_dashboard",
+          "title": "Duplicate Dashboard",
+          "description": "Clone an existing dashboard. The copy gets fresh widget ids, a \"<name> (copy)\" title, cleared sharing, and its revision reset to 0. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "share_dashboard",
+          "title": "Share Dashboard",
+          "description": "Enable public sharing for a dashboard and return its share token + embed id. WARNING: by default the public link resolves with no passphrase, so anyone with the token can view the dashboard data until an owner sets one.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        {
+          "name": "get_dashboard_speakers_insight",
+          "title": "Get Dashboard Speakers Insight",
+          "description": "Compute a speakers breakdown for a given folder scope, date range, and field filters. Standalone analytics — does not require a dashboard to exist.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,

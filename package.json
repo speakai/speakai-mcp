@@ -1,9 +1,9 @@
 {
   "name": "@speakai/mcp-server",
-  "version": "1.7.10",
+  "version": "1.22.0",
   "mcpName": "io.github.speakai/mcp-server",
   "description": "Official Speak AI MCP Server — capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows from your AI assistant.",
-  "homepage": "https://mcp.speakai.co",
+  "homepage": "https://docs.speakai.co/mcp",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/speakai/speakai-mcp.git"
@@ -22,6 +22,10 @@
     "dev": "tsx src/index.ts",
     "prepare": "npm run build",
     "test": "vitest run",
+    "sync": "tsx scripts/sync-plugin.ts",
+    "sync:check": "tsx scripts/sync-plugin.ts --check",
+    "verify:plugin": "tsx scripts/verify-plugin.ts",
+    "verify:plugin:live": "tsx scripts/verify-plugin.ts --live",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
@@ -42,19 +46,19 @@
     "dist"
   ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.1",
-    "axios": "^1.6.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "axios": "^1.16.1",
     "chalk-template": "^1.1.2",
     "commander": "^14.0.3",
     "zod": "^3.22.0"
   },
   "devDependencies": {
-    "@speakai/shared": "^1.6.2",
+    "@speakai/shared": "^2.1.0",
     "@types/node": "^20.0.0",
-    "@vitest/coverage-v8": "^4.1.2",
+    "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0",
-    "vitest": "^4.1.1"
+    "vitest": "^4.1.6"
   }
 }

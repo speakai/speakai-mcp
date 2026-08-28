@@ -101,7 +101,7 @@ describe("Prompts", () => {
       const text = result.messages[0].content.text;
 
       expect(text).toContain("search_media");
-      expect(text).toContain("ask_magic_prompt");
+      expect(text).toContain("ask_ai_chat");
       expect(text).toContain("Common themes");
       expect(text).toContain("citations");
     });

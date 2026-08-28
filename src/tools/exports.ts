@@ -1,17 +1,19 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
+import { ExportFormatType } from "@speakai/shared";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
-  server.tool(
+  registerSpeakTool(server, 
     "export_media",
     "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
       fileType: z
-        .enum(["pdf", "docx", "srt", "vtt", "txt", "csv"])
+        .nativeEnum(ExportFormatType)
         .describe("Desired export format"),
       isSpeakerNames: z
         .boolean()
@@ -40,9 +42,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     {
       title: "Export Media Transcript",
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false,
     },
     async ({ mediaId, fileType, ...body }) => {
@@ -65,7 +67,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  server.tool(
+  registerSpeakTool(server, 
     "export_multiple_media",
     "Export multiple media files at once, optionally merged into a single file.",
     {
@@ -73,7 +75,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .array(z.string())
         .describe("Array of media IDs to export"),
       fileType: z
-        .enum(["pdf", "docx", "srt", "vtt", "txt", "csv"])
+        .nativeEnum(ExportFormatType)
         .describe("Desired export format"),
       isSpeakerNames: z
         .boolean()
@@ -106,9 +108,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     {
       title: "Export Multiple Media Files",
-      readOnlyHint: true,
+      readOnlyHint: false,
       destructiveHint: false,
-      idempotentHint: true,
+      idempotentHint: false,
       openWorldHint: false,
     },
     async (body) => {

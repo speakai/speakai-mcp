@@ -15,6 +15,8 @@ import * as webhooks from "./webhooks.js";
 import * as analytics from "./analytics.js";
 import * as clips from "./clips.js";
 import * as workflows from "./workflows.js";
+import * as users from "./users.js";
+import * as dashboards from "./dashboards.js";
 
 const modules = [
   media,
@@ -31,6 +33,8 @@ const modules = [
   analytics,
   clips,
   workflows,
+  users,
+  dashboards,
 ];
 
 /**

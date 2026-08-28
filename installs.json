@@ -109,6 +109,24 @@
       ]
     },
     {
+      "id": "windsurf",
+      "title": "Windsurf",
+      "tagline": "HTTP transport, config file.",
+      "steps": [
+        { "html": "Get your API key at <a href=\"https://app.speakai.co/developers/apikeys\" target=\"_blank\" rel=\"noopener\">app.speakai.co/developers/apikeys</a>" },
+        { "html": "Add the config below to <code>~/.codeium/windsurf/mcp_config.json</code>" },
+        { "html": "Restart Windsurf. The Speak AI tools appear in the <strong>Cascade</strong> panel" }
+      ],
+      "config": {
+        "mcpServers": {
+          "speakai": {
+            "serverUrl": "https://api.speakai.co/v1/mcp",
+            "headers": { "Authorization": "Bearer your-api-key-here" }
+          }
+        }
+      }
+    },
+    {
       "id": "chatgpt-api",
       "title": "ChatGPT API / Responses",
       "tagline": "For developers calling the Responses API directly.",

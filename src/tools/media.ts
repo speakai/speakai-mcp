@@ -1,14 +1,18 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 import { isVideoFile, getMimeType, detectMediaType } from "../media-utils.js";
 
+export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
+export const LIST_MEDIA_MAX_PAGE_SIZE = 100;
+
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   // 1. Get signed upload URL
-  server.tool(
+  registerSpeakTool(server, 
     "get_signed_upload_url",
     "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
@@ -51,14 +55,14 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 2. Upload media
-  server.tool(
+  registerSpeakTool(server, 
     "upload_media",
-    "Upload media from a publicly accessible URL. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
+    "Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar) which Speak resolves to the underlying media automatically. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file. (Vimeo links are not yet supported.)",
     {
       name: z.string().min(1).describe("Display name for the media file"),
       url: z
         .string()
-        .describe("Publicly accessible URL of the media file (or pre-signed S3 URL)"),
+        .describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link (e.g. an Instagram reel or TikTok URL) — page links are resolved to the underlying media server-side."),
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
@@ -119,9 +123,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 3. List media
-  server.tool(
+  registerSpeakTool(server, 
     "list_media",
-    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_magic_prompt. For deep full-text search across transcripts, use search_media instead.",
+    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_ai_chat. For deep full-text search across transcripts, use search_media instead.",
     {
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO, MediaType.TEXT] as [string, ...string[]])
@@ -137,9 +141,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .number()
         .int()
         .min(1)
-        .max(500)
+        .max(LIST_MEDIA_MAX_PAGE_SIZE)
         .optional()
-        .describe("Number of results per page (default: 20, max: 500)"),
+        .describe(
+          "Number of results per page (default: 25, max: 100). Page through larger sets rather than raising this — with include: ['transcription'] each result carries a full transcript, and an oversized response is rejected outright."
+        ),
       sortBy: z
         .string()
         .optional()
@@ -198,11 +204,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         if (include?.length) {
           queryParams.requestTypes = include.join(",");
         }
+
+        queryParams.pageSize = params.pageSize ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
+
         const result = await api.get("/v1/media", { params: queryParams });
         return {
-          content: [
-            { type: "text", text: JSON.stringify(result.data, null, 2) },
-          ],
+          content: [{ type: "text", text: JSON.stringify(result.data) }],
         };
       } catch (err) {
         return {
@@ -214,9 +221,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 4. Get media insights
-  server.tool(
+  registerSpeakTool(server, 
     "get_media_insights",
-    "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_magic_prompt instead.",
+    "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },
@@ -245,9 +252,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 5. Get transcript
-  server.tool(
+  registerSpeakTool(server, 
     "get_transcript",
-    "Retrieve the full transcript for a processed media file with speaker labels and timestamps. The media must be in 'processed' state. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
+    "Retrieve the full transcript for a media file with speaker labels and timestamps. Works on processed media and also returns the partial, in-progress transcript while a meeting bot is still recording (LIVE_TRANSCRIPT state). To fetch only the new sentences added since your previous call during a live meeting, use get_live_meeting_transcript instead. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },
@@ -276,19 +283,26 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 6. Update transcript speakers
-  server.tool(
+  registerSpeakTool(server, 
     "update_transcript_speakers",
-    "Update or rename speaker labels in a media transcript.",
+    "Update or rename speaker labels in a single media transcript. Call get_transcript first to read the speaker list — a speaker's label is whatever it was last renamed to, not a fixed value, so ids from an earlier turn may be stale. Renaming a speaker to a name another speaker already has is refused as a collision. Re-sending a rename that has already been applied is a safe no-op, so do not retry a call that reported success.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
       speakers: z
         .array(
           z.object({
-            id: z.string().min(1).describe("Speaker identifier from the transcript"),
-            name: z.string().min(1).describe("Display name to assign to the speaker"),
+            id: z
+              .string()
+              .min(1)
+              .describe(
+                "Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. \"Speaker 0\", \"Vatsal Shah\"), or its numeric id from insight.speakers[].id (e.g. \"0\"). Not a fixed identifier — it changes when the speaker is renamed."
+              ),
+            name: z.string().min(1).describe("New display name to assign to the speaker"),
           })
         )
-        .describe("Array of speaker ID to name mappings"),
+        .describe(
+          "Speakers to rename. Each entry maps one existing speaker to its new name; speakers not listed are left untouched."
+        ),
     },
     {
       title: "Rename Transcript Speakers",
@@ -301,7 +315,49 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       try {
         const result = await api.put(
           `/v1/media/speakers/${mediaId}`,
-          { speakers }
+          speakers
+        );
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result.data, null, 2) },
+          ],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // 6b. Update transcription text (find/replace)
+  registerSpeakTool(server,
+    "update_transcription",
+    "Edit the official transcript text of a single media file by finding and replacing text. Replaces every occurrence of the original text with the replacement (leave replacement empty to delete the text) and reports how many occurrences were replaced. Use update_transcript_speakers to rename speaker labels instead.",
+    {
+      mediaId: z.string().min(1).describe("Unique identifier of the media file"),
+      original: z.string().min(1).describe("Text to find in the transcript"),
+      replacement: z
+        .string()
+        .describe("Text to replace it with (empty string deletes the matched text)"),
+      caseSensitive: z
+        .boolean()
+        .optional()
+        .describe("Match case exactly when finding the original text"),
+    },
+    {
+      title: "Update Transcription Text",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: false,
+    },
+    async ({ mediaId, original, replacement, caseSensitive }) => {
+      try {
+        const result = await api.put(
+          `/v1/media/transcript/${mediaId}/replace`,
+          { original, replacement, caseSensitive }
         );
         return {
           content: [
@@ -318,7 +374,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 7. Get media status
-  server.tool(
+  registerSpeakTool(server, 
     "get_media_status",
     "Check the processing status of a media file. States: pending → transcribing → analyzing → processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
     {
@@ -349,12 +405,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 8. Update media metadata
-  server.tool(
+  registerSpeakTool(server, 
     "update_media_metadata",
     "Update metadata fields (name, description, tags, status) for an existing media file.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
-      name: z.string().optional().describe("New display name for the media"),
+      name: z.string().describe("Display name for the media (required — the server replaces the metadata)"),
       description: z.string().optional().describe("Description or notes for the media"),
       folderId: z
         .string()
@@ -380,7 +436,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Media Metadata",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
@@ -402,7 +458,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 9. Delete media
-  server.tool(
+  registerSpeakTool(server, 
     "delete_media",
     "Permanently delete a media file and all associated transcripts and insights.",
     {
@@ -433,7 +489,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 10. Get captions
-  server.tool(
+  registerSpeakTool(server, 
     "get_captions",
     "Get captions for a media file. Captions are separate from full transcripts and are formatted for display/subtitles.",
     {
@@ -464,7 +520,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 11. List supported languages
-  server.tool(
+  registerSpeakTool(server, 
     "list_supported_languages",
     "List all languages supported for transcription. Use the language codes when uploading media with a specific sourceLanguage.",
     {},
@@ -493,7 +549,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 12. Get media statistics
-  server.tool(
+  registerSpeakTool(server, 
     "get_media_statistics",
     "Get workspace-level media statistics — total counts, processing status breakdown, storage usage, etc.",
     {},
@@ -522,11 +578,17 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 13. Toggle favorite
-  server.tool(
+  registerSpeakTool(server, 
     "toggle_media_favorite",
-    "Mark or unmark a media file as a favorite for quick access.",
+    "Mark or unmark media files as favorites for quick access.",
     {
-      mediaId: z.string().min(1).describe("Unique identifier of the media file"),
+      mediaIds: z
+        .array(z.string().min(1))
+        .min(1)
+        .describe("Media file IDs to update"),
+      isFavorite: z
+        .boolean()
+        .describe("true to mark as favorite, false to unmark"),
     },
     {
       title: "Toggle Media Favorite",
@@ -553,11 +615,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 14. Re-analyze media
-  server.tool(
+  registerSpeakTool(server, 
     "reanalyze_media",
-    "Re-run AI analysis on a media file using the latest models. Use this after Speak AI has updated its analysis capabilities or if the original analysis was incomplete.",
+    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
+      isInsights: z.boolean().optional().describe("Re-run insights analysis"),
+      isSentiment: z.boolean().optional().describe("Re-run sentiment analysis"),
+      isFillerWords: z.boolean().optional().describe("Re-run filler-word detection"),
+      isEmbeddings: z.boolean().optional().describe("Re-generate embeddings"),
     },
     {
       title: "Re-analyze Media",
@@ -566,9 +632,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       idempotentHint: false,
       openWorldHint: false,
     },
-    async ({ mediaId }) => {
+    async ({ mediaId, ...params }) => {
       try {
-        const result = await api.post(`/v1/media/reanalyze/${mediaId}`, {});
+        const result = await api.get(`/v1/media/reanalyze/${mediaId}`, { params });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -584,9 +650,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 15. Bulk update transcript speakers across multiple media
-  server.tool(
+  registerSpeakTool(server, 
     "bulk_update_transcript_speakers",
-    "Update or rename speaker labels across multiple media files in a single operation. Applies the same speaker mappings to every specified media file. Use this instead of calling update_transcript_speakers repeatedly when renaming speakers across a project or folder.",
+    "Normalise speaker names that are ALREADY correct across multiple media files — for example changing \"Frederik S.\" to \"Frederik\" everywhere. Applies the same mapping to every specified media file. NOT a way to identify a speaker across a project: neither the numeric id nor a default label such as \"Speaker 1\" refers to the same person in different files, because speakers are numbered per file in order of appearance. Renaming \"Speaker 1\" across many files will label a different person in each one. Identify the speakers in each file first (get_transcript, or an identify-speakers automation), then use this tool only to tidy up naming that is already correct. Match by the speaker's current LABEL, not by numeric id. A file whose speakers do not match the mapping is left unchanged and reported as failed. Re-sending a mapping that has already been applied is a safe no-op, so do not retry a call that reported success.",
     {
       mediaIds: z
         .array(z.string().min(1))
@@ -596,11 +662,18 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       speakers: z
         .array(
           z.object({
-            id: z.string().min(1).describe("Speaker identifier from the transcript"),
-            name: z.string().min(1).describe("Display name to assign to the speaker"),
+            id: z
+              .string()
+              .min(1)
+              .describe(
+                "Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. \"Vatsal Shah\"). Only safe when that label already identifies the same person in every file listed — a default label like \"Speaker 1\", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed."
+              ),
+            name: z.string().min(1).describe("New display name to assign to the speaker"),
           })
         )
-        .describe("Array of speaker ID to name mappings to apply to all specified media files"),
+        .describe(
+          "Speaker mappings applied to every file in mediaIds. Speakers not listed, and files with no matching speaker, are left untouched."
+        ),
     },
     {
       title: "Bulk Rename Speakers Across Files",
@@ -614,7 +687,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
       for (const mediaId of mediaIds) {
         try {
-          await api.put(`/v1/media/speakers/${mediaId}`, { speakers });
+          await api.put(`/v1/media/speakers/${mediaId}`, speakers);
           results.push({ mediaId, success: true });
         } catch (err) {
           results.push({ mediaId, success: false, error: formatAxiosError(err) });
@@ -641,7 +714,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   // 16. Bulk move media to folder
-  server.tool(
+  registerSpeakTool(server, 
     "bulk_move_media",
     "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
     {

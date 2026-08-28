@@ -3,11 +3,11 @@
   "name": "io.github.speakai/mcp-server",
   "title": "Speak AI",
   "description": "Search recordings, summarize meetings, create clips, and automate workflows from your AI assistant.",
-  "version": "1.7.10",
-  "websiteUrl": "https://mcp.speakai.co",
+  "version": "1.22.0",
+  "websiteUrl": "https://docs.speakai.co/mcp",
   "icons": [
     {
-      "src": "https://mcp.speakai.co/assets/logo.png",
+      "src": "https://docs.speakai.co/speak-logo-light.png",
       "mimeType": "image/png"
     }
   ],
@@ -21,7 +21,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@speakai/mcp-server",
-      "version": "1.7.10",
+      "version": "1.22.0",
       "transport": {
         "type": "stdio"
       },
