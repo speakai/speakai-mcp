@@ -207,13 +207,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
     {
       mediaId: z.string().min(1).describe("Media file to price"),
-      analysisInput: z
-        .enum(["audio", "video"])
-        .describe("'audio' to hear the recording, 'video' to also see it. Video costs substantially more because frames dominate."),
       modelId: z
         .string()
         .optional()
-        .describe("Single folder ID to scope the query to. Use folderIds for multiple folders."),
+         .describe("Optional model id to price against. Omit for the workspace default."),
       assistantType: z
         .enum(Object.values(AssistantType) as [string, ...string[]])
         .optional()
