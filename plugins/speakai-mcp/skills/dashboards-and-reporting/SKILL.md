@@ -2,7 +2,7 @@
 name: dashboards-and-reporting
 description: Build, update, and share Speak AI analytics dashboards. Use this when someone asks for a dashboard, a recurring report, a chart or widget over their recordings, a speaker breakdown, a view of sentiment or themes over time, a shareable link or embed for stakeholders, or a copy of an existing dashboard scoped to a different folder or date range. Covers list_dashboard_widgets, list_dashboards, get_dashboard, create_dashboard, update_dashboard, duplicate_dashboard, share_dashboard, delete_dashboard and get_dashboard_speakers_insight, and explains the strict widget config rules that reject unknown keys.
 metadata:
-  server-version: "1.22.0"
+  server-version: "1.23.0"
   categories: "dashboards, custom-fields, folders-views"
 ---
 

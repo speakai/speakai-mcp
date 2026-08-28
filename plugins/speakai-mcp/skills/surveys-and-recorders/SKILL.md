@@ -2,7 +2,7 @@
 name: surveys-and-recorders
 description: Run async voice and video surveys in Speak AI end to end. Use this when someone asks to collect recorded answers from customers, candidates, or users without booking calls, to set up a survey or recorder, to write or change its questions, to brand it, to get a shareable link to send out, to check whether it is still accepting submissions, to list what has come back, or to analyze the responses as a set. Covers create_recorder, update_recorder_questions, update_recorder_settings, generate_recorder_url, check_recorder_status, get_recorder_recordings, list_recorders, get_recorder_info, clone_recorder and delete_recorder, then hands off to the transcript and AI Chat tools once responses arrive.
 metadata:
-  server-version: "1.22.0"
+  server-version: "1.23.0"
   categories: "recorders-surveys, media, magic-prompt"
 ---
 

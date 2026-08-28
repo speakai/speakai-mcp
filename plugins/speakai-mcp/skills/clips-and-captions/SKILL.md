@@ -3,7 +3,7 @@ name: clips-and-captions
 description: Turn Speak AI recordings into shareable output. Use this when someone asks for a highlight clip, a soundbite, a reel, subtitles, a caption track, an SRT or VTT file, a transcript exported as PDF, DOCX, TXT, CSV, MD, HTML or JSON, a merged export across several recordings, or an embeddable player or transcript widget for a website. Walks through finding the moment in a timestamped transcript, cutting the clip, waiting for it to finish processing, exporting captions in a supported format, and publishing an embed. Covers search_media, list_media, get_media_status, get_transcript, get_captions, create_clip, get_clips, update_clip, delete_clip, export_media, export_multiple_media, create_embed, check_embed, update_embed and get_embed_iframe_url.
 license: MIT
 metadata:
-  server-version: "1.22.0"
+  server-version: "1.23.0"
   categories: "clips, exports, media, embed-other"
 ---
 

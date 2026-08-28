@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.23.0 (2026-08-28)
+
+- feat(mcp): multimodal analysis on ask_magic_prompt; infer media type from filename
+
 ## v1.22.0 (2026-08-27)
 
 - feat(fields): surface the field slug so a prompt can inject its value
