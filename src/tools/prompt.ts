@@ -207,13 +207,54 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
     {
       mediaId: z.string().min(1).describe("Media file to price"),
-      analysisInput: z
-        .enum(["audio", "video"])
-        .describe("'audio' to hear the recording, 'video' to also see it. Video costs substantially more because frames dominate."),
       modelId: z
         .string()
         .optional()
-        .describe("Optional model id to price against. Omit for the workspace default."),
+         .describe("Optional model id to price against. Omit for the workspace default."),
+      assistantType: z
+        .enum(Object.values(AssistantType) as [string, ...string[]])
+        .optional()
+        .describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
+      assistantTemplateId: z
+        .string()
+        .optional()
+        .describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
+      promptId: z
+        .string()
+        .optional()
+        .describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
+      speakers: z
+        .array(z.string())
+        .optional()
+        .describe("Filter to specific speaker IDs from the transcript"),
+      tags: z
+        .array(z.string())
+        .optional()
+        .describe("Filter media by tags"),
+      startDate: z
+        .string()
+        .optional()
+        .describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
+      endDate: z
+        .string()
+        .optional()
+        .describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
+      isIndividualPrompt: z
+        .boolean()
+        .optional()
+        .describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
+      analysisInput: z
+        .enum(["audio", "video"])
+        .optional()
+        .describe(
+          "Send the media itself to a multimodal model, not just its transcript. 'audio' analyses tone, pacing, and delivery; 'video' analyses on-screen visuals, gestures, and slides. Requires analysisMediaId. The workspace must have multimodal analysis enabled and the file must be a supported container within the duration limit, otherwise the turn runs transcript-only."
+        ),
+      analysisMediaId: z
+        .string()
+        .optional()
+        .describe(
+          "The mediaId to analyse multimodally this turn. Required together with analysisInput, and it must be one of the ids in mediaIds; either field alone is rejected."
+        ),
     },
     {
       title: "Get Analysis Quote",
