@@ -4,7 +4,12 @@ import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
-import { isVideoFile, getMimeType, detectMediaType } from "../media-utils.js";
+import {
+  isVideoFile,
+  getMimeType,
+  SUPPORTED_URL_SOURCES,
+  UNSUPPORTED_URL_SOURCES,
+} from "../media-utils.js";
 
 export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
 export const LIST_MEDIA_MAX_PAGE_SIZE = 100;
@@ -17,10 +22,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
       filename: z.string().min(1).describe("Original filename including extension, e.g. \"interview.mp4\". The extension decides audio vs video and the storage path, so it must match the real file — a video named \".mp3\" is stored as audio and can never be analysed as video."),
-      isVideo: z
-        .boolean()
+      mediaType: z
+        .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
-        .describe("Override the audio/video decision. Omit to derive it from the filename extension (recommended); only set this when the extension does not reflect the real container."),
+        .describe('Type of media: "audio" or "video". It decides the storage path, so it has to match the real file. Send it whenever the user has told you which they want, or when the filename extension does not reflect the real container. Omit it to derive the type from the extension, which is the only evidence available here because the bytes do not exist yet.'),
       mimeType: z
         .string()
         .optional()
@@ -33,12 +38,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       idempotentHint: false,
       openWorldHint: false,
     },
-    async ({ isVideo, filename, mimeType }) => {
+    async ({ mediaType, filename, mimeType }) => {
       try {
-        const resolvedIsVideo = isVideo ?? isVideoFile(filename);
+        const resolvedMediaType = mediaType ?? (isVideoFile(filename) ? MediaType.VIDEO : MediaType.AUDIO);
         const resolvedMimeType = mimeType ?? getMimeType(filename);
         const result = await api.get("/v1/media/upload/signedurl", {
-          params: { isVideo: resolvedIsVideo, filename, mimeType: resolvedMimeType },
+          params: { mediaType: resolvedMediaType, filename, mimeType: resolvedMimeType },
         });
         return {
           content: [
@@ -57,16 +62,18 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 2. Upload media
   registerSpeakTool(server, 
     "upload_media",
-    "Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar) which Speak resolves to the underlying media automatically. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file. (Vimeo links are not yet supported.)",
+    `Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.`,
     {
       name: z.string().min(1).describe("Display name for the media file"),
       url: z
         .string()
-        .describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link (e.g. an Instagram reel or TikTok URL) — page links are resolved to the underlying media server-side."),
+        // A plain literal, not a template: the docs generator drops a tool's whole parameter
+        // table when a description interpolates a value it cannot resolve statically.
+        .describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
-        .describe('Type of media: "audio" or "video". Omit to derive it from the URL\'s file extension (recommended). Set it only when the URL has no usable extension; a video labelled "audio" here can never be analysed as video.'),
+        .describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want — if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       description: z.string().optional().describe("Description of the media file"),
       sourceLanguage: z
         .string()
@@ -103,11 +110,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async (body) => {
       try {
-        // Strip any query/hash (presigned S3 URLs carry ?X-Amz-... ) before the
-        // extension is read, or the type is misdetected and a video is stored as audio.
-        const urlPath = body.url.split(/[?#]/)[0];
-        const mediaType = body.mediaType ?? detectMediaType(urlPath);
-        const result = await api.post("/v1/media/upload", { ...body, mediaType });
+        // Forwarded as given: mediaType is sent only when the caller actually chose one.
+        // Deriving it from the URL would send a guess the server cannot tell apart from a
+        // decision, and an explicit mediaType stops the server probing the real file.
+        const result = await api.post("/v1/media/upload", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },

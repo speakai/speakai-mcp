@@ -32,3 +32,21 @@ export function getMimeType(filePath: string): string {
 export function detectMediaType(filePath: string): "audio" | "video" {
   return isVideoFile(filePath) ? "video" : "audio";
 }
+
+/**
+ * The page links Speak resolves to underlying media, phrased for tool descriptions.
+ *
+ * Mirrors the server's supported-platform list (YouTube plus the Cobalt hosts), which the web
+ * app reads live from GET /media/supported-platforms. Kept as one string so the two upload
+ * tools cannot drift apart; if the server's list changes, change it here.
+ *
+ * Deliberately lists post/video URLs only. A TikTok *profile* URL is resolved into a picker of
+ * recent videos by the app's own resolve endpoint, not by the upload endpoint these tools call.
+ */
+export const SUPPORTED_URL_SOURCES =
+  "YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, " +
+  "Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube";
+
+/** Page links that look importable but are not handled by the URL upload path. */
+export const UNSUPPORTED_URL_SOURCES = "Vimeo and Loom page links are not supported.";
+

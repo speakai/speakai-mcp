@@ -137,6 +137,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   // workflows (high-level wrappers around media + upload + automation tools)
   "build_automation",
   "upload_and_analyze",
+  "upload_and_analyze_batch",
   "upload_local_file",
 
   // users / team management

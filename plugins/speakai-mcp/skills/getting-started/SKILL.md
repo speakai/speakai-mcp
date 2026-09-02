@@ -1,6 +1,6 @@
 ---
 name: getting-started
-description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the 113 MCP tools across 15 categories, the 5 resources, the 3 built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
+description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the 114 MCP tools across 15 categories, the 5 resources, the 3 built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
 metadata:
   server-version: "1.23.1"
   openclaw-homepage: "https://docs.speakai.co/mcp"
@@ -10,7 +10,7 @@ metadata:
 # Speak AI: getting started
 
 Speak AI transcribes and analyzes audio, video, and text. The MCP server gives you
-**113 tools, 5 resources, and 3 prompts** over one workspace of recordings, transcripts,
+**114 tools, 5 resources, and 3 prompts** over one workspace of recordings, transcripts,
 AI insights, folders, recorders, automations, and dashboards.
 
 Recordings stay in the user's Speak AI workspace. You only read what the user's
@@ -92,14 +92,14 @@ Check the connection before you do real work:
 SPEAK_API_KEY=speak_sk_example_000000000000 npx @speakai/mcp-server@1.23.1 config test
 ```
 
-## What the 113 tools cover
+## What the 114 tools cover
 
 Pick the narrowest tool that answers the request. Per-tool documentation lives at
 `https://docs.speakai.co/mcp/tools/<category-id>/<tool_name>/`.
 
 | Category id | Tools | What it is for | Start with |
 |---|---|---|---|
-| `media` | 17 | Upload, transcripts, captions, insights, status, metadata, speakers | `list_media`, `get_transcript`, `get_media_insights` |
+| `media` | 18 | Upload, transcripts, captions, insights, status, metadata, speakers | `list_media`, `get_transcript`, `get_media_insights` |
 | `magic-prompt` | 12 | AI chat over one file, a folder, or the whole workspace | `ask_ai_chat`, `list_prompts`, `export_chat_answer` |
 | `search-analytics` | 3 | Deep search, workspace statistics, language list | `search_media`, `get_media_statistics` |
 | `folders-views` | 11 | Folders and saved views | `list_folders`, `create_folder`, `create_folder_view` |
@@ -147,9 +147,22 @@ Prefer these over hand-built tool chains when the request matches.
 
 ### Transcribe a recording and read the results
 
-1. `upload_and_analyze` with a direct file URL or a shareable video link. It returns
+1. `upload_and_analyze` with a direct file URL or a shareable page link. It returns
    `mediaId` right away. For a file on disk use `upload_local_file`. For a two-step
    upload use `get_signed_upload_url`, PUT the bytes, then `upload_media`.
+
+   Page links are resolved to the underlying media server-side. Supported: YouTube,
+   TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion,
+   Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and
+   Loom page links are not supported. Pass the link exactly as the user gave it.
+
+   Set `mediaType` whenever the user has said which they want. If they call it an audio
+   file, or ask for audio only, pass `audio`; if they call it a video, pass `video`.
+
+   Otherwise leave it off and let the server decide. It inspects the actual file for a
+   direct URL, and picks the best track the platform offers for a page link. Do not guess
+   it from the URL: sending a value stops the server inspecting the file, and a video
+   imported as audio can never be analysed as video afterwards.
 2. `get_media_status` with that id. States run `queued`, `preparing`, `processing`,
    `preparingAnalysis`,
    `processed`, or `failed`. Poll every 15 to 30 seconds. Audio under 60 minutes usually
