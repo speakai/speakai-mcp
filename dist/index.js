@@ -1222,7 +1222,7 @@ function register(server, client) {
     "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
       filename: import_zod2.z.string().min(1).describe('Original filename including extension, e.g. "interview.mp4". The extension decides audio vs video and the storage path, so it must match the real file \u2014 a video named ".mp3" is stored as audio and can never be analysed as video.'),
-      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Omit to derive it from the filename extension (recommended); set it only when the extension does not reflect the real container. This is the field to use \u2014 it takes precedence over the deprecated isVideo.'),
+      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want, or when the filename extension does not reflect the real container. Omit it to derive the type from the extension. This is the field to use: it takes precedence over the deprecated isVideo.'),
       isVideo: import_zod2.z.boolean().optional().describe("Deprecated, use mediaType. Ignored when mediaType is set."),
       mimeType: import_zod2.z.string().optional().describe('MIME type, e.g. "video/mp4". Omit to derive it from the filename extension.')
     },
@@ -1265,7 +1265,7 @@ function register(server, client) {
     {
       name: import_zod2.z.string().min(1).describe("Display name for the media file"),
       url: import_zod2.z.string().describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
-      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Omit it (recommended): for a direct file URL the extension decides, and for a social/video page link the server picks the best track that platform offers. Set it only to override that; a video labelled "audio" here can never be analysed as video.'),
+      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Omit it only when they have not said: for a direct file URL the extension then decides, and for a page link the server picks the best track that platform offers. A video imported as "audio" can never be analysed as video afterwards.'),
       description: import_zod2.z.string().optional().describe("Description of the media file"),
       sourceLanguage: import_zod2.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
       tags: import_zod2.z.string().optional().describe("Comma-separated tags for the media"),
@@ -5214,7 +5214,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
       // table when a description interpolates a value it cannot resolve statically.
       url: import_zod15.z.string().describe("Direct/public media file URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
       name: import_zod15.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
-      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Omit for a social/video page link (recommended) \u2014 the server picks the best available track for that platform. Set it only when the URL has no usable extension and you know which you want; a video labelled "audio" here can never be analysed as video.'),
+      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Omit it only when they have not said and the URL is a page link, so the server picks the best track that platform offers. A video imported as "audio" can never be analysed as video afterwards.'),
       sourceLanguage: import_zod15.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: import_zod15.z.string().optional().describe("Folder ID to place the media in"),
       tags: import_zod15.z.string().optional().describe("Comma-separated tags")
@@ -6519,8 +6519,9 @@ function registerPrompts(server) {
               `   - Overall sentiment`,
               ``,
               `Use upload_and_analyze to handle the upload and processing in one step. Pass the URL`,
-              `exactly as given \u2014 a page link is resolved server-side \u2014 and leave mediaType unset so`,
-              `the best available track is imported.`
+              `exactly as given \u2014 a page link is resolved server-side. If I told you whether this is`,
+              `an audio or a video recording, pass that as mediaType; if I did not say, leave it off`,
+              `and let the server pick the best available track.`
             ].join("\n")
           }
         }

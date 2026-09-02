@@ -26,7 +26,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
-        .describe('Type of media: "audio" or "video". Omit to derive it from the filename extension (recommended); set it only when the extension does not reflect the real container. This is the field to use — it takes precedence over the deprecated isVideo.'),
+        .describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want, or when the filename extension does not reflect the real container. Omit it to derive the type from the extension. This is the field to use: it takes precedence over the deprecated isVideo.'),
       isVideo: z
         .boolean()
         .optional()
@@ -85,7 +85,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
-        .describe('Type of media: "audio" or "video". Omit it (recommended): for a direct file URL the extension decides, and for a social/video page link the server picks the best track that platform offers. Set it only to override that; a video labelled "audio" here can never be analysed as video.'),
+        .describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want — if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Omit it only when they have not said: for a direct file URL the extension then decides, and for a page link the server picks the best track that platform offers. A video imported as "audio" can never be analysed as video afterwards.'),
       description: z.string().optional().describe("Description of the media file"),
       sourceLanguage: z
         .string()

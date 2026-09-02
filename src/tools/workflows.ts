@@ -500,7 +500,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       // table when a description interpolates a value it cannot resolve statically.
       url: z.string().describe("Direct/public media file URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
       name: z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
-      mediaType: z.enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]]).optional().describe('Type of media: "audio" or "video". Omit for a social/video page link (recommended) — the server picks the best available track for that platform. Set it only when the URL has no usable extension and you know which you want; a video labelled "audio" here can never be analysed as video.'),
+      mediaType: z.enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want — if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Omit it only when they have not said and the URL is a page link, so the server picks the best track that platform offers. A video imported as "audio" can never be analysed as video afterwards.'),
       sourceLanguage: z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: z.string().optional().describe("Folder ID to place the media in"),
       tags: z.string().optional().describe("Comma-separated tags"),
