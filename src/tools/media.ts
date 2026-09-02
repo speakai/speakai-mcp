@@ -285,7 +285,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 6. Update transcript speakers
   registerSpeakTool(server, 
     "update_transcript_speakers",
-    "Update or rename speaker labels in a single media transcript. Call get_transcript first to read the speaker list — a speaker's label is whatever it was last renamed to, not a fixed value, so ids from an earlier turn may be stale. Renaming a speaker to a name another speaker already has is refused as a collision. Re-sending a rename that has already been applied is a safe no-op, so do not retry a call that reported success.",
+    "Update, rename, split, or merge speaker labels in a single media transcript. Call get_transcript first to read the speaker list — a speaker's label is whatever it was last renamed to, not a fixed value, so ids from an earlier turn may be stale. Renaming a speaker to a name another speaker already has is refused as a collision unless mergeIntoId confirms the merge. To SPLIT a diarization mash-up (two people detected as one speaker): pass the merged speaker as id, the missing person's name as name, and the sentence ids that belong to them as segmentIds — only those sentences are reassigned, which creates the new speaker. Re-sending a rename that has already been applied is a safe no-op, so do not retry a call that reported success.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
       speakers: z
@@ -298,10 +298,22 @@ export function register(server: McpServer, client?: AxiosInstance): void {
                 "Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. \"Speaker 0\", \"Vatsal Shah\"), or its numeric id from insight.speakers[].id (e.g. \"0\"). Not a fixed identifier — it changes when the speaker is renamed."
               ),
             name: z.string().min(1).describe("New display name to assign to the speaker"),
+            segmentIds: z
+              .array(z.number())
+              .optional()
+              .describe(
+                "Restrict the change to these sentence ids (from get_transcript). Omit to relabel every sentence the speaker has. Passing a NEW name with a subset of a speaker's sentences splits those sentences off into a new speaker."
+              ),
+            mergeIntoId: z
+              .string()
+              .optional()
+              .describe(
+                "Confirm merging this speaker into the existing speaker named here. Without it, renaming onto an existing speaker's name is refused as a collision."
+              ),
           })
         )
         .describe(
-          "Speakers to rename. Each entry maps one existing speaker to its new name; speakers not listed are left untouched."
+          "Speakers to rename, split, or merge. Each entry maps one existing speaker to its new name; speakers not listed are left untouched."
         ),
     },
     {
