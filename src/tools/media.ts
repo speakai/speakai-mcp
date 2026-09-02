@@ -23,10 +23,14 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
       filename: z.string().min(1).describe("Original filename including extension, e.g. \"interview.mp4\". The extension decides audio vs video and the storage path, so it must match the real file — a video named \".mp3\" is stored as audio and can never be analysed as video."),
+      mediaType: z
+        .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
+        .optional()
+        .describe('Type of media: "audio" or "video". Omit to derive it from the filename extension (recommended); set it only when the extension does not reflect the real container. This is the field to use — it takes precedence over the deprecated isVideo.'),
       isVideo: z
         .boolean()
         .optional()
-        .describe("Override the audio/video decision. Omit to derive it from the filename extension (recommended); only set this when the extension does not reflect the real container."),
+        .describe("Deprecated, use mediaType. Ignored when mediaType is set."),
       mimeType: z
         .string()
         .optional()
@@ -39,12 +43,19 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       idempotentHint: false,
       openWorldHint: false,
     },
-    async ({ isVideo, filename, mimeType }) => {
+    async ({ mediaType, isVideo, filename, mimeType }) => {
       try {
-        const resolvedIsVideo = isVideo ?? isVideoFile(filename);
+        // mediaType, then isVideo, then the filename's extension — the same order the server uses.
+        const resolvedMediaType =
+          mediaType ?? (isVideo ?? isVideoFile(filename) ? MediaType.VIDEO : MediaType.AUDIO);
         const resolvedMimeType = mimeType ?? getMimeType(filename);
         const result = await api.get("/v1/media/upload/signedurl", {
-          params: { isVideo: resolvedIsVideo, filename, mimeType: resolvedMimeType },
+          params: {
+            mediaType: resolvedMediaType,
+            isVideo: resolvedMediaType === MediaType.VIDEO,
+            filename,
+            mimeType: resolvedMimeType,
+          },
         });
         return {
           content: [

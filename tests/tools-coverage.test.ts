@@ -1049,7 +1049,7 @@ describe("Media tools — additional endpoints", () => {
     const cb = getToolCallback(server, "get_signed_upload_url");
     await cb({ isVideo: false, filename: "audio.mp3", mimeType: "audio/mpeg" });
     expect(mockGet).toHaveBeenCalledWith("/v1/media/upload/signedurl", {
-      params: { isVideo: false, filename: "audio.mp3", mimeType: "audio/mpeg" },
+      params: { mediaType: "audio", isVideo: false, filename: "audio.mp3", mimeType: "audio/mpeg" },
     });
   });
 

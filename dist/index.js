@@ -1222,7 +1222,8 @@ function register(server, client) {
     "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
       filename: import_zod2.z.string().min(1).describe('Original filename including extension, e.g. "interview.mp4". The extension decides audio vs video and the storage path, so it must match the real file \u2014 a video named ".mp3" is stored as audio and can never be analysed as video.'),
-      isVideo: import_zod2.z.boolean().optional().describe("Override the audio/video decision. Omit to derive it from the filename extension (recommended); only set this when the extension does not reflect the real container."),
+      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Omit to derive it from the filename extension (recommended); set it only when the extension does not reflect the real container. This is the field to use \u2014 it takes precedence over the deprecated isVideo.'),
+      isVideo: import_zod2.z.boolean().optional().describe("Deprecated, use mediaType. Ignored when mediaType is set."),
       mimeType: import_zod2.z.string().optional().describe('MIME type, e.g. "video/mp4". Omit to derive it from the filename extension.')
     },
     {
@@ -1232,12 +1233,17 @@ function register(server, client) {
       idempotentHint: false,
       openWorldHint: false
     },
-    async ({ isVideo, filename, mimeType }) => {
+    async ({ mediaType, isVideo, filename, mimeType }) => {
       try {
-        const resolvedIsVideo = isVideo ?? isVideoFile(filename);
+        const resolvedMediaType = mediaType ?? (isVideo ?? isVideoFile(filename) ? MediaType.VIDEO : MediaType.AUDIO);
         const resolvedMimeType = mimeType ?? getMimeType(filename);
         const result = await api.get("/v1/media/upload/signedurl", {
-          params: { isVideo: resolvedIsVideo, filename, mimeType: resolvedMimeType }
+          params: {
+            mediaType: resolvedMediaType,
+            isVideo: resolvedMediaType === MediaType.VIDEO,
+            filename,
+            mimeType: resolvedMimeType
+          }
         });
         return {
           content: [
@@ -5294,11 +5300,10 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
           };
         }
         const filename = path2.basename(filePath);
-        const isVideo = isVideoFile(filePath);
         const mediaType = params.mediaType ?? detectMediaType(filePath);
         const mimeType = getMimeType(filePath);
         const signedRes = await api.get("/v1/media/upload/signedurl", {
-          params: { isVideo, filename, mimeType }
+          params: { mediaType, isVideo: mediaType === MediaType.VIDEO, filename, mimeType }
         });
         const signedData = signedRes.data?.data;
         const uploadUrl = signedData?.preSignedUrl ?? signedData?.signedUrl ?? signedData?.url;
