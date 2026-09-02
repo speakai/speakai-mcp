@@ -245,10 +245,10 @@ var init_helpers = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/activities.js
+// node_modules/@speakai/shared/dist/enums/activities.js
 var ActivityType;
 var init_activities = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/activities.js"() {
+  "node_modules/@speakai/shared/dist/enums/activities.js"() {
     "use strict";
     (function(ActivityType2) {
       ActivityType2["MEDIA_ANALYSIS"] = "mediaAnalysis";
@@ -261,10 +261,10 @@ var init_activities = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/auth.js
+// node_modules/@speakai/shared/dist/enums/auth.js
 var SSOType, DevicePlatform;
 var init_auth = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/auth.js"() {
+  "node_modules/@speakai/shared/dist/enums/auth.js"() {
     "use strict";
     (function(SSOType2) {
       SSOType2["GOOGLE"] = "google";
@@ -282,20 +282,47 @@ var init_auth = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/automation.js
-var AutomationTrigger, AutomationAction, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
+// node_modules/@speakai/shared/dist/enums/automation.js
+var AutomationTrigger, AutomationAction, AutomationStepType, AutomationRunStatus, AutomationIOType, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
 var init_automation = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/automation.js"() {
+  "node_modules/@speakai/shared/dist/enums/automation.js"() {
     "use strict";
     (function(AutomationTrigger2) {
       AutomationTrigger2["FOLDERS"] = "folders";
       AutomationTrigger2["TAGS"] = "tags";
       AutomationTrigger2["KEYWORDS"] = "keywords";
+      AutomationTrigger2["COMPOSIO"] = "composio";
+      AutomationTrigger2["WEBHOOK"] = "webhook";
     })(AutomationTrigger || (AutomationTrigger = {}));
     (function(AutomationAction2) {
       AutomationAction2["MAGIC_PROMPT"] = "magic-prompt";
       AutomationAction2["TRANSLATION"] = "translation";
     })(AutomationAction || (AutomationAction = {}));
+    (function(AutomationStepType2) {
+      AutomationStepType2["TRIGGER"] = "trigger";
+      AutomationStepType2["MAGIC_PROMPT"] = "magic-prompt";
+      AutomationStepType2["TRANSLATION"] = "translation";
+      AutomationStepType2["COMPOSIO_ACTION"] = "composio-action";
+      AutomationStepType2["FILTER"] = "filter";
+      AutomationStepType2["SPEAK_UPLOAD"] = "speak-upload";
+      AutomationStepType2["NOTIFY"] = "notify";
+      AutomationStepType2["OUTBOUND_WEBHOOK"] = "outbound-webhook";
+      AutomationStepType2["CONDITION"] = "condition";
+    })(AutomationStepType || (AutomationStepType = {}));
+    (function(AutomationRunStatus2) {
+      AutomationRunStatus2["PENDING"] = "pending";
+      AutomationRunStatus2["RUNNING"] = "running";
+      AutomationRunStatus2["COMPLETED"] = "completed";
+      AutomationRunStatus2["FAILED"] = "failed";
+      AutomationRunStatus2["KILLED"] = "killed";
+    })(AutomationRunStatus || (AutomationRunStatus = {}));
+    (function(AutomationIOType2) {
+      AutomationIOType2["FILE"] = "file";
+      AutomationIOType2["MEDIA"] = "media";
+      AutomationIOType2["INSIGHT"] = "insight";
+      AutomationIOType2["NOTIFY"] = "notify";
+      AutomationIOType2["DATA"] = "data";
+    })(AutomationIOType || (AutomationIOType = {}));
     (function(AutomationRunType2) {
       AutomationRunType2["INSTANT"] = "instant";
       AutomationRunType2["SCHEDULE"] = "schedule";
@@ -318,10 +345,10 @@ var init_automation = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/calendar.js
+// node_modules/@speakai/shared/dist/enums/calendar.js
 var CalendarType, EventStatus, AutoJoinStatus;
 var init_calendar = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/calendar.js"() {
+  "node_modules/@speakai/shared/dist/enums/calendar.js"() {
     "use strict";
     (function(CalendarType2) {
       CalendarType2["GOOGLE"] = "google";
@@ -341,10 +368,10 @@ var init_calendar = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/clip.js
+// node_modules/@speakai/shared/dist/enums/clip.js
 var ClipState, ClipGenerationSource;
 var init_clip = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/clip.js"() {
+  "node_modules/@speakai/shared/dist/enums/clip.js"() {
     "use strict";
     (function(ClipState2) {
       ClipState2["QUEUED"] = "queued";
@@ -360,10 +387,10 @@ var init_clip = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/domain.js
+// node_modules/@speakai/shared/dist/enums/domain.js
 var ServiceType, VerificationStatus;
 var init_domain = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/domain.js"() {
+  "node_modules/@speakai/shared/dist/enums/domain.js"() {
     "use strict";
     (function(ServiceType2) {
       ServiceType2["RECORDER"] = "recorder";
@@ -379,14 +406,15 @@ var init_domain = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/embed.js
+// node_modules/@speakai/shared/dist/enums/embed.js
 var EmbedType, ImageSelectionType;
 var init_embed = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/embed.js"() {
+  "node_modules/@speakai/shared/dist/enums/embed.js"() {
     "use strict";
     (function(EmbedType2) {
       EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
       EmbedType2["REPOSITORY"] = "repository";
+      EmbedType2["DASHBOARD"] = "dashboard";
     })(EmbedType || (EmbedType = {}));
     (function(ImageSelectionType2) {
       ImageSelectionType2["LOGO"] = "logo";
@@ -396,10 +424,10 @@ var init_embed = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/export.js
+// node_modules/@speakai/shared/dist/enums/export.js
 var ExportFormatType;
 var init_export = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/export.js"() {
+  "node_modules/@speakai/shared/dist/enums/export.js"() {
     "use strict";
     (function(ExportFormatType2) {
       ExportFormatType2["CSV"] = "csv";
@@ -422,10 +450,10 @@ var init_export = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/fields.js
+// node_modules/@speakai/shared/dist/enums/fields.js
 var FieldType, AllowedValuesMode, DefaultViewColumn;
 var init_fields = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/fields.js"() {
+  "node_modules/@speakai/shared/dist/enums/fields.js"() {
     "use strict";
     (function(FieldType2) {
       FieldType2["TEXT"] = "text";
@@ -454,10 +482,10 @@ var init_fields = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/filter.js
+// node_modules/@speakai/shared/dist/enums/filter.js
 var FilterFieldName, FilterOperator, FilterCondition;
 var init_filter = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/filter.js"() {
+  "node_modules/@speakai/shared/dist/enums/filter.js"() {
     "use strict";
     (function(FilterFieldName2) {
       FilterFieldName2["CATEGORY"] = "category";
@@ -486,10 +514,22 @@ var init_filter = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/media.js
+// node_modules/@speakai/shared/dist/enums/integration.js
+var IntegrationAuthType;
+var init_integration = __esm({
+  "node_modules/@speakai/shared/dist/enums/integration.js"() {
+    "use strict";
+    (function(IntegrationAuthType2) {
+      IntegrationAuthType2["OAUTH"] = "oauth";
+      IntegrationAuthType2["API_KEY"] = "api_key";
+    })(IntegrationAuthType || (IntegrationAuthType = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/media.js
 var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType;
 var init_media = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/media.js"() {
+  "node_modules/@speakai/shared/dist/enums/media.js"() {
     "use strict";
     (function(MediaType2) {
       MediaType2["AUDIO"] = "audio";
@@ -556,10 +596,10 @@ var init_media = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/meeting.js
+// node_modules/@speakai/shared/dist/enums/meeting.js
 var MeetingPlatform, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource;
 var init_meeting = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/meeting.js"() {
+  "node_modules/@speakai/shared/dist/enums/meeting.js"() {
     "use strict";
     (function(MeetingPlatform2) {
       MeetingPlatform2["GOOGLE_MEET"] = "googleMeet";
@@ -625,10 +665,10 @@ var init_meeting = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/notification.js
+// node_modules/@speakai/shared/dist/enums/notification.js
 var NotificationType, NotificationAction;
 var init_notification = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/notification.js"() {
+  "node_modules/@speakai/shared/dist/enums/notification.js"() {
     "use strict";
     (function(NotificationType2) {
       NotificationType2["CLIP"] = "clip";
@@ -675,10 +715,10 @@ var init_notification = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/prompt.js
+// node_modules/@speakai/shared/dist/enums/prompt.js
 var PromptState, MessageRole, PromptSource, ToolName, FileType;
 var init_prompt = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/prompt.js"() {
+  "node_modules/@speakai/shared/dist/enums/prompt.js"() {
     "use strict";
     (function(PromptState2) {
       PromptState2["INITIATED"] = "initiated";
@@ -725,10 +765,10 @@ var init_prompt = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/recorder.js
+// node_modules/@speakai/shared/dist/enums/recorder.js
 var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating;
 var init_recorder = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/recorder.js"() {
+  "node_modules/@speakai/shared/dist/enums/recorder.js"() {
     "use strict";
     (function(RecorderAnswerType2) {
       RecorderAnswerType2["Single"] = "single";
@@ -753,10 +793,10 @@ var init_recorder = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/subscription.js
+// node_modules/@speakai/shared/dist/enums/subscription.js
 var SubscriptionStatus, SubscriptionDuration, TrialTier;
 var init_subscription = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/subscription.js"() {
+  "node_modules/@speakai/shared/dist/enums/subscription.js"() {
     "use strict";
     (function(SubscriptionStatus2) {
       SubscriptionStatus2["Active"] = "active";
@@ -782,10 +822,10 @@ var init_subscription = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/team.js
+// node_modules/@speakai/shared/dist/enums/team.js
 var TeamInviteStatus;
 var init_team = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/team.js"() {
+  "node_modules/@speakai/shared/dist/enums/team.js"() {
     "use strict";
     (function(TeamInviteStatus2) {
       TeamInviteStatus2["ACTIVE"] = "active";
@@ -796,10 +836,10 @@ var init_team = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/transcription.js
+// node_modules/@speakai/shared/dist/enums/transcription.js
 var TranscriptionEngine, TranscriptionJobState, TranscriptionJobRevisionState;
 var init_transcription = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/transcription.js"() {
+  "node_modules/@speakai/shared/dist/enums/transcription.js"() {
     "use strict";
     (function(TranscriptionEngine2) {
       TranscriptionEngine2["AZURE"] = "azure";
@@ -828,10 +868,10 @@ var init_transcription = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/transaction.js
+// node_modules/@speakai/shared/dist/enums/transaction.js
 var TransactionSource, TransactionType, TransactionStatus;
 var init_transaction = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/transaction.js"() {
+  "node_modules/@speakai/shared/dist/enums/transaction.js"() {
     "use strict";
     (function(TransactionSource2) {
       TransactionSource2["STRIPE"] = "stripe";
@@ -861,10 +901,10 @@ var init_transaction = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/translation.js
+// node_modules/@speakai/shared/dist/enums/translation.js
 var TranslationState, DubbingState;
 var init_translation = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/translation.js"() {
+  "node_modules/@speakai/shared/dist/enums/translation.js"() {
     "use strict";
     (function(TranslationState2) {
       TranslationState2["NOTFOUND"] = "notFound";
@@ -885,10 +925,10 @@ var init_translation = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/user.js
+// node_modules/@speakai/shared/dist/enums/user.js
 var UserRole, UserType, UserPermissionType, UserActionType;
 var init_user = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/user.js"() {
+  "node_modules/@speakai/shared/dist/enums/user.js"() {
     "use strict";
     (function(UserRole2) {
       UserRole2["ADMIN"] = "admin";
@@ -935,10 +975,10 @@ var init_user = __esm({
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/webhook.js
+// node_modules/@speakai/shared/dist/enums/webhook.js
 var WebhookEvent, WebhookEventSource;
 var init_webhook = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/webhook.js"() {
+  "node_modules/@speakai/shared/dist/enums/webhook.js"() {
     "use strict";
     (function(WebhookEvent2) {
       WebhookEvent2["embed_recorder.created"] = "embed_recorder.created";
@@ -963,13 +1003,75 @@ var init_webhook = __esm({
     (function(WebhookEventSource2) {
       WebhookEventSource2["SPEAK"] = "speak";
       WebhookEventSource2["ZAPIER"] = "zapier";
+      WebhookEventSource2["N8N"] = "n8n";
+      WebhookEventSource2["PIPEDREAM"] = "pipedream";
+      WebhookEventSource2["MAKE"] = "make";
     })(WebhookEventSource || (WebhookEventSource = {}));
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/enums/index.js
+// node_modules/@speakai/shared/dist/enums/llm.js
+var LLMProvider, LLMModels;
+var init_llm = __esm({
+  "node_modules/@speakai/shared/dist/enums/llm.js"() {
+    "use strict";
+    (function(LLMProvider2) {
+      LLMProvider2["OPENAI"] = "openai";
+      LLMProvider2["GOOGLE"] = "google";
+      LLMProvider2["ANTHROPIC"] = "anthropic";
+      LLMProvider2["OPENROUTER"] = "openrouter";
+    })(LLMProvider || (LLMProvider = {}));
+    (function(LLMModels2) {
+      LLMModels2["GPT_3_5"] = "gpt-3.5";
+      LLMModels2["GPT_3_5_TURBO_16K"] = "gpt-3.5-turbo-16k";
+      LLMModels2["GPT_3_5_TURBO_0125"] = "gpt-3.5-turbo-0125";
+      LLMModels2["GPT_4"] = "gpt-4";
+      LLMModels2["GPT_4_1106_PREVIEW"] = "gpt-4-1106-preview";
+      LLMModels2["GPT_4_TURBO"] = "gpt-4-turbo";
+      LLMModels2["GPT_4_O_2024_05_13"] = "gpt-4o-2024-05-13";
+      LLMModels2["GPT_4O"] = "gpt-4o";
+      LLMModels2["GPT_4O_MINI"] = "gpt-4o-mini";
+      LLMModels2["GPT_4_O_2024_08_06"] = "gpt-4o-2024-08-06";
+      LLMModels2["GPT_4_MINI_2024_07_18"] = "gpt-4o-mini-2024-07-18";
+      LLMModels2["GPT_4_1_2025_04_14"] = "gpt-4.1-2025-04-14";
+      LLMModels2["GPT_5_1_2025_11_13"] = "gpt-5.1-2025-11-13";
+      LLMModels2["GPT_5_2"] = "gpt-5.2";
+      LLMModels2["GPT_5_4"] = "gpt-5.4";
+      LLMModels2["GPT_5_4_MINI"] = "gpt-5.4-mini";
+      LLMModels2["GPT_5_4_MINI_2026_03_17"] = "gpt-5.4-mini-2026-03-17";
+      LLMModels2["GPT_5_4_NANO"] = "gpt-5.4-nano";
+      LLMModels2["GPT_5_5"] = "gpt-5.5";
+      LLMModels2["GPT_5_5_THINKING"] = "gpt-5.5-thinking";
+      LLMModels2["GPT_5_6_SOL"] = "gpt-5.6-sol";
+      LLMModels2["GPT_5_6_TERRA"] = "gpt-5.6-terra";
+      LLMModels2["GPT_5_6_LUNA"] = "gpt-5.6-luna";
+      LLMModels2["CLAUDE_2"] = "claude-2";
+      LLMModels2["CLAUDE_3_5_SONNET"] = "claude-3-5-sonnet";
+      LLMModels2["CLAUDE_3_5_SONNET_20241022"] = "claude-3-5-sonnet-20241022";
+      LLMModels2["CLAUDE_3_7_SONNET_LATEST"] = "claude-3-7-sonnet-latest";
+      LLMModels2["CLAUDE_HAIKU_4_5"] = "claude-haiku-4-5";
+      LLMModels2["CLAUDE_SONNET_4_6"] = "claude-sonnet-4-6";
+      LLMModels2["CLAUDE_SONNET_5"] = "claude-sonnet-5";
+      LLMModels2["CLAUDE_OPUS_4_8"] = "claude-opus-4-8";
+      LLMModels2["GEMINI_1_5_PRO"] = "gemini-1.5-pro";
+      LLMModels2["GEMINI_1_5_FLASH"] = "gemini-1.5-flash";
+      LLMModels2["GEMINI_2_0_FLASH"] = "gemini-2.0-flash";
+      LLMModels2["GEMINI_2_5_PRO"] = "gemini-2.5-pro";
+      LLMModels2["GEMINI_2_5_FLASH"] = "gemini-2.5-flash";
+      LLMModels2["GEMINI_2_5_FLASH_LITE"] = "gemini-2.5-flash-lite";
+      LLMModels2["GEMINI_3_FLASH_PREVIEW"] = "gemini-3-flash-preview";
+      LLMModels2["GEMINI_3_1_FLASH_LITE"] = "gemini-3.1-flash-lite";
+      LLMModels2["GEMINI_3_1_PRO_PREVIEW"] = "gemini-3.1-pro-preview";
+      LLMModels2["GEMINI_3_5_FLASH"] = "gemini-3.5-flash";
+      LLMModels2["GROK_4_5"] = "x-ai/grok-4.5";
+      LLMModels2["GLM_5_2"] = "z-ai/glm-5.2";
+    })(LLMModels || (LLMModels = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/index.js
 var init_enums = __esm({
-  "../../../node_modules/@speakai/shared/dist/enums/index.js"() {
+  "node_modules/@speakai/shared/dist/enums/index.js"() {
     "use strict";
     init_activities();
     init_auth();
@@ -981,6 +1083,7 @@ var init_enums = __esm({
     init_export();
     init_fields();
     init_filter();
+    init_integration();
     init_media();
     init_meeting();
     init_notification();
@@ -993,144 +1096,168 @@ var init_enums = __esm({
     init_translation();
     init_user();
     init_webhook();
+    init_llm();
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/api.js
+// node_modules/@speakai/shared/dist/interfaces/api.js
 var init_api = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/api.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/api.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/media.js
+// node_modules/@speakai/shared/dist/interfaces/media.js
 var init_media2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/media.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/media.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/transcript.js
+// node_modules/@speakai/shared/dist/interfaces/transcript.js
 var init_transcript = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/text.js
+// node_modules/@speakai/shared/dist/interfaces/text.js
 var init_text = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/text.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/text.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/folder.js
+// node_modules/@speakai/shared/dist/interfaces/folder.js
 var init_folder = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/folder.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/recorder.js
+// node_modules/@speakai/shared/dist/interfaces/integration.js
+var init_integration2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/integration.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/recorder.js
 var init_recorder2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/embed.js
+// node_modules/@speakai/shared/dist/interfaces/embed.js
 var init_embed2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/embed.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/embed.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/automation.js
+// node_modules/@speakai/shared/dist/interfaces/automation.js
 var init_automation2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/automation.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/automation.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/webhook.js
+// node_modules/@speakai/shared/dist/interfaces/webhook.js
 var init_webhook2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/field.js
+// node_modules/@speakai/shared/dist/interfaces/field.js
 var init_field = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/field.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/field.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/meeting.js
+// node_modules/@speakai/shared/dist/interfaces/meeting.js
 var init_meeting2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/export.js
+// node_modules/@speakai/shared/dist/interfaces/export.js
 var init_export2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/export.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/export.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/prompt.js
+// node_modules/@speakai/shared/dist/interfaces/prompt.js
 var init_prompt2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/user.js
+// node_modules/@speakai/shared/dist/interfaces/user.js
 var init_user2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/user.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/user.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/subscription.js
+// node_modules/@speakai/shared/dist/interfaces/subscription.js
 var init_subscription2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/calendar.js
+// node_modules/@speakai/shared/dist/interfaces/calendar.js
 var init_calendar2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/category.js
+// node_modules/@speakai/shared/dist/interfaces/category.js
 var init_category = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/category.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/category.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/clip.js
+// node_modules/@speakai/shared/dist/interfaces/clip.js
 var init_clip2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/clip.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/clip.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/interfaces/index.js
+// node_modules/@speakai/shared/dist/utils/dashboard-spec.js
+var init_dashboard_spec = __esm({
+  "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/dashboard.js
+var init_dashboard = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
+    "use strict";
+    init_dashboard_spec();
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
-  "../../../node_modules/@speakai/shared/dist/interfaces/index.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/index.js"() {
     "use strict";
     init_api();
     init_media2();
     init_transcript();
     init_text();
     init_folder();
+    init_integration2();
     init_recorder2();
     init_embed2();
     init_automation2();
@@ -1144,23 +1271,90 @@ var init_interfaces = __esm({
     init_calendar2();
     init_category();
     init_clip2();
+    init_dashboard();
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/utils/transcript.js
+// node_modules/@speakai/shared/dist/utils/transcript.js
 var init_transcript2 = __esm({
-  "../../../node_modules/@speakai/shared/dist/utils/transcript.js"() {
+  "node_modules/@speakai/shared/dist/utils/transcript.js"() {
     "use strict";
   }
 });
 
-// ../../../node_modules/@speakai/shared/dist/index.js
+// node_modules/@speakai/shared/dist/pricing/modelPricing.js
+var MODEL_PRICING;
+var init_modelPricing = __esm({
+  "node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
+    "use strict";
+    init_llm();
+    MODEL_PRICING = {
+      // ═══════════════ OpenAI ═══════════════
+      // Deprecated
+      [LLMModels.GPT_3_5]: { inputPerMillion: 0.5, outputPerMillion: 1.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_3_5_TURBO_16K]: { inputPerMillion: 3, outputPerMillion: 4, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_3_5_TURBO_0125]: { inputPerMillion: 0.5, outputPerMillion: 1.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4]: { inputPerMillion: 30, outputPerMillion: 60, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_1106_PREVIEW]: { inputPerMillion: 10, outputPerMillion: 30, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_TURBO]: { inputPerMillion: 10, outputPerMillion: 30, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_O_2024_05_13]: { inputPerMillion: 5, outputPerMillion: 15, provider: LLMProvider.OPENAI },
+      // Live
+      [LLMModels.GPT_4O]: { inputPerMillion: 2.5, outputPerMillion: 10, cachedInputPerMillion: 1.25, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4O_MINI]: { inputPerMillion: 0.15, outputPerMillion: 0.6, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_O_2024_08_06]: { inputPerMillion: 2.5, outputPerMillion: 10, cachedInputPerMillion: 1.25, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_MINI_2024_07_18]: { inputPerMillion: 0.15, outputPerMillion: 0.6, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_4_1_2025_04_14]: { inputPerMillion: 2, outputPerMillion: 8, cachedInputPerMillion: 0.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_1_2025_11_13]: { inputPerMillion: 1.25, outputPerMillion: 10, cachedInputPerMillion: 0.125, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_2]: { inputPerMillion: 1.75, outputPerMillion: 14, cachedInputPerMillion: 0.175, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4]: { inputPerMillion: 2.5, outputPerMillion: 15, cachedInputPerMillion: 0.25, longContextThresholdTokens: 272e3, inputPerMillionLong: 5, outputPerMillionLong: 22.5, cachedInputPerMillionLong: 0.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4_MINI]: { inputPerMillion: 0.75, outputPerMillion: 4.5, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4_MINI_2026_03_17]: { inputPerMillion: 0.75, outputPerMillion: 4.5, cachedInputPerMillion: 0.075, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_4_NANO]: { inputPerMillion: 0.2, outputPerMillion: 1.25, cachedInputPerMillion: 0.02, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_5]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, longContextThresholdTokens: 272e3, inputPerMillionLong: 10, outputPerMillionLong: 45, cachedInputPerMillionLong: 1, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_5_THINKING]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, longContextThresholdTokens: 272e3, inputPerMillionLong: 10, outputPerMillionLong: 45, cachedInputPerMillionLong: 1, provider: LLMProvider.OPENAI },
+      // gpt-5.5 reasoning mode (same rate)
+      [LLMModels.GPT_5_6_SOL]: { inputPerMillion: 5, outputPerMillion: 30, cachedInputPerMillion: 0.5, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_6_TERRA]: { inputPerMillion: 2.5, outputPerMillion: 15, cachedInputPerMillion: 0.25, provider: LLMProvider.OPENAI },
+      [LLMModels.GPT_5_6_LUNA]: { inputPerMillion: 1, outputPerMillion: 6, cachedInputPerMillion: 0.1, provider: LLMProvider.OPENAI },
+      // ═══════════════ Anthropic (cache read = 0.1x input) ═══════════════
+      // Deprecated
+      [LLMModels.CLAUDE_2]: { inputPerMillion: 8, outputPerMillion: 24, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_3_5_SONNET]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_3_5_SONNET_20241022]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_3_7_SONNET_LATEST]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      // Live
+      [LLMModels.CLAUDE_HAIKU_4_5]: { inputPerMillion: 1, outputPerMillion: 5, cachedInputPerMillion: 0.1, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_SONNET_4_6]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_SONNET_5]: { inputPerMillion: 3, outputPerMillion: 15, cachedInputPerMillion: 0.3, provider: LLMProvider.ANTHROPIC },
+      [LLMModels.CLAUDE_OPUS_4_8]: { inputPerMillion: 5, outputPerMillion: 25, cachedInputPerMillion: 0.5, provider: LLMProvider.ANTHROPIC },
+      // ═══════════════ Google Gemini ═══════════════
+      // Deprecated
+      [LLMModels.GEMINI_1_5_PRO]: { inputPerMillion: 1.25, outputPerMillion: 5, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_1_5_FLASH]: { inputPerMillion: 0.075, outputPerMillion: 0.3, cachedInputPerMillion: 0.01875, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_2_0_FLASH]: { inputPerMillion: 0.1, outputPerMillion: 0.4, cachedInputPerMillion: 0.025, provider: LLMProvider.GOOGLE },
+      // Live
+      [LLMModels.GEMINI_2_5_PRO]: { inputPerMillion: 1.25, outputPerMillion: 10, longContextThresholdTokens: 2e5, inputPerMillionLong: 2.5, outputPerMillionLong: 15, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_2_5_FLASH]: { inputPerMillion: 0.3, outputPerMillion: 2.5, cachedInputPerMillion: 0.03, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_2_5_FLASH_LITE]: { inputPerMillion: 0.1, outputPerMillion: 0.4, cachedInputPerMillion: 0.01, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_FLASH_PREVIEW]: { inputPerMillion: 0.5, outputPerMillion: 3, cachedInputPerMillion: 0.05, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_1_FLASH_LITE]: { inputPerMillion: 0.25, outputPerMillion: 1.5, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_1_PRO_PREVIEW]: { inputPerMillion: 2, outputPerMillion: 12, longContextThresholdTokens: 2e5, inputPerMillionLong: 4, outputPerMillionLong: 18, provider: LLMProvider.GOOGLE },
+      [LLMModels.GEMINI_3_5_FLASH]: { inputPerMillion: 1.5, outputPerMillion: 9, cachedInputPerMillion: 0.15, provider: LLMProvider.GOOGLE },
+      [LLMModels.GROK_4_5]: { inputPerMillion: 2.2, outputPerMillion: 6.6, cachedInputPerMillion: 0.22, provider: LLMProvider.OPENROUTER },
+      [LLMModels.GLM_5_2]: { inputPerMillion: 1.023, outputPerMillion: 3.3, cachedInputPerMillion: 0.1023, provider: LLMProvider.OPENROUTER }
+    };
+  }
+});
+
+// node_modules/@speakai/shared/dist/index.js
 var init_dist = __esm({
-  "../../../node_modules/@speakai/shared/dist/index.js"() {
+  "node_modules/@speakai/shared/dist/index.js"() {
     "use strict";
     init_enums();
     init_interfaces();
     init_transcript2();
+    init_dashboard_spec();
+    init_modelPricing();
   }
 });
 
@@ -1178,7 +1372,7 @@ function getMimeType(filePath) {
 function detectMediaType(filePath) {
   return isVideoFile(filePath) ? "video" : "audio";
 }
-var path, VIDEO_EXTENSIONS, MIME_TYPES, SUPPORTED_URL_SOURCES, UNSUPPORTED_URL_SOURCES;
+var path, VIDEO_EXTENSIONS, MIME_TYPES;
 var init_media_utils = __esm({
   "src/media-utils.ts"() {
     "use strict";
@@ -1195,8 +1389,6 @@ var init_media_utils = __esm({
       ".mkv": "video/x-matroska",
       ".wmv": "video/x-ms-wmv"
     };
-    SUPPORTED_URL_SOURCES = "YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube";
-    UNSUPPORTED_URL_SOURCES = "Vimeo and Loom page links are not supported.";
   }
 });
 
@@ -1215,7 +1407,7 @@ function register(server, client) {
     "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
       filename: import_zod2.z.string().min(1).describe('Original filename including extension, e.g. "interview.mp4". The extension decides audio vs video and the storage path, so it must match the real file \u2014 a video named ".mp3" is stored as audio and can never be analysed as video.'),
-      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". It decides the storage path, so it has to match the real file. Send it whenever the user has told you which they want, or when the filename extension does not reflect the real container. Omit it to derive the type from the extension, which is the only evidence available here because the bytes do not exist yet.'),
+      isVideo: import_zod2.z.boolean().optional().describe("Override the audio/video decision. Omit to derive it from the filename extension (recommended); only set this when the extension does not reflect the real container."),
       mimeType: import_zod2.z.string().optional().describe('MIME type, e.g. "video/mp4". Omit to derive it from the filename extension.')
     },
     {
@@ -1225,12 +1417,12 @@ function register(server, client) {
       idempotentHint: false,
       openWorldHint: false
     },
-    async ({ mediaType, filename, mimeType }) => {
+    async ({ isVideo, filename, mimeType }) => {
       try {
-        const resolvedMediaType = mediaType ?? (isVideoFile(filename) ? MediaType.VIDEO : MediaType.AUDIO);
+        const resolvedIsVideo = isVideo ?? isVideoFile(filename);
         const resolvedMimeType = mimeType ?? getMimeType(filename);
         const result = await api.get("/v1/media/upload/signedurl", {
-          params: { mediaType: resolvedMediaType, filename, mimeType: resolvedMimeType }
+          params: { isVideo: resolvedIsVideo, filename, mimeType: resolvedMimeType }
         });
         return {
           content: [
@@ -1248,11 +1440,11 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "upload_media",
-    `Upload media from a URL \u2014 a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.`,
+    "Upload media from a URL \u2014 a direct/public file URL, a pre-signed S3 URL, or a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar) which Speak resolves to the underlying media automatically. Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file. (Vimeo links are not yet supported.)",
     {
       name: import_zod2.z.string().min(1).describe("Display name for the media file"),
-      url: import_zod2.z.string().describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
-      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
+      url: import_zod2.z.string().describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link (e.g. an Instagram reel or TikTok URL) \u2014 page links are resolved to the underlying media server-side."),
+      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe(`Type of media: "audio" or "video". Omit to derive it from the URL's file extension (recommended). Set it only when the URL has no usable extension; a video labelled "audio" here can never be analysed as video.`),
       description: import_zod2.z.string().optional().describe("Description of the media file"),
       sourceLanguage: import_zod2.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
       tags: import_zod2.z.string().optional().describe("Comma-separated tags for the media"),
@@ -1274,7 +1466,9 @@ function register(server, client) {
     },
     async (body) => {
       try {
-        const result = await api.post("/v1/media/upload", body);
+        const urlPath = body.url.split(/[?#]/)[0];
+        const mediaType = body.mediaType ?? detectMediaType(urlPath);
+        const result = await api.post("/v1/media/upload", { ...body, mediaType });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -5191,13 +5385,11 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
   registerSpeakTool(
     server,
     "upload_and_analyze",
-    `Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.`,
+    "Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar), which Speak resolves to the underlying media automatically. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts. (Vimeo links are not yet supported.)",
     {
-      // A plain literal, not a template: the docs generator drops a tool's whole parameter
-      // table when a description interpolates a value it cannot resolve statically.
-      url: import_zod15.z.string().describe("Direct/public media file URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
+      url: import_zod15.z.string().describe("Direct/public media file URL, or a shareable social/video page link (e.g. an Instagram reel, TikTok, YouTube, or X post URL) \u2014 page links are resolved to the underlying media server-side. Pass the URL the user gave you as-is."),
       name: import_zod15.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
-      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
+      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (default: audio)"),
       sourceLanguage: import_zod15.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: import_zod15.z.string().optional().describe("Folder ID to place the media in"),
       tags: import_zod15.z.string().optional().describe("Comma-separated tags")
@@ -5213,9 +5405,9 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
       try {
         const uploadBody = {
           name: params.name ?? params.url.split("/").pop()?.split("?")[0] ?? "Upload",
-          url: params.url
+          url: params.url,
+          mediaType: params.mediaType ?? "audio"
         };
-        if (params.mediaType) uploadBody.mediaType = params.mediaType;
         if (params.sourceLanguage) uploadBody.sourceLanguage = params.sourceLanguage;
         if (params.folderId) uploadBody.folderId = params.folderId;
         if (params.tags) uploadBody.tags = params.tags;
@@ -5252,84 +5444,6 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
   );
   registerSpeakTool(
     server,
-    "upload_and_analyze_batch",
-    `Upload several URLs in one call \u2014 the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to ${MAX_BATCH_URLS} URLs and starts at most ${MAX_BATCH_CONCURRENCY} at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.`,
-    {
-      urls: import_zod15.z.array(import_zod15.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Duplicates are uploaded once."),
-      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Applies to every URL in the batch. Send it only when the user has said which they want for all of them \u2014 "audio" if they asked for audio only, "video" if they called them videos. Otherwise omit it and the server decides per URL. Mixed batches: leave it off, or split into two calls.'),
-      folderId: import_zod15.z.string().optional().describe("Folder ID for every upload in the batch"),
-      sourceLanguage: import_zod15.z.string().optional().describe('BCP-47 language code applied to every upload, e.g. "en-US"'),
-      tags: import_zod15.z.string().optional().describe("Comma-separated tags applied to every upload"),
-      concurrency: import_zod15.z.number().int().min(1).max(MAX_BATCH_CONCURRENCY).optional().describe("How many uploads to start at once, 1 to 5. Defaults to 5. Drop it to 1 to import strictly in order.")
-    },
-    {
-      title: "Upload and Analyze Several URLs",
-      readOnlyHint: false,
-      destructiveHint: false,
-      idempotentHint: false,
-      openWorldHint: true
-    },
-    async (params) => {
-      const urls = [...new Set(params.urls.map((u) => u.trim()).filter(Boolean))];
-      if (urls.length === 0) {
-        return { content: [{ type: "text", text: "Error: no usable URLs after trimming." }], isError: true };
-      }
-      const shared = {};
-      if (params.mediaType) shared.mediaType = params.mediaType;
-      if (params.sourceLanguage) shared.sourceLanguage = params.sourceLanguage;
-      if (params.folderId) shared.folderId = params.folderId;
-      if (params.tags) shared.tags = params.tags;
-      const uploaded = [];
-      const failed = [];
-      let cursor = 0;
-      const workerCount = Math.min(params.concurrency ?? MAX_BATCH_CONCURRENCY, urls.length);
-      const send = (url) => api.post("/v1/media/upload", {
-        ...shared,
-        name: url.split("/").pop()?.split("?")[0] || "Upload",
-        url
-      });
-      const worker = async () => {
-        for (let i = cursor++; i < urls.length; i = cursor++) {
-          const url = urls[i];
-          try {
-            let res;
-            try {
-              res = await send(url);
-            } catch (err) {
-              const message = formatAxiosError(err);
-              if (!isRateLimited(message)) throw err;
-              await new Promise((r) => setTimeout(r, RATE_LIMIT_RETRY_DELAY_MS));
-              res = await send(url);
-            }
-            const mediaId = res.data?.data?.mediaId;
-            if (mediaId) uploaded.push({ url, mediaId, state: res.data?.data?.state ?? "pending" });
-            else failed.push({ url, error: "Upload accepted but no mediaId was returned." });
-          } catch (err) {
-            failed.push({ url, error: formatAxiosError(err) });
-          }
-        }
-      };
-      await Promise.all(Array.from({ length: workerCount }, worker));
-      const result = {
-        requested: urls.length,
-        uploaded: uploaded.length,
-        failed: failed.length,
-        media: uploaded,
-        errors: failed,
-        nextSteps: uploaded.length ? [
-          `1. Poll get_media_status for each of the ${uploaded.length} mediaId values every 10-30 seconds, or call list_media on the folder to see them together.`,
-          `2. When one reads "processed", call get_media_insights and get_transcript for it.`,
-          failed.length ? `3. ${failed.length} URL(s) did not upload \u2014 report the reasons above rather than silently retrying.` : `3. Nothing failed in this batch.`
-        ] : ["No uploads were accepted. Report the errors above to the user."]
-      };
-      return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-        ...uploaded.length === 0 ? { isError: true } : {}
-      };
-    }
-  );
-  registerSpeakTool(
-    server,
     "upload_local_file",
     [
       "Upload a local file to Speak AI for transcription and analysis.",
@@ -5362,10 +5476,11 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
           };
         }
         const filename = path2.basename(filePath);
+        const isVideo = isVideoFile(filePath);
         const mediaType = params.mediaType ?? detectMediaType(filePath);
         const mimeType = getMimeType(filePath);
         const signedRes = await api.get("/v1/media/upload/signedurl", {
-          params: { mediaType, filename, mimeType }
+          params: { isVideo, filename, mimeType }
         });
         const signedData = signedRes.data?.data;
         const uploadUrl = signedData?.preSignedUrl ?? signedData?.signedUrl ?? signedData?.url;
@@ -5421,7 +5536,7 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
     }
   );
 }
-var import_zod15, fs, path2, MAX_BATCH_URLS, MAX_BATCH_CONCURRENCY, RATE_LIMIT_RETRY_DELAY_MS, isRateLimited, CANONICAL_FILTER_FIELDS, ID_PATTERN, TRIGGER_SPEC_DESCRIPTION, STEP_SPEC_DESCRIPTION, buildAutomationSchema;
+var import_zod15, fs, path2, CANONICAL_FILTER_FIELDS, ID_PATTERN, TRIGGER_SPEC_DESCRIPTION, STEP_SPEC_DESCRIPTION, buildAutomationSchema;
 var init_workflows = __esm({
   "src/tools/workflows.ts"() {
     "use strict";
@@ -5434,10 +5549,6 @@ var init_workflows = __esm({
     init_media_utils();
     init_capabilities();
     init_inbound_webhook_utils();
-    MAX_BATCH_URLS = 25;
-    MAX_BATCH_CONCURRENCY = 5;
-    RATE_LIMIT_RETRY_DELAY_MS = 5e3;
-    isRateLimited = (message) => /rate limit|too many requests|\b429\b/i.test(message);
     CANONICAL_FILTER_FIELDS = /* @__PURE__ */ new Set([
       "name",
       "duration",
@@ -6560,7 +6671,7 @@ function registerPrompts(server) {
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
     {
-      url: import_zod18.z.string().describe(`URL of the meeting recording \u2014 a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
+      url: import_zod18.z.string().describe("URL of the meeting recording \u2014 a direct file link or a shareable social/video link (resolved automatically)"),
       name: import_zod18.z.string().optional().describe("Meeting name (optional)")
     },
     async ({ url, name }) => ({
@@ -6582,10 +6693,7 @@ function registerPrompts(server) {
               `   - Open questions or follow-ups needed`,
               `   - Overall sentiment`,
               ``,
-              `Use upload_and_analyze to handle the upload and processing in one step. Pass the URL`,
-              `exactly as given \u2014 a page link is resolved server-side. If I told you whether this is`,
-              `an audio or a video recording, pass that as mediaType; if I did not say, leave it off`,
-              `and let the server pick the best available track.`
+              `Use upload_and_analyze to handle the upload and processing in one step.`
             ].join("\n")
           }
         }
@@ -6673,7 +6781,6 @@ var init_prompts = __esm({
   "src/prompts.ts"() {
     "use strict";
     import_zod18 = require("zod");
-    init_media_utils();
   }
 });
 
@@ -6799,7 +6906,6 @@ var init_tool_names = __esm({
       // workflows (high-level wrappers around media + upload + automation tools)
       "build_automation",
       "upload_and_analyze",
-      "upload_and_analyze_batch",
       "upload_local_file",
       // users / team management
       "list_users",
@@ -7256,10 +7362,11 @@ function createCli() {
       let state;
       if (isLocalFile) {
         const filename = pathMod.basename(source);
+        const isVideo = isVideoFile(source);
         const mediaType = opts.type ?? detectMediaType(source);
         const mimeType = getMimeType(source);
         const signedRes = await client.get("/v1/media/upload/signedurl", {
-          params: { mediaType, filename, mimeType }
+          params: { isVideo, filename, mimeType }
         });
         const signedData = signedRes.data?.data;
         const uploadUrl = signedData?.signedUrl ?? signedData?.url;
