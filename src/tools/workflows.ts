@@ -496,7 +496,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "upload_and_analyze",
     `Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.`,
     {
-      url: z.string().describe(`Direct/public media file URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. Accepts links from: ${SUPPORTED_URL_SOURCES}. Pass the URL the user gave you as-is; do not try to convert it to a file URL first.`),
+      // A plain literal, not a template: the docs generator drops a tool's whole parameter
+      // table when a description interpolates a value it cannot resolve statically.
+      url: z.string().describe("Direct/public media file URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
       name: z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
       mediaType: z.enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]]).optional().describe('Type of media: "audio" or "video". Omit for a social/video page link (recommended) — the server picks the best available track for that platform. Set it only when the URL has no usable extension and you know which you want; a video labelled "audio" here can never be analysed as video.'),
       sourceLanguage: z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),

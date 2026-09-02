@@ -79,7 +79,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       name: z.string().min(1).describe("Display name for the media file"),
       url: z
         .string()
-        .describe(`Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. Accepts links from: ${SUPPORTED_URL_SOURCES}. Pass the URL the user gave you as-is; do not try to convert it to a file URL first.`),
+        // A plain literal, not a template: the docs generator drops a tool's whole parameter
+        // table when a description interpolates a value it cannot resolve statically.
+        .describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
