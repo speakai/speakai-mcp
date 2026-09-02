@@ -42,15 +42,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       try {
         const resolvedMediaType = mediaType ?? (isVideoFile(filename) ? MediaType.VIDEO : MediaType.AUDIO);
         const resolvedMimeType = mimeType ?? getMimeType(filename);
-        // isVideo is derived, never taken from the caller: it is retired from the public contract
-        // but still sent, because a server older than this release requires it on this route.
         const result = await api.get("/v1/media/upload/signedurl", {
-          params: {
-            mediaType: resolvedMediaType,
-            isVideo: resolvedMediaType === MediaType.VIDEO,
-            filename,
-            mimeType: resolvedMimeType,
-          },
+          params: { mediaType: resolvedMediaType, filename, mimeType: resolvedMimeType },
         });
         return {
           content: [

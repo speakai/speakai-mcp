@@ -1230,12 +1230,7 @@ function register(server, client) {
         const resolvedMediaType = mediaType ?? (isVideoFile(filename) ? MediaType.VIDEO : MediaType.AUDIO);
         const resolvedMimeType = mimeType ?? getMimeType(filename);
         const result = await api.get("/v1/media/upload/signedurl", {
-          params: {
-            mediaType: resolvedMediaType,
-            isVideo: resolvedMediaType === MediaType.VIDEO,
-            filename,
-            mimeType: resolvedMimeType
-          }
+          params: { mediaType: resolvedMediaType, filename, mimeType: resolvedMimeType }
         });
         return {
           content: [
@@ -5292,7 +5287,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
         const mediaType = params.mediaType ?? detectMediaType(filePath);
         const mimeType = getMimeType(filePath);
         const signedRes = await api.get("/v1/media/upload/signedurl", {
-          params: { mediaType, isVideo: mediaType === MediaType.VIDEO, filename, mimeType }
+          params: { mediaType, filename, mimeType }
         });
         const signedData = signedRes.data?.data;
         const uploadUrl = signedData?.preSignedUrl ?? signedData?.signedUrl ?? signedData?.url;
@@ -7178,11 +7173,10 @@ function createCli() {
       let state;
       if (isLocalFile) {
         const filename = pathMod.basename(source);
-        const isVideo = isVideoFile(source);
         const mediaType = opts.type ?? detectMediaType(source);
         const mimeType = getMimeType(source);
         const signedRes = await client.get("/v1/media/upload/signedurl", {
-          params: { isVideo, filename, mimeType }
+          params: { mediaType, filename, mimeType }
         });
         const signedData = signedRes.data?.data;
         const uploadUrl = signedData?.signedUrl ?? signedData?.url;

@@ -204,32 +204,24 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
           mimeType: "video/mp4",
         });
         expect(mockGet).toHaveBeenCalledWith("/v1/media/upload/signedurl", {
-          params: { mediaType: "video", isVideo: true, filename: "meeting.mp4", mimeType: "video/mp4" },
+          params: { mediaType: "video", filename: "meeting.mp4", mimeType: "video/mp4" },
         });
       });
 
-      // isVideo is off the tool's input but still sent, derived, for a server older than this release.
-      it("sends a derived isVideo that always agrees with mediaType", async () => {
-        const callback = getToolCallback(server, "get_signed_upload_url");
-        await callback({ mediaType: "audio", filename: "meeting.mp4" });
-        expect(mockGet).toHaveBeenCalledWith("/v1/media/upload/signedurl", {
-          params: expect.objectContaining({ mediaType: "audio", isVideo: false }),
-        });
-      });
-
-      it("ignores an isVideo a caller tries to set, rather than letting it contradict mediaType", async () => {
+      // isVideo is retired: not an input, and no longer sent. mediaType is the whole contract.
+      it("never sends isVideo, even when a caller tries to set one", async () => {
         const callback = getToolCallback(server, "get_signed_upload_url");
         await callback({ mediaType: "audio", isVideo: true, filename: "meeting.mp4" });
-        expect(mockGet).toHaveBeenCalledWith("/v1/media/upload/signedurl", {
-          params: expect.objectContaining({ mediaType: "audio", isVideo: false }),
-        });
+        const [, opts] = mockGet.mock.calls[0];
+        // mimeType still describes the bytes, so it follows the filename rather than mediaType.
+        expect(opts.params).toEqual({ mediaType: "audio", filename: "meeting.mp4", mimeType: "video/mp4" });
       });
 
-      it("derives both from the filename when mediaType is omitted", async () => {
+      it("derives mediaType from the filename when it is omitted", async () => {
         const callback = getToolCallback(server, "get_signed_upload_url");
         await callback({ filename: "meeting.mp4" });
         expect(mockGet).toHaveBeenCalledWith("/v1/media/upload/signedurl", {
-          params: expect.objectContaining({ mediaType: "video", isVideo: true }),
+          params: expect.objectContaining({ mediaType: "video" }),
         });
       });
     });

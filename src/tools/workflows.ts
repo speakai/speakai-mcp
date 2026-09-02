@@ -604,7 +604,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         // 1. Get signed upload URL. Keyed off mediaType so an explicit one also picks the S3 prefix,
         // or the object lands under audio/ while the media row says video.
         const signedRes = await api.get("/v1/media/upload/signedurl", {
-          params: { mediaType, isVideo: mediaType === MediaType.VIDEO, filename, mimeType },
+          params: { mediaType, filename, mimeType },
         });
         const signedData = signedRes.data?.data;
         const uploadUrl = signedData?.preSignedUrl ?? signedData?.signedUrl ?? signedData?.url;

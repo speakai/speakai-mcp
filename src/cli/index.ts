@@ -8,7 +8,7 @@ import {
   getConfigPath,
 } from "./config.js";
 import { printJson, printTable, printError, printSuccess } from "./format.js";
-import { getMimeType, isVideoFile, detectMediaType } from "../media-utils.js";
+import { getMimeType, detectMediaType } from "../media-utils.js";
 
 /**
  * Lazily load the speakClient — must be called AFTER resolveApiKey()
@@ -451,13 +451,12 @@ export function createCli(): Command {
         if (isLocalFile) {
           // Local file upload via signed URL
           const filename = pathMod.basename(source);
-          const isVideo = isVideoFile(source);
           const mediaType = opts.type ?? detectMediaType(source);
           const mimeType = getMimeType(source);
 
-          // Get signed URL
+          // Keyed off mediaType so an explicit --type also picks the S3 prefix.
           const signedRes = await client.get("/v1/media/upload/signedurl", {
-            params: { isVideo, filename, mimeType },
+            params: { mediaType, filename, mimeType },
           });
           const signedData = signedRes.data?.data;
           const uploadUrl = signedData?.signedUrl ?? signedData?.url;
