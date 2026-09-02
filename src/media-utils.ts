@@ -50,39 +50,3 @@ export const SUPPORTED_URL_SOURCES =
 /** Page links that look importable but are not handled by the URL upload path. */
 export const UNSUPPORTED_URL_SOURCES = "Vimeo and Loom page links are not supported.";
 
-/**
- * The upload formats Speak accepts, mirroring AUDIO_FORMATS and VIDEO_FORMATS in
- * speak-client/src/features/upload/supported-formats.ts, which is what the web dropzone enforces.
- * There is no shared package copy to import; if that file changes, change these.
- *
- * `.mkv` is here and not there because the dropzone rejects it while a URL import still works.
- */
-const AUDIO_EXTENSIONS = [".mp3", ".wav", ".ogg", ".m4a", ".flac", ".m4p", ".aac", ".amr"];
-const URL_VIDEO_EXTENSIONS = [".mp4", ".wmv", ".avi", ".m4v", ".mov", ".flv", ".mkv"];
-
-/**
- * Containers that carry either kind, so the extension settles nothing: `.webm` holds both, and
- * `.mpeg` is MPEG video as often as it is the audio the audio/mpeg MIME type names.
- */
-const AMBIGUOUS_EXTENSIONS = [".webm", ".mpeg", ".mpg", ".ogx"];
-
-/**
- * The media type a URL's own extension proves, or undefined when it proves nothing.
- *
- * `detectMediaType` answers "audio" for anything it does not recognise, which is right for a
- * local file (the extension is always there) and wrong for a URL. A social/video page link —
- * a YouTube watch URL, a TikTok post, an Instagram reel — has no extension at all, so that
- * fallback labelled every one of them audio. The server cannot tell that guess apart from a
- * caller who genuinely asked for audio, so it honoured it and imported the audio track only.
- *
- * Returning undefined lets the caller omit the field and leave the choice to the server, which
- * is the only side that knows what tracks the platform actually offers.
- */
-export function mediaTypeFromUrl(url: string): "audio" | "video" | undefined {
-  // Strip the query/hash first: a pre-signed S3 URL carries ?X-Amz-... after the extension.
-  const ext = path.extname(url.split(/[?#]/)[0]).toLowerCase();
-  if (AMBIGUOUS_EXTENSIONS.includes(ext)) return undefined;
-  if (URL_VIDEO_EXTENSIONS.includes(ext)) return "video";
-  if (AUDIO_EXTENSIONS.includes(ext)) return "audio";
-  return undefined;
-}

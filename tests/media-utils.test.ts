@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getMimeType, isVideoFile, detectMediaType, mediaTypeFromUrl } from "../src/media-utils.js";
+import { getMimeType, isVideoFile, detectMediaType } from "../src/media-utils.js";
 
 describe("media-utils", () => {
   describe("isVideoFile", () => {
@@ -44,49 +44,6 @@ describe("media-utils", () => {
 
     it("defaults to audio for unknown extensions", () => {
       expect(detectMediaType("test.xyz")).toBe("audio");
-    });
-  });
-
-  describe("mediaTypeFromUrl", () => {
-    it("reads the type off a direct file URL", () => {
-      expect(mediaTypeFromUrl("https://cdn.example.com/talk.mp4")).toBe("video");
-      expect(mediaTypeFromUrl("https://cdn.example.com/talk.MOV")).toBe("video");
-      expect(mediaTypeFromUrl("https://cdn.example.com/talk.mp3")).toBe("audio");
-      expect(mediaTypeFromUrl("https://cdn.example.com/talk.m4a")).toBe("audio");
-    });
-
-    // The list mirrors speak-client's supported-formats.ts, so every accepted format resolves.
-    it("covers every upload format the product accepts", () => {
-      for (const ext of ["mp3", "wav", "ogg", "m4a", "flac", "m4p", "aac", "amr"]) {
-        expect(mediaTypeFromUrl(`https://cdn.example.com/a.${ext}`)).toBe("audio");
-      }
-      for (const ext of ["mp4", "wmv", "avi", "m4v", "mov", "flv", "mkv"]) {
-        expect(mediaTypeFromUrl(`https://cdn.example.com/a.${ext}`)).toBe("video");
-      }
-    });
-
-    // .webm holds either kind and .mpeg is video as often as audio, so neither proves anything.
-    it("returns undefined for a container that carries either kind", () => {
-      expect(mediaTypeFromUrl("https://cdn.example.com/a.webm")).toBeUndefined();
-      expect(mediaTypeFromUrl("https://cdn.example.com/a.mpeg")).toBeUndefined();
-      expect(mediaTypeFromUrl("https://cdn.example.com/a.mpg")).toBeUndefined();
-    });
-
-    it("ignores the query string a pre-signed S3 URL appends", () => {
-      expect(mediaTypeFromUrl("https://b.s3.amazonaws.com/k/talk.mp4?X-Amz-Signature=abc")).toBe("video");
-    });
-
-    // The whole point: a page link proves nothing, so the server decides rather than
-    // receiving "audio" and importing a video's audio track only.
-    it("returns undefined for a social or video page link", () => {
-      expect(mediaTypeFromUrl("https://www.youtube.com/watch?v=FQD56iiK5Po")).toBeUndefined();
-      expect(mediaTypeFromUrl("https://youtu.be/FQD56iiK5Po")).toBeUndefined();
-      expect(mediaTypeFromUrl("https://www.tiktok.com/@user/video/123")).toBeUndefined();
-      expect(mediaTypeFromUrl("https://www.instagram.com/reel/Abc123/")).toBeUndefined();
-    });
-
-    it("returns undefined for an unrecognised extension", () => {
-      expect(mediaTypeFromUrl("https://cdn.example.com/notes.xyz")).toBeUndefined();
     });
   });
 

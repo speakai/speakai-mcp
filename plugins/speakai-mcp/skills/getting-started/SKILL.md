@@ -157,9 +157,12 @@ Prefer these over hand-built tool chains when the request matches.
    Loom page links are not supported. Pass the link exactly as the user gave it.
 
    Set `mediaType` whenever the user has said which they want. If they call it an audio
-   file, or ask for audio only, pass `audio`; if they call it a video, pass `video`. Leave
-   it off only when they have not said, and the server picks the best track that platform
-   offers. A video imported as audio can never be analysed as video afterwards.
+   file, or ask for audio only, pass `audio`; if they call it a video, pass `video`.
+
+   Otherwise leave it off and let the server decide. It inspects the actual file for a
+   direct URL, and picks the best track the platform offers for a page link. Do not guess
+   it from the URL: sending a value stops the server inspecting the file, and a video
+   imported as audio can never be analysed as video afterwards.
 2. `get_media_status` with that id. States run `queued`, `preparing`, `processing`,
    `preparingAnalysis`,
    `processed`, or `failed`. Poll every 15 to 30 seconds. Audio under 60 minutes usually

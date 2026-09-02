@@ -682,10 +682,13 @@ describe("Workflows tools (upload_and_analyze)", () => {
     expect(Array.isArray(parsed.nextSteps)).toBe(true);
     expect(parsed.nextSteps.join(" ")).toMatch(/get_media_status/);
 
-    // Verify upload was called correctly
+    // No mediaType: the caller sent none, so the server inspects the file instead of
+    // being handed a guess read off the URL.
+    const [, sentBody] = mockPost.mock.calls[0];
+    expect(sentBody).not.toHaveProperty("mediaType");
+
     expect(mockPost).toHaveBeenCalledWith("/v1/media/upload", expect.objectContaining({
       url: "https://example.com/audio.mp3",
-      mediaType: "audio",
     }));
 
     // Critically: no polling, no transcript/insights fetch.

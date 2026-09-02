@@ -9,7 +9,6 @@ import * as path from "path";
 import {
   getMimeType,
   detectMediaType,
-  mediaTypeFromUrl,
   SUPPORTED_URL_SOURCES,
   UNSUPPORTED_URL_SOURCES,
 } from "../media-utils.js";
@@ -500,7 +499,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       // table when a description interpolates a value it cannot resolve statically.
       url: z.string().describe("Direct/public media file URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
       name: z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
-      mediaType: z.enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want — if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Omit it only when they have not said and the URL is a page link, so the server picks the best track that platform offers. A video imported as "audio" can never be analysed as video afterwards.'),
+      mediaType: z.enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want — if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       sourceLanguage: z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: z.string().optional().describe("Folder ID to place the media in"),
       tags: z.string().optional().describe("Comma-separated tags"),
@@ -519,16 +518,14 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         // (CloudFront / ALB / Anthropic edge) whose idle timeouts kill long
         // synchronous calls before processing finishes. Return media_id and
         // let the caller poll get_media_status.
-        // Send mediaType only when the caller chose one or the URL's extension proves it.
-        // Defaulting a page link to "audio" is indistinguishable, server-side, from a caller
-        // who asked for audio — which is how YouTube videos were imported audio-only.
-        const mediaType = params.mediaType ?? mediaTypeFromUrl(params.url);
-
+        // mediaType is sent only when the caller actually chose one. Deriving it from the URL
+        // would send a guess the server cannot tell apart from a decision, and an explicit
+        // mediaType stops the server probing the real file.
         const uploadBody: Record<string, unknown> = {
           name: params.name ?? params.url.split("/").pop()?.split("?")[0] ?? "Upload",
           url: params.url,
         };
-        if (mediaType) uploadBody.mediaType = mediaType;
+        if (params.mediaType) uploadBody.mediaType = params.mediaType;
         if (params.sourceLanguage) uploadBody.sourceLanguage = params.sourceLanguage;
         if (params.folderId) uploadBody.folderId = params.folderId;
         if (params.tags) uploadBody.tags = params.tags;

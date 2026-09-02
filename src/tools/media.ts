@@ -7,7 +7,6 @@ import { MediaType, MediaState } from "@speakai/shared";
 import {
   isVideoFile,
   getMimeType,
-  mediaTypeFromUrl,
   SUPPORTED_URL_SOURCES,
   UNSUPPORTED_URL_SOURCES,
 } from "../media-utils.js";
@@ -85,7 +84,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
-        .describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want — if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Omit it only when they have not said: for a direct file URL the extension then decides, and for a page link the server picks the best track that platform offers. A video imported as "audio" can never be analysed as video afterwards.'),
+        .describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want — if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       description: z.string().optional().describe("Description of the media file"),
       sourceLanguage: z
         .string()
@@ -122,15 +121,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async (body) => {
       try {
-        // Send mediaType only when the caller chose one or the URL's extension proves it.
-        // A social/video page link has no extension, and the old fallback called every one of
-        // them audio — a guess the server cannot tell apart from a deliberate choice, so it
-        // imported the audio track and the media could never be analysed as video.
-        const mediaType = body.mediaType ?? mediaTypeFromUrl(body.url);
-        const payload: Record<string, unknown> = { ...body };
-        if (mediaType) payload.mediaType = mediaType;
-        else delete payload.mediaType;
-        const result = await api.post("/v1/media/upload", payload);
+        // Forwarded as given: mediaType is sent only when the caller actually chose one.
+        // Deriving it from the URL would send a guess the server cannot tell apart from a
+        // decision, and an explicit mediaType stops the server probing the real file.
+        const result = await api.post("/v1/media/upload", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },

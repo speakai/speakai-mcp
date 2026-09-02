@@ -1178,14 +1178,7 @@ function getMimeType(filePath) {
 function detectMediaType(filePath) {
   return isVideoFile(filePath) ? "video" : "audio";
 }
-function mediaTypeFromUrl(url) {
-  const ext = path.extname(url.split(/[?#]/)[0]).toLowerCase();
-  if (AMBIGUOUS_EXTENSIONS.includes(ext)) return void 0;
-  if (URL_VIDEO_EXTENSIONS.includes(ext)) return "video";
-  if (AUDIO_EXTENSIONS.includes(ext)) return "audio";
-  return void 0;
-}
-var path, VIDEO_EXTENSIONS, MIME_TYPES, SUPPORTED_URL_SOURCES, UNSUPPORTED_URL_SOURCES, AUDIO_EXTENSIONS, URL_VIDEO_EXTENSIONS, AMBIGUOUS_EXTENSIONS;
+var path, VIDEO_EXTENSIONS, MIME_TYPES, SUPPORTED_URL_SOURCES, UNSUPPORTED_URL_SOURCES;
 var init_media_utils = __esm({
   "src/media-utils.ts"() {
     "use strict";
@@ -1204,9 +1197,6 @@ var init_media_utils = __esm({
     };
     SUPPORTED_URL_SOURCES = "YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube";
     UNSUPPORTED_URL_SOURCES = "Vimeo and Loom page links are not supported.";
-    AUDIO_EXTENSIONS = [".mp3", ".wav", ".ogg", ".m4a", ".flac", ".m4p", ".aac", ".amr"];
-    URL_VIDEO_EXTENSIONS = [".mp4", ".wmv", ".avi", ".m4v", ".mov", ".flv", ".mkv"];
-    AMBIGUOUS_EXTENSIONS = [".webm", ".mpeg", ".mpg", ".ogx"];
   }
 });
 
@@ -1268,7 +1258,7 @@ function register(server, client) {
     {
       name: import_zod2.z.string().min(1).describe("Display name for the media file"),
       url: import_zod2.z.string().describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
-      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Omit it only when they have not said: for a direct file URL the extension then decides, and for a page link the server picks the best track that platform offers. A video imported as "audio" can never be analysed as video afterwards.'),
+      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       description: import_zod2.z.string().optional().describe("Description of the media file"),
       sourceLanguage: import_zod2.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
       tags: import_zod2.z.string().optional().describe("Comma-separated tags for the media"),
@@ -1290,11 +1280,7 @@ function register(server, client) {
     },
     async (body) => {
       try {
-        const mediaType = body.mediaType ?? mediaTypeFromUrl(body.url);
-        const payload = { ...body };
-        if (mediaType) payload.mediaType = mediaType;
-        else delete payload.mediaType;
-        const result = await api.post("/v1/media/upload", payload);
+        const result = await api.post("/v1/media/upload", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -5217,7 +5203,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
       // table when a description interpolates a value it cannot resolve statically.
       url: import_zod15.z.string().describe("Direct/public media file URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
       name: import_zod15.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
-      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Omit it only when they have not said and the URL is a page link, so the server picks the best track that platform offers. A video imported as "audio" can never be analysed as video afterwards.'),
+      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       sourceLanguage: import_zod15.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: import_zod15.z.string().optional().describe("Folder ID to place the media in"),
       tags: import_zod15.z.string().optional().describe("Comma-separated tags")
@@ -5231,12 +5217,11 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
     },
     async (params) => {
       try {
-        const mediaType = params.mediaType ?? mediaTypeFromUrl(params.url);
         const uploadBody = {
           name: params.name ?? params.url.split("/").pop()?.split("?")[0] ?? "Upload",
           url: params.url
         };
-        if (mediaType) uploadBody.mediaType = mediaType;
+        if (params.mediaType) uploadBody.mediaType = params.mediaType;
         if (params.sourceLanguage) uploadBody.sourceLanguage = params.sourceLanguage;
         if (params.folderId) uploadBody.folderId = params.folderId;
         if (params.tags) uploadBody.tags = params.tags;
