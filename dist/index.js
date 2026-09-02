@@ -1095,6 +1095,40 @@ var init_dist = __esm({
   }
 });
 
+// src/media-utils.ts
+function isVideoFile(filePath) {
+  return VIDEO_EXTENSIONS.includes(path.extname(filePath).toLowerCase());
+}
+function getMimeType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const isVideo = isVideoFile(filePath);
+  if (ext === ".mp4") return isVideo ? "video/mp4" : "audio/mp4";
+  if (ext === ".webm") return isVideo ? "video/webm" : "audio/webm";
+  return MIME_TYPES[ext] ?? (isVideo ? "video/mp4" : "audio/mpeg");
+}
+function detectMediaType(filePath) {
+  return isVideoFile(filePath) ? "video" : "audio";
+}
+var path, VIDEO_EXTENSIONS, MIME_TYPES;
+var init_media_utils = __esm({
+  "src/media-utils.ts"() {
+    "use strict";
+    path = __toESM(require("path"));
+    VIDEO_EXTENSIONS = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
+    MIME_TYPES = {
+      ".mp3": "audio/mpeg",
+      ".m4a": "audio/mp4",
+      ".wav": "audio/wav",
+      ".ogg": "audio/ogg",
+      ".flac": "audio/flac",
+      ".mov": "video/quicktime",
+      ".avi": "video/x-msvideo",
+      ".mkv": "video/x-matroska",
+      ".wmv": "video/x-ms-wmv"
+    };
+  }
+});
+
 // src/tools/media.ts
 var media_exports = {};
 __export(media_exports, {
@@ -1106,9 +1140,9 @@ function register(server, client) {
     "get_signed_upload_url",
     "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
-      isVideo: import_zod.z.boolean().describe("Set true for video files, false for audio files"),
-      filename: import_zod.z.string().min(1).describe("Original filename including extension"),
-      mimeType: import_zod.z.string().describe('MIME type of the file, e.g. "audio/mp4" or "video/mp4"')
+      filename: import_zod.z.string().min(1).describe('Original filename including extension, e.g. "interview.mp4". The extension decides audio vs video and the storage path, so it must match the real file \u2014 a video named ".mp3" is stored as audio and can never be analysed as video.'),
+      isVideo: import_zod.z.boolean().optional().describe("Override the audio/video decision. Omit to derive it from the filename extension (recommended); only set this when the extension does not reflect the real container."),
+      mimeType: import_zod.z.string().optional().describe('MIME type, e.g. "video/mp4". Omit to derive it from the filename extension.')
     },
     {
       title: "Get Signed Upload URL",
@@ -1119,8 +1153,10 @@ function register(server, client) {
     },
     async ({ isVideo, filename, mimeType }) => {
       try {
+        const resolvedIsVideo = isVideo ?? isVideoFile(filename);
+        const resolvedMimeType = mimeType ?? getMimeType(filename);
         const result = await api.get("/v1/media/upload/signedurl", {
-          params: { isVideo, filename, mimeType }
+          params: { isVideo: resolvedIsVideo, filename, mimeType: resolvedMimeType }
         });
         return {
           content: [
@@ -1141,7 +1177,7 @@ function register(server, client) {
     {
       name: import_zod.z.string().min(1).describe("Display name for the media file"),
       url: import_zod.z.string().describe("Publicly accessible URL of the media file (or pre-signed S3 URL)"),
-      mediaType: import_zod.z.enum([MediaType.AUDIO, MediaType.VIDEO]).describe('Type of media: "audio" or "video"'),
+      mediaType: import_zod.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe(`Type of media: "audio" or "video". Omit to derive it from the URL's file extension (recommended). Set it only when the URL has no usable extension; a video labelled "audio" here can never be analysed as video.`),
       description: import_zod.z.string().optional().describe("Description of the media file"),
       sourceLanguage: import_zod.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
       tags: import_zod.z.string().optional().describe("Comma-separated tags for the media"),
@@ -1163,7 +1199,9 @@ function register(server, client) {
     },
     async (body) => {
       try {
-        const result = await api.post("/v1/media/upload", body);
+        const urlPath = body.url.split(/[?#]/)[0];
+        const mediaType = body.mediaType ?? detectMediaType(urlPath);
+        const result = await api.post("/v1/media/upload", { ...body, mediaType });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -1646,6 +1684,7 @@ var init_media3 = __esm({
     import_zod = require("zod");
     init_client();
     init_dist();
+    init_media_utils();
   }
 });
 
@@ -2697,7 +2736,13 @@ function register7(server, client) {
       tags: import_zod7.z.array(import_zod7.z.string()).optional().describe("Filter media by tags"),
       startDate: import_zod7.z.string().optional().describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
       endDate: import_zod7.z.string().optional().describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
-      isIndividualPrompt: import_zod7.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files.")
+      isIndividualPrompt: import_zod7.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
+      analysisInput: import_zod7.z.enum(["audio", "video"]).optional().describe(
+        "Send the media itself to a multimodal model, not just its transcript. 'audio' analyses tone, pacing, and delivery; 'video' analyses on-screen visuals, gestures, and slides. Requires analysisMediaId. The workspace must have multimodal analysis enabled and the file must be a supported container within the duration limit, otherwise the turn runs transcript-only."
+      ),
+      analysisMediaId: import_zod7.z.string().optional().describe(
+        "The mediaId to analyse multimodally this turn. Required together with analysisInput, and it must be one of the ids in mediaIds; either field alone is rejected."
+      )
     },
     {
       title: "Ask AI About Your Recordings",
@@ -3813,40 +3858,6 @@ var init_clips = __esm({
     import_zod13 = require("zod");
     init_client();
     init_dist();
-  }
-});
-
-// src/media-utils.ts
-function isVideoFile(filePath) {
-  return VIDEO_EXTENSIONS.includes(path.extname(filePath).toLowerCase());
-}
-function getMimeType(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  const isVideo = isVideoFile(filePath);
-  if (ext === ".mp4") return isVideo ? "video/mp4" : "audio/mp4";
-  if (ext === ".webm") return isVideo ? "video/webm" : "audio/webm";
-  return MIME_TYPES[ext] ?? (isVideo ? "video/mp4" : "audio/mpeg");
-}
-function detectMediaType(filePath) {
-  return isVideoFile(filePath) ? "video" : "audio";
-}
-var path, VIDEO_EXTENSIONS, MIME_TYPES;
-var init_media_utils = __esm({
-  "src/media-utils.ts"() {
-    "use strict";
-    path = __toESM(require("path"));
-    VIDEO_EXTENSIONS = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
-    MIME_TYPES = {
-      ".mp3": "audio/mpeg",
-      ".m4a": "audio/mp4",
-      ".wav": "audio/wav",
-      ".ogg": "audio/ogg",
-      ".flac": "audio/flac",
-      ".mov": "video/quicktime",
-      ".avi": "video/x-msvideo",
-      ".mkv": "video/x-matroska",
-      ".wmv": "video/x-ms-wmv"
-    };
   }
 });
 
