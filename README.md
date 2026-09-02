@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 113 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 114 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,10 +394,10 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (113)
+### MCP Tools (114)
 
 <details>
-<summary>Media (17 tools)</summary>
+<summary>Media (18 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -405,6 +405,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `upload_media` | Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a social/video page link resolved automatically (YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru, Rutube). Vimeo and Loom page links are not supported. |
 | `upload_local_file` | Upload a local file directly from disk |
 | `upload_and_analyze` | Upload media from a URL (direct file, or any social/video page link `upload_media` accepts — resolved automatically) and return its `media_id` immediately. Poll `get_media_status` until `processed`, then call `get_media_insights` for AI summaries. Set `mediaType` when the user has said which they want; leave it off otherwise and the server picks the best available track. |
+| `upload_and_analyze_batch` | Upload up to 25 URLs in one call, 5 at a time. Each URL is reported as uploaded or failed with its reason, so one bad link does not sink the batch. Use this instead of calling `upload_and_analyze` in a loop. |
 | `list_media` | List and search media files with filters, pagination, and optional inline data (transcripts, speakers, keywords) via `include` param |
 | `get_media_insights` | Get AI insights — topics, sentiment, summaries, action items |
 | `get_transcript` | Get full transcript with speaker labels and timestamps |

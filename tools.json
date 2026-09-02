@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 113,
+  "totalTools": 114,
   "categories": [
     {
       "id": "media",
@@ -161,6 +161,15 @@
           "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
+        },
+        {
+          "name": "upload_and_analyze_batch",
+          "title": "Upload and Analyze Several URLs",
+          "description": "Upload several URLs in one call — the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to 25 URLs and starts at most 5 at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
         }
       ]
     },

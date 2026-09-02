@@ -4,7 +4,7 @@
 
 ## What this is
 
-A remote MCP (Model Context Protocol) server hosted at `https://api.speakai.co/v1/mcp`. It exposes 113 tools, 5 resources, and 3 prompts for working with a Speak AI workspace. MCP-compatible clients (Claude.ai, Claude Desktop, Claude Code, ChatGPT, Cursor, VS Code) connect using one of two methods:
+A remote MCP (Model Context Protocol) server hosted at `https://api.speakai.co/v1/mcp`. It exposes 114 tools, 5 resources, and 3 prompts for working with a Speak AI workspace. MCP-compatible clients (Claude.ai, Claude Desktop, Claude Code, ChatGPT, Cursor, VS Code) connect using one of two methods:
 
 - **OAuth one-click** — paste the MCP URL into the AI tool, click Allow on the consent popup. No API key required.
 - **Bearer token** — paste the URL plus a Speak AI API key in an `Authorization: Bearer <key>` header.
@@ -45,7 +45,7 @@ If you are an AI assistant (Claude, ChatGPT, etc.) helping a Speak AI customer i
 
 ### When a user asks Speak AI to do something inside the conversation
 
-Once the connector is installed, you have access to 113 tools. Some guidance for choosing efficiently:
+Once the connector is installed, you have access to 114 tools. Some guidance for choosing efficiently:
 
 - **For "what did I talk about" / "find recordings about X" questions**: use `search_media` with a natural-language query. It searches across transcripts, insights, and metadata.
 - **For "ask the AI" questions** (e.g. "what are the recurring themes in my coaching calls?"): use `ask_ai_chat` with optional `mediaIds` to scope the question. This invokes Speak AI's own purpose-built analysis engine which is tuned for transcript-style content.

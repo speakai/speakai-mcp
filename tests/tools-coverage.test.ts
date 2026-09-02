@@ -722,6 +722,139 @@ describe("Workflows tools (upload_and_analyze)", () => {
     }));
   });
 
+  describe("upload_and_analyze_batch", () => {
+    const YT = (n: number) => `https://www.youtube.com/watch?v=vid${n}`;
+
+    it("uploads every URL and reports each one", async () => {
+      mockPost.mockImplementation((_u: string, body: any) =>
+        Promise.resolve({ data: { data: { mediaId: `m-${body.url.slice(-1)}`, state: "pending" } } }),
+      );
+
+      const cb = getToolCallback(server, "upload_and_analyze_batch");
+      const result = await cb({ urls: [YT(1), YT(2), YT(3)] });
+      const parsed = JSON.parse(result.content[0].text);
+
+      expect(parsed.requested).toBe(3);
+      expect(parsed.uploaded).toBe(3);
+      expect(parsed.failed).toBe(0);
+      expect(parsed.media.map((m: any) => m.mediaId)).toEqual(["m-1", "m-2", "m-3"]);
+    });
+
+    // One bad link in a list of good ones must not cost the user the rest of the batch.
+    it("keeps going when one URL fails and reports its reason", async () => {
+      mockPost.mockImplementation((_u: string, body: any) =>
+        body.url.endsWith("vid2")
+          ? Promise.reject(new Error("Could not import this YouTube video."))
+          : Promise.resolve({ data: { data: { mediaId: "ok", state: "pending" } } }),
+      );
+
+      const cb = getToolCallback(server, "upload_and_analyze_batch");
+      const result = await cb({ urls: [YT(1), YT(2), YT(3)] });
+      const parsed = JSON.parse(result.content[0].text);
+
+      expect(parsed.uploaded).toBe(2);
+      expect(parsed.failed).toBe(1);
+      expect(parsed.errors[0].url).toBe(YT(2));
+      expect(parsed.errors[0].error).toMatch(/Could not import/);
+      expect(result.isError).toBeUndefined();
+    });
+
+    it("marks the call an error only when nothing uploaded", async () => {
+      mockPost.mockRejectedValue(new Error("nope"));
+
+      const cb = getToolCallback(server, "upload_and_analyze_batch");
+      const result = await cb({ urls: [YT(1), YT(2)] });
+
+      expect(result.isError).toBe(true);
+      expect(JSON.parse(result.content[0].text).uploaded).toBe(0);
+    });
+
+    it("never runs more than the concurrency cap at once", async () => {
+      let inFlight = 0;
+      let peak = 0;
+      mockPost.mockImplementation(async () => {
+        inFlight++;
+        peak = Math.max(peak, inFlight);
+        await new Promise((r) => setTimeout(r, 5));
+        inFlight--;
+        return { data: { data: { mediaId: "m", state: "pending" } } };
+      });
+
+      const cb = getToolCallback(server, "upload_and_analyze_batch");
+      await cb({ urls: Array.from({ length: 12 }, (_, i) => YT(i)) });
+
+      expect(peak).toBeLessThanOrEqual(5);
+    });
+
+    it("honours concurrency 1 for a strictly sequential import", async () => {
+      let inFlight = 0;
+      let peak = 0;
+      mockPost.mockImplementation(async () => {
+        inFlight++;
+        peak = Math.max(peak, inFlight);
+        await new Promise((r) => setTimeout(r, 5));
+        inFlight--;
+        return { data: { data: { mediaId: "m", state: "pending" } } };
+      });
+
+      const cb = getToolCallback(server, "upload_and_analyze_batch");
+      await cb({ urls: [YT(1), YT(2), YT(3)], concurrency: 1 });
+
+      expect(peak).toBe(1);
+    });
+
+    // The same link twice is the same import and the same charge.
+    it("uploads a duplicated URL once", async () => {
+      mockPost.mockResolvedValue({ data: { data: { mediaId: "m", state: "pending" } } });
+
+      const cb = getToolCallback(server, "upload_and_analyze_batch");
+      const result = await cb({ urls: [YT(1), YT(1), YT(2)] });
+
+      expect(mockPost).toHaveBeenCalledTimes(2);
+      expect(JSON.parse(result.content[0].text).requested).toBe(2);
+    });
+
+    it("applies the shared options to every upload and omits mediaType when unset", async () => {
+      mockPost.mockResolvedValue({ data: { data: { mediaId: "m", state: "pending" } } });
+
+      const cb = getToolCallback(server, "upload_and_analyze_batch");
+      await cb({ urls: [YT(1), YT(2)], folderId: "f1", sourceLanguage: "en-US", tags: "a,b" });
+
+      for (const [, body] of mockPost.mock.calls) {
+        expect(body).toMatchObject({ folderId: "f1", sourceLanguage: "en-US", tags: "a,b" });
+        expect(body).not.toHaveProperty("mediaType");
+      }
+    });
+
+    it("forwards an explicit mediaType to every upload", async () => {
+      mockPost.mockResolvedValue({ data: { data: { mediaId: "m", state: "pending" } } });
+
+      const cb = getToolCallback(server, "upload_and_analyze_batch");
+      await cb({ urls: [YT(1), YT(2)], mediaType: "audio" });
+
+      for (const [, body] of mockPost.mock.calls) expect(body.mediaType).toBe("audio");
+    });
+
+    // A metered vendor sits behind YouTube resolution, so a batch can trip its limit.
+    it("retries once when the upload is rate limited", async () => {
+      let calls = 0;
+      mockPost.mockImplementation(() => {
+        calls++;
+        return calls === 1
+          ? Promise.reject(new Error("YouTube imports are temporarily rate limited."))
+          : Promise.resolve({ data: { data: { mediaId: "m", state: "pending" } } });
+      });
+
+      const cb = getToolCallback(server, "upload_and_analyze_batch");
+      const result = await cb({ urls: [YT(1)] });
+      const parsed = JSON.parse(result.content[0].text);
+
+      expect(calls).toBe(2);
+      expect(parsed.uploaded).toBe(1);
+      expect(parsed.failed).toBe(0);
+    }, 15000);
+  });
+
   it("upload_and_analyze returns error when upload has no mediaId", async () => {
     mockPost.mockResolvedValueOnce({ data: { data: {} } });
 

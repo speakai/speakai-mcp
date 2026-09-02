@@ -25,6 +25,18 @@ import {
 
 type Dict = Record<string, unknown>;
 
+/** Batch import bounds. Concurrency is capped so one call cannot flood the upload API. */
+const MAX_BATCH_URLS = 25;
+const MAX_BATCH_CONCURRENCY = 5;
+const RATE_LIMIT_RETRY_DELAY_MS = 5000;
+
+/**
+ * The one upload failure that clears on its own. YouTube resolution goes through a metered
+ * vendor, so a batch of links can trip its limit even when every link is fine.
+ */
+const isRateLimited = (message: string): boolean =>
+  /rate limit|too many requests|\b429\b/i.test(message);
+
 /**
  * Convert friendly value shorthand into the server's token syntax:
  * - "payload.contact.email" -> "{{trigger.payload.contact.email}}"
@@ -564,7 +576,113 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  registerSpeakTool(server, 
+  registerSpeakTool(server,
+    "upload_and_analyze_batch",
+    `Upload several URLs in one call — the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to ${MAX_BATCH_URLS} URLs and starts at most ${MAX_BATCH_CONCURRENCY} at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.`,
+    {
+      urls: z
+        .array(z.string().min(1))
+        .min(1)
+        .max(MAX_BATCH_URLS)
+        .describe(`The URLs to import, up to ${MAX_BATCH_URLS}. Pass each one exactly as the user gave it; page links are resolved server-side. Duplicates are uploaded once.`),
+      mediaType: z
+        .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
+        .optional()
+        .describe('Applies to every URL in the batch. Send it only when the user has said which they want for all of them — "audio" if they asked for audio only, "video" if they called them videos. Otherwise omit it and the server decides per URL. Mixed batches: leave it off, or split into two calls.'),
+      folderId: z.string().optional().describe("Folder ID for every upload in the batch"),
+      sourceLanguage: z.string().optional().describe("BCP-47 language code applied to every upload, e.g. \"en-US\""),
+      tags: z.string().optional().describe("Comma-separated tags applied to every upload"),
+      concurrency: z
+        .number()
+        .int()
+        .min(1)
+        .max(MAX_BATCH_CONCURRENCY)
+        .optional()
+        .describe(`How many uploads to start at once, 1 to ${MAX_BATCH_CONCURRENCY}. Defaults to ${MAX_BATCH_CONCURRENCY}. Drop it to 1 to import strictly in order.`),
+    },
+    {
+      title: "Upload and Analyze Several URLs",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+    async (params) => {
+      // Same URL twice is the same import and the same charge, so it is sent once.
+      const urls = [...new Set(params.urls.map((u: string) => u.trim()).filter(Boolean))];
+      if (urls.length === 0) {
+        return { content: [{ type: "text", text: "Error: no usable URLs after trimming." }], isError: true };
+      }
+
+      const shared: Record<string, unknown> = {};
+      if (params.mediaType) shared.mediaType = params.mediaType;
+      if (params.sourceLanguage) shared.sourceLanguage = params.sourceLanguage;
+      if (params.folderId) shared.folderId = params.folderId;
+      if (params.tags) shared.tags = params.tags;
+
+      const uploaded: { url: string; mediaId: string; state: string }[] = [];
+      const failed: { url: string; error: string }[] = [];
+
+      // A shared cursor is what bounds concurrency: N workers pull from one queue, so a slow
+      // URL never leaves the others waiting on a fixed-size chunk to drain.
+      let cursor = 0;
+      const workerCount = Math.min(params.concurrency ?? MAX_BATCH_CONCURRENCY, urls.length);
+      const send = (url: string) =>
+        api.post("/v1/media/upload", {
+          ...shared,
+          name: url.split("/").pop()?.split("?")[0] || "Upload",
+          url,
+        });
+
+      const worker = async () => {
+        for (let i = cursor++; i < urls.length; i = cursor++) {
+          const url = urls[i];
+          try {
+            let res;
+            try {
+              res = await send(url);
+            } catch (err) {
+              const message = formatAxiosError(err);
+              if (!isRateLimited(message)) throw err;
+              await new Promise((r) => setTimeout(r, RATE_LIMIT_RETRY_DELAY_MS));
+              res = await send(url);
+            }
+            const mediaId = res.data?.data?.mediaId;
+            if (mediaId) uploaded.push({ url, mediaId, state: res.data?.data?.state ?? "pending" });
+            else failed.push({ url, error: "Upload accepted but no mediaId was returned." });
+          } catch (err) {
+            failed.push({ url, error: formatAxiosError(err) });
+          }
+        }
+      };
+      await Promise.all(Array.from({ length: workerCount }, worker));
+
+      const result = {
+        requested: urls.length,
+        uploaded: uploaded.length,
+        failed: failed.length,
+        media: uploaded,
+        errors: failed,
+        nextSteps: uploaded.length
+          ? [
+              `1. Poll get_media_status for each of the ${uploaded.length} mediaId values every 10-30 seconds, or call list_media on the folder to see them together.`,
+              `2. When one reads "processed", call get_media_insights and get_transcript for it.`,
+              failed.length
+                ? `3. ${failed.length} URL(s) did not upload — report the reasons above rather than silently retrying.`
+                : `3. Nothing failed in this batch.`,
+            ]
+          : ["No uploads were accepted. Report the errors above to the user."],
+      };
+
+      // Every URL failing is a failed call, not a successful batch of failures.
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        ...(uploaded.length === 0 ? { isError: true } : {}),
+      };
+    }
+  );
+
+  registerSpeakTool(server,
     "upload_local_file",
     [
       "Upload a local file to Speak AI for transcription and analysis.",
