@@ -55,6 +55,23 @@ describe("media-utils", () => {
       expect(mediaTypeFromUrl("https://cdn.example.com/talk.m4a")).toBe("audio");
     });
 
+    // The list mirrors speak-client's supported-formats.ts, so every accepted format resolves.
+    it("covers every upload format the product accepts", () => {
+      for (const ext of ["mp3", "wav", "ogg", "m4a", "flac", "m4p", "aac", "amr"]) {
+        expect(mediaTypeFromUrl(`https://cdn.example.com/a.${ext}`)).toBe("audio");
+      }
+      for (const ext of ["mp4", "wmv", "avi", "m4v", "mov", "flv", "mkv"]) {
+        expect(mediaTypeFromUrl(`https://cdn.example.com/a.${ext}`)).toBe("video");
+      }
+    });
+
+    // .webm holds either kind and .mpeg is video as often as audio, so neither proves anything.
+    it("returns undefined for a container that carries either kind", () => {
+      expect(mediaTypeFromUrl("https://cdn.example.com/a.webm")).toBeUndefined();
+      expect(mediaTypeFromUrl("https://cdn.example.com/a.mpeg")).toBeUndefined();
+      expect(mediaTypeFromUrl("https://cdn.example.com/a.mpg")).toBeUndefined();
+    });
+
     it("ignores the query string a pre-signed S3 URL appends", () => {
       expect(mediaTypeFromUrl("https://b.s3.amazonaws.com/k/talk.mp4?X-Amz-Signature=abc")).toBe("video");
     });

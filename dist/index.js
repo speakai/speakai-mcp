@@ -1180,11 +1180,12 @@ function detectMediaType(filePath) {
 }
 function mediaTypeFromUrl(url) {
   const ext = path.extname(url.split(/[?#]/)[0]).toLowerCase();
-  if (VIDEO_EXTENSIONS.includes(ext)) return "video";
+  if (AMBIGUOUS_EXTENSIONS.includes(ext)) return void 0;
+  if (URL_VIDEO_EXTENSIONS.includes(ext)) return "video";
   if (AUDIO_EXTENSIONS.includes(ext)) return "audio";
   return void 0;
 }
-var path, VIDEO_EXTENSIONS, MIME_TYPES, SUPPORTED_URL_SOURCES, UNSUPPORTED_URL_SOURCES, AUDIO_EXTENSIONS;
+var path, VIDEO_EXTENSIONS, MIME_TYPES, SUPPORTED_URL_SOURCES, UNSUPPORTED_URL_SOURCES, AUDIO_EXTENSIONS, URL_VIDEO_EXTENSIONS, AMBIGUOUS_EXTENSIONS;
 var init_media_utils = __esm({
   "src/media-utils.ts"() {
     "use strict";
@@ -1203,7 +1204,9 @@ var init_media_utils = __esm({
     };
     SUPPORTED_URL_SOURCES = "YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube";
     UNSUPPORTED_URL_SOURCES = "Vimeo and Loom page links are not supported.";
-    AUDIO_EXTENSIONS = [".mp3", ".m4a", ".wav", ".ogg", ".flac", ".aac", ".aiff", ".wma"];
+    AUDIO_EXTENSIONS = [".mp3", ".wav", ".ogg", ".m4a", ".flac", ".m4p", ".aac", ".amr"];
+    URL_VIDEO_EXTENSIONS = [".mp4", ".wmv", ".avi", ".m4v", ".mov", ".flv", ".mkv"];
+    AMBIGUOUS_EXTENSIONS = [".webm", ".mpeg", ".mpg", ".ogx"];
   }
 });
 

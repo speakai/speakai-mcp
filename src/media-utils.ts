@@ -50,7 +50,21 @@ export const SUPPORTED_URL_SOURCES =
 /** Page links that look importable but are not handled by the URL upload path. */
 export const UNSUPPORTED_URL_SOURCES = "Vimeo and Loom page links are not supported.";
 
-const AUDIO_EXTENSIONS = [".mp3", ".m4a", ".wav", ".ogg", ".flac", ".aac", ".aiff", ".wma"];
+/**
+ * The upload formats Speak accepts, mirroring AUDIO_FORMATS and VIDEO_FORMATS in
+ * speak-client/src/features/upload/supported-formats.ts, which is what the web dropzone enforces.
+ * There is no shared package copy to import; if that file changes, change these.
+ *
+ * `.mkv` is here and not there because the dropzone rejects it while a URL import still works.
+ */
+const AUDIO_EXTENSIONS = [".mp3", ".wav", ".ogg", ".m4a", ".flac", ".m4p", ".aac", ".amr"];
+const URL_VIDEO_EXTENSIONS = [".mp4", ".wmv", ".avi", ".m4v", ".mov", ".flv", ".mkv"];
+
+/**
+ * Containers that carry either kind, so the extension settles nothing: `.webm` holds both, and
+ * `.mpeg` is MPEG video as often as it is the audio the audio/mpeg MIME type names.
+ */
+const AMBIGUOUS_EXTENSIONS = [".webm", ".mpeg", ".mpg", ".ogx"];
 
 /**
  * The media type a URL's own extension proves, or undefined when it proves nothing.
@@ -67,7 +81,8 @@ const AUDIO_EXTENSIONS = [".mp3", ".m4a", ".wav", ".ogg", ".flac", ".aac", ".aif
 export function mediaTypeFromUrl(url: string): "audio" | "video" | undefined {
   // Strip the query/hash first: a pre-signed S3 URL carries ?X-Amz-... after the extension.
   const ext = path.extname(url.split(/[?#]/)[0]).toLowerCase();
-  if (VIDEO_EXTENSIONS.includes(ext)) return "video";
+  if (AMBIGUOUS_EXTENSIONS.includes(ext)) return undefined;
+  if (URL_VIDEO_EXTENSIONS.includes(ext)) return "video";
   if (AUDIO_EXTENSIONS.includes(ext)) return "audio";
   return undefined;
 }
