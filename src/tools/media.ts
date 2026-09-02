@@ -25,11 +25,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
-        .describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want, or when the filename extension does not reflect the real container. Omit it to derive the type from the extension. This is the field to use: it takes precedence over the deprecated isVideo.'),
-      isVideo: z
-        .boolean()
-        .optional()
-        .describe("Deprecated, use mediaType. Ignored when mediaType is set."),
+        .describe('Type of media: "audio" or "video". It decides the storage path, so it has to match the real file. Send it whenever the user has told you which they want, or when the filename extension does not reflect the real container. Omit it to derive the type from the extension, which is the only evidence available here because the bytes do not exist yet.'),
       mimeType: z
         .string()
         .optional()
@@ -42,12 +38,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       idempotentHint: false,
       openWorldHint: false,
     },
-    async ({ mediaType, isVideo, filename, mimeType }) => {
+    async ({ mediaType, filename, mimeType }) => {
       try {
-        // mediaType, then isVideo, then the filename's extension — the same order the server uses.
-        const resolvedMediaType =
-          mediaType ?? (isVideo ?? isVideoFile(filename) ? MediaType.VIDEO : MediaType.AUDIO);
+        const resolvedMediaType = mediaType ?? (isVideoFile(filename) ? MediaType.VIDEO : MediaType.AUDIO);
         const resolvedMimeType = mimeType ?? getMimeType(filename);
+        // isVideo is derived, never taken from the caller: it is retired from the public contract
+        // but still sent, because a server older than this release requires it on this route.
         const result = await api.get("/v1/media/upload/signedurl", {
           params: {
             mediaType: resolvedMediaType,

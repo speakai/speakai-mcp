@@ -199,7 +199,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       it("passes params correctly", async () => {
         const callback = getToolCallback(server, "get_signed_upload_url");
         await callback({
-          isVideo: true,
+          mediaType: "video",
           filename: "meeting.mp4",
           mimeType: "video/mp4",
         });
@@ -208,8 +208,16 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
         });
       });
 
-      // mediaType is the field the server reads first; isVideo rides along for older servers.
-      it("lets mediaType win over a contradicting isVideo", async () => {
+      // isVideo is off the tool's input but still sent, derived, for a server older than this release.
+      it("sends a derived isVideo that always agrees with mediaType", async () => {
+        const callback = getToolCallback(server, "get_signed_upload_url");
+        await callback({ mediaType: "audio", filename: "meeting.mp4" });
+        expect(mockGet).toHaveBeenCalledWith("/v1/media/upload/signedurl", {
+          params: expect.objectContaining({ mediaType: "audio", isVideo: false }),
+        });
+      });
+
+      it("ignores an isVideo a caller tries to set, rather than letting it contradict mediaType", async () => {
         const callback = getToolCallback(server, "get_signed_upload_url");
         await callback({ mediaType: "audio", isVideo: true, filename: "meeting.mp4" });
         expect(mockGet).toHaveBeenCalledWith("/v1/media/upload/signedurl", {
@@ -217,7 +225,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
         });
       });
 
-      it("derives both from the filename when neither is given", async () => {
+      it("derives both from the filename when mediaType is omitted", async () => {
         const callback = getToolCallback(server, "get_signed_upload_url");
         await callback({ filename: "meeting.mp4" });
         expect(mockGet).toHaveBeenCalledWith("/v1/media/upload/signedurl", {
