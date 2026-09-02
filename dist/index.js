@@ -5255,12 +5255,12 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     "upload_and_analyze_batch",
     `Upload several URLs in one call \u2014 the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to ${MAX_BATCH_URLS} URLs and starts at most ${MAX_BATCH_CONCURRENCY} at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.`,
     {
-      urls: import_zod15.z.array(import_zod15.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe(`The URLs to import, up to ${MAX_BATCH_URLS}. Pass each one exactly as the user gave it; page links are resolved server-side. Duplicates are uploaded once.`),
+      urls: import_zod15.z.array(import_zod15.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Duplicates are uploaded once."),
       mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Applies to every URL in the batch. Send it only when the user has said which they want for all of them \u2014 "audio" if they asked for audio only, "video" if they called them videos. Otherwise omit it and the server decides per URL. Mixed batches: leave it off, or split into two calls.'),
       folderId: import_zod15.z.string().optional().describe("Folder ID for every upload in the batch"),
       sourceLanguage: import_zod15.z.string().optional().describe('BCP-47 language code applied to every upload, e.g. "en-US"'),
       tags: import_zod15.z.string().optional().describe("Comma-separated tags applied to every upload"),
-      concurrency: import_zod15.z.number().int().min(1).max(MAX_BATCH_CONCURRENCY).optional().describe(`How many uploads to start at once, 1 to ${MAX_BATCH_CONCURRENCY}. Defaults to ${MAX_BATCH_CONCURRENCY}. Drop it to 1 to import strictly in order.`)
+      concurrency: import_zod15.z.number().int().min(1).max(MAX_BATCH_CONCURRENCY).optional().describe("How many uploads to start at once, 1 to 5. Defaults to 5. Drop it to 1 to import strictly in order.")
     },
     {
       title: "Upload and Analyze Several URLs",

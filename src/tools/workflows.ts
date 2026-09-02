@@ -584,7 +584,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .array(z.string().min(1))
         .min(1)
         .max(MAX_BATCH_URLS)
-        .describe(`The URLs to import, up to ${MAX_BATCH_URLS}. Pass each one exactly as the user gave it; page links are resolved server-side. Duplicates are uploaded once.`),
+        .describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Duplicates are uploaded once."),
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
@@ -598,7 +598,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .min(1)
         .max(MAX_BATCH_CONCURRENCY)
         .optional()
-        .describe(`How many uploads to start at once, 1 to ${MAX_BATCH_CONCURRENCY}. Defaults to ${MAX_BATCH_CONCURRENCY}. Drop it to 1 to import strictly in order.`),
+        .describe("How many uploads to start at once, 1 to 5. Defaults to 5. Drop it to 1 to import strictly in order."),
     },
     {
       title: "Upload and Analyze Several URLs",
