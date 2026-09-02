@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.24.0 (2026-09-02)
+
+- fix(docs): keep the batch tool's parameter table renderable
+
 ## v1.23.1 (2026-08-28)
 
 - Maintenance release

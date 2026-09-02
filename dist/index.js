@@ -1372,7 +1372,7 @@ function getMimeType(filePath) {
 function detectMediaType(filePath) {
   return isVideoFile(filePath) ? "video" : "audio";
 }
-var path, VIDEO_EXTENSIONS, MIME_TYPES;
+var path, VIDEO_EXTENSIONS, MIME_TYPES, SUPPORTED_URL_SOURCES, UNSUPPORTED_URL_SOURCES;
 var init_media_utils = __esm({
   "src/media-utils.ts"() {
     "use strict";
@@ -1389,6 +1389,8 @@ var init_media_utils = __esm({
       ".mkv": "video/x-matroska",
       ".wmv": "video/x-ms-wmv"
     };
+    SUPPORTED_URL_SOURCES = "YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube";
+    UNSUPPORTED_URL_SOURCES = "Vimeo and Loom page links are not supported.";
   }
 });
 
@@ -1407,7 +1409,7 @@ function register(server, client) {
     "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
     {
       filename: import_zod2.z.string().min(1).describe('Original filename including extension, e.g. "interview.mp4". The extension decides audio vs video and the storage path, so it must match the real file \u2014 a video named ".mp3" is stored as audio and can never be analysed as video.'),
-      isVideo: import_zod2.z.boolean().optional().describe("Override the audio/video decision. Omit to derive it from the filename extension (recommended); only set this when the extension does not reflect the real container."),
+      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". It decides the storage path, so it has to match the real file. Send it whenever the user has told you which they want, or when the filename extension does not reflect the real container. Omit it to derive the type from the extension, which is the only evidence available here because the bytes do not exist yet.'),
       mimeType: import_zod2.z.string().optional().describe('MIME type, e.g. "video/mp4". Omit to derive it from the filename extension.')
     },
     {
@@ -1417,12 +1419,12 @@ function register(server, client) {
       idempotentHint: false,
       openWorldHint: false
     },
-    async ({ isVideo, filename, mimeType }) => {
+    async ({ mediaType, filename, mimeType }) => {
       try {
-        const resolvedIsVideo = isVideo ?? isVideoFile(filename);
+        const resolvedMediaType = mediaType ?? (isVideoFile(filename) ? MediaType.VIDEO : MediaType.AUDIO);
         const resolvedMimeType = mimeType ?? getMimeType(filename);
         const result = await api.get("/v1/media/upload/signedurl", {
-          params: { isVideo: resolvedIsVideo, filename, mimeType: resolvedMimeType }
+          params: { mediaType: resolvedMediaType, filename, mimeType: resolvedMimeType }
         });
         return {
           content: [
@@ -1440,11 +1442,11 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "upload_media",
-    "Upload media from a URL \u2014 a direct/public file URL, a pre-signed S3 URL, or a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar) which Speak resolves to the underlying media automatically. Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file. (Vimeo links are not yet supported.)",
+    `Upload media from a URL \u2014 a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.`,
     {
       name: import_zod2.z.string().min(1).describe("Display name for the media file"),
-      url: import_zod2.z.string().describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link (e.g. an Instagram reel or TikTok URL) \u2014 page links are resolved to the underlying media server-side."),
-      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe(`Type of media: "audio" or "video". Omit to derive it from the URL's file extension (recommended). Set it only when the URL has no usable extension; a video labelled "audio" here can never be analysed as video.`),
+      url: import_zod2.z.string().describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
+      mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       description: import_zod2.z.string().optional().describe("Description of the media file"),
       sourceLanguage: import_zod2.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
       tags: import_zod2.z.string().optional().describe("Comma-separated tags for the media"),
@@ -1466,9 +1468,7 @@ function register(server, client) {
     },
     async (body) => {
       try {
-        const urlPath = body.url.split(/[?#]/)[0];
-        const mediaType = body.mediaType ?? detectMediaType(urlPath);
-        const result = await api.post("/v1/media/upload", { ...body, mediaType });
+        const result = await api.post("/v1/media/upload", body);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -5385,11 +5385,13 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
   registerSpeakTool(
     server,
     "upload_and_analyze",
-    "Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar), which Speak resolves to the underlying media automatically. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts. (Vimeo links are not yet supported.)",
+    `Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.`,
     {
-      url: import_zod15.z.string().describe("Direct/public media file URL, or a shareable social/video page link (e.g. an Instagram reel, TikTok, YouTube, or X post URL) \u2014 page links are resolved to the underlying media server-side. Pass the URL the user gave you as-is."),
+      // A plain literal, not a template: the docs generator drops a tool's whole parameter
+      // table when a description interpolates a value it cannot resolve statically.
+      url: import_zod15.z.string().describe("Direct/public media file URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
       name: import_zod15.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
-      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (default: audio)"),
+      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       sourceLanguage: import_zod15.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: import_zod15.z.string().optional().describe("Folder ID to place the media in"),
       tags: import_zod15.z.string().optional().describe("Comma-separated tags")
@@ -5405,9 +5407,9 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
       try {
         const uploadBody = {
           name: params.name ?? params.url.split("/").pop()?.split("?")[0] ?? "Upload",
-          url: params.url,
-          mediaType: params.mediaType ?? "audio"
+          url: params.url
         };
+        if (params.mediaType) uploadBody.mediaType = params.mediaType;
         if (params.sourceLanguage) uploadBody.sourceLanguage = params.sourceLanguage;
         if (params.folderId) uploadBody.folderId = params.folderId;
         if (params.tags) uploadBody.tags = params.tags;
@@ -5444,6 +5446,84 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
   );
   registerSpeakTool(
     server,
+    "upload_and_analyze_batch",
+    `Upload several URLs in one call \u2014 the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to ${MAX_BATCH_URLS} URLs and starts at most ${MAX_BATCH_CONCURRENCY} at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.`,
+    {
+      urls: import_zod15.z.array(import_zod15.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Duplicates are uploaded once."),
+      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Applies to every URL in the batch. Send it only when the user has said which they want for all of them \u2014 "audio" if they asked for audio only, "video" if they called them videos. Otherwise omit it and the server decides per URL. Mixed batches: leave it off, or split into two calls.'),
+      folderId: import_zod15.z.string().optional().describe("Folder ID for every upload in the batch"),
+      sourceLanguage: import_zod15.z.string().optional().describe('BCP-47 language code applied to every upload, e.g. "en-US"'),
+      tags: import_zod15.z.string().optional().describe("Comma-separated tags applied to every upload"),
+      concurrency: import_zod15.z.number().int().min(1).max(MAX_BATCH_CONCURRENCY).optional().describe("How many uploads to start at once, 1 to 5. Defaults to 5. Drop it to 1 to import strictly in order.")
+    },
+    {
+      title: "Upload and Analyze Several URLs",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async (params) => {
+      const urls = [...new Set(params.urls.map((u) => u.trim()).filter(Boolean))];
+      if (urls.length === 0) {
+        return { content: [{ type: "text", text: "Error: no usable URLs after trimming." }], isError: true };
+      }
+      const shared = {};
+      if (params.mediaType) shared.mediaType = params.mediaType;
+      if (params.sourceLanguage) shared.sourceLanguage = params.sourceLanguage;
+      if (params.folderId) shared.folderId = params.folderId;
+      if (params.tags) shared.tags = params.tags;
+      const uploaded = [];
+      const failed = [];
+      let cursor = 0;
+      const workerCount = Math.min(params.concurrency ?? MAX_BATCH_CONCURRENCY, urls.length);
+      const send = (url) => api.post("/v1/media/upload", {
+        ...shared,
+        name: url.split("/").pop()?.split("?")[0] || "Upload",
+        url
+      });
+      const worker = async () => {
+        for (let i = cursor++; i < urls.length; i = cursor++) {
+          const url = urls[i];
+          try {
+            let res;
+            try {
+              res = await send(url);
+            } catch (err) {
+              const message = formatAxiosError(err);
+              if (!isRateLimited(message)) throw err;
+              await new Promise((r) => setTimeout(r, RATE_LIMIT_RETRY_DELAY_MS));
+              res = await send(url);
+            }
+            const mediaId = res.data?.data?.mediaId;
+            if (mediaId) uploaded.push({ url, mediaId, state: res.data?.data?.state ?? "pending" });
+            else failed.push({ url, error: "Upload accepted but no mediaId was returned." });
+          } catch (err) {
+            failed.push({ url, error: formatAxiosError(err) });
+          }
+        }
+      };
+      await Promise.all(Array.from({ length: workerCount }, worker));
+      const result = {
+        requested: urls.length,
+        uploaded: uploaded.length,
+        failed: failed.length,
+        media: uploaded,
+        errors: failed,
+        nextSteps: uploaded.length ? [
+          `1. Poll get_media_status for each of the ${uploaded.length} mediaId values every 10-30 seconds, or call list_media on the folder to see them together.`,
+          `2. When one reads "processed", call get_media_insights and get_transcript for it.`,
+          failed.length ? `3. ${failed.length} URL(s) did not upload \u2014 report the reasons above rather than silently retrying.` : `3. Nothing failed in this batch.`
+        ] : ["No uploads were accepted. Report the errors above to the user."]
+      };
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        ...uploaded.length === 0 ? { isError: true } : {}
+      };
+    }
+  );
+  registerSpeakTool(
+    server,
     "upload_local_file",
     [
       "Upload a local file to Speak AI for transcription and analysis.",
@@ -5476,11 +5556,10 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
           };
         }
         const filename = path2.basename(filePath);
-        const isVideo = isVideoFile(filePath);
         const mediaType = params.mediaType ?? detectMediaType(filePath);
         const mimeType = getMimeType(filePath);
         const signedRes = await api.get("/v1/media/upload/signedurl", {
-          params: { isVideo, filename, mimeType }
+          params: { mediaType, filename, mimeType }
         });
         const signedData = signedRes.data?.data;
         const uploadUrl = signedData?.preSignedUrl ?? signedData?.signedUrl ?? signedData?.url;
@@ -5536,7 +5615,7 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
     }
   );
 }
-var import_zod15, fs, path2, CANONICAL_FILTER_FIELDS, ID_PATTERN, TRIGGER_SPEC_DESCRIPTION, STEP_SPEC_DESCRIPTION, buildAutomationSchema;
+var import_zod15, fs, path2, MAX_BATCH_URLS, MAX_BATCH_CONCURRENCY, RATE_LIMIT_RETRY_DELAY_MS, isRateLimited, CANONICAL_FILTER_FIELDS, ID_PATTERN, TRIGGER_SPEC_DESCRIPTION, STEP_SPEC_DESCRIPTION, buildAutomationSchema;
 var init_workflows = __esm({
   "src/tools/workflows.ts"() {
     "use strict";
@@ -5549,6 +5628,10 @@ var init_workflows = __esm({
     init_media_utils();
     init_capabilities();
     init_inbound_webhook_utils();
+    MAX_BATCH_URLS = 25;
+    MAX_BATCH_CONCURRENCY = 5;
+    RATE_LIMIT_RETRY_DELAY_MS = 5e3;
+    isRateLimited = (message) => /rate limit|too many requests|\b429\b/i.test(message);
     CANONICAL_FILTER_FIELDS = /* @__PURE__ */ new Set([
       "name",
       "duration",
@@ -6671,7 +6754,7 @@ function registerPrompts(server) {
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
     {
-      url: import_zod18.z.string().describe("URL of the meeting recording \u2014 a direct file link or a shareable social/video link (resolved automatically)"),
+      url: import_zod18.z.string().describe(`URL of the meeting recording \u2014 a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
       name: import_zod18.z.string().optional().describe("Meeting name (optional)")
     },
     async ({ url, name }) => ({
@@ -6693,7 +6776,10 @@ function registerPrompts(server) {
               `   - Open questions or follow-ups needed`,
               `   - Overall sentiment`,
               ``,
-              `Use upload_and_analyze to handle the upload and processing in one step.`
+              `Use upload_and_analyze to handle the upload and processing in one step. Pass the URL`,
+              `exactly as given \u2014 a page link is resolved server-side. If I told you whether this is`,
+              `an audio or a video recording, pass that as mediaType; if I did not say, leave it off`,
+              `and let the server pick the best available track.`
             ].join("\n")
           }
         }
@@ -6781,6 +6867,7 @@ var init_prompts = __esm({
   "src/prompts.ts"() {
     "use strict";
     import_zod18 = require("zod");
+    init_media_utils();
   }
 });
 
@@ -6906,6 +6993,7 @@ var init_tool_names = __esm({
       // workflows (high-level wrappers around media + upload + automation tools)
       "build_automation",
       "upload_and_analyze",
+      "upload_and_analyze_batch",
       "upload_local_file",
       // users / team management
       "list_users",
@@ -7362,11 +7450,10 @@ function createCli() {
       let state;
       if (isLocalFile) {
         const filename = pathMod.basename(source);
-        const isVideo = isVideoFile(source);
         const mediaType = opts.type ?? detectMediaType(source);
         const mimeType = getMimeType(source);
         const signedRes = await client.get("/v1/media/upload/signedurl", {
-          params: { isVideo, filename, mimeType }
+          params: { mediaType, filename, mimeType }
         });
         const signedData = signedRes.data?.data;
         const uploadUrl = signedData?.signedUrl ?? signedData?.url;

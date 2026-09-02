@@ -3,7 +3,7 @@ name: social-url-import
 description: Import public social and video links into Speak AI and read the results. Use this when someone pastes a YouTube, TikTok, Instagram, X, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru or Rutube link and wants it transcribed, summarized, analyzed or compared, when they hand over a list of links to process together, or when a link import fails and you need to tell them why. Covers which tool to call, what to pass for mediaType, how the batch import paces itself, and which failures are worth retrying. Uses upload_and_analyze, upload_and_analyze_batch, get_media_status, get_transcript, get_media_insights and ask_ai_chat.
 license: MIT
 metadata:
-  server-version: "1.23.1"
+  server-version: "1.24.0"
   categories: "media, magic-prompt"
 ---
 
