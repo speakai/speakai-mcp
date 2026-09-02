@@ -402,9 +402,9 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | Tool | Description |
 |---|---|
 | `get_signed_upload_url` | Get a pre-signed S3 URL for direct file upload |
-| `upload_media` | Upload media from a URL — a direct/public file URL or a social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, …) resolved automatically. |
+| `upload_media` | Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a social/video page link resolved automatically (YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru, Rutube). Vimeo and Loom page links are not supported. |
 | `upload_local_file` | Upload a local file directly from disk |
-| `upload_and_analyze` | Upload media from a URL (direct file or social/video link, resolved automatically) and return its `media_id` immediately. Poll `get_media_status` until `processed`, then call `get_media_insights` for AI summaries. |
+| `upload_and_analyze` | Upload media from a URL (direct file, or any social/video page link `upload_media` accepts — resolved automatically) and return its `media_id` immediately. Poll `get_media_status` until `processed`, then call `get_media_insights` for AI summaries. Leave `mediaType` unset for a page link so the best available track is imported. |
 | `list_media` | List and search media files with filters, pagination, and optional inline data (transcripts, speakers, keywords) via `include` param |
 | `get_media_insights` | Get AI insights — topics, sentiment, summaries, action items |
 | `get_transcript` | Get full transcript with speaker labels and timestamps |

@@ -30,7 +30,7 @@
         {
           "name": "upload_media",
           "title": "Upload Media from URL",
-          "description": "Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar) which Speak resolves to the underlying media automatically. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file. (Vimeo links are not yet supported.)",
+          "description": "Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -48,7 +48,7 @@
         {
           "name": "upload_and_analyze",
           "title": "Upload and Analyze Media",
-          "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar), which Speak resolves to the underlying media automatically. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts. (Vimeo links are not yet supported.)",
+          "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,

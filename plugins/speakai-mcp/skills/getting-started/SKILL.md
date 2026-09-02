@@ -147,9 +147,16 @@ Prefer these over hand-built tool chains when the request matches.
 
 ### Transcribe a recording and read the results
 
-1. `upload_and_analyze` with a direct file URL or a shareable video link. It returns
+1. `upload_and_analyze` with a direct file URL or a shareable page link. It returns
    `mediaId` right away. For a file on disk use `upload_local_file`. For a two-step
    upload use `get_signed_upload_url`, PUT the bytes, then `upload_media`.
+
+   Page links are resolved to the underlying media server-side. Supported: YouTube,
+   TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion,
+   Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and
+   Loom page links are not supported. Pass the link exactly as the user gave it, and
+   leave `mediaType` unset — the server picks the best track that platform offers, and
+   a video imported as audio can never be analysed as video afterwards.
 2. `get_media_status` with that id. States run `queued`, `preparing`, `processing`,
    `preparingAnalysis`,
    `processed`, or `failed`. Poll every 15 to 30 seconds. Audio under 60 minutes usually

@@ -6,7 +6,14 @@ import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType } from "@speakai/shared";
 import * as fs from "fs";
 import * as path from "path";
-import { getMimeType, isVideoFile, detectMediaType } from "../media-utils.js";
+import {
+  getMimeType,
+  isVideoFile,
+  detectMediaType,
+  mediaTypeFromUrl,
+  SUPPORTED_URL_SOURCES,
+  UNSUPPORTED_URL_SOURCES,
+} from "../media-utils.js";
 import { MULTIMODAL_DISABLED_MESSAGE, multimodalCapability } from "../capabilities.js";
 import {
   fetchInboundWebhookInfo,
@@ -488,11 +495,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "upload_and_analyze",
-    "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video link (YouTube, Instagram, TikTok, X, Facebook, Reddit, SoundCloud, and similar), which Speak resolves to the underlying media automatically. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts. (Vimeo links are not yet supported.)",
+    `Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.`,
     {
-      url: z.string().describe("Direct/public media file URL, or a shareable social/video page link (e.g. an Instagram reel, TikTok, YouTube, or X post URL) — page links are resolved to the underlying media server-side. Pass the URL the user gave you as-is."),
+      url: z.string().describe(`Direct/public media file URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. Accepts links from: ${SUPPORTED_URL_SOURCES}. Pass the URL the user gave you as-is; do not try to convert it to a file URL first.`),
       name: z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
-      mediaType: z.enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]]).optional().describe("Media type (default: audio)"),
+      mediaType: z.enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]]).optional().describe('Type of media: "audio" or "video". Omit for a social/video page link (recommended) — the server picks the best available track for that platform. Set it only when the URL has no usable extension and you know which you want; a video labelled "audio" here can never be analysed as video.'),
       sourceLanguage: z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: z.string().optional().describe("Folder ID to place the media in"),
       tags: z.string().optional().describe("Comma-separated tags"),
@@ -511,11 +518,16 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         // (CloudFront / ALB / Anthropic edge) whose idle timeouts kill long
         // synchronous calls before processing finishes. Return media_id and
         // let the caller poll get_media_status.
+        // Send mediaType only when the caller chose one or the URL's extension proves it.
+        // Defaulting a page link to "audio" is indistinguishable, server-side, from a caller
+        // who asked for audio — which is how YouTube videos were imported audio-only.
+        const mediaType = params.mediaType ?? mediaTypeFromUrl(params.url);
+
         const uploadBody: Record<string, unknown> = {
           name: params.name ?? params.url.split("/").pop()?.split("?")[0] ?? "Upload",
           url: params.url,
-          mediaType: params.mediaType ?? "audio",
         };
+        if (mediaType) uploadBody.mediaType = mediaType;
         if (params.sourceLanguage) uploadBody.sourceLanguage = params.sourceLanguage;
         if (params.folderId) uploadBody.folderId = params.folderId;
         if (params.tags) uploadBody.tags = params.tags;

@@ -51,6 +51,7 @@ Once the connector is installed, you have access to 113 tools. Some guidance for
 - **For "ask the AI" questions** (e.g. "what are the recurring themes in my coaching calls?"): use `ask_ai_chat` with optional `mediaIds` to scope the question. This invokes Speak AI's own purpose-built analysis engine which is tuned for transcript-style content.
 - **For long-history queries**: prefer `search_media` + `ask_ai_chat` over `list_media` (which returns metadata, not content).
 - **For uploading new recordings**: call `upload_and_analyze` which returns a `media_id` immediately. Then poll `get_media_status` until `processed`, then call `get_media_insights` for the AI summary. Do NOT block waiting for transcription to complete in a single tool call.
+- **For a link rather than a file**: `upload_and_analyze` and `upload_media` both accept a shareable page link and resolve it server-side — YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Pass the URL exactly as the user gave it, and leave `mediaType` unset so the best available track is imported — labelling a video "audio" is permanent and blocks video analysis.
 - **For exporting**: use `export_multiple_media` with `merge: true` instead of N individual `export_media` calls.
 - **For renaming speakers across many files**: use `bulk_update_transcript_speakers` (max 500 files per call) instead of N individual `update_transcript_speakers` calls.
 

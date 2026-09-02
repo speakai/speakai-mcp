@@ -692,6 +692,33 @@ describe("Workflows tools (upload_and_analyze)", () => {
     expect(mockGet).not.toHaveBeenCalled();
   });
 
+  // Regression: a YouTube watch URL has no file extension. Sending a guessed "audio" made the
+  // server import the audio track only, and an .mp3 object can never be analysed as video.
+  it("upload_and_analyze omits mediaType for a YouTube link so the server chooses", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: { data: { mediaId: "m1", state: "pending" } },
+    });
+
+    const cb = getToolCallback(server, "upload_and_analyze");
+    await cb({ url: "https://www.youtube.com/watch?v=FQD56iiK5Po" });
+
+    const [, body] = mockPost.mock.calls[0];
+    expect(body).not.toHaveProperty("mediaType");
+  });
+
+  it("upload_and_analyze still forwards an explicit mediaType for a page link", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: { data: { mediaId: "m1", state: "pending" } },
+    });
+
+    const cb = getToolCallback(server, "upload_and_analyze");
+    await cb({ url: "https://www.youtube.com/watch?v=FQD56iiK5Po", mediaType: "video" });
+
+    expect(mockPost).toHaveBeenCalledWith("/v1/media/upload", expect.objectContaining({
+      mediaType: "video",
+    }));
+  });
+
   it("upload_and_analyze returns error when upload has no mediaId", async () => {
     mockPost.mockResolvedValueOnce({ data: { data: {} } });
 

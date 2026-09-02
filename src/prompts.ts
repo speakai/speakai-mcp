@@ -1,12 +1,13 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { SUPPORTED_URL_SOURCES } from "./media-utils.js";
 
 export function registerPrompts(server: McpServer): void {
   server.prompt(
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis — transcript, insights, action items, and key takeaways.",
     {
-      url: z.string().describe("URL of the meeting recording — a direct file link or a shareable social/video link (resolved automatically)"),
+      url: z.string().describe(`URL of the meeting recording — a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
       name: z.string().optional().describe("Meeting name (optional)"),
     },
     async ({ url, name }) => ({
@@ -28,7 +29,9 @@ export function registerPrompts(server: McpServer): void {
               `   - Open questions or follow-ups needed`,
               `   - Overall sentiment`,
               ``,
-              `Use upload_and_analyze to handle the upload and processing in one step.`,
+              `Use upload_and_analyze to handle the upload and processing in one step. Pass the URL`,
+              `exactly as given — a page link is resolved server-side — and leave mediaType unset so`,
+              `the best available track is imported.`,
             ].join("\n"),
           },
         },
