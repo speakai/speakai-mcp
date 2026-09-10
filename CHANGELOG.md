@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.24.1 (2026-09-10)
+
+- fix(annotations): stop marking first-party CRUD tools as open-world
+
 ## v1.24.0 (2026-09-02)
 
 - fix(docs): keep the batch tool's parameter table renderable
