@@ -511,7 +511,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
     },
     async ({ dashboardId }) => {
       try {

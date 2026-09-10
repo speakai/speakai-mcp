@@ -453,7 +453,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "list_recorders",
@@ -480,7 +480,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "get_recorder_recordings",
@@ -507,7 +507,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "update_recorder_questions",
@@ -516,7 +516,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "check_recorder_status",
@@ -534,7 +534,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         }
       ]
     },
@@ -692,7 +692,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "update_automation",
@@ -701,7 +701,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "toggle_automation_status",
@@ -710,7 +710,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "list_automation_names",
@@ -737,7 +737,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "bulk_assign_automation_folders",
@@ -746,7 +746,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "run_automations",
@@ -800,7 +800,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         }
       ]
     },
@@ -888,7 +888,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "get_text_insight",
@@ -976,7 +976,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "update_embed",
@@ -985,7 +985,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "check_embed",
@@ -1136,7 +1136,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "get_dashboard_speakers_insight",

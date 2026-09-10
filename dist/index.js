@@ -2052,7 +2052,7 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -2718,7 +2718,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -2779,7 +2779,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -2893,7 +2893,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ recorderId, ...body }) => {
       try {
@@ -2929,7 +2929,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ recorderId, ...body }) => {
       try {
@@ -2957,7 +2957,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ recorderId }) => {
       try {
@@ -3030,7 +3030,7 @@ function register6(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -3065,7 +3065,7 @@ function register6(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ embedId, ...body }) => {
       try {
@@ -4268,7 +4268,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -4304,7 +4304,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ automationId, ...body }) => {
       try {
@@ -4338,7 +4338,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ automationId }) => {
       try {
@@ -4367,7 +4367,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -4396,7 +4396,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -5136,7 +5136,7 @@ function register14(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (args2) => {
       const { name, trigger, steps, automationId, description, isActive, orTriggers } = args2;
@@ -6466,7 +6466,7 @@ function register16(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ dashboardId }) => {
       try {
