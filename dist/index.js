@@ -2151,9 +2151,10 @@ function register2(server, client) {
     },
     async ({ mediaId, ...body }) => {
       try {
+        const payload = body.text !== void 0 ? { ...body, rawText: body.text } : body;
         const result = await api.put(
           `/v1/text/update/${mediaId}`,
-          body
+          payload
         );
         return {
           content: [
@@ -4661,7 +4662,7 @@ function register11(server, client) {
   registerSpeakTool(
     server,
     "update_webhook",
-    "Update an existing webhook. This replaces the webhook config, so `callbackUrl` must always be supplied.",
+    "Update an existing webhook. This is a partial update \u2014 only the fields you supply are changed; `callbackUrl` is always required, the rest are left untouched if omitted.",
     {
       webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the webhook"),
       callbackUrl: import_zod12.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
@@ -5134,7 +5135,7 @@ function register14(server, client) {
     {
       title: "Build Automation",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false
     },

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.24.2 (2026-09-11)
+
+- fix(annotations): correct destructiveHint on build_automation, update_webhook wording, and stop update_text_note from blanking content
+
 ## v1.24.1 (2026-09-10)
 
 - fix(annotations): stop marking first-party CRUD tools as open-world
