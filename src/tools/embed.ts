@@ -43,16 +43,21 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_embed",
-    "Update an existing embed widget — appearance/feature toggles via `meta`, plus scope and privacy.",
+    "Update an existing embed widget — appearance/feature toggles via `meta`, plus scope and privacy. " +
+      "Setting `privacyMode` clears any existing password unless a new one is supplied in the same call.",
     {
       embedId: z.string().min(1).describe("Unique identifier of the embed"),
       mediaId: z.string().optional().describe("Media file the embed points to"),
-      folderIds: z
-        .array(z.string())
+      privacyMode: z
+        .string()
         .optional()
-        .describe("Folder IDs the embed covers"),
-      privacyMode: z.string().optional().describe("Privacy mode for the embed"),
-      embedType: z.string().optional().describe("Embed type"),
+        .describe(
+          "Privacy mode for the embed. Changing this clears the existing password unless `password` is also supplied in the same call.",
+        ),
+      password: z
+        .string()
+        .optional()
+        .describe("Password to protect the embed with when privacyMode is private. Only applied when privacyMode is also sent."),
       meta: z
         .record(z.unknown())
         .optional()
@@ -63,7 +68,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Embed Widget",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },

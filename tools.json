@@ -981,9 +981,9 @@
         {
           "name": "update_embed",
           "title": "Update Embed Widget",
-          "description": "Update an existing embed widget — appearance/feature toggles via `meta`, plus scope and privacy.",
+          "description": "Update an existing embed widget — appearance/feature toggles via `meta`, plus scope and privacy. Setting `privacyMode` clears any existing password unless a new one is supplied in the same call.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
