@@ -798,7 +798,7 @@
           "title": "Build Automation",
           "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. Prefer this over create_automation unless you need raw control.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         }
@@ -831,7 +831,7 @@
         {
           "name": "update_webhook",
           "title": "Update Webhook",
-          "description": "Update an existing webhook. This replaces the webhook config, so `callbackUrl` must always be supplied.",
+          "description": "Update an existing webhook. This is a partial update — only the fields you supply are changed; `callbackUrl` is always required, the rest are left untouched if omitted.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,

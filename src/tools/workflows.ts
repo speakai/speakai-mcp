@@ -202,7 +202,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Build Automation",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },
