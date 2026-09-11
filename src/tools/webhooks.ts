@@ -72,7 +72,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_webhook",
-    "Update an existing webhook. This replaces the webhook config, so `callbackUrl` must always be supplied.",
+    "Update an existing webhook. This is a partial update — only the fields you supply are changed; `callbackUrl` is always required, the rest are left untouched if omitted.",
     {
       webhookId: z.string().min(1).describe("Unique identifier of the webhook"),
       callbackUrl: z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),

@@ -147,9 +147,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async ({ mediaId, ...body }) => {
       try {
+        // The endpoint keys its word-count/text update entirely off `rawText`;
+        // sending `text` without it is silently treated as "clear the text".
+        const payload = body.text !== undefined ? { ...body, rawText: body.text } : body;
         const result = await api.put(
           `/v1/text/update/${mediaId}`,
-          body
+          payload
         );
         return {
           content: [

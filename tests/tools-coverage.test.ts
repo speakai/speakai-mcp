@@ -502,12 +502,21 @@ describe("Text tools", () => {
     expect(mockGet).toHaveBeenCalledWith("/v1/text/reanalyze/t1");
   });
 
-  it("update_text_note calls PUT /v1/text/update/:id", async () => {
+  it("update_text_note calls PUT /v1/text/update/:id and mirrors text into rawText", async () => {
     const cb = getToolCallback(server, "update_text_note");
     await cb({ mediaId: "t1", name: "Renamed", text: "Updated content" });
     expect(mockPut).toHaveBeenCalledWith("/v1/text/update/t1", {
       name: "Renamed",
       text: "Updated content",
+      rawText: "Updated content",
+    });
+  });
+
+  it("update_text_note omits rawText when text isn't being changed", async () => {
+    const cb = getToolCallback(server, "update_text_note");
+    await cb({ mediaId: "t1", name: "Renamed only" });
+    expect(mockPut).toHaveBeenCalledWith("/v1/text/update/t1", {
+      name: "Renamed only",
     });
   });
 
