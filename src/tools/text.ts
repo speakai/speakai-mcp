@@ -106,7 +106,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async ({ mediaId }) => {
       try {
-        const result = await api.get(`/v1/text/reanalyze/${mediaId}`);
+        const result = await api.get(`/v1/media/reanalyze/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },

@@ -496,10 +496,10 @@ describe("Text tools", () => {
     expect(mockGet).toHaveBeenCalledWith("/v1/text/insight/t1");
   });
 
-  it("reanalyze_text calls GET /v1/text/reanalyze/:id", async () => {
+  it("reanalyze_text calls GET /v1/media/reanalyze/:id", async () => {
     const cb = getToolCallback(server, "reanalyze_text");
     await cb({ mediaId: "t1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/text/reanalyze/t1");
+    expect(mockGet).toHaveBeenCalledWith("/v1/media/reanalyze/t1");
   });
 
   it("update_text_note calls PUT /v1/text/update/:id and mirrors text into rawText", async () => {
