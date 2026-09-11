@@ -10,6 +10,28 @@ export const passthroughOutputSchema = {
   data: z.unknown().describe("Response payload from the Speak AI API"),
 } as const;
 
+// Shared by every tool whose endpoint accepts speakerHints (media upload,
+// media metadata update, folder create/update, recorder create/update).
+export const speakerHintsShape = {
+  speakerHints: z
+    .object({
+      expectedSpeakers: z
+        .number()
+        .int()
+        .min(1)
+        .max(10)
+        .optional()
+        .describe("Expected number of speakers, helps label speakers correctly"),
+      names: z
+        .array(z.string().max(50))
+        .max(10)
+        .optional()
+        .describe("Names of the people speaking, used to label speakers"),
+    })
+    .optional()
+    .describe("Optional. Who is speaking in the recording(s); improves speaker labeling."),
+} as const;
+
 type ToolResultContent =
   | { type: "text"; text: string }
   | { type: "image"; data: string; mimeType: string };

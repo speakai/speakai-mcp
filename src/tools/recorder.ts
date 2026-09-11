@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, speakerHintsShape } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 // Valid recorder question answer types. Source of truth: RecorderAnswerType in
@@ -55,6 +55,7 @@ const recorderConfigShape = {
     .describe(
       "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }",
     ),
+  ...speakerHintsShape,
 };
 
 export function register(server: McpServer, client?: AxiosInstance): void {
