@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.24.3 (2026-09-11)
+
+- fix: correct reanalyze_text's endpoint and update_embed's password handling
+
 ## v1.24.2 (2026-09-11)
 
 - fix(annotations): correct destructiveHint on build_automation, update_webhook wording, and stop update_text_note from blanking content

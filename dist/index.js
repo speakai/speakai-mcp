@@ -2116,7 +2116,7 @@ function register2(server, client) {
     },
     async ({ mediaId }) => {
       try {
-        const result = await api.get(`/v1/text/reanalyze/${mediaId}`);
+        const result = await api.get(`/v1/media/reanalyze/${mediaId}`);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -3050,13 +3050,14 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "update_embed",
-    "Update an existing embed widget \u2014 appearance/feature toggles via `meta`, plus scope and privacy.",
+    "Update an existing embed widget \u2014 appearance/feature toggles via `meta`, plus scope and privacy. Setting `privacyMode` clears any existing password unless a new one is supplied in the same call.",
     {
       embedId: import_zod7.z.string().min(1).describe("Unique identifier of the embed"),
       mediaId: import_zod7.z.string().optional().describe("Media file the embed points to"),
-      folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs the embed covers"),
-      privacyMode: import_zod7.z.string().optional().describe("Privacy mode for the embed"),
-      embedType: import_zod7.z.string().optional().describe("Embed type"),
+      privacyMode: import_zod7.z.string().optional().describe(
+        "Privacy mode for the embed. Changing this clears the existing password unless `password` is also supplied in the same call."
+      ),
+      password: import_zod7.z.string().optional().describe("Password to protect the embed with when privacyMode is private. Only applied when privacyMode is also sent."),
       meta: import_zod7.z.record(import_zod7.z.unknown()).optional().describe(
         "Embed appearance & feature toggles: { backgroundImg, logo, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }"
       )
@@ -3064,7 +3065,7 @@ function register6(server, client) {
     {
       title: "Update Embed Widget",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
