@@ -696,8 +696,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Aggregate run counts for an automation over a period — how many completed, failed, or were stopped.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
-      from: z.string().optional().describe("ISO date to count from"),
-      to: z.string().optional().describe("ISO date to count to"),
+      days: z
+        .number()
+        .int()
+        .min(1)
+        .max(90)
+        .optional()
+        .describe(
+          "How many days back to count, 1-90. The run ledger is kept for 90 days, so that is the whole window.",
+        ),
     },
     {
       title: "Get Automation Run Stats",

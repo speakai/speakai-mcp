@@ -167,6 +167,56 @@ describe("Automations tools", () => {
     expect(mockPost).not.toHaveBeenCalledWith("/v1/automations/", expect.anything());
   });
 
+  it("get_automation_run_stats sends the window the server's schema accepts", async () => {
+    // Regression: this tool shipped with invented `from`/`to` params. The endpoint's Joi
+    // schema takes `days` (1-90) and rejects unknown keys.
+    const cb = getToolCallback(server, "get_automation_run_stats");
+    await cb({ automationId: "auto1", days: 7 });
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations/auto1/runs/stats", { params: { days: 7 } });
+  });
+
+  it("get_automation_run summarises which way each branch went", async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          status: "completed",
+          steps: [
+            { stepId: "c", stepType: "condition", status: "completed", outputs: { branch: "true" } },
+            { stepId: "yes", stepType: "notify", status: "completed", branch: "true", branchSkipped: false },
+            { stepId: "no", stepType: "notify", status: "completed", branch: "false", branchSkipped: true },
+          ],
+        },
+      },
+    });
+    const cb = getToolCallback(server, "get_automation_run");
+    const result = await cb({ automationId: "auto1", runId: "run1" });
+    const body = JSON.parse(result.content[0].text);
+    expect(body.branchSummary.conditions).toEqual([{ stepId: "c", took: "true" }]);
+    expect(body.branchSummary.stepsSkippedBecauseTheirBranchWasNotTaken).toEqual(["no"]);
+    expect(body.branchSummary.stepsThatRan).toEqual(["c", "yes"]);
+  });
+
+  it("says so when a run reads as killed but a leg did real work", async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          status: "killed",
+          steps: [
+            { stepId: "c", stepType: "condition", status: "completed", outputs: { branch: "true" } },
+            { stepId: "yes", stepType: "notify", status: "completed" },
+            { stepId: "f", stepType: "filter", status: "killed", branch: "false" },
+          ],
+        },
+      },
+    });
+    const cb = getToolCallback(server, "get_automation_run");
+    const result = await cb({ automationId: "auto1", runId: "run1" });
+    const body = JSON.parse(result.content[0].text);
+    expect(body.branchSummary.note).toContain("ran to completion first");
+  });
+
   it("update_automation calls PUT /v1/automations/:id", async () => {
     const cb = getToolCallback(server, "update_automation");
     await cb({ automationId: "auto1", name: "Updated" });

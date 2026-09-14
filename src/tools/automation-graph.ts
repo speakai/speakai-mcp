@@ -427,6 +427,54 @@ export function incomingTypesByStep(
   return byStep;
 }
 
+/**
+ * Whether a media item can be in the run's context by the time this step runs.
+ *
+ * This is the question a filter or condition really asks, and it is NOT the declared IO
+ * flow. `evaluateFilterStep` reads the Media doc through `ctx.mediaId` whatever the graph
+ * says is flowing — so a condition placed after a NOTIFY (which declares DATA out) still
+ * resolves `duration` fine, and the server accepts it. What actually fails is a run where
+ * `ctx.mediaId` was never set: an inbound-webhook trigger before any SPEAK_UPLOAD, where
+ * `getMediaContext()` returns null and the step fails with "Media not found".
+ *
+ * A SPEAK_UPLOAD sets `ctx.mediaId` (graphRunner.ts:466), so anything downstream of one has
+ * media even on a webhook run.
+ */
+function mediaAvailabilityByStep(steps: WireStep[], rootType: IOType): Map<string, boolean> {
+  const available = new Map<string, boolean>();
+  const rootHasMedia = rootType === "media";
+  const byId = new Map(steps.map((step) => [step.stepId, step]));
+  const hasDependencies = steps.some((step) => (step.dependsOn ?? []).length > 0);
+
+  if (!hasDependencies) {
+    // Linear graph: array order is execution order.
+    let seen = rootHasMedia;
+    for (const step of steps) {
+      available.set(step.stepId, seen);
+      if (step.stepType === "speak-upload") seen = true;
+    }
+    return available;
+  }
+
+  const resolving = new Set<string>();
+  const at = (stepId: string): boolean => {
+    const cached = available.get(stepId);
+    if (cached !== undefined) return cached;
+    if (resolving.has(stepId)) return rootHasMedia;
+    resolving.add(stepId);
+    const parents = (byId.get(stepId)?.dependsOn ?? []).filter((id) => byId.has(id));
+    // Every path into the step must carry media, or one of them fails.
+    const result = parents.length
+      ? parents.every((id) => byId.get(id)!.stepType === "speak-upload" || at(id))
+      : rootHasMedia;
+    resolving.delete(stepId);
+    available.set(stepId, result);
+    return result;
+  };
+  for (const step of steps) at(step.stepId);
+  return available;
+}
+
 // ── validation ──────────────────────────────────────────────────────────────
 
 export interface ValidateOptions {
@@ -689,6 +737,7 @@ export function validateGraph(steps: WireStep[], opts: ValidateOptions = {}): Va
   const rootType = opts.triggerSlug ? TRIGGER_OUT[opts.triggerSlug] : undefined;
   if (rootType) {
     const incomingByStep = incomingTypesByStep(steps, rootType);
+    const hasMedia = mediaAvailabilityByStep(steps, rootType);
 
     for (const step of steps) {
       const incomingTypes = incomingByStep.get(step.stepId) ?? new Set([rootType]);
@@ -735,7 +784,7 @@ export function validateGraph(steps: WireStep[], opts: ValidateOptions = {}): Va
           `Upload the payload first and use fieldsMap (create_automation) or mapFields (build_automation) to write ` +
           `"${field}" onto the media as a custom field, then test that field id here.`;
 
-        if (flowing === "data" || flowing === "notify") {
+        if (!hasMedia.get(step.stepId)) {
           errors.push(
             `Step "${step.stepId}" tests "${field}", but at this point in the automation nothing has produced a media item yet — ` +
               `and a ${step.stepType} can only read a media item and earlier step answers, never the trigger payload. ` +
@@ -753,8 +802,13 @@ export function validateGraph(steps: WireStep[], opts: ValidateOptions = {}): Va
         }
 
         if (isCanonicalFilterField(field)) {
+          // On a DATA/NOTIFY flow the server shape-checks the field as a payload path
+          // instead of matching the typed table (catalogService.ts:1180), and the runner
+          // reads the media doc regardless — so a media field after a NOTIFY saves AND
+          // works. Only the strict flows get the table.
+          const strictFlow = flowing === "media" || flowing === "insight" || flowing === "file";
           const allowed = FILTER_FIELDS_BY_IOTYPE[flowing] ?? [];
-          if (!allowed.includes(canonicalFilterField(field))) {
+          if (strictFlow && !allowed.includes(canonicalFilterField(field))) {
             errors.push(
               `Step "${step.stepId}" tests "${field}", which is not available here: what reaches this step is "${flowing}"` +
                 (flowing === "insight"
@@ -769,9 +823,9 @@ export function validateGraph(steps: WireStep[], opts: ValidateOptions = {}): Va
         // means the field is simply not available), and the server checks ownership for
         // FILTER rules only — a CONDITION naming a stranger's field id is accepted and
         // then routes wrongly forever, which is why the id is checked for both here.
-        if (flowing !== "media") {
+        if (flowing === "insight" || flowing === "file") {
           errors.push(
-            `Step "${step.stepId}" tests the custom field "${field}", but custom fields can only be read while a media item is flowing (here it is "${flowing}").`,
+            `Step "${step.stepId}" tests the custom field "${field}", but straight after an AI step only "answer" can be tested. Move the ${step.stepType} before the AI step.`,
           );
           continue;
         }

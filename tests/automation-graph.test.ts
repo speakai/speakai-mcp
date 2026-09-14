@@ -257,6 +257,30 @@ describe("validateGraph — accepted, then wrong at run time", () => {
     expect(errors).toContain("nothing has produced a media item yet");
   });
 
+  it("allows a media field after a step that outputs DATA — the runner reads the media doc anyway", () => {
+    // Regression: the declared IO flow is not the question. `evaluateFilterStep` resolves
+    // fields through ctx.mediaId whatever the graph says is flowing, and the server accepts
+    // this shape (verified against a running server). Refusing it blocked a legal automation.
+    const steps: WireStep[] = [
+      { stepId: "s1", stepType: "notify", notify: { channel: "in_app", message: "x" } },
+      { stepId: "s2", stepType: "condition", dependsOn: ["s1"], condition: { logic: "AND", rules: [{ field: "duration", op: "gt", value: 1 }] } },
+      { stepId: "s3", stepType: "notify", dependsOn: ["s2"], branch: "true", notify: { channel: "in_app", message: "y" } },
+    ];
+    expect(validateGraph(steps, { triggerSlug: "media_analyzed" }).errors).toEqual([]);
+  });
+
+  it("allows a custom field once an upload has put media in context on a webhook run", () => {
+    // The workaround the payload-path error recommends has to actually work.
+    const steps: WireStep[] = [
+      { stepId: "s1", stepType: "speak-upload", speakUpload: { sourceMode: "url", sourceUrl: "{{trigger.payload.url}}", folderId: "f1" } },
+      { stepId: "s2", stepType: "condition", dependsOn: ["s1"], condition: { logic: "AND", rules: [{ field: "fldB", op: "eq", value: "x" }] } },
+      { stepId: "s3", stepType: "notify", dependsOn: ["s2"], branch: "true", notify: { channel: "in_app", message: "y" } },
+    ];
+    expect(
+      validateGraph(steps, { triggerSlug: "inbound_webhook", knownFieldIds: new Set(["fldB"]) }).errors,
+    ).toEqual([]);
+  });
+
   it("refuses a media field tested straight after an AI step", () => {
     // The runner would evaluate it fine; the save gate refuses it, so catching it here is
     // the difference between a useful message and a 400.

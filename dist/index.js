@@ -4247,6 +4247,34 @@ function incomingTypesByStep(steps, rootType) {
   }
   return byStep;
 }
+function mediaAvailabilityByStep(steps, rootType) {
+  const available = /* @__PURE__ */ new Map();
+  const rootHasMedia = rootType === "media";
+  const byId = new Map(steps.map((step) => [step.stepId, step]));
+  const hasDependencies = steps.some((step) => (step.dependsOn ?? []).length > 0);
+  if (!hasDependencies) {
+    let seen = rootHasMedia;
+    for (const step of steps) {
+      available.set(step.stepId, seen);
+      if (step.stepType === "speak-upload") seen = true;
+    }
+    return available;
+  }
+  const resolving = /* @__PURE__ */ new Set();
+  const at = (stepId) => {
+    const cached2 = available.get(stepId);
+    if (cached2 !== void 0) return cached2;
+    if (resolving.has(stepId)) return rootHasMedia;
+    resolving.add(stepId);
+    const parents = (byId.get(stepId)?.dependsOn ?? []).filter((id) => byId.has(id));
+    const result = parents.length ? parents.every((id) => byId.get(id).stepType === "speak-upload" || at(id)) : rootHasMedia;
+    resolving.delete(stepId);
+    available.set(stepId, result);
+    return result;
+  };
+  for (const step of steps) at(step.stepId);
+  return available;
+}
 function validateGraph(steps, opts = {}) {
   const errors = [];
   const warnings = [];
@@ -4417,6 +4445,7 @@ function validateGraph(steps, opts = {}) {
   const rootType = opts.triggerSlug ? TRIGGER_OUT[opts.triggerSlug] : void 0;
   if (rootType) {
     const incomingByStep = incomingTypesByStep(steps, rootType);
+    const hasMedia = mediaAvailabilityByStep(steps, rootType);
     for (const step of steps) {
       const incomingTypes = incomingByStep.get(step.stepId) ?? /* @__PURE__ */ new Set([rootType]);
       const io = ACTION_IO[step.stepType];
@@ -4441,7 +4470,7 @@ function validateGraph(steps, opts = {}) {
           continue;
         }
         const payloadAdvice = `Upload the payload first and use fieldsMap (create_automation) or mapFields (build_automation) to write "${field}" onto the media as a custom field, then test that field id here.`;
-        if (flowing === "data" || flowing === "notify") {
+        if (!hasMedia.get(step.stepId)) {
           errors.push(
             `Step "${step.stepId}" tests "${field}", but at this point in the automation nothing has produced a media item yet \u2014 and a ${step.stepType} can only read a media item and earlier step answers, never the trigger payload. As written the run would stop here with "Media not found". ${payloadAdvice}`
           );
@@ -4454,17 +4483,18 @@ function validateGraph(steps, opts = {}) {
           continue;
         }
         if (isCanonicalFilterField(field)) {
+          const strictFlow = flowing === "media" || flowing === "insight" || flowing === "file";
           const allowed = FILTER_FIELDS_BY_IOTYPE[flowing] ?? [];
-          if (!allowed.includes(canonicalFilterField(field))) {
+          if (strictFlow && !allowed.includes(canonicalFilterField(field))) {
             errors.push(
               `Step "${step.stepId}" tests "${field}", which is not available here: what reaches this step is "${flowing}"` + (flowing === "insight" ? `, so only "answer" can be tested. Move the ${step.stepType} before the AI step to test media fields.` : `, which offers: ${allowed.join(", ") || "no built-in fields"}.`)
             );
           }
           continue;
         }
-        if (flowing !== "media") {
+        if (flowing === "insight" || flowing === "file") {
           errors.push(
-            `Step "${step.stepId}" tests the custom field "${field}", but custom fields can only be read while a media item is flowing (here it is "${flowing}").`
+            `Step "${step.stepId}" tests the custom field "${field}", but straight after an AI step only "answer" can be tested. Move the ${step.stepType} before the AI step.`
           );
           continue;
         }
@@ -5090,8 +5120,9 @@ function register10(server, client) {
     "Aggregate run counts for an automation over a period \u2014 how many completed, failed, or were stopped.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
-      from: import_zod11.z.string().optional().describe("ISO date to count from"),
-      to: import_zod11.z.string().optional().describe("ISO date to count to")
+      days: import_zod11.z.number().int().min(1).max(90).optional().describe(
+        "How many days back to count, 1-90. The run ledger is kept for 90 days, so that is the whole window."
+      )
     },
     {
       title: "Get Automation Run Stats",
