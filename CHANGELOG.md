@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.25.0 (2026-09-14)
+
+- fix(automations): correct two things end-to-end testing caught
+
 ## v1.24.3 (2026-09-11)
 
 - fix: correct reanalyze_text's endpoint and update_embed's password handling
