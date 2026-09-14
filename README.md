@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 114 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 119 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,7 +394,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (114)
+### MCP Tools (119)
 
 <details>
 <summary>Media (18 tools)</summary>
@@ -481,7 +481,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Automations (15 tools)</summary>
+<summary>Automations (20 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -490,6 +490,11 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `list_automation_names` | List automations as lightweight name + id pairs |
 | `get_automation` | Get automation details (trigger + step graph) |
 | `get_automation_runs` | Get an automation's run history |
+| `get_automation_run` | Get one run in full — every step, plus which way each branch went |
+| `get_automation_run_stats` | Aggregate run outcome counts over a period |
+| `test_automation` | Run an automation once against one media item (real side effects) |
+| `describe_automation_graph` | Show a saved automation's steps as an indented branch tree |
+| `validate_automation_graph` | Check a step graph for problems without saving it |
 | `create_automation` | Create an automation rule (V2 trigger + steps graph) |
 | `update_automation` | Update an automation (replaces trigger + steps) |
 | `toggle_automation_status` | Enable or disable an automation |

@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 114,
+  "totalTools": 119,
   "categories": [
     {
       "id": "media",
@@ -800,6 +800,51 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_automation_run",
+          "title": "Get Automation Run",
+          "description": "Get one automation run in full: every step, in dependency order, with what it produced and why it stopped. Use this after test_automation or to explain a run that went the wrong way. On a branched automation the run's overall status is not the whole story — a filter that stops one leg marks the entire run \"killed\" even when the other leg finished its work — so read the per-step summary this returns, not just the status.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_automation_run_stats",
+          "title": "Get Automation Run Stats",
+          "description": "Aggregate run counts for an automation over a period — how many completed, failed, or were stopped.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "test_automation",
+          "title": "Test Automation",
+          "description": "Run an automation once against one media item to see which way it branches. THIS HAS REAL SIDE EFFECTS: only Speak's own run notifications are suppressed — outbound webhooks fire, Composio actions run against the connected third party, and AI steps are billed. Ask the user before calling it on an automation that posts anywhere outside Speak. It also needs a mediaId and sends no webhook payload, so an inbound-webhook automation cannot be meaningfully tested this way — its payload tokens will resolve to empty. Returns a runId; read the result with get_automation_run.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "validate_automation_graph",
+          "title": "Validate Automation Graph",
+          "description": "Check a step graph without saving anything. Reports the same problems create_automation and update_automation would refuse — branch wiring, rules a condition cannot actually read, shapes the Speak web editor could not reopen — plus non-blocking warnings. Use it to iterate on a branched automation instead of discovering the problems one failed save at a time.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "describe_automation_graph",
+          "title": "Describe Automation Graph",
+          "description": "Show a saved automation's steps as an indented branch tree instead of a flat list. Worth calling before update_automation, which replaces the whole automation: editing one leg means re-sending every step with its dependsOn intact, and this shows what the shape currently is.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
           "openWorldHint": false
         }
       ]

@@ -78,6 +78,16 @@ const additions: Record<string, string[]> = {
     "get_webhook_attempts",
     "build_automation",
   ],
+  // NOTE: the "automations-webhooks" key above matches no category id in tools.json
+  // (the categories are "automations" and "webhooks"), so it has been a no-op. Left in
+  // place rather than removed as part of an unrelated change; new entries go here.
+  automations: [
+    "get_automation_run",
+    "get_automation_run_stats",
+    "test_automation",
+    "validate_automation_graph",
+    "describe_automation_graph",
+  ],
 };
 
 // Brand-new categories.

@@ -18,6 +18,16 @@ import {
   resolveAutomationInboundWebhook,
   unwrapData,
 } from "./inbound-webhook-utils.js";
+import {
+  compileGraph,
+  incomingTypesByStep,
+  validateGraph,
+  looksLikeCustomFieldId,
+  TRIGGER_OUT,
+  type GraphNode,
+  type IOType,
+  type WireStep,
+} from "./automation-graph.js";
 
 // ---------------------------------------------------------------------------
 // build_automation — high-level automation builder
@@ -130,13 +140,19 @@ const STEP_SPEC_DESCRIPTION =
   "Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, " +
   "\"payload.<path>\" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw " +
   "{{...}} tokens — inside longer text, write the full {{trigger.payload.<path>}} form.\n" +
-  "- { do: \"filter\", rules: [{ field, op, value? }], logic?: \"AND\"|\"OR\" } — continue only if rules match. " +
-  "Fields: media flows use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; " +
-  "webhook payloads use payload paths like \"contact.status\". Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n" +
-  "- { do: \"branch\", rules, logic? } — like filter but routes instead of stopping; later steps with " +
-  "runWhen: \"true\"|\"false\" only run on that outcome. NOTE: branch routing requires the server's DAG runner " +
-  "(feature-flagged); when it is off, steps run in order and runWhen markers are ignored — prefer filter for " +
-  "guaranteed gating\n" +
+  "- { do: \"filter\", rules: [{ field, op, value? }], logic?: \"AND\"|\"OR\" } — continue only if rules match, " +
+  "otherwise the run stops here. Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n" +
+  "- { do: \"branch\", rules, logic?, then: [steps], otherwise: [steps], thenEnds?, otherwiseEnds? } — routes " +
+  "instead of stopping. `then` runs when the rules match, `otherwise` when they do not, and whatever follows the " +
+  "branch runs on both paths. Set thenEnds/otherwiseEnds to true to finish the run on that side instead of " +
+  "carrying on. One side may be empty (\"if it matches do this, otherwise just carry on\"), but not both. " +
+  "Branches may nest three deep, and a nested branch must be the LAST step of the side it sits on.\n" +
+  "  Rule fields for BOTH filter and branch depend on what reaches the step: while media is flowing use " +
+  "name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; straight after an ai_chat step " +
+  "only \"answer\" is available, so put the branch BEFORE the ai_chat step if you need a media field. " +
+  "A filter and a branch CANNOT read the webhook payload — they only see the media and earlier answers. " +
+  "To branch on payload data, upload first with mapFields to write the value into a custom field, then branch on " +
+  "that field.\n" +
   "- { do: \"upload\", source (URL or payload.<path>, required), name?, language? (e.g. \"en-US\"), " +
   "folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name " +
   "— dynamic routing), onNoFolderMatch?: \"create\"|\"default\", mapFields?: { <field name or id>: <value or payload.<path>> } " +
@@ -151,8 +167,10 @@ const STEP_SPEC_DESCRIPTION =
   "- { do: \"notify\", message (required, tokens allowed), channel?: \"in_app\"|\"email\"|\"slack\" (default in_app; " +
   "email currently falls back to an in-app notification), target? (reserved — not yet used for delivery) }\n" +
   "- { do: \"call_webhook\", url (required), method?, headers?, body? (string or object template, tokens allowed) }\n" +
-  "Steps may also set runWhen (after a branch step). Composio app actions (Google Drive, Slack apps, …) are not " +
-  "supported by this builder yet — use create_automation directly for those.";
+  "Legacy: a flat list where steps after a branch carry runWhen: \"true\"|\"false\" is still accepted and folded " +
+  "into then/otherwise, but it cannot express nesting or an ending side — prefer then/otherwise. " +
+  "Composio app actions (Google Drive, Slack apps, …) are not supported by this builder yet — use " +
+  "create_automation directly for those.";
 
 /** Input shape for build_automation after zod validation. */
 interface BuildAutomationArgs {
@@ -290,32 +308,59 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         };
 
         // ---- steps ----
-        const wireSteps: Dict[] = [];
-        let lastBranchStepId: string | null = null;
-        // IO type flowing into the next step (the server's catalog contract).
-        let flowing = isWebhookAutomation ? "data" : "media";
-        for (let i = 0; i < steps.length; i++) {
-          const spec = steps[i] as Dict;
-          const stepId = `s${i + 1}`;
+        // The draft is built as a TREE (a branch owns two ordered legs) and flattened into
+        // the dependsOn graph the server stores exactly once, in compileGraph. Walking a
+        // flat list with one cursor — which is what this used to do — cannot express a leg
+        // that ends, a merge, or a branch inside a branch, and it leaves every unmarked
+        // step parentless, which a branched graph is refused for.
+        let idSeq = 0;
+        const nextStepId = () => `s${++idSeq}`;
+
+        /**
+         * Fold the legacy flat form (a `branch` step followed by steps carrying
+         * `runWhen`) into the nested form. Kept so specs written against the old shape
+         * keep working; it cannot express nesting or an ending leg, which is why the
+         * nested `then`/`otherwise` form is what the tool documents.
+         */
+        const foldLegacyRunWhen = (specs: Dict[]): Dict[] => {
+          const out: Dict[] = [];
+          for (let i = 0; i < specs.length; i++) {
+            const spec = { ...specs[i] };
+            out.push(spec);
+            if (String(spec.do ?? "") !== "branch") continue;
+            if (spec.then !== undefined || spec.otherwise !== undefined) continue;
+            const thenLeg: Dict[] = [];
+            const elseLeg: Dict[] = [];
+            let j = i + 1;
+            for (; j < specs.length; j++) {
+              const runWhen = (specs[j] as Dict).runWhen;
+              if (runWhen !== "true" && runWhen !== "false") break;
+              const { runWhen: _drop, ...rest } = specs[j] as Dict;
+              (runWhen === "true" ? thenLeg : elseLeg).push(rest);
+            }
+            if (thenLeg.length || elseLeg.length) {
+              spec.then = thenLeg;
+              spec.otherwise = elseLeg;
+              i = j - 1;
+            }
+          }
+          return out;
+        };
+
+        /** One step's wire body. Rule fields are left RAW — they need the step's incoming
+         *  IO type to resolve, and that is only known once the graph has been flattened. */
+        const buildStepBody = async (stepId: string, spec: Dict, where: string): Promise<Dict> => {
           const doType = String(spec.do ?? "");
           const step: Dict = { stepId };
-          if (spec.runWhen === "true" || spec.runWhen === "false") {
-            if (!lastBranchStepId) throw new Error(`Step ${i + 1}: runWhen requires an earlier branch step`);
-            step.branch = spec.runWhen;
-            step.dependsOn = [lastBranchStepId];
-          }
 
           if (doType === "filter" || doType === "branch") {
             step.stepType = doType === "filter" ? "filter" : "condition";
-            const block = {
+            step[doType === "filter" ? "filter" : "condition"] = {
               logic: spec.logic === "OR" ? "OR" : "AND",
-              rules: await buildRules((spec.rules as Array<Dict>) ?? [], flowing, doType === "filter"),
+              rules: ((spec.rules as Array<Dict>) ?? []).map((rule) => ({ ...rule })),
             };
-            step[doType === "filter" ? "filter" : "condition"] = block;
-            if (doType === "branch") lastBranchStepId = stepId;
-            // passthrough: flowing type unchanged
           } else if (doType === "upload") {
-            if (!spec.source) throw new Error(`Step ${i + 1} (upload): \`source\` is required (URL or payload.<path>)`);
+            if (!spec.source) throw new Error(`${where} (upload): \`source\` is required (URL or payload.<path>)`);
             const upload: Dict = {
               sourceMode: "url",
               sourceUrl: tokenize(spec.source),
@@ -341,7 +386,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
               };
               if (spec.folder) upload.folderId = await resolveFolder(api, String(spec.folder), await getFolders(), createdFolders);
             } else {
-              if (!spec.folder) throw new Error(`Step ${i + 1} (upload): provide \`folder\` (name or id) or \`folderFromPayload\``);
+              if (!spec.folder) throw new Error(`${where} (upload): provide \`folder\` (name or id) or \`folderFromPayload\``);
               upload.folderId = await resolveFolder(api, String(spec.folder), await getFolders(), createdFolders);
             }
             if (spec.mapFields && typeof spec.mapFields === "object") {
@@ -349,7 +394,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
               const fieldsMap: Dict = {};
               for (const [ref, value] of Object.entries(spec.mapFields as Dict)) {
                 if (value !== null && typeof value === "object") {
-                  throw new Error(`Step ${i + 1} (upload): mapFields["${ref}"] must be a string or number, not an object`);
+                  throw new Error(`${where} (upload): mapFields["${ref}"] must be a string or number, not an object`);
                 }
                 // The server's fieldsMap validation requires string values.
                 fieldsMap[resolveField(ref, fieldList)] = tokenize(String(value));
@@ -358,11 +403,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
             }
             step.stepType = "speak-upload";
             step.speakUpload = upload;
-            flowing = "media";
           } else if (doType === "ai_chat") {
             const hasSaveToFields = Array.isArray(spec.saveToFields) && spec.saveToFields.length > 0;
             if (!spec.prompt && !hasSaveToFields) {
-              throw new Error(`Step ${i + 1} (ai_chat): provide \`prompt\`, \`saveToFields\`, or both`);
+              throw new Error(`${where} (ai_chat): provide \`prompt\`, \`saveToFields\`, or both`);
             }
             const magicPrompt: Dict = { prompt: spec.prompt ?? "", assistantType: "general" };
             if (spec.title) magicPrompt.title = spec.title;
@@ -372,7 +416,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
               const analysis = String(spec.analyse ?? spec.analyze);
               if (!["transcript", "audio", "video"].includes(analysis)) {
                 throw new Error(
-                  `Step ${i + 1} (ai_chat): analyse must be "transcript", "audio" or "video", got "${analysis}"`,
+                  `${where} (ai_chat): analyse must be "transcript", "audio" or "video", got "${analysis}"`,
                 );
               }
               // transcript is the default; sending it would persist a key that means nothing.
@@ -380,53 +424,134 @@ export function register(server: McpServer, client?: AxiosInstance): void {
             }
             if (Array.isArray(spec.saveToFields) && spec.saveToFields.length) {
               if (spec.saveToFields.length > 10) {
-                throw new Error(`Step ${i + 1} (ai_chat): saveToFields supports at most 10 fields`);
+                throw new Error(`${where} (ai_chat): saveToFields supports at most 10 fields`);
               }
               const fieldList = await getFields();
               magicPrompt.fieldIds = (spec.saveToFields as string[]).map((ref) => resolveField(String(ref), fieldList));
             }
             step.stepType = "magic-prompt";
             step.magicPrompt = magicPrompt;
-            flowing = "insight";
           } else if (doType === "translate") {
-            if (!spec.language) throw new Error(`Step ${i + 1} (translate): \`language\` is required (e.g. "es-ES")`);
+            if (!spec.language) throw new Error(`${where} (translate): \`language\` is required (e.g. "es-ES")`);
             step.stepType = "translation";
             step.translation = { targetLanguage: spec.language };
-            flowing = "media";
           } else if (doType === "notify") {
-            if (!spec.message) throw new Error(`Step ${i + 1} (notify): \`message\` is required`);
+            if (!spec.message) throw new Error(`${where} (notify): \`message\` is required`);
             const channel = spec.channel === undefined ? "in_app" : String(spec.channel);
             if (!["in_app", "email", "slack"].includes(channel)) {
-              throw new Error(`Step ${i + 1} (notify): channel must be "in_app", "email", or "slack" (got "${channel}")`);
+              throw new Error(`${where} (notify): channel must be "in_app", "email", or "slack" (got "${channel}")`);
             }
             const notify: Dict = { channel, message: tokenize(spec.message) };
             if (spec.target) notify.target = String(spec.target);
             step.stepType = "notify";
             step.notify = notify;
-            flowing = "data";
           } else if (doType === "call_webhook") {
-            if (!spec.url) throw new Error(`Step ${i + 1} (call_webhook): \`url\` is required`);
+            if (!spec.url) throw new Error(`${where} (call_webhook): \`url\` is required`);
             const method = spec.method === undefined ? "POST" : String(spec.method).toUpperCase();
             if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-              throw new Error(`Step ${i + 1} (call_webhook): method must be GET, POST, PUT, PATCH, or DELETE (got "${spec.method}")`);
+              throw new Error(`${where} (call_webhook): method must be GET, POST, PUT, PATCH, or DELETE (got "${spec.method}")`);
             }
-            const outbound: Dict = {
-              url: tokenize(spec.url),
-              method,
-            };
+            const outbound: Dict = { url: tokenize(spec.url), method };
             if (spec.headers && typeof spec.headers === "object") outbound.headers = spec.headers;
             if (spec.body !== undefined) {
               outbound.bodyTemplate = typeof spec.body === "string" ? tokenize(spec.body) : spec.body;
             }
             step.stepType = "outbound-webhook";
             step.outboundWebhook = outbound;
-            flowing = "data";
           } else {
             throw new Error(
-              `Step ${i + 1}: unknown \`do\`: "${doType}". Use filter, branch, upload, ai_chat, translate, notify, or call_webhook.`,
+              `${where}: unknown \`do\`: "${doType}". Use filter, branch, upload, ai_chat, translate, notify, or call_webhook.`,
             );
           }
-          wireSteps.push(step);
+          return step;
+        };
+
+        /** Build the authoring tree, recursing into a branch's two legs. */
+        const buildNodes = async (specs: Dict[], path: string): Promise<GraphNode[]> => {
+          const nodes: GraphNode[] = [];
+          const folded = foldLegacyRunWhen(specs);
+          for (const [index, spec] of folded.entries()) {
+            const where = `${path}[${index}]`;
+            const stepId = nextStepId();
+            const body = await buildStepBody(stepId, spec, where);
+            if (String(spec.do ?? "") !== "branch") {
+              nodes.push({ step: body as unknown as WireStep });
+              continue;
+            }
+            nodes.push({
+              step: body as unknown as WireStep,
+              legs: {
+                true: await buildNodes((spec.then as Dict[]) ?? [], `${where}.then`),
+                false: await buildNodes((spec.otherwise as Dict[]) ?? [], `${where}.otherwise`),
+              },
+              legExit: {
+                true: spec.thenEnds === true ? "end" : "rejoin",
+                false: spec.otherwiseEnds === true ? "end" : "rejoin",
+              },
+            });
+          }
+          return nodes;
+        };
+
+        const nodes = await buildNodes(steps as Dict[], "steps");
+        const wireSteps = compileGraph(nodes) as unknown as Dict[];
+
+        // Rule fields resolve against what actually reaches THIS step, read from the
+        // edges — not from a cursor dragged down the array. On a branched graph the two
+        // differ: the second leg and the merge would otherwise be resolved against
+        // whatever the first leg left behind.
+        const triggerSlug = String((trigger as Dict).on ?? "");
+        const rootType = TRIGGER_OUT[triggerSlug] ?? (isWebhookAutomation ? "data" : "media");
+        const incomingByStep = incomingTypesByStep(wireSteps as unknown as WireStep[], rootType);
+        for (const step of wireSteps) {
+          const stepType = String(step.stepType);
+          if (stepType !== "filter" && stepType !== "condition") continue;
+          const incoming = incomingByStep.get(String(step.stepId)) ?? new Set([rootType]);
+          const flowing = [...incoming][0] ?? rootType;
+          const key = stepType === "filter" ? "filter" : "condition";
+          const block = step[key] as { logic: string; rules: Array<Dict> };
+          block.rules = await buildRules(block.rules ?? [], flowing, stepType === "filter");
+        }
+
+        // A rule naming a bare field id never triggers the lazy field load above (only a
+        // NAME needs resolving), and the server checks ownership for FILTER rules only — so
+        // a condition on a stranger's field id would reach nobody's validator. Load the list
+        // when any rule looks like a field id, so the check below has something to check.
+        const rulesReferenceFieldIds = wireSteps.some((step) => {
+          const key = step.stepType === "condition" ? "condition" : step.stepType === "filter" ? "filter" : null;
+          if (!key) return false;
+          const rules = (step[key] as { rules?: Array<Dict> } | undefined)?.rules ?? [];
+          return rules.some((rule) => looksLikeCustomFieldId(String(rule.field ?? "")));
+        });
+        // getFields memoizes, so this reuses the list when name resolution already fetched it.
+        const knownFieldIds = rulesReferenceFieldIds
+          ? new Set((await getFields()).map((entry) => entry.id))
+          : null;
+
+        // ---- refuse what the server would take and then run wrongly ----
+        // Three different gates gave three different answers before this existed: the save
+        // gate rejects some shapes, the web editor rejects others the server stores happily,
+        // and a third group passes both and misbehaves at run time. A caller reaching the
+        // API through MCP passes through none of the editor's checks, so they run here.
+        const graphCheck = validateGraph(wireSteps as unknown as WireStep[], {
+          triggerSlug,
+          // build_automation only writes instant automations; a schedule comes through
+          // create_automation, which runs the same validator with its own runType.
+          runType: "instant",
+          knownFieldIds: knownFieldIds,
+        });
+        if (graphCheck.errors.length) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text:
+                  `Error: this automation cannot be saved as described.\n\n` +
+                  graphCheck.errors.map((e) => `- ${e}`).join("\n"),
+              },
+            ],
+            isError: true as const,
+          };
         }
 
         // ---- assemble + send ----
@@ -467,6 +592,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           ...(typeof result.data === "object" ? result.data : { data: result.data }),
         };
         if (createdFolders.length) response.createdFolders = createdFolders;
+        if (graphCheck.warnings.length) response.warnings = graphCheck.warnings;
 
         if (isWebhookAutomation && resolvedId) {
           try {
