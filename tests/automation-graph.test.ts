@@ -359,6 +359,50 @@ describe("validateGraph — accepted, then wrong at run time", () => {
   });
 });
 
+describe("a Composio step inside a leg", () => {
+  // Not reachable in the live harness (the test workspace has no connected account), so the
+  // compile and validate paths are pinned here instead.
+  const composio = (stepId: string): GraphNode => ({
+    step: {
+      stepId,
+      stepType: "composio-action",
+      composio: { app: "slack", action: "SLACK_SEND_MESSAGE", argsTemplate: { text: "hi" } },
+    } as WireStep,
+  });
+
+  it("compiles onto a leg like any other step", () => {
+    const steps = compileGraph([node("s1"), cond("c", { true: [composio("act")] }), node("m")]);
+    const act = steps.find((s) => s.stepId === "act")!;
+    expect(act.dependsOn).toEqual(["c"]);
+    expect(act.branch).toBe("true");
+  });
+
+  it("validates on a leg that ends, which is the only place it fits", () => {
+    // A generic Composio action outputs NOTIFY, and nothing in the catalog accepts NOTIFY as
+    // input — so unless the action carries an IO override it is terminal, and a step merging
+    // after it is refused. Worth knowing before building one into the middle of a branch.
+    const steps = compileGraph([
+      node("s1"),
+      cond("c", { true: [composio("act")], false: [node("b")] }, { true: "end" }),
+    ]);
+    expect(validateGraph(steps, { triggerSlug: "media_analyzed" }).errors).toEqual([]);
+  });
+
+  it("is refused when something tries to merge after it", () => {
+    const steps = compileGraph([node("s1"), cond("c", { true: [composio("act")] }), node("m")]);
+    expect(validateGraph(steps, { triggerSlug: "media_analyzed" }).errors.join(" ")).toContain(
+      'cannot accept "notify"',
+    );
+  });
+
+  it("still warns about a step id its arg template would read as text", () => {
+    const steps = compileGraph([node("s1"), cond("c", { true: [composio("9act")] }), node("m")]);
+    expect(validateGraph(steps, { triggerSlug: "media_analyzed" }).warnings.join(" ")).toContain(
+      "does not start with a letter",
+    );
+  });
+});
+
 describe("incomingTypesByStep", () => {
   it("walks the array for a linear graph, where order IS execution order", () => {
     const steps: WireStep[] = [

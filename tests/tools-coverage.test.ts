@@ -217,6 +217,20 @@ describe("Automations tools", () => {
     expect(body.branchSummary.note).toContain("ran to completion first");
   });
 
+  it("describe_automation_graph explains a legacy automation instead of failing on it", async () => {
+    // A pre-graph row keeps its `action` block and has no steps[]; not present in the test
+    // workspace, so pinned here.
+    mockGet.mockResolvedValueOnce({
+      data: { status: "success", data: { automationId: "old1", name: "Legacy rule", steps: [] } },
+    });
+    const cb = getToolCallback(server, "describe_automation_graph");
+    const result = await cb({ automationId: "old1" });
+    expect(result.isError).toBeUndefined();
+    const body = JSON.parse(result.content[0].text);
+    expect(body.shape).toBeNull();
+    expect(body.note).toContain("legacy single-action rule");
+  });
+
   it("update_automation calls PUT /v1/automations/:id", async () => {
     const cb = getToolCallback(server, "update_automation");
     await cb({ automationId: "auto1", name: "Updated" });
