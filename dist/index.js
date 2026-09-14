@@ -4106,6 +4106,555 @@ var init_capabilities = __esm({
   }
 });
 
+// src/tools/automation-graph.ts
+function containsCondition(nodes) {
+  return nodes.some(
+    (node) => isConditionNode(node) || LEG_BRANCHES.some((br) => containsCondition(legOf(node, br)))
+  );
+}
+function legTails(leg, enclosingConditionId) {
+  if (!leg.length) return [enclosingConditionId];
+  const last = leg[leg.length - 1];
+  if (!isConditionNode(last)) return [last.step.stepId];
+  const rejoining = LEG_BRANCHES.filter((br) => exitOf(last, br) === "rejoin");
+  if (!rejoining.length) return [];
+  return uniq(rejoining.flatMap((br) => legTails(legOf(last, br), last.step.stepId)));
+}
+function flatten(nodes, parentIds = [], branch) {
+  const out = [];
+  let incoming = parentIds;
+  let incomingBranch = branch;
+  for (const node of nodes) {
+    out.push({
+      node,
+      dependsOn: uniq(incoming),
+      ...incomingBranch ? { branch: incomingBranch } : {}
+    });
+    if (!isConditionNode(node)) {
+      incoming = [node.step.stepId];
+      incomingBranch = branch;
+      continue;
+    }
+    for (const br of LEG_BRANCHES) {
+      out.push(...flatten(legOf(node, br), [node.step.stepId], br));
+    }
+    const rejoining = LEG_BRANCHES.filter((br) => exitOf(node, br) === "rejoin");
+    incoming = uniq(rejoining.flatMap((br) => legTails(legOf(node, br), node.step.stepId)));
+    incomingBranch = rejoining.length === 1 && !legOf(node, rejoining[0]).length ? rejoining[0] : branch;
+  }
+  return out;
+}
+function compileGraph(nodes) {
+  const branched = containsCondition(nodes);
+  return flatten(nodes).map(({ node, dependsOn, branch }) => ({
+    ...node.step,
+    ...branched ? { dependsOn } : {},
+    ...branch ? { branch } : {}
+  }));
+}
+function hydrateLegs(steps) {
+  const byParent = /* @__PURE__ */ new Map();
+  for (const step of steps) {
+    for (const parent of step.dependsOn ?? []) {
+      const list = byParent.get(parent) ?? [];
+      list.push(step);
+      byParent.set(parent, list);
+    }
+  }
+  const referenced = new Set(steps.flatMap((step) => step.dependsOn ?? []));
+  const claimed = /* @__PURE__ */ new Set();
+  function legReaches(leg, conditionId, legMemberIds) {
+    if (!leg.length) {
+      return steps.some(
+        (step) => step.stepId !== conditionId && !legMemberIds.has(step.stepId) && (step.dependsOn ?? []).includes(conditionId)
+      );
+    }
+    const tails = legTails(leg, conditionId);
+    if (!tails.length) return true;
+    return tails.some((id) => referenced.has(id));
+  }
+  function buildLeg(conditionId, branch) {
+    const leg = [];
+    let cursor = conditionId;
+    for (; ; ) {
+      const next = (byParent.get(cursor) ?? []).find(
+        (step) => step.branch === branch && !claimed.has(step.stepId)
+      );
+      if (!next) break;
+      claimed.add(next.stepId);
+      leg.push(next.stepType === CONDITION_STEP_TYPE ? withLegs(next) : { step: next });
+      cursor = next.stepId;
+    }
+    return leg;
+  }
+  function withLegs(condition) {
+    const legs = {
+      true: buildLeg(condition.stepId, "true"),
+      false: buildLeg(condition.stepId, "false")
+    };
+    const legMemberIds = new Set(
+      [...legs.true, ...legs.false].map((node) => node.step.stepId)
+    );
+    return {
+      step: condition,
+      legs,
+      legExit: {
+        true: legReaches(legs.true, condition.stepId, legMemberIds) ? "rejoin" : "end",
+        false: legReaches(legs.false, condition.stepId, legMemberIds) ? "rejoin" : "end"
+      }
+    };
+  }
+  const nested = /* @__PURE__ */ new Map();
+  for (const step of steps) {
+    if (claimed.has(step.stepId)) continue;
+    if (step.stepType === CONDITION_STEP_TYPE) nested.set(step.stepId, withLegs(step));
+  }
+  return steps.filter((step) => !claimed.has(step.stepId)).map((step) => nested.get(step.stepId) ?? { step });
+}
+function resolveIncomingTypes(steps, rootType) {
+  const byId = new Map(steps.map((step) => [step.stepId, step]));
+  const incoming = /* @__PURE__ */ new Map();
+  const resolving = /* @__PURE__ */ new Set();
+  const outputsOf = (step, into2) => {
+    const io = ACTION_IO[step.stepType];
+    if (!io) return into2;
+    if (io.passthrough) return into2;
+    return /* @__PURE__ */ new Set([io.out]);
+  };
+  const into = (step) => {
+    const cached2 = incoming.get(step.stepId);
+    if (cached2) return cached2;
+    if (resolving.has(step.stepId)) return /* @__PURE__ */ new Set([rootType]);
+    resolving.add(step.stepId);
+    const parents = (step.dependsOn ?? []).map((id) => byId.get(id)).filter((parent) => parent !== void 0);
+    const types = parents.length ? new Set(parents.flatMap((parent) => [...outputsOf(parent, into(parent))])) : /* @__PURE__ */ new Set([rootType]);
+    resolving.delete(step.stepId);
+    incoming.set(step.stepId, types);
+    return types;
+  };
+  steps.forEach(into);
+  return incoming;
+}
+function incomingTypesByStep(steps, rootType) {
+  const hasDependencies = steps.some((step) => (step.dependsOn ?? []).length > 0);
+  if (hasDependencies) return resolveIncomingTypes(steps, rootType);
+  const byStep = /* @__PURE__ */ new Map();
+  let cursor = rootType;
+  for (const step of steps) {
+    byStep.set(step.stepId, /* @__PURE__ */ new Set([cursor]));
+    const io = ACTION_IO[step.stepType];
+    if (io && !io.passthrough) cursor = io.out;
+  }
+  return byStep;
+}
+function mediaAvailabilityByStep(steps, rootType) {
+  const available = /* @__PURE__ */ new Map();
+  const rootHasMedia = rootType === "media";
+  const byId = new Map(steps.map((step) => [step.stepId, step]));
+  const hasDependencies = steps.some((step) => (step.dependsOn ?? []).length > 0);
+  if (!hasDependencies) {
+    let seen = rootHasMedia;
+    for (const step of steps) {
+      available.set(step.stepId, seen);
+      if (step.stepType === "speak-upload") seen = true;
+    }
+    return available;
+  }
+  const resolving = /* @__PURE__ */ new Set();
+  const at = (stepId) => {
+    const cached2 = available.get(stepId);
+    if (cached2 !== void 0) return cached2;
+    if (resolving.has(stepId)) return rootHasMedia;
+    resolving.add(stepId);
+    const parents = (byId.get(stepId)?.dependsOn ?? []).filter((id) => byId.has(id));
+    const result = parents.length ? parents.every((id) => byId.get(id).stepType === "speak-upload" || at(id)) : rootHasMedia;
+    resolving.delete(stepId);
+    available.set(stepId, result);
+    return result;
+  };
+  for (const step of steps) at(step.stepId);
+  return available;
+}
+function validateGraph(steps, opts = {}) {
+  const errors = [];
+  const warnings = [];
+  if (!Array.isArray(steps) || steps.length === 0) {
+    return { errors: ["The automation needs at least one step."], warnings };
+  }
+  if (steps.length > MAX_STEPS) {
+    errors.push(
+      `An automation can hold ${MAX_STEPS} steps; this one has ${steps.length}. A branch spends steps quickly \u2014 a condition plus two two-step legs plus a merge is six.`
+    );
+  }
+  const byId = /* @__PURE__ */ new Map();
+  for (const step of steps) {
+    if (!step.stepId) {
+      errors.push("Every step needs a stepId.");
+      continue;
+    }
+    if (byId.has(step.stepId)) errors.push(`Two steps share the id "${step.stepId}".`);
+    byId.set(step.stepId, step);
+  }
+  for (const step of steps) {
+    if (step.stepId && !/^[A-Za-z_]/.test(step.stepId)) {
+      warnings.push(
+        `Step id "${step.stepId}" does not start with a letter, so a whole-value {{step.${step.stepId}.\u2026}} token inside a Composio argsTemplate arrives as text instead of keeping its type.`
+      );
+    }
+  }
+  for (const step of steps) {
+    for (const parentId of step.dependsOn ?? []) {
+      if (!byId.has(parentId)) {
+        errors.push(`Step "${step.stepId}" depends on "${parentId}", which is not in this automation.`);
+      }
+    }
+  }
+  const hasDependencies = steps.some((step) => (step.dependsOn ?? []).length > 0);
+  if (hasDependencies) {
+    const state = /* @__PURE__ */ new Map();
+    const walk = (id) => {
+      const status = state.get(id);
+      if (status === 1) return false;
+      if (status === 0) return true;
+      state.set(id, 0);
+      for (const parent of byId.get(id)?.dependsOn ?? []) {
+        if (byId.has(parent) && walk(parent)) return true;
+      }
+      state.set(id, 1);
+      return false;
+    };
+    for (const step of steps) {
+      if (step.stepId && walk(step.stepId)) {
+        errors.push(`The steps form a loop through "${step.stepId}" \u2014 a step cannot depend on itself, directly or indirectly.`);
+        break;
+      }
+    }
+  }
+  const branchedSteps = steps.filter((step) => step.branch === "true" || step.branch === "false");
+  const conditionSteps = steps.filter((step) => step.stepType === CONDITION_STEP_TYPE);
+  const isBranched = branchedSteps.length > 0 || conditionSteps.length > 0;
+  for (const step of steps) {
+    if (step.stepType !== CONDITION_STEP_TYPE && step.stepType !== FILTER_STEP_TYPE) continue;
+    const block = ruleBlockOf(step);
+    const rules = block?.rules ?? [];
+    if (!rules.length) {
+      errors.push(
+        step.stepType === CONDITION_STEP_TYPE ? `Condition "${step.stepId}" has no rules. An empty rule set counts as a match, so every run would take the "true" branch.` : `Filter "${step.stepId}" has no rules.`
+      );
+    }
+    if (rules.length > 20) {
+      errors.push(`Step "${step.stepId}" has ${rules.length} rules; the limit is 20.`);
+    }
+  }
+  if (isBranched) {
+    const anchorsOf = (stepId, seen = /* @__PURE__ */ new Set()) => {
+      const found = /* @__PURE__ */ new Set();
+      if (seen.has(stepId)) return found;
+      seen.add(stepId);
+      const self = byId.get(stepId);
+      for (const parentId of self?.dependsOn ?? []) {
+        const parent = byId.get(parentId);
+        if (!parent) continue;
+        if (parent.stepType === CONDITION_STEP_TYPE) found.add(parent.stepId);
+        else if (parent.branch && parent.branch === self?.branch) {
+          for (const id of anchorsOf(parent.stepId, seen)) found.add(id);
+        }
+      }
+      return found;
+    };
+    const ancestorsOf = (stepId) => {
+      const out = /* @__PURE__ */ new Set();
+      const stack = [...byId.get(stepId)?.dependsOn ?? []];
+      while (stack.length) {
+        const id = stack.pop();
+        if (out.has(id) || !byId.has(id)) continue;
+        out.add(id);
+        stack.push(...byId.get(id)?.dependsOn ?? []);
+      }
+      return out;
+    };
+    const anchored = /* @__PURE__ */ new Set();
+    for (const step of branchedSteps) {
+      const anchors = anchorsOf(step.stepId);
+      if (!anchors.size) {
+        errors.push(
+          `Step "${step.stepId}" is marked as the "${step.branch}" branch but nothing connects it to a condition, so it would run on every path.`
+        );
+        continue;
+      }
+      for (const id of anchors) anchored.add(id);
+      const opposite = [...ancestorsOf(step.stepId)].map((id) => byId.get(id)).find(
+        (ancestor) => (ancestor?.branch === "true" || ancestor?.branch === "false") && ancestor.branch !== step.branch && [...anchorsOf(ancestor.stepId)].some((id) => anchors.has(id))
+      );
+      if (opposite) {
+        errors.push(
+          `Step "${step.stepId}" (on the "${step.branch}" branch) waits on "${opposite.stepId}", which is on the other branch of the same condition \u2014 so it can never run.`
+        );
+      }
+    }
+    for (const condition of conditionSteps) {
+      if (!anchored.has(condition.stepId)) {
+        errors.push(
+          `Condition "${condition.stepId}" has no steps on either side, so both paths do the same thing. Put a step on one of its branches, or use a filter to stop the run instead.`
+        );
+      }
+    }
+    const roots = steps.filter((step) => !(step.dependsOn ?? []).length);
+    if (branchedSteps.length && roots.length > 1) {
+      errors.push(
+        `A branched automation must have a single entry step, but ${roots.length} steps declare no dependsOn (${roots.map((step) => `"${step.stepId}"`).join(", ")}) \u2014 each of those would run on every branch. Give every step after the first a dependsOn.`
+      );
+    }
+  }
+  if (opts.runType === "schedule" && conditionSteps.length) {
+    errors.push(
+      'A scheduled automation cannot branch. A schedule runs over a batch of media and a condition resolves once for the whole batch \u2014 it answers "true" when any one media matches and narrows nothing, so the branch would run against media that did not match. Use a filter, which narrows the batch.'
+    );
+  }
+  if (isBranched) {
+    const tree = hydrateLegs(steps);
+    errors.push(...branchingReloadErrors(tree, 1));
+    const rebuilt = new Map(compileGraph(tree).map((step) => [step.stepId, step]));
+    const structurallyMoved = [];
+    const reordered = [];
+    for (const step of steps) {
+      const after = rebuilt.get(step.stepId);
+      if (!after) {
+        structurallyMoved.push(step.stepId);
+        continue;
+      }
+      const before = step.dependsOn ?? [];
+      const now = after.dependsOn ?? [];
+      if (step.branch !== after.branch || before.length !== now.length || now.some((id) => !before.includes(id))) {
+        structurallyMoved.push(step.stepId);
+      } else if (before.some((id, i) => now[i] !== id)) {
+        reordered.push(step.stepId);
+      }
+    }
+    if (structurallyMoved.length) {
+      errors.push(
+        `The Speak web editor would not reload this automation the way it is written: ${structurallyMoved.slice(0, 4).map((id) => `"${id}"`).join(", ")} would come back on a different branch or with different parents. The usual cause is a step placed after a nested condition \u2014 a branch inside a branch has to be the last step of the branch it sits on, because the leg marker cannot say which of the two branches it belongs to.`
+      );
+    }
+    if (reordered.length) {
+      warnings.push(
+        `Reopening this automation in the Speak web editor would reorder the dependsOn of ${reordered.slice(0, 4).map((id) => `"${id}"`).join(", ")}. The steps are the same; only the order the branches are listed in changes, which can affect which branch's fields a merge is validated against.`
+      );
+    }
+  }
+  const rootType = opts.triggerSlug ? TRIGGER_OUT[opts.triggerSlug] : void 0;
+  if (rootType) {
+    const incomingByStep = incomingTypesByStep(steps, rootType);
+    const hasMedia = mediaAvailabilityByStep(steps, rootType);
+    for (const step of steps) {
+      const incomingTypes = incomingByStep.get(step.stepId) ?? /* @__PURE__ */ new Set([rootType]);
+      const io = ACTION_IO[step.stepType];
+      if (!io) continue;
+      const unacceptable = [...incomingTypes].filter((type) => !io.in.includes(type));
+      if (unacceptable.length && step.stepType !== "composio-action") {
+        errors.push(
+          `Step "${step.stepId}" (${step.stepType}) cannot accept "${unacceptable.join('", "')}" from the step before it \u2014 it expects one of: ${io.in.join(", ")}.`
+        );
+      }
+      if (step.stepType !== CONDITION_STEP_TYPE && step.stepType !== FILTER_STEP_TYPE) continue;
+      if (incomingTypes.size > 1) {
+        warnings.push(
+          `Step "${step.stepId}" merges branches carrying different kinds of data (${[...incomingTypes].join(", ")}). The server checks its rule fields against "${[...incomingTypes][0]}" only, so a rule valid on the other branch may be refused.`
+        );
+      }
+      const flowing = [...incomingTypes][0] ?? rootType;
+      for (const rule of ruleBlockOf(step)?.rules ?? []) {
+        const field = String(rule.field ?? "");
+        if (!field) {
+          errors.push(`Step "${step.stepId}" has a rule with no field.`);
+          continue;
+        }
+        const payloadAdvice = `Upload the payload first and use fieldsMap (create_automation) or mapFields (build_automation) to write "${field}" onto the media as a custom field, then test that field id here.`;
+        if (!hasMedia.get(step.stepId)) {
+          errors.push(
+            `Step "${step.stepId}" tests "${field}", but at this point in the automation nothing has produced a media item yet \u2014 and a ${step.stepType} can only read a media item and earlier step answers, never the trigger payload. As written the run would stop here with "Media not found". ${payloadAdvice}`
+          );
+          continue;
+        }
+        if (looksLikePayloadPath(field)) {
+          errors.push(
+            `Step "${step.stepId}" tests "${field}", which reads the trigger payload \u2014 and a ${step.stepType} cannot read the payload. It would silently find nothing and take the same branch on every run. ${payloadAdvice}`
+          );
+          continue;
+        }
+        if (isCanonicalFilterField(field)) {
+          const strictFlow = flowing === "media" || flowing === "insight" || flowing === "file";
+          const allowed = FILTER_FIELDS_BY_IOTYPE[flowing] ?? [];
+          if (strictFlow && !allowed.includes(canonicalFilterField(field))) {
+            errors.push(
+              `Step "${step.stepId}" tests "${field}", which is not available here: what reaches this step is "${flowing}"` + (flowing === "insight" ? `, so only "answer" can be tested. Move the ${step.stepType} before the AI step to test media fields.` : `, which offers: ${allowed.join(", ") || "no built-in fields"}.`)
+            );
+          }
+          continue;
+        }
+        if (flowing === "insight" || flowing === "file") {
+          errors.push(
+            `Step "${step.stepId}" tests the custom field "${field}", but straight after an AI step only "answer" can be tested. Move the ${step.stepType} before the AI step.`
+          );
+          continue;
+        }
+        if (!looksLikeCustomFieldId(field)) {
+          errors.push(`Step "${step.stepId}": "${field}" is not a valid field name or id.`);
+          continue;
+        }
+        if (opts.knownFieldIds && !opts.knownFieldIds.has(field)) {
+          errors.push(
+            `Step "${step.stepId}" tests custom field "${field}", which does not exist in this workspace. A condition naming an unknown field is not rejected by the server and silently takes the same branch every time \u2014 use list_fields to get a real field id.`
+          );
+        }
+      }
+    }
+  }
+  if (isBranched) {
+    const positional = /* @__PURE__ */ new Set();
+    for (const step of steps) {
+      for (const match of JSON.stringify(step).matchAll(/\{\{\s*step\.(\d+)\.[^}\s]+\s*\}\}/g)) {
+        positional.add(match[0].replace(/\\"/g, '"'));
+      }
+    }
+    if (positional.size) {
+      errors.push(
+        `This automation branches, so a numbered step token cannot be trusted: ${[...positional].slice(0, 3).join(", ")}. The number indexes the stored order ([condition, true leg, false leg, merge]), not the order steps run, and a step on the branch that was not taken produces nothing. Address the step by its id instead: {{step.<stepId>.answer}}.`
+      );
+    }
+  }
+  return { errors, warnings };
+}
+function branchingReloadErrors(nodes, depth) {
+  const errors = [];
+  for (const [index, node] of nodes.entries()) {
+    if (!isConditionNode(node)) continue;
+    if (depth > MAX_BRANCH_DEPTH) {
+      errors.push(
+        `Condition "${node.step.stepId}" is nested ${depth} branches deep; the editor supports ${MAX_BRANCH_DEPTH}. Deeper than that cannot be opened on the canvas.`
+      );
+      continue;
+    }
+    const yesExit = exitOf(node, "true");
+    const noExit = exitOf(node, "false");
+    if (yesExit === "end" && noExit === "end" && index < nodes.length - 1) {
+      errors.push(
+        `Both branches of condition "${node.step.stepId}" end the run, but "${nodes[index + 1].step.stepId}" comes after it \u2014 nothing would reach that step.`
+      );
+    }
+    const reaches = LEG_BRANCHES.some(
+      (branch) => exitOf(node, branch) === "rejoin" && legReachesOnward(legOf(node, branch))
+    );
+    if (!reaches && index < nodes.length - 1) {
+      errors.push(
+        `Every path through condition "${node.step.stepId}" ends inside it, so "${nodes[index + 1].step.stepId}" would be left with nothing to run after.`
+      );
+    }
+    for (const branch of LEG_BRANCHES) {
+      errors.push(...branchingReloadErrors(legOf(node, branch), depth + 1));
+    }
+  }
+  return errors;
+}
+function legReachesOnward(leg) {
+  if (!leg.length) return true;
+  const last = leg[leg.length - 1];
+  if (!isConditionNode(last)) return true;
+  return LEG_BRANCHES.some(
+    (branch) => exitOf(last, branch) === "rejoin" && legReachesOnward(legOf(last, branch))
+  );
+}
+function describeGraph(steps) {
+  const lines = [];
+  const summarise = (step) => {
+    const block = ruleBlockOf(step);
+    if (block?.rules?.length) {
+      const logic = block.logic ?? "AND";
+      const rules = block.rules.map((rule) => `${rule.field} ${rule.op}${"value" in rule ? ` ${JSON.stringify(rule.value)}` : ""}`).join(` ${logic} `);
+      return `${step.stepType} [${rules}]`;
+    }
+    return step.stepType;
+  };
+  const walk = (nodes, indent) => {
+    for (const node of nodes) {
+      lines.push(`${indent}${node.step.stepId}  ${summarise(node.step)}`);
+      if (!isConditionNode(node)) continue;
+      for (const branch of LEG_BRANCHES) {
+        const leg = legOf(node, branch);
+        const exit = exitOf(node, branch);
+        const label = branch === "true" ? "yes" : "no";
+        const tail = exit === "end" ? " (ends the run)" : "";
+        lines.push(`${indent}  \u251C\u2500 ${label}:${leg.length ? tail : ` (no steps)${tail}`}`);
+        walk(leg, `${indent}  \u2502  `);
+      }
+    }
+  };
+  walk(hydrateLegs(steps), "");
+  return lines.join("\n");
+}
+var LEG_BRANCHES, MAX_BRANCH_DEPTH, MAX_STEPS, CONDITION_STEP_TYPE, FILTER_STEP_TYPE, ACTION_IO, TRIGGER_OUT, FILTER_FIELDS_BY_IOTYPE, FILTER_FIELD_ALIASES, canonicalFilterField, ALL_CANONICAL_FILTER_FIELDS, isCanonicalFilterField, CUSTOM_FIELD_ID_PATTERN, PAYLOAD_PATH_PATTERN, looksLikePayloadPath, looksLikeCustomFieldId, isConditionNode, legOf, exitOf, uniq, ruleBlockOf;
+var init_automation_graph = __esm({
+  "src/tools/automation-graph.ts"() {
+    "use strict";
+    LEG_BRANCHES = ["true", "false"];
+    MAX_BRANCH_DEPTH = 3;
+    MAX_STEPS = 20;
+    CONDITION_STEP_TYPE = "condition";
+    FILTER_STEP_TYPE = "filter";
+    ACTION_IO = {
+      "speak-upload": { in: ["data"], out: "media" },
+      "magic-prompt": { in: ["media", "insight"], out: "insight" },
+      translation: { in: ["media"], out: "media" },
+      filter: { in: ["file", "media", "insight"], out: "media", passthrough: true },
+      condition: { in: ["media", "insight", "data"], out: "media", passthrough: true },
+      notify: { in: ["media", "insight", "data"], out: "data" },
+      "outbound-webhook": { in: ["media", "insight", "data"], out: "data" },
+      // Composio actions carry per-action overrides on the server; the generic entry is the
+      // safe default and unknown actions are not type-checked locally.
+      "composio-action": { in: ["media", "insight"], out: "notify" }
+    };
+    TRIGGER_OUT = {
+      media_analyzed: "media",
+      field_updated: "media",
+      schedule: "media",
+      inbound_webhook: "data",
+      ai_chat_completed: "media",
+      recording_received: "media",
+      clip_created: "data"
+    };
+    FILTER_FIELDS_BY_IOTYPE = {
+      media: ["name", "duration", "sourceLanguage", "tags", "transcript", "speakers"],
+      file: ["name"],
+      insight: ["answer"],
+      notify: [],
+      data: []
+    };
+    FILTER_FIELD_ALIASES = {
+      title: "name",
+      language: "sourceLanguage",
+      speakersCount: "speakers"
+    };
+    canonicalFilterField = (field) => FILTER_FIELD_ALIASES[field] ?? field;
+    ALL_CANONICAL_FILTER_FIELDS = /* @__PURE__ */ new Set([
+      ...Object.values(FILTER_FIELDS_BY_IOTYPE).flat(),
+      ...Object.keys(FILTER_FIELD_ALIASES)
+    ]);
+    isCanonicalFilterField = (field) => ALL_CANONICAL_FILTER_FIELDS.has(canonicalFilterField(field));
+    CUSTOM_FIELD_ID_PATTERN = /^[a-zA-Z0-9_-]{1,64}$/;
+    PAYLOAD_PATH_PATTERN = /^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+    looksLikePayloadPath = (field) => typeof field === "string" && PAYLOAD_PATH_PATTERN.test(field);
+    looksLikeCustomFieldId = (field) => typeof field === "string" && !isCanonicalFilterField(field) && CUSTOM_FIELD_ID_PATTERN.test(field);
+    isConditionNode = (node) => node.step.stepType === CONDITION_STEP_TYPE;
+    legOf = (node, branch) => node.legs?.[branch] ?? [];
+    exitOf = (node, branch) => node.legExit?.[branch] ?? "rejoin";
+    uniq = (ids) => ids.filter((id, i) => ids.indexOf(id) === i);
+    ruleBlockOf = (step) => {
+      const block = step.stepType === CONDITION_STEP_TYPE ? step.condition : step.filter;
+      return block && typeof block === "object" ? block : void 0;
+    };
+  }
+});
+
 // src/tools/automations.ts
 var automations_exports = {};
 __export(automations_exports, {
@@ -4126,6 +4675,56 @@ async function refuseUngatedAnalysis(api, steps) {
     content: [{ type: "text", text: `Error: ${MULTIMODAL_DISABLED_MESSAGE}` }],
     isError: true
   };
+}
+function refuseInvalidGraph(steps, trigger, runType) {
+  if (!Array.isArray(steps)) return null;
+  const triggerSlug = trigger?.triggerSlug;
+  const { errors } = validateGraph(steps, {
+    triggerSlug: typeof triggerSlug === "string" ? triggerSlug : void 0,
+    runType: typeof runType === "string" ? runType : void 0
+  });
+  if (!errors.length) return null;
+  return {
+    content: [
+      {
+        type: "text",
+        text: `Error: this automation cannot be saved as described.
+
+` + errors.map((e) => `- ${e}`).join("\n")
+      }
+    ],
+    isError: true
+  };
+}
+function graphWarnings(steps, trigger, runType) {
+  if (!Array.isArray(steps)) return [];
+  const triggerSlug = trigger?.triggerSlug;
+  return validateGraph(steps, {
+    triggerSlug: typeof triggerSlug === "string" ? triggerSlug : void 0,
+    runType: typeof runType === "string" ? runType : void 0
+  }).warnings;
+}
+function summariseBranching(data) {
+  const run = data;
+  const steps = Array.isArray(run?.steps) ? run.steps : [];
+  if (!steps.length) return void 0;
+  const conditions = steps.filter((step) => step.stepType === "condition").map((step) => ({
+    stepId: step.stepId,
+    took: step.outputs?.branch ?? "not reached"
+  }));
+  if (!conditions.length && !steps.some((step) => step.branchSkipped)) return void 0;
+  const notTaken = steps.filter((step) => step.branchSkipped).map((step) => step.stepId);
+  const ran = steps.filter((step) => !step.branchSkipped && step.status === "completed").map((step) => step.stepId);
+  const summary = {
+    conditions,
+    stepsThatRan: ran,
+    stepsSkippedBecauseTheirBranchWasNotTaken: notTaken
+  };
+  if (run.stoppedAt?.stepId) summary.stoppedAt = run.stoppedAt;
+  if (run.status === "killed" && ran.length) {
+    summary.note = `The run is marked "killed" because a filter stopped one path, but ${ran.length} step(s) ran to completion first \u2014 a stopped leg ends the whole run's status, not its work.`;
+  }
+  return summary;
 }
 async function withInboundWebhookInfo(api, responseData, automationId) {
   try {
@@ -4274,6 +4873,8 @@ function register10(server, client) {
     },
     async (body) => {
       try {
+        const graphRefusal = refuseInvalidGraph(body.steps, body.trigger, body.runType);
+        if (graphRefusal) return graphRefusal;
         const refusal = await refuseUngatedAnalysis(api, body.steps);
         if (refusal) return refusal;
         const result = await api.post("/v1/automations/", body);
@@ -4281,6 +4882,10 @@ function register10(server, client) {
         if (isInboundWebhookTrigger(body.trigger)) {
           const automationId = unwrapData(result.data)?.automationId;
           data = await withInboundWebhookInfo(api, data, automationId);
+        }
+        const warnings = graphWarnings(body.steps, body.trigger, body.runType);
+        if (warnings.length && data && typeof data === "object") {
+          data = { ...data, warnings };
         }
         return {
           content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
@@ -4310,12 +4915,18 @@ function register10(server, client) {
     },
     async ({ automationId, ...body }) => {
       try {
+        const graphRefusal = refuseInvalidGraph(body.steps, body.trigger, body.runType);
+        if (graphRefusal) return graphRefusal;
         const refusal = await refuseUngatedAnalysis(api, body.steps);
         if (refusal) return refusal;
         const result = await api.put(`/v1/automations/${automationId}`, body);
         let data = result.data;
         if (isInboundWebhookTrigger(body.trigger)) {
           data = await withInboundWebhookInfo(api, data, automationId);
+        }
+        const warnings = graphWarnings(body.steps, body.trigger, body.runType);
+        if (warnings.length && data && typeof data === "object") {
+          data = { ...data, warnings };
         }
         return {
           content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
@@ -4473,6 +5084,209 @@ function register10(server, client) {
   );
   registerSpeakTool(
     server,
+    "get_automation_run",
+    `Get one automation run in full: every step, in dependency order, with what it produced and why it stopped. Use this after test_automation or to explain a run that went the wrong way. On a branched automation the run's overall status is not the whole story \u2014 a filter that stops one leg marks the entire run "killed" even when the other leg finished its work \u2014 so read the per-step summary this returns, not just the status.`,
+    {
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
+      runId: import_zod11.z.string().min(1).describe("Run id, from get_automation_runs or test_automation")
+    },
+    {
+      title: "Get Automation Run",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ automationId, runId }) => {
+      try {
+        const result = await api.get(`/v1/automations/${automationId}/runs/${runId}`);
+        const data = unwrapData(result.data) ?? result.data;
+        return {
+          content: [
+            { type: "text", text: JSON.stringify({ ...data, branchSummary: summariseBranching(data) }, null, 2) }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_automation_run_stats",
+    "Aggregate run counts for an automation over a period \u2014 how many completed, failed, or were stopped.",
+    {
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
+      days: import_zod11.z.number().int().min(1).max(90).optional().describe(
+        "How many days back to count, 1-90. The run ledger is kept for 90 days, so that is the whole window."
+      )
+    },
+    {
+      title: "Get Automation Run Stats",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ automationId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/automations/${automationId}/runs/stats`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "test_automation",
+    "Run an automation once against one media item to see which way it branches. THIS HAS REAL SIDE EFFECTS: only Speak's own run notifications are suppressed \u2014 outbound webhooks fire, Composio actions run against the connected third party, and AI steps are billed. Ask the user before calling it on an automation that posts anywhere outside Speak. It also needs a mediaId and sends no webhook payload, so an inbound-webhook automation cannot be meaningfully tested this way \u2014 its payload tokens will resolve to empty. Returns a runId; read the result with get_automation_run.",
+    {
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation to test"),
+      mediaId: import_zod11.z.string().min(1).describe("Media item to run the automation against")
+    },
+    {
+      title: "Test Automation",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async (body) => {
+      try {
+        const result = await api.post(`/v1/automations/${body.automationId}/test-run`, {
+          mediaId: body.mediaId
+        });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "validate_automation_graph",
+    "Check a step graph without saving anything. Reports the same problems create_automation and update_automation would refuse \u2014 branch wiring, rules a condition cannot actually read, shapes the Speak web editor could not reopen \u2014 plus non-blocking warnings. Use it to iterate on a branched automation instead of discovering the problems one failed save at a time.",
+    {
+      steps: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).min(1).describe(STEPS_DESCRIPTION),
+      trigger: import_zod11.z.record(import_zod11.z.unknown()).optional().describe(TRIGGER_DESCRIPTION),
+      runType: import_zod11.z.enum(["instant", "schedule"]).optional().describe("Run type the graph would be saved with. A schedule refuses any branch.")
+    },
+    {
+      title: "Validate Automation Graph",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ steps, trigger, runType }) => {
+      const triggerSlug = trigger?.triggerSlug;
+      const { errors, warnings } = validateGraph(steps, {
+        triggerSlug: typeof triggerSlug === "string" ? triggerSlug : void 0,
+        runType
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(
+              {
+                valid: errors.length === 0,
+                errors,
+                warnings,
+                shape: describeGraph(steps)
+              },
+              null,
+              2
+            )
+          }
+        ]
+      };
+    }
+  );
+  registerSpeakTool(
+    server,
+    "describe_automation_graph",
+    "Show a saved automation's steps as an indented branch tree instead of a flat list. Worth calling before update_automation, which replaces the whole automation: editing one leg means re-sending every step with its dependsOn intact, and this shows what the shape currently is.",
+    {
+      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation")
+    },
+    {
+      title: "Describe Automation Graph",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ automationId }) => {
+      try {
+        const result = await api.get(`/v1/automations/${automationId}`);
+        const data = unwrapData(result.data) ?? result.data;
+        const steps = data?.steps;
+        if (!Array.isArray(steps) || !steps.length) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  { automationId, shape: null, note: "This automation has no graph steps (it may be a legacy single-action rule)." },
+                  null,
+                  2
+                )
+              }
+            ]
+          };
+        }
+        const triggerSlug = data?.trigger?.triggerSlug;
+        const { errors, warnings } = validateGraph(steps, {
+          triggerSlug: typeof triggerSlug === "string" ? triggerSlug : void 0,
+          runType: data?.runType
+        });
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  automationId,
+                  name: data?.name,
+                  runType: data?.runType,
+                  shape: describeGraph(steps),
+                  steps,
+                  // A stored automation can predate a rule, or have been written through the
+                  // raw API. Saying so here is cheaper than a failed round-trip on re-save.
+                  problemsIfResaved: errors,
+                  warnings
+                },
+                null,
+                2
+              )
+            }
+          ]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
     "list_automation_apps",
     "List the apps available in the automation catalog (e.g. Speak native + connected integrations). Use to discover what triggers/actions exist before building an automation.",
     {},
@@ -4563,17 +5377,26 @@ var init_automations = __esm({
     init_client();
     init_inbound_webhook_utils();
     init_capabilities();
-    TOKEN_SYNTAX_NOTE = "Token syntax (usable in fields marked 'tokens allowed'): {{trigger.payload.<path>}} reads the inbound webhook payload (dot paths and [n] array indices; paths are relative to trigger.childKey when set \u2014 discover valid paths with get_inbound_webhook after sending a test payload); {{step.<index>.<path>}} or {{step.<stepId>.<path>}} reads a previous step's output (speak-upload -> mediaId, magic-prompt -> answer, outbound-webhook -> status/response).";
+    init_automation_graph();
+    TOKEN_SYNTAX_NOTE = "Token syntax (usable in fields marked 'tokens allowed'): {{trigger.payload.<path>}} reads the inbound webhook payload (dot paths and [n] array indices; paths are relative to trigger.childKey when set \u2014 discover valid paths with get_inbound_webhook after sending a test payload); {{step.<stepId>.<path>}} reads a previous step's output (speak-upload -> mediaId, magic-prompt -> answer, outbound-webhook -> status/response). A positional {{step.<index>.<path>}} form also exists but is REFUSED on a branched automation: the index counts stored order ([condition, true leg, false leg, merge]), not run order, and a step on the branch that was not taken produces nothing \u2014 the token would resolve to an empty string inside whatever the step sends.";
     STEPS_DESCRIPTION = `Ordered array of graph steps (1-20). Each step is an object: { stepId: string (unique within the array), stepType: one of "speak-upload" | "magic-prompt" | "translation" | "filter" | "condition" | "notify" | "outbound-webhook" | "composio-action", dependsOn?: string[] (stepIds this step runs after), branch?: "true"|"false" (which outcome of an upstream condition step this step belongs to) } plus ONE config key matching stepType:
 - speak-upload -> speakUpload: { sourceMode: "url"|"file", sourceUrl (required when sourceMode="url"; tokens allowed \u2014 if the token resolves to an object, the first http(s) URL inside it is used), folderId (required, unless folderRouting.mode="dynamic" where it becomes the optional fallback), name? (tokens allowed, mixable with static text), language? (language code or token), fieldsMap?: { <customFieldId>: "<value>" } (writes payload values into Speak custom fields on the uploaded media; values are usually {{trigger.payload.<path>}} tokens \u2014 get field ids from list_fields), folderRouting?: { mode: "static"|"dynamic", sourceKey (payload key holding the destination folder name, required when dynamic), onNoMatch: "create"|"default" (create a folder named after the value, or fall back to folderId) } }
 - magic-prompt -> magicPrompt: { prompt (required unless fieldIds given, max 20000), title?, assistantType? ("general"|"researcher"|"marketer"|"sales"|"recruiter"|"custom", default "general"), assistantTemplateId? (required if assistantType="custom"), fieldIds?: string[] (max 10 \u2014 extract answers into these custom fields), analysisInput? ("transcript" (default) | "audio" | "video") \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see what is on screen; on a video file "audio" extracts the audio track first. Premium: requires the account's audio/video analysis opt-in, and costs credits per hour of media }
 - translation -> translation: { targetLanguage: region-qualified locale code, e.g. "es-ES", "fr-FR" (bare codes like "es" are rejected) }
 - filter -> filter: { logic: "AND"|"OR" (default "AND"), rules: [{ field, op, value? }] (1-20) } \u2014 the run continues only when the rules match, otherwise it stops silently
-- condition -> condition: same { logic, rules } shape as filter, but instead of stopping it routes: downstream steps marked branch:"true"/"false" run according to the outcome
+- condition -> condition: same { logic, rules } shape as filter, but instead of stopping it routes: downstream steps marked branch:"true"/"false" run according to the outcome.
+  Branch wiring rules, all enforced before the request is sent:
+  * A leg is a CHAIN: the first step of a leg depends on the condition, the rest depend on the step before them in the same leg, and every step on the leg carries the same branch marker.
+  * A step that runs after the branch (a merge) depends on the LAST step of every leg that carries on. When a leg is empty its last step IS the condition, and the merge then carries that leg's marker.
+  * A leg ends the run simply by having nothing depend on its last step.
+  * Once anything carries a branch marker, EVERY other step needs a dependsOn \u2014 a step with no parents is an entry point and runs on both branches, and a second entry point is rejected.
+  * A condition with no steps on either side is rejected: both paths would do the same thing.
+  * Branches nest at most three deep, and a nested condition must be the last step of the leg it sits on, or the automation cannot be reopened in the Speak web editor.
+  * A scheduled automation cannot branch: a schedule runs over a batch and a condition resolves once for the whole batch, so the leg would run against media that did not match. Use a filter, which narrows the batch.
 - notify -> notify: { channel: "in_app"|"email"|"slack", target?, message (required, tokens allowed) }
 - outbound-webhook -> outboundWebhook: { url (required, tokens allowed), method? ("GET"|"POST"|"PUT"|"PATCH"|"DELETE", default "POST"), headers?: { <name>: <value> }, bodyTemplate?: string | object (tokens allowed) }
 - composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)
-Filter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers or a custom field id; INSIGHT -> answer; inbound-webhook DATA -> any payload path (e.g. "contact.status"). Ops by field type \u2014 text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists ("exists" takes no value; gt/lt values are numbers).
+Filter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers or a custom field id; INSIGHT (straight after a magic-prompt step) -> answer only, so put a branch on a media field BEFORE the AI step. Neither a filter nor a condition can read the inbound webhook payload \u2014 they see the media and earlier step answers only \u2014 so a payload path such as "contact.status" is refused: upload first with speakUpload.fieldsMap to write that value into a custom field, then test the field id instead. Ops by field type \u2014 text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists ("exists" takes no value; gt/lt values are numbers).
 ` + TOKEN_SYNTAX_NOTE;
     TRIGGER_DESCRIPTION = `Trigger object (the automation's root). Always include triggerSlug. Supported shapes:
 - Media analyzed in folder(s): { type: "folders", triggerSlug: "media_analyzed", folderIds: string[] (min 1) }
@@ -5186,13 +6009,13 @@ function register14(server, client) {
           throw new Error(`Unknown trigger \`on\`: "${on}". Use media_analyzed, inbound_webhook, or field_updated.`);
         };
         const isWebhookAutomation = trigger.on === "inbound_webhook";
-        const buildRules = async (rules, flowing2, isFilterStep) => {
+        const buildRules = async (rules, flowing, isFilterStep) => {
           const out = [];
           for (const r of rules) {
             let field = String(r.field ?? "");
-            if (flowing2 === "media" && !CANONICAL_FILTER_FIELDS.has(field) && !field.includes(".")) {
+            if (flowing === "media" && !CANONICAL_FILTER_FIELDS.has(field) && !field.includes(".")) {
               field = resolveField(field, await getFields());
-            } else if (isFilterStep && flowing2 === "data" && !CANONICAL_FILTER_FIELDS.has(field)) {
+            } else if (isFilterStep && flowing === "data" && !CANONICAL_FILTER_FIELDS.has(field)) {
               dataFlowFilterFields.push(field);
             }
             const op = String(r.op ?? "eq");
@@ -5204,29 +6027,43 @@ function register14(server, client) {
           }
           return out;
         };
-        const wireSteps = [];
-        let lastBranchStepId = null;
-        let flowing = isWebhookAutomation ? "data" : "media";
-        for (let i = 0; i < steps.length; i++) {
-          const spec = steps[i];
-          const stepId = `s${i + 1}`;
+        let idSeq = 0;
+        const nextStepId = () => `s${++idSeq}`;
+        const foldLegacyRunWhen = (specs) => {
+          const out = [];
+          for (let i = 0; i < specs.length; i++) {
+            const spec = { ...specs[i] };
+            out.push(spec);
+            if (String(spec.do ?? "") !== "branch") continue;
+            if (spec.then !== void 0 || spec.otherwise !== void 0) continue;
+            const thenLeg = [];
+            const elseLeg = [];
+            let j = i + 1;
+            for (; j < specs.length; j++) {
+              const runWhen = specs[j].runWhen;
+              if (runWhen !== "true" && runWhen !== "false") break;
+              const { runWhen: _drop, ...rest } = specs[j];
+              (runWhen === "true" ? thenLeg : elseLeg).push(rest);
+            }
+            if (thenLeg.length || elseLeg.length) {
+              spec.then = thenLeg;
+              spec.otherwise = elseLeg;
+              i = j - 1;
+            }
+          }
+          return out;
+        };
+        const buildStepBody = async (stepId, spec, where) => {
           const doType = String(spec.do ?? "");
           const step = { stepId };
-          if (spec.runWhen === "true" || spec.runWhen === "false") {
-            if (!lastBranchStepId) throw new Error(`Step ${i + 1}: runWhen requires an earlier branch step`);
-            step.branch = spec.runWhen;
-            step.dependsOn = [lastBranchStepId];
-          }
           if (doType === "filter" || doType === "branch") {
             step.stepType = doType === "filter" ? "filter" : "condition";
-            const block = {
+            step[doType === "filter" ? "filter" : "condition"] = {
               logic: spec.logic === "OR" ? "OR" : "AND",
-              rules: await buildRules(spec.rules ?? [], flowing, doType === "filter")
+              rules: (spec.rules ?? []).map((rule) => ({ ...rule }))
             };
-            step[doType === "filter" ? "filter" : "condition"] = block;
-            if (doType === "branch") lastBranchStepId = stepId;
           } else if (doType === "upload") {
-            if (!spec.source) throw new Error(`Step ${i + 1} (upload): \`source\` is required (URL or payload.<path>)`);
+            if (!spec.source) throw new Error(`${where} (upload): \`source\` is required (URL or payload.<path>)`);
             const upload = {
               sourceMode: "url",
               sourceUrl: tokenize(spec.source),
@@ -5247,7 +6084,7 @@ function register14(server, client) {
               };
               if (spec.folder) upload.folderId = await resolveFolder(api, String(spec.folder), await getFolders(), createdFolders);
             } else {
-              if (!spec.folder) throw new Error(`Step ${i + 1} (upload): provide \`folder\` (name or id) or \`folderFromPayload\``);
+              if (!spec.folder) throw new Error(`${where} (upload): provide \`folder\` (name or id) or \`folderFromPayload\``);
               upload.folderId = await resolveFolder(api, String(spec.folder), await getFolders(), createdFolders);
             }
             if (spec.mapFields && typeof spec.mapFields === "object") {
@@ -5255,7 +6092,7 @@ function register14(server, client) {
               const fieldsMap = {};
               for (const [ref, value] of Object.entries(spec.mapFields)) {
                 if (value !== null && typeof value === "object") {
-                  throw new Error(`Step ${i + 1} (upload): mapFields["${ref}"] must be a string or number, not an object`);
+                  throw new Error(`${where} (upload): mapFields["${ref}"] must be a string or number, not an object`);
                 }
                 fieldsMap[resolveField(ref, fieldList)] = tokenize(String(value));
               }
@@ -5263,11 +6100,10 @@ function register14(server, client) {
             }
             step.stepType = "speak-upload";
             step.speakUpload = upload;
-            flowing = "media";
           } else if (doType === "ai_chat") {
             const hasSaveToFields = Array.isArray(spec.saveToFields) && spec.saveToFields.length > 0;
             if (!spec.prompt && !hasSaveToFields) {
-              throw new Error(`Step ${i + 1} (ai_chat): provide \`prompt\`, \`saveToFields\`, or both`);
+              throw new Error(`${where} (ai_chat): provide \`prompt\`, \`saveToFields\`, or both`);
             }
             const magicPrompt = { prompt: spec.prompt ?? "", assistantType: "general" };
             if (spec.title) magicPrompt.title = spec.title;
@@ -5276,60 +6112,119 @@ function register14(server, client) {
               const analysis = String(spec.analyse ?? spec.analyze);
               if (!["transcript", "audio", "video"].includes(analysis)) {
                 throw new Error(
-                  `Step ${i + 1} (ai_chat): analyse must be "transcript", "audio" or "video", got "${analysis}"`
+                  `${where} (ai_chat): analyse must be "transcript", "audio" or "video", got "${analysis}"`
                 );
               }
               if (analysis !== "transcript") magicPrompt.analysisInput = analysis;
             }
             if (Array.isArray(spec.saveToFields) && spec.saveToFields.length) {
               if (spec.saveToFields.length > 10) {
-                throw new Error(`Step ${i + 1} (ai_chat): saveToFields supports at most 10 fields`);
+                throw new Error(`${where} (ai_chat): saveToFields supports at most 10 fields`);
               }
               const fieldList = await getFields();
               magicPrompt.fieldIds = spec.saveToFields.map((ref) => resolveField(String(ref), fieldList));
             }
             step.stepType = "magic-prompt";
             step.magicPrompt = magicPrompt;
-            flowing = "insight";
           } else if (doType === "translate") {
-            if (!spec.language) throw new Error(`Step ${i + 1} (translate): \`language\` is required (e.g. "es-ES")`);
+            if (!spec.language) throw new Error(`${where} (translate): \`language\` is required (e.g. "es-ES")`);
             step.stepType = "translation";
             step.translation = { targetLanguage: spec.language };
-            flowing = "media";
           } else if (doType === "notify") {
-            if (!spec.message) throw new Error(`Step ${i + 1} (notify): \`message\` is required`);
+            if (!spec.message) throw new Error(`${where} (notify): \`message\` is required`);
             const channel = spec.channel === void 0 ? "in_app" : String(spec.channel);
             if (!["in_app", "email", "slack"].includes(channel)) {
-              throw new Error(`Step ${i + 1} (notify): channel must be "in_app", "email", or "slack" (got "${channel}")`);
+              throw new Error(`${where} (notify): channel must be "in_app", "email", or "slack" (got "${channel}")`);
             }
             const notify = { channel, message: tokenize(spec.message) };
             if (spec.target) notify.target = String(spec.target);
             step.stepType = "notify";
             step.notify = notify;
-            flowing = "data";
           } else if (doType === "call_webhook") {
-            if (!spec.url) throw new Error(`Step ${i + 1} (call_webhook): \`url\` is required`);
+            if (!spec.url) throw new Error(`${where} (call_webhook): \`url\` is required`);
             const method = spec.method === void 0 ? "POST" : String(spec.method).toUpperCase();
             if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-              throw new Error(`Step ${i + 1} (call_webhook): method must be GET, POST, PUT, PATCH, or DELETE (got "${spec.method}")`);
+              throw new Error(`${where} (call_webhook): method must be GET, POST, PUT, PATCH, or DELETE (got "${spec.method}")`);
             }
-            const outbound = {
-              url: tokenize(spec.url),
-              method
-            };
+            const outbound = { url: tokenize(spec.url), method };
             if (spec.headers && typeof spec.headers === "object") outbound.headers = spec.headers;
             if (spec.body !== void 0) {
               outbound.bodyTemplate = typeof spec.body === "string" ? tokenize(spec.body) : spec.body;
             }
             step.stepType = "outbound-webhook";
             step.outboundWebhook = outbound;
-            flowing = "data";
           } else {
             throw new Error(
-              `Step ${i + 1}: unknown \`do\`: "${doType}". Use filter, branch, upload, ai_chat, translate, notify, or call_webhook.`
+              `${where}: unknown \`do\`: "${doType}". Use filter, branch, upload, ai_chat, translate, notify, or call_webhook.`
             );
           }
-          wireSteps.push(step);
+          return step;
+        };
+        const buildNodes = async (specs, path4) => {
+          const nodes2 = [];
+          const folded = foldLegacyRunWhen(specs);
+          for (const [index, spec] of folded.entries()) {
+            const where = `${path4}[${index}]`;
+            const stepId = nextStepId();
+            const body2 = await buildStepBody(stepId, spec, where);
+            if (String(spec.do ?? "") !== "branch") {
+              nodes2.push({ step: body2 });
+              continue;
+            }
+            nodes2.push({
+              step: body2,
+              legs: {
+                true: await buildNodes(spec.then ?? [], `${where}.then`),
+                false: await buildNodes(spec.otherwise ?? [], `${where}.otherwise`)
+              },
+              legExit: {
+                true: spec.thenEnds === true ? "end" : "rejoin",
+                false: spec.otherwiseEnds === true ? "end" : "rejoin"
+              }
+            });
+          }
+          return nodes2;
+        };
+        const nodes = await buildNodes(steps, "steps");
+        const wireSteps = compileGraph(nodes);
+        const triggerSlug = String(trigger.on ?? "");
+        const rootType = TRIGGER_OUT[triggerSlug] ?? (isWebhookAutomation ? "data" : "media");
+        const incomingByStep = incomingTypesByStep(wireSteps, rootType);
+        for (const step of wireSteps) {
+          const stepType = String(step.stepType);
+          if (stepType !== "filter" && stepType !== "condition") continue;
+          const incoming = incomingByStep.get(String(step.stepId)) ?? /* @__PURE__ */ new Set([rootType]);
+          const flowing = [...incoming][0] ?? rootType;
+          const key = stepType === "filter" ? "filter" : "condition";
+          const block = step[key];
+          block.rules = await buildRules(block.rules ?? [], flowing, stepType === "filter");
+        }
+        const rulesReferenceFieldIds = wireSteps.some((step) => {
+          const key = step.stepType === "condition" ? "condition" : step.stepType === "filter" ? "filter" : null;
+          if (!key) return false;
+          const rules = step[key]?.rules ?? [];
+          return rules.some((rule) => looksLikeCustomFieldId(String(rule.field ?? "")));
+        });
+        const knownFieldIds = rulesReferenceFieldIds ? new Set((await getFields()).map((entry) => entry.id)) : null;
+        const graphCheck = validateGraph(wireSteps, {
+          triggerSlug,
+          // build_automation only writes instant automations; a schedule comes through
+          // create_automation, which runs the same validator with its own runType.
+          runType: "instant",
+          knownFieldIds
+        });
+        if (graphCheck.errors.length) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: this automation cannot be saved as described.
+
+` + graphCheck.errors.map((e) => `- ${e}`).join("\n")
+              }
+            ],
+            isError: true
+          };
         }
         const body = {
           name,
@@ -5358,6 +6253,7 @@ function register14(server, client) {
           ...typeof result.data === "object" ? result.data : { data: result.data }
         };
         if (createdFolders.length) response.createdFolders = createdFolders;
+        if (graphCheck.warnings.length) response.warnings = graphCheck.warnings;
         if (isWebhookAutomation && resolvedId) {
           try {
             const resolved = await resolveAutomationInboundWebhook(api, resolvedId);
@@ -5630,6 +6526,7 @@ var init_workflows = __esm({
     init_media_utils();
     init_capabilities();
     init_inbound_webhook_utils();
+    init_automation_graph();
     MAX_BATCH_URLS = 25;
     MAX_BATCH_CONCURRENCY = 5;
     RATE_LIMIT_RETRY_DELAY_MS = 5e3;
@@ -5649,7 +6546,7 @@ var init_workflows = __esm({
     ]);
     ID_PATTERN = /^[0-9a-f]{12}$/;
     TRIGGER_SPEC_DESCRIPTION = 'What starts the automation. Object with:\n- on (required): "media_analyzed" | "inbound_webhook" | "field_updated"\n- folders: array of folder names or ids (required for media_analyzed; missing folders are created)\n- childKey: dot-path narrowing the webhook payload root, e.g. "data" (inbound_webhook only)\n- webhookId: reuse a webhook from provision_inbound_webhook (inbound_webhook only; omit to auto-provision)\n- watchFields: array of { field: name-or-id, values?: string[] } (required for field_updated \u2014 fires when the field changes; values restricts to specific new values)\n- matchLogic: "AND"|"OR" for combining multiple watchFields value matches (default OR)';
-    STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match. Fields: media flows use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; webhook payloads use payload paths like "contact.status". Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic? } \u2014 like filter but routes instead of stopping; later steps with runWhen: "true"|"false" only run on that outcome. NOTE: branch routing requires the server\'s DAG runner (feature-flagged); when it is off, steps run in order and runWhen markers are ignored \u2014 prefer filter for guaranteed gating\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default), analyse?: "transcript" (default) | "audio" | "video" \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see the screen; on a video file "audio" extracts the audio track first. Premium: requires the account\'s audio/video analysis opt-in and costs credits per hour of media }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nSteps may also set runWhen (after a branch step). Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
+    STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match, otherwise the run stops here. Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic?, then: [steps], otherwise: [steps], thenEnds?, otherwiseEnds? } \u2014 routes instead of stopping. `then` runs when the rules match, `otherwise` when they do not, and whatever follows the branch runs on both paths. Set thenEnds/otherwiseEnds to true to finish the run on that side instead of carrying on. One side may be empty ("if it matches do this, otherwise just carry on"), but not both. Branches may nest three deep, and a nested branch must be the LAST step of the side it sits on.\n  Rule fields for BOTH filter and branch depend on what reaches the step: while media is flowing use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; straight after an ai_chat step only "answer" is available, so put the branch BEFORE the ai_chat step if you need a media field. A filter and a branch CANNOT read the webhook payload \u2014 they only see the media and earlier answers. To branch on payload data, upload first with mapFields to write the value into a custom field, then branch on that field.\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default), analyse?: "transcript" (default) | "audio" | "video" \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see the screen; on a video file "audio" extracts the audio track first. Premium: requires the account\'s audio/video analysis opt-in and costs credits per hour of media }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nLegacy: a flat list where steps after a branch carry runWhen: "true"|"false" is still accepted and folded into then/otherwise, but it cannot express nesting or an ending side \u2014 prefer then/otherwise. Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
     buildAutomationSchema = {
       name: import_zod15.z.string().min(1).max(150).describe("Display name for the automation"),
       trigger: import_zod15.z.record(import_zod15.z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
@@ -6890,6 +7787,11 @@ var init_tool_names = __esm({
       "list_automation_names",
       "get_automation",
       "get_automation_runs",
+      "get_automation_run",
+      "get_automation_run_stats",
+      "test_automation",
+      "validate_automation_graph",
+      "describe_automation_graph",
       "create_automation",
       "update_automation",
       "toggle_automation_status",

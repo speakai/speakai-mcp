@@ -138,10 +138,97 @@ describe("Automations tools", () => {
     const result = await cb({
       name: "Webhook Rule",
       trigger: { type: "folders", triggerSlug: "inbound_webhook" },
-      steps: [{ stepId: "s1", stepType: "translation", translation: { targetLanguage: "es" } }],
+      // notify accepts the webhook's DATA flow; a translation step here would be rejected
+      // by the graph check (and by the server) because translation only accepts media.
+      steps: [{ stepId: "s1", stepType: "notify", notify: { channel: "in_app", message: "hi" } }],
     });
     expect(result.isError).toBeUndefined();
     expect(result.content[0].text).toContain("auto2");
+  });
+
+  it("refuses a branch on a scheduled automation before sending it", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    const cb = getToolCallback(server, "create_automation");
+    const result = await cb({
+      name: "Weekly digest",
+      runType: "schedule",
+      schedule: { timePeriod: "last7days", repeatAt: "09:00" },
+      trigger: { type: "folders", triggerSlug: "schedule", folderIds: ["f1"] },
+      steps: [
+        { stepId: "c", stepType: "condition", condition: { logic: "AND", rules: [{ field: "duration", op: "gt", value: 60 }] } },
+        { stepId: "n", stepType: "notify", dependsOn: ["c"], branch: "true", notify: { channel: "in_app", message: "x" } },
+      ],
+    });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain("scheduled automation cannot branch");
+    expect(mockPost).not.toHaveBeenCalledWith("/v1/automations/", expect.anything());
+  });
+
+  it("get_automation_run_stats sends the window the server's schema accepts", async () => {
+    // Regression: this tool shipped with invented `from`/`to` params. The endpoint's Joi
+    // schema takes `days` (1-90) and rejects unknown keys.
+    const cb = getToolCallback(server, "get_automation_run_stats");
+    await cb({ automationId: "auto1", days: 7 });
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations/auto1/runs/stats", { params: { days: 7 } });
+  });
+
+  it("get_automation_run summarises which way each branch went", async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          status: "completed",
+          steps: [
+            { stepId: "c", stepType: "condition", status: "completed", outputs: { branch: "true" } },
+            { stepId: "yes", stepType: "notify", status: "completed", branch: "true", branchSkipped: false },
+            { stepId: "no", stepType: "notify", status: "completed", branch: "false", branchSkipped: true },
+          ],
+        },
+      },
+    });
+    const cb = getToolCallback(server, "get_automation_run");
+    const result = await cb({ automationId: "auto1", runId: "run1" });
+    const body = JSON.parse(result.content[0].text);
+    expect(body.branchSummary.conditions).toEqual([{ stepId: "c", took: "true" }]);
+    expect(body.branchSummary.stepsSkippedBecauseTheirBranchWasNotTaken).toEqual(["no"]);
+    expect(body.branchSummary.stepsThatRan).toEqual(["c", "yes"]);
+  });
+
+  it("says so when a run reads as killed but a leg did real work", async () => {
+    mockGet.mockResolvedValueOnce({
+      data: {
+        status: "success",
+        data: {
+          status: "killed",
+          steps: [
+            { stepId: "c", stepType: "condition", status: "completed", outputs: { branch: "true" } },
+            { stepId: "yes", stepType: "notify", status: "completed" },
+            { stepId: "f", stepType: "filter", status: "killed", branch: "false" },
+          ],
+        },
+      },
+    });
+    const cb = getToolCallback(server, "get_automation_run");
+    const result = await cb({ automationId: "auto1", runId: "run1" });
+    const body = JSON.parse(result.content[0].text);
+    expect(body.branchSummary.note).toContain("ran to completion first");
+  });
+
+  it("describe_automation_graph explains a legacy automation instead of failing on it", async () => {
+    // A pre-graph row keeps its `action` block and has no steps[]; not present in the test
+    // workspace, so pinned here.
+    mockGet.mockResolvedValueOnce({
+      data: { status: "success", data: { automationId: "old1", name: "Legacy rule", steps: [] } },
+    });
+    const cb = getToolCallback(server, "describe_automation_graph");
+    const result = await cb({ automationId: "old1" });
+    expect(result.isError).toBeUndefined();
+    const body = JSON.parse(result.content[0].text);
+    expect(body.shape).toBeNull();
+    expect(body.note).toContain("legacy single-action rule");
   });
 
   it("update_automation calls PUT /v1/automations/:id", async () => {
@@ -1432,7 +1519,32 @@ describe("build_automation workflow", () => {
     expect(body.steps[1]).toMatchObject({ branch: "true", dependsOn: ["s1"], stepType: "notify" });
   });
 
-  it("resolves filter fields by flow position: payload paths on DATA flow, field names after upload (MEDIA flow)", async () => {
+  it("refuses a filter before any upload (nothing has produced media for it to read)", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Filter before upload",
+      trigger: { on: "inbound_webhook" },
+      steps: [
+        { do: "filter", rules: [{ field: "status", op: "eq", value: "completed" }] },
+        { do: "upload", source: "payload.url", folder: "Sales Calls" },
+      ],
+    });
+
+    // The server stores this happily; the runner then fails the step with
+    // "Media not found for filter evaluation" because no executor reads the payload.
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain("nothing has produced a media item yet");
+    expect(result.content[0].text).toContain("fieldsMap");
+    expect(mockPost).not.toHaveBeenCalledWith("/v1/automations/", expect.anything());
+  });
+
+  it("resolves a custom-field NAME to its id once media is flowing", async () => {
     mockGet.mockImplementation((url: string) => {
       if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
       if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
@@ -1445,7 +1557,6 @@ describe("build_automation workflow", () => {
       name: "Flow-aware filters",
       trigger: { on: "inbound_webhook" },
       steps: [
-        { do: "filter", rules: [{ field: "status", op: "eq", value: "completed" }] },
         { do: "upload", source: "payload.url", folder: "Sales Calls" },
         { do: "filter", rules: [{ field: "Deal Stage", op: "eq", value: "Closed" }] },
       ],
@@ -1453,10 +1564,78 @@ describe("build_automation workflow", () => {
 
     expect(result.isError).toBeUndefined();
     const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
-    // Before the upload the webhook payload (DATA) flows: field stays a payload path.
-    expect(body.steps[0].filter.rules[0].field).toBe("status");
-    // After the upload MEDIA flows: the custom-field name resolves to its id.
-    expect(body.steps[2].filter.rules[0].field).toBe("fldB");
+    expect(body.steps[1].filter.rules[0].field).toBe("fldB");
+  });
+
+  it("compiles a nested branch into a single-entry DAG the save gate accepts", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a7" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Escalate long calls",
+      trigger: { on: "media_analyzed", folders: ["Sales Calls"] },
+      steps: [
+        {
+          do: "branch",
+          rules: [{ field: "duration", op: "gt", value: 600 }],
+          then: [
+            { do: "ai_chat", prompt: "Summarise the escalation" },
+            { do: "notify", message: "Long call escalated" },
+          ],
+          otherwise: [],
+        },
+        // A merge must accept what BOTH legs hand it: the "then" leg ends in a notify
+        // (which outputs DATA), so a translation here would be rejected — correctly.
+        { do: "notify", message: "Call processed" },
+      ],
+    });
+
+    expect(result.isError).toBeUndefined();
+    const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
+    const byId = Object.fromEntries(body.steps.map((s: any) => [s.stepId, s]));
+
+    // Exactly one entry point: a second would run on both branches and the server refuses it.
+    expect(body.steps.filter((s: any) => !(s.dependsOn ?? []).length)).toHaveLength(1);
+    // The leg is a chain, not a fan off the condition.
+    expect(byId.s2.dependsOn).toEqual(["s1"]);
+    expect(byId.s3.dependsOn).toEqual(["s2"]);
+    expect(byId.s2.branch).toBe("true");
+    expect(byId.s3.branch).toBe("true");
+    // The merge waits on the leg tail and on the condition (the empty "otherwise" side).
+    expect(byId.s4.dependsOn).toEqual(["s3", "s1"]);
+  });
+
+  it("folds the legacy flat runWhen form into the same graph", async () => {
+    mockGet.mockImplementation((url: string) => {
+      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
+      if (url === "/v1/fields") return Promise.resolve({ data: FIELDS });
+      return Promise.resolve({ data: { data: {} } });
+    });
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "a8" } } });
+
+    const cb = getToolCallback(server, "build_automation");
+    const result = await cb({
+      name: "Legacy shape",
+      trigger: { on: "media_analyzed", folders: ["Sales Calls"] },
+      steps: [
+        { do: "branch", rules: [{ field: "duration", op: "gt", value: 600 }] },
+        { do: "notify", message: "long", runWhen: "true" },
+        { do: "notify", message: "short", runWhen: "false" },
+      ],
+    });
+
+    expect(result.isError).toBeUndefined();
+    const body = mockPost.mock.calls.find((c: any[]) => c[0] === "/v1/automations/")?.[1];
+    const byId = Object.fromEntries(body.steps.map((s: any) => [s.stepId, s]));
+    expect(byId.s2.branch).toBe("true");
+    expect(byId.s3.branch).toBe("false");
+    expect(byId.s2.dependsOn).toEqual(["s1"]);
+    expect(byId.s3.dependsOn).toEqual(["s1"]);
   });
 
   it("rejects an unknown folder id instead of creating a folder named after it", async () => {

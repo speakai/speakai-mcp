@@ -10,6 +10,11 @@ import {
   unwrapData,
 } from "./inbound-webhook-utils.js";
 import { MULTIMODAL_DISABLED_MESSAGE, multimodalCapability } from "../capabilities.js";
+import {
+  validateGraph,
+  describeGraph,
+  type WireStep,
+} from "./automation-graph.js";
 
 // Shared write-schema fields for create/update. The server (speak-server
 // @speak-automations) validates these with Joi `automationCreateUpdate` and
@@ -18,8 +23,11 @@ const TOKEN_SYNTAX_NOTE =
   "Token syntax (usable in fields marked 'tokens allowed'): " +
   "{{trigger.payload.<path>}} reads the inbound webhook payload (dot paths and [n] array indices; " +
   "paths are relative to trigger.childKey when set — discover valid paths with get_inbound_webhook after " +
-  "sending a test payload); {{step.<index>.<path>}} or {{step.<stepId>.<path>}} reads a previous step's " +
-  "output (speak-upload -> mediaId, magic-prompt -> answer, outbound-webhook -> status/response).";
+  "sending a test payload); {{step.<stepId>.<path>}} reads a previous step's output " +
+  "(speak-upload -> mediaId, magic-prompt -> answer, outbound-webhook -> status/response). " +
+  "A positional {{step.<index>.<path>}} form also exists but is REFUSED on a branched automation: the index " +
+  "counts stored order ([condition, true leg, false leg, merge]), not run order, and a step on the branch that " +
+  "was not taken produces nothing — the token would resolve to an empty string inside whatever the step sends.";
 
 const STEPS_DESCRIPTION =
   "Ordered array of graph steps (1-20). Each step is an object: " +
@@ -47,13 +55,29 @@ const STEPS_DESCRIPTION =
   "- filter -> filter: { logic: \"AND\"|\"OR\" (default \"AND\"), rules: [{ field, op, value? }] (1-20) } — " +
   "the run continues only when the rules match, otherwise it stops silently\n" +
   "- condition -> condition: same { logic, rules } shape as filter, but instead of stopping it routes: " +
-  "downstream steps marked branch:\"true\"/\"false\" run according to the outcome\n" +
+  "downstream steps marked branch:\"true\"/\"false\" run according to the outcome.\n" +
+  "  Branch wiring rules, all enforced before the request is sent:\n" +
+  "  * A leg is a CHAIN: the first step of a leg depends on the condition, the rest depend on the step " +
+  "before them in the same leg, and every step on the leg carries the same branch marker.\n" +
+  "  * A step that runs after the branch (a merge) depends on the LAST step of every leg that carries on. " +
+  "When a leg is empty its last step IS the condition, and the merge then carries that leg's marker.\n" +
+  "  * A leg ends the run simply by having nothing depend on its last step.\n" +
+  "  * Once anything carries a branch marker, EVERY other step needs a dependsOn — a step with no parents is " +
+  "an entry point and runs on both branches, and a second entry point is rejected.\n" +
+  "  * A condition with no steps on either side is rejected: both paths would do the same thing.\n" +
+  "  * Branches nest at most three deep, and a nested condition must be the last step of the leg it sits on, " +
+  "or the automation cannot be reopened in the Speak web editor.\n" +
+  "  * A scheduled automation cannot branch: a schedule runs over a batch and a condition resolves once for the " +
+  "whole batch, so the leg would run against media that did not match. Use a filter, which narrows the batch.\n" +
   "- notify -> notify: { channel: \"in_app\"|\"email\"|\"slack\", target?, message (required, tokens allowed) }\n" +
   "- outbound-webhook -> outboundWebhook: { url (required, tokens allowed), method? (\"GET\"|\"POST\"|\"PUT\"|\"PATCH\"|\"DELETE\", default \"POST\"), " +
   "headers?: { <name>: <value> }, bodyTemplate?: string | object (tokens allowed) }\n" +
   "- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)\n" +
   "Filter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers " +
-  "or a custom field id; INSIGHT -> answer; inbound-webhook DATA -> any payload path (e.g. \"contact.status\"). " +
+  "or a custom field id; INSIGHT (straight after a magic-prompt step) -> answer only, so put a branch on a media " +
+  "field BEFORE the AI step. Neither a filter nor a condition can read the inbound webhook payload — they see the " +
+  "media and earlier step answers only — so a payload path such as \"contact.status\" is refused: upload first with " +
+  "speakUpload.fieldsMap to write that value into a custom field, then test the field id instead. " +
   "Ops by field type — text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists " +
   "(\"exists\" takes no value; gt/lt values are numbers).\n" +
   TOKEN_SYNTAX_NOTE;
@@ -138,6 +162,107 @@ async function refuseUngatedAnalysis(
     content: [{ type: "text", text: `Error: ${MULTIMODAL_DISABLED_MESSAGE}` }],
     isError: true,
   };
+}
+
+/**
+ * Refuse a graph the server would accept and then run wrongly, or reject with a message
+ * that names a rule rather than the problem.
+ *
+ * Three gates disagree about what a legal branched automation is: the save gate rejects
+ * some shapes, the web editor rejects others the server stores happily, and a third group
+ * passes both and misbehaves at run time. A caller writing through MCP passes through none
+ * of the editor's checks, so the whole rule set runs here. Returns null when the write may
+ * proceed; warnings are non-blocking and ride along with the success payload.
+ */
+function refuseInvalidGraph(
+  steps: unknown,
+  trigger: unknown,
+  runType: unknown,
+): { content: { type: "text"; text: string }[]; isError: true } | null {
+  if (!Array.isArray(steps)) return null;
+  const triggerSlug = (trigger as { triggerSlug?: unknown })?.triggerSlug;
+  const { errors } = validateGraph(steps as WireStep[], {
+    triggerSlug: typeof triggerSlug === "string" ? triggerSlug : undefined,
+    runType: typeof runType === "string" ? runType : undefined,
+  });
+  if (!errors.length) return null;
+  return {
+    content: [
+      {
+        type: "text" as const,
+        text:
+          `Error: this automation cannot be saved as described.\n\n` +
+          errors.map((e) => `- ${e}`).join("\n"),
+      },
+    ],
+    isError: true as const,
+  };
+}
+
+/**
+ * Non-blocking notes about a graph that will save but has a sharp edge — a merge whose
+ * branches carry different data, or a step id that a Composio arg template reads as text.
+ */
+function graphWarnings(steps: unknown, trigger: unknown, runType: unknown): string[] {
+  if (!Array.isArray(steps)) return [];
+  const triggerSlug = (trigger as { triggerSlug?: unknown })?.triggerSlug;
+  return validateGraph(steps as WireStep[], {
+    triggerSlug: typeof triggerSlug === "string" ? triggerSlug : undefined,
+    runType: typeof runType === "string" ? runType : undefined,
+  }).warnings;
+}
+
+/**
+ * Recast a run detail as "which way did it go".
+ *
+ * The raw response is accurate but reads wrongly on a branched automation. A step whose
+ * branch was not taken is persisted COMPLETED carrying only a `branchSkipped` marker, and
+ * a filter that stops ONE leg ends the whole run as "killed" even when the other leg did
+ * its work — so both the per-step status and the run status overstate or understate what
+ * happened. This pulls out the three things a caller actually asked.
+ */
+function summariseBranching(data: unknown): Record<string, unknown> | undefined {
+  const run = data as {
+    status?: string;
+    stoppedAt?: { stepId?: string; status?: string; reason?: string };
+    steps?: Array<{
+      stepId?: string;
+      stepType?: string;
+      status?: string;
+      branchSkipped?: boolean;
+      branch?: string;
+      outputs?: { branch?: string; reason?: string };
+    }>;
+  };
+  const steps = Array.isArray(run?.steps) ? run.steps : [];
+  if (!steps.length) return undefined;
+
+  const conditions = steps
+    .filter((step) => step.stepType === "condition")
+    .map((step) => ({
+      stepId: step.stepId,
+      took: step.outputs?.branch ?? "not reached",
+    }));
+  if (!conditions.length && !steps.some((step) => step.branchSkipped)) return undefined;
+
+  const notTaken = steps.filter((step) => step.branchSkipped).map((step) => step.stepId);
+  const ran = steps
+    .filter((step) => !step.branchSkipped && step.status === "completed")
+    .map((step) => step.stepId);
+
+  const summary: Record<string, unknown> = {
+    conditions,
+    stepsThatRan: ran,
+    stepsSkippedBecauseTheirBranchWasNotTaken: notTaken,
+  };
+  if (run.stoppedAt?.stepId) summary.stoppedAt = run.stoppedAt;
+  // The one reading that is actively misleading, so it gets said in words.
+  if (run.status === "killed" && ran.length) {
+    summary.note =
+      `The run is marked "killed" because a filter stopped one path, but ${ran.length} step(s) ran to completion first — ` +
+      `a stopped leg ends the whole run's status, not its work.`;
+  }
+  return summary;
 }
 
 /**
@@ -307,6 +432,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async (body) => {
       try {
+        const graphRefusal = refuseInvalidGraph(body.steps, body.trigger, body.runType);
+        if (graphRefusal) return graphRefusal;
         const refusal = await refuseUngatedAnalysis(api, body.steps);
         if (refusal) return refusal;
 
@@ -315,6 +442,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         if (isInboundWebhookTrigger(body.trigger)) {
           const automationId = unwrapData(result.data)?.automationId;
           data = await withInboundWebhookInfo(api, data, automationId);
+        }
+        const warnings = graphWarnings(body.steps, body.trigger, body.runType);
+        if (warnings.length && data && typeof data === "object") {
+          data = { ...(data as object), warnings };
         }
         return {
           content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
@@ -345,6 +476,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     async ({ automationId, ...body }) => {
       try {
+        const graphRefusal = refuseInvalidGraph(body.steps, body.trigger, body.runType);
+        if (graphRefusal) return graphRefusal;
         const refusal = await refuseUngatedAnalysis(api, body.steps);
         if (refusal) return refusal;
 
@@ -352,6 +485,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         let data: unknown = result.data;
         if (isInboundWebhookTrigger(body.trigger)) {
           data = await withInboundWebhookInfo(api, data, automationId);
+        }
+        const warnings = graphWarnings(body.steps, body.trigger, body.runType);
+        if (warnings.length && data && typeof data === "object") {
+          data = { ...(data as object), warnings };
         }
         return {
           content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
@@ -509,6 +646,232 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         const result = await api.delete(`/v1/automations/${automationId}`);
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "get_automation_run",
+    "Get one automation run in full: every step, in dependency order, with what it produced and why it stopped. " +
+      "Use this after test_automation or to explain a run that went the wrong way. On a branched automation the " +
+      "run's overall status is not the whole story — a filter that stops one leg marks the entire run \"killed\" " +
+      "even when the other leg finished its work — so read the per-step summary this returns, not just the status.",
+    {
+      automationId: z.string().min(1).describe("Unique identifier of the automation"),
+      runId: z.string().min(1).describe("Run id, from get_automation_runs or test_automation"),
+    },
+    {
+      title: "Get Automation Run",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    async ({ automationId, runId }) => {
+      try {
+        const result = await api.get(`/v1/automations/${automationId}/runs/${runId}`);
+        const data = unwrapData(result.data) ?? result.data;
+        return {
+          content: [
+            { type: "text", text: JSON.stringify({ ...data, branchSummary: summariseBranching(data) }, null, 2) },
+          ],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "get_automation_run_stats",
+    "Aggregate run counts for an automation over a period — how many completed, failed, or were stopped.",
+    {
+      automationId: z.string().min(1).describe("Unique identifier of the automation"),
+      days: z
+        .number()
+        .int()
+        .min(1)
+        .max(90)
+        .optional()
+        .describe(
+          "How many days back to count, 1-90. The run ledger is kept for 90 days, so that is the whole window.",
+        ),
+    },
+    {
+      title: "Get Automation Run Stats",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    async ({ automationId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/automations/${automationId}/runs/stats`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "test_automation",
+    "Run an automation once against one media item to see which way it branches. " +
+      "THIS HAS REAL SIDE EFFECTS: only Speak's own run notifications are suppressed — outbound webhooks fire, " +
+      "Composio actions run against the connected third party, and AI steps are billed. Ask the user before " +
+      "calling it on an automation that posts anywhere outside Speak. " +
+      "It also needs a mediaId and sends no webhook payload, so an inbound-webhook automation cannot be " +
+      "meaningfully tested this way — its payload tokens will resolve to empty. " +
+      "Returns a runId; read the result with get_automation_run.",
+    {
+      automationId: z.string().min(1).describe("Unique identifier of the automation to test"),
+      mediaId: z.string().min(1).describe("Media item to run the automation against"),
+    },
+    {
+      title: "Test Automation",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+    async (body) => {
+      try {
+        const result = await api.post(`/v1/automations/${body.automationId}/test-run`, {
+          mediaId: body.mediaId,
+        });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "validate_automation_graph",
+    "Check a step graph without saving anything. Reports the same problems create_automation and " +
+      "update_automation would refuse — branch wiring, rules a condition cannot actually read, shapes the Speak " +
+      "web editor could not reopen — plus non-blocking warnings. Use it to iterate on a branched automation " +
+      "instead of discovering the problems one failed save at a time.",
+    {
+      steps: z.array(z.record(z.unknown())).min(1).describe(STEPS_DESCRIPTION),
+      trigger: z.record(z.unknown()).optional().describe(TRIGGER_DESCRIPTION),
+      runType: z
+        .enum(["instant", "schedule"])
+        .optional()
+        .describe("Run type the graph would be saved with. A schedule refuses any branch."),
+    },
+    {
+      title: "Validate Automation Graph",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    async ({ steps, trigger, runType }) => {
+      const triggerSlug = (trigger as { triggerSlug?: unknown } | undefined)?.triggerSlug;
+      const { errors, warnings } = validateGraph(steps as WireStep[], {
+        triggerSlug: typeof triggerSlug === "string" ? triggerSlug : undefined,
+        runType,
+      });
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(
+              {
+                valid: errors.length === 0,
+                errors,
+                warnings,
+                shape: describeGraph(steps as WireStep[]),
+              },
+              null,
+              2,
+            ),
+          },
+        ],
+      };
+    }
+  );
+
+  registerSpeakTool(server,
+    "describe_automation_graph",
+    "Show a saved automation's steps as an indented branch tree instead of a flat list. " +
+      "Worth calling before update_automation, which replaces the whole automation: editing one leg means " +
+      "re-sending every step with its dependsOn intact, and this shows what the shape currently is.",
+    {
+      automationId: z.string().min(1).describe("Unique identifier of the automation"),
+    },
+    {
+      title: "Describe Automation Graph",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    async ({ automationId }) => {
+      try {
+        const result = await api.get(`/v1/automations/${automationId}`);
+        const data = unwrapData(result.data) ?? result.data;
+        const steps = (data as { steps?: unknown })?.steps;
+        if (!Array.isArray(steps) || !steps.length) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(
+                  { automationId, shape: null, note: "This automation has no graph steps (it may be a legacy single-action rule)." },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+        }
+        const triggerSlug = (data as { trigger?: { triggerSlug?: unknown } })?.trigger?.triggerSlug;
+        const { errors, warnings } = validateGraph(steps as WireStep[], {
+          triggerSlug: typeof triggerSlug === "string" ? triggerSlug : undefined,
+          runType: (data as { runType?: string })?.runType,
+        });
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify(
+                {
+                  automationId,
+                  name: (data as { name?: string })?.name,
+                  runType: (data as { runType?: string })?.runType,
+                  shape: describeGraph(steps as WireStep[]),
+                  steps,
+                  // A stored automation can predate a rule, or have been written through the
+                  // raw API. Saying so here is cheaper than a failed round-trip on re-save.
+                  problemsIfResaved: errors,
+                  warnings,
+                },
+                null,
+                2,
+              ),
+            },
+          ],
         };
       } catch (err) {
         return {
