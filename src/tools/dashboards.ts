@@ -49,7 +49,7 @@ const widgetInputSchema = z.object({
       "Per-type config (STRICT — unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + " +
         "metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; " +
         "field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content; " +
-        "chat-history: limit (optional, past conversations to list, 1-100, default 20). " +
+        "chat-history: limit (optional, past conversations to list, 1-100, default 25). " +
         "Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. " +
         "Omit for a sensible valid default (except field-distribution, which needs fieldName).",
     ),

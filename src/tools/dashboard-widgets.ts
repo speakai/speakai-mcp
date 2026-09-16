@@ -147,7 +147,7 @@ function defaultWidgetConfig(type: WidgetType): Record<string, unknown> {
     case "notes":
       return { content: "Add notes or context for this dashboard." };
     case "chat-history":
-      return { limit: 20 };
+      return { limit: 25 };
   }
 }
 
@@ -358,7 +358,7 @@ export const WIDGET_CATALOG = [
     purpose:
       "Past AI chat conversations held on this dashboard (full width) — messages, feedback, and the " +
       "thinking/tool-call trail when the viewer's embed allows it. Not a Media-aggregation widget.",
-    config: "limit?: number (1-100, optional, default 20) — conversations per page.",
+    config: "limit?: number (1-100, optional, default 25) — conversations per page.",
   },
 ] as const;
 
