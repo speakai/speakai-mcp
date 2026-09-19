@@ -32,7 +32,7 @@ const FILTER_LIST_DESCRIPTION =
 const widgetInputSchema = z.object({
   type: z.enum(WIDGET_TYPES as unknown as [string, ...string[]]).describe(
     "Widget type: narrative | stat-cards | metric-chart | table | comparison | " +
-      "field-distribution | sentiment-trend | themes | people | team-activity | notes",
+      "field-distribution | sentiment-trend | themes | people | team-activity | notes | chat-history",
   ),
   id: z
     .string()
@@ -48,7 +48,8 @@ const widgetInputSchema = z.object({
     .describe(
       "Per-type config (STRICT — unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + " +
         "metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; " +
-        "field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content. " +
+        "field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content; " +
+        "chat-history: limit (optional, past conversations to list, 1-100, default 25). " +
         "Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. " +
         "Omit for a sensible valid default (except field-distribution, which needs fieldName).",
     ),

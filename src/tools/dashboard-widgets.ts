@@ -20,6 +20,7 @@ export const WIDGET_TYPES = [
   "people",
   "team-activity",
   "notes",
+  "chat-history",
 ] as const;
 
 export type WidgetType = (typeof WIDGET_TYPES)[number];
@@ -55,6 +56,7 @@ const WIDGET_META: Record<WidgetType, WidgetMeta> = {
   people: { w: 6, h: 4, titleDefault: "People" },
   "team-activity": { w: 6, h: 4, titleDefault: "Team activity" },
   notes: { w: GRID_COLS, h: 2, titleDefault: "Note" },
+  "chat-history": { w: GRID_COLS, h: 6, titleDefault: "AI Chat History" },
 };
 
 export interface WidgetLayout {
@@ -144,6 +146,8 @@ function defaultWidgetConfig(type: WidgetType): Record<string, unknown> {
       return { metrics: ["uploads", "minutes", "lastActive"] };
     case "notes":
       return { content: "Add notes or context for this dashboard." };
+    case "chat-history":
+      return { limit: 25 };
   }
 }
 
@@ -348,6 +352,13 @@ export const WIDGET_CATALOG = [
     type: "notes",
     purpose: "Free-text note/context block (full width).",
     config: "content: string (1-4000 chars, required)",
+  },
+  {
+    type: "chat-history",
+    purpose:
+      "Past AI chat conversations held on this dashboard (full width) — messages, feedback, and the " +
+      "thinking/tool-call trail when the viewer's embed allows it. Not a Media-aggregation widget.",
+    config: "limit?: number (1-100, optional, default 25) — conversations per page.",
   },
 ] as const;
 
