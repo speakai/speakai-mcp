@@ -171,6 +171,23 @@
         { "html": "Follow the install instructions for your agent — e.g. <code>clawhub install speakai</code> from the ClawHub CLI" },
         { "html": "Set your <code>SPEAK_API_KEY</code> environment variable. Generate one at <a href=\"https://app.speakai.co/developers/apikeys\" target=\"_blank\" rel=\"noopener\">app.speakai.co/developers/apikeys</a>" }
       ]
+    },
+    {
+      "id": "muse",
+      "title": "Muse",
+      "tagline": "Meta's personal AI assistant. One-click OAuth, no API key.",
+      "installButton": {
+        "label": "Open Muse",
+        "url": "https://muse.ai",
+        "copyUrl": true
+      },
+      "steps": [
+        { "html": "Open <a href=\"https://muse.ai\" target=\"_blank\" rel=\"noopener\">muse.ai</a> and sign in" },
+        { "html": "Ask your Muse to connect to Speak AI, for example <strong>\"Connect to the Speak AI MCP server at https://api.speakai.co/v1/mcp\"</strong>" },
+        { "html": "Sign in to Speak AI, then click <strong>Allow</strong> on the permission popup. Muse uses the one-click OAuth flow, so there is no API key to paste" },
+        { "html": "Confirm it worked by asking <strong>\"Summarize my most recent recording in Speak AI\"</strong>" },
+        { "html": "<em>Directory listing, pending approval: once Speak AI is approved in the Muse connector directory, you will find <strong>Speak AI</strong> in Muse's directory and connect in one click, with no URL to paste. This step replaces the two above it when that lands.</em>" }
+      ]
     }
   ]
 }
