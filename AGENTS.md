@@ -55,9 +55,20 @@ minor release, `!:` or `BREAKING CHANGE` makes a major one, anything else a patc
   which bypasses the `.gitignore` rules that keep local `.env` files out.
 
 ## Agent guardrails
-`.claude/settings.json` runs the hooks in `.claude/hooks/ai-skills/eng-safety/`: `pr-gate.sh`
-blocks non-draft PR creation and merges, and asks before a PR is marked Ready; `block-secrets.sh`
-blocks writes that contain a credential. They are vendored from Speak's shared ai-skills repo,
-so change them there rather than here. Re-vendor with that repo's
+Two hooks guard every agent session. `pr-gate.sh` blocks non-draft PR creation and merges;
+`block-secrets.sh` blocks writes that contain a credential. Claude Code runs them from
+`.claude/settings.json`, and there `pr-gate.sh` asks before a PR is marked Ready. Codex runs them
+from `.codex/hooks.json`, with `.codex/rules/` as a backstop. A Codex hook cannot pause to ask, so
+under Codex marking a PR Ready is always blocked: ask the developer to do it. The hooks live in
+`.claude/hooks/ai-skills/eng-safety/` and are vendored from Speak's shared ai-skills repo, so
+change them there rather than here. Re-vendor with that repo's
 `scripts/install.sh --target <this repo> --plugins eng-safety` (the plugin list is in
-`.claude/ai-skills.config`; this repo has no synced skills, only the hooks).
+`.claude/ai-skills.config`; this repo has no synced skills, only the hooks and rules).
+
+## Claude Code and Codex
+Codex reads this file and skills in `.agents/skills/`. Claude Code reads `CLAUDE.md`, which only
+imports this file, and skills in `.claude/skills/`. This repo has no repo-local skills today; if
+one is added under `.claude/skills/`, the ai-skills installer links it into `.agents/skills/`.
+After pulling, Codex users trust the project once and approve its hooks in `/hooks` (Codex 0.142 or
+newer); Codex asks again whenever a hook changes. The customer-facing skills in
+`plugins/speakai-mcp/skills/` are plugin content, not skills for working on this repo.
