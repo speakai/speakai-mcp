@@ -43,6 +43,9 @@ minor release, `!:` or `BREAKING CHANGE` makes a major one, anything else a patc
 `chore:`, `docs:` or `test:` unless the change really is a new feature. Leave the version in
 `package.json` and `CHANGELOG.md` alone; the release job owns them.
 
+## Code
+- Comments: one line that explains why, not what. Use a longer comment only when the logic is genuinely complex. The comment-guard hook flags multi-line comments.
+
 ## Pull requests
 - Open every PR as a draft (`gh pr create --draft`, or `draft: true` with the GitHub MCP tool),
   because a human previews each PR before anything merges and a merge here is a public release.
@@ -55,8 +58,9 @@ minor release, `!:` or `BREAKING CHANGE` makes a major one, anything else a patc
   which bypasses the `.gitignore` rules that keep local `.env` files out.
 
 ## Agent guardrails
-Two hooks guard every agent session. `pr-gate.sh` blocks non-draft PR creation and merges;
-`block-secrets.sh` blocks writes that contain a credential. Claude Code runs them from
+Three hooks guard every agent session. `pr-gate.sh` blocks non-draft PR creation and merges;
+`block-secrets.sh` blocks writes that contain a credential; `comment-guard.sh` runs after an edit
+and flags new multi-line code comments without undoing the edit. Claude Code runs them from
 `.claude/settings.json`, and there `pr-gate.sh` asks before a PR is marked Ready. Codex runs them
 from `.codex/hooks.json`, with `.codex/rules/` as a backstop. A Codex hook cannot pause to ask, so
 under Codex marking a PR Ready is always blocked: ask the developer to do it. The hooks live in
