@@ -12,14 +12,17 @@ private links out of every file, commit and PR.
 - `plugins/speakai-mcp/`: the agent plugin. Its `skills/` ship to customers.
 - `scripts/sync-plugin.ts`, `scripts/sync-tools-json.ts`, `scripts/verify-plugin.ts`: generators and checks.
 
-## Commands (Node 22)
+## Commands (Node 22 or newer; setup and the full list are in README.md, Development)
+- `npm run dev`: runs `src/index.ts` once with tsx (stdio server, or the CLI when given arguments). It has no watch mode.
 - `npm run build`: tsup build into `dist/` (what npm publishes). `dist/index.js` is tracked even
   though `.gitignore` lists `dist`, and every build rewrites it, including the `prepare` step of
   `npm install`. The release job commits a fresh build, so a PR does not need to include it.
-- `npm test`: Vitest. CI runs `npm run build` and `npm run test:coverage` on Ubuntu and Windows, so
+- `npm test`: Vitest (`npm run test:watch` to watch). CI runs `npm run build` and `npm run test:coverage` on Ubuntu and Windows, so
   keep paths and scripts cross-platform; coverage thresholds live in `vitest.config.ts`.
 - `npm run sync:check`: fails when a derived surface is out of step. `npm run sync` rewrites them.
+  The release job runs it; in CI, `tests/derived-surfaces.test.ts` catches the same drift.
 - `npm run verify:plugin`: checks the plugin manifests, every SKILL.md, and the tool names skills cite.
+  `npm run verify:plugin:live` also probes the remote MCP endpoint.
 
 ## Derived values
 The version and tool counts in `server.json`, the plugin manifests, `plugins/speakai-mcp/.mcp.json`,
@@ -56,5 +59,5 @@ minor release, `!:` or `BREAKING CHANGE` makes a major one, anything else a patc
 blocks non-draft PR creation and merges, and asks before a PR is marked Ready; `block-secrets.sh`
 blocks writes that contain a credential. They are vendored from Speak's shared ai-skills repo,
 so change them there rather than here. Re-vendor with that repo's
-`scripts/install.sh --hooks-only --target <this repo> --plugins eng-safety` (the plugin list is
-in `.claude/ai-skills.config`).
+`scripts/install.sh --target <this repo> --plugins eng-safety` (the plugin list is in
+`.claude/ai-skills.config`; this repo has no synced skills, only the hooks).

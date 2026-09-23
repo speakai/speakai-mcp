@@ -125,7 +125,7 @@ are propagated by:
 
 ```sh
 npm run sync          # rewrite every derived surface
-npm run sync:check    # report drift, used by CI
+npm run sync:check    # report drift, run by the release job
 ```
 
 `tests/derived-surfaces.test.ts` fails the build when any of them drift.
