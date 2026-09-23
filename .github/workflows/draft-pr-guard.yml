@@ -1,0 +1,62 @@
+# Team policy: every pull request opens as a draft, and a human marks it Ready when it is ready
+# to preview. This workflow turns a PR that was opened ready-for-review back into a draft.
+# Copy it unchanged to .github/workflows/draft-pr-guard.yml in each repo.
+#
+# Requires the secret DRAFT_GUARD_TOKEN: a fine-grained PAT from a service account with
+# "Pull requests: write" (and "Metadata: read") on this repo. GITHUB_TOKEN cannot convert a PR
+# to draft ("Resource not accessible by integration"). If the secret is missing or the
+# conversion fails, the job posts a comment and fails, so the PR shows a red check until
+# someone converts it by hand.
+#
+# Safety, because pull_request_target runs with secrets even for PRs from forks:
+#   - no checkout: the PR's code is never fetched or run;
+#   - event data reaches the script only through env: (numbers and ids, never titles or bodies),
+#     and nothing from the event is interpolated into run:;
+#   - the comments are fixed text; the job token can only write pull requests;
+#   - no third-party actions, only the gh CLI that ships on the runner.
+#
+# Scope: triggers on "opened" only, so a PR that someone reopens after marking it Ready is left
+# alone. PRs created with GITHUB_TOKEN (auto-pr and sync bots) never trigger workflows, so those
+# creators must pass --draft / draft: true themselves.
+name: draft-pr-guard
+on:
+  pull_request_target:
+    types: [opened]
+permissions: {}
+jobs:
+  convert-to-draft:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Convert the PR to draft
+        env:
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NODE_ID: ${{ github.event.pull_request.node_id }}
+          DRAFT_GUARD_TOKEN: ${{ secrets.DRAFT_GUARD_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          # The runner's default shell adds -e; a failed conversion is handled below, not by -e.
+          set -uo pipefail
+          comment() { GH_TOKEN="$GITHUB_TOKEN" gh pr comment "$PR_NUMBER" --body "$1"; }
+
+          if [ -z "$DRAFT_GUARD_TOKEN" ]; then
+            comment "This PR was opened ready for review. Team policy is that every PR opens as a draft and a human marks it Ready when it is ready to preview. The draft-pr-guard workflow could not convert it because the DRAFT_GUARD_TOKEN secret is not set, so please click \"Convert to draft\" under Reviewers, then \"Ready for review\" when it is ready."
+            echo "::error::DRAFT_GUARD_TOKEN is not set; the PR was not converted to draft."
+            exit 1
+          fi
+
+          err_file=$(mktemp)
+          is_draft=$(GH_TOKEN="$DRAFT_GUARD_TOKEN" gh api graphql \
+            -f query='mutation($id: ID!) { convertPullRequestToDraft(input: {pullRequestId: $id}) { pullRequest { isDraft } } }' \
+            -f id="$PR_NODE_ID" \
+            --jq '.data.convertPullRequestToDraft.pullRequest.isDraft' 2>"$err_file") || true
+          if [ "$is_draft" = "true" ]; then
+            comment "Converted to draft: team policy is that every PR opens as a draft. Click \"Ready for review\" when it is ready to preview."
+          else
+            comment "This PR was opened ready for review. Team policy is that every PR opens as a draft and a human marks it Ready when it is ready to preview. The draft-pr-guard workflow could not convert it, so please click \"Convert to draft\" under Reviewers, then \"Ready for review\" when it is ready."
+            echo "::error::convertPullRequestToDraft failed: $(head -c 500 "$err_file")"
+            exit 1
+          fi
