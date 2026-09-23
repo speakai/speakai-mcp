@@ -1,14 +1,33 @@
 #!/usr/bin/env bash
-# PreToolUse(Write|Edit|MultiEdit): refuse a write that contains a hardcoded credential.
-# Exit 2 = blocked; stderr is fed back to Claude so it self-corrects.
+# PreToolUse: refuse a write that contains a hardcoded credential.
+#   Claude Code: Write|Edit|MultiEdit, reading tool_input.content or tool_input.new_string.
+#   Codex:       apply_patch (tool_name "apply_patch"; tool_input.command holds the patch text).
+#                Only the lines the patch adds are checked, file by file.
+# Exit 2 = blocked; stderr is fed back to the agent so it self-corrects.
 # Defense in depth: catches common credential shapes before they reach a commit.
 set -uo pipefail
 input=$(cat)
-content=$(printf '%s' "$input" | jq -r '.tool_input.content // .tool_input.new_string // empty' 2>/dev/null)
-file=$(printf '%s'  "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+tool=$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null)
 
-# .env files are where secrets belong — never block those
-case "$file" in *.env|*.env.*) exit 0 ;; esac
+if [ "$tool" = apply_patch ]; then
+  # Codex patch headers: "*** Add File: p", "*** Update File: p" (optionally followed by
+  # "*** Move to: p"), "*** Delete File: p". Added lines start with "+". Print the added
+  # lines of every file that is not a .env file.
+  patch=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null)
+  content=$(printf '%s\n' "$patch" | awk '
+    function envfile(p) { return p ~ /\.env$/ || p ~ /\.env\.[^\/]*$/ }
+    { line = $0; sub(/^[ \t]+/, "", line) }   # tolerate indented patch lines
+    line ~ /^\*\*\* (Add|Update) File: / { f = line; sub(/^\*\*\* (Add|Update) File: /, "", f); skip = envfile(f); next }
+    line ~ /^\*\*\* Move to: /           { f = line; sub(/^\*\*\* Move to: /, "", f); skip = envfile(f); next }
+    line ~ /^\*\*\* Delete File: /       { skip = 1; next }
+    line ~ /^\+/ && !skip                { print substr(line, 2) }
+  ')
+else
+  content=$(printf '%s' "$input" | jq -r '.tool_input.content // .tool_input.new_string // empty' 2>/dev/null)
+  file=$(printf '%s'  "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+  # .env files are where secrets belong — never block those
+  case "$file" in *.env|*.env.*) exit 0 ;; esac
+fi
 
 if printf '%s' "$content" | grep -nEi \
   -e 'mongodb(\+srv)?://[^ ]*:[^ ]*@' \

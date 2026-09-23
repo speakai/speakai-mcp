@@ -1,7 +1,9 @@
-# Synced from speakai/ai-skills @ 05c1745 on 2026-09-23T18:15:16Z
+# Synced from speakai/ai-skills @ 7cf712e on 2026-09-23T20:29:42Z
 # DO NOT edit these skills here — edit them in ai-skills and re-run install.
 # hook-plugin: eng-safety
 # hook-file: eng-safety/hooks.json
+# hook-file: eng-safety/codex-hooks.json
 # hook-file: eng-safety/block-secrets.sh
 # hook-file: eng-safety/pr-gate.sh
-# checksum: 1581587bba27121c2457d90d0b575c58c0f19f99
+# codex-rule: ai-skills-eng-safety.rules
+# checksum: 7816197441c8ca530c1352935c7cb4cbe54bf5cf
