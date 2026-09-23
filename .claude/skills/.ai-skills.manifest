@@ -1,6 +1,5 @@
-# Synced from speakai/ai-skills @ 7cfff9d on 2026-09-23T16:08:36Z (hooks only, no skills)
-# DO NOT edit .claude/hooks/ai-skills here — edit the hooks in ai-skills and re-run install.
-# hooks-synced: speakai/ai-skills @ c7e9376 on 2026-09-23T16:41:03Z
+# Synced from speakai/ai-skills @ 05c1745 on 2026-09-23T18:15:16Z
+# DO NOT edit these skills here — edit them in ai-skills and re-run install.
 # hook-plugin: eng-safety
 # hook-file: eng-safety/hooks.json
 # hook-file: eng-safety/block-secrets.sh
