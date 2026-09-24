@@ -21,79 +21,16 @@ MAX_LOCATIONS=5
 command -v jq >/dev/null 2>&1 || exit 0
 command -v diff >/dev/null 2>&1 || exit 0
 input=$(cat) || exit 0
-tool=$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null) || exit 0
-cwd=$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null) || exit 0
-[ -n "$cwd" ] || cwd=$(pwd)
 
 WORK=$(mktemp -d 2>/dev/null) || exit 0
 trap 'rm -rf "$WORK"' EXIT
 STREAM="$WORK/stream"
-: > "$STREAM"
 
-# The stream holds one record per line: "F<TAB>path" starts a file, "A<TAB>text" is an added
-# line and "B" ends a run of consecutive added lines.
-
-# emit_diff_runs PATH OLD_FILE NEW_FILE: the "+" lines of diff -U0, one run per hunk.
-emit_diff_runs() {
-  printf 'F\t%s\n' "$1" >> "$STREAM"
-  diff -U0 "$2" "$3" 2>/dev/null | awk '
-    NR <= 2 && (/^--- / || /^\+\+\+ /) { next }
-    /^@@/ { print "B"; next }
-    /^\+/ { print "A\t" substr($0, 2); next }
-  ' >> "$STREAM"
-  printf 'B\n' >> "$STREAM"
-}
-
-abs_path() {  # $1 = path from the tool call; relative paths are relative to the session cwd
-  case "$1" in /*) printf '%s' "$1" ;; *) printf '%s/%s' "$cwd" "$1" ;; esac
-}
-
-case "$tool" in
-  Edit)
-    file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-    [ -n "$file" ] || exit 0
-    printf '%s' "$input" | jq -j '.tool_input.old_string // ""' > "$WORK/old" 2>/dev/null || exit 0
-    printf '%s' "$input" | jq -j '.tool_input.new_string // ""' > "$WORK/new" 2>/dev/null || exit 0
-    emit_diff_runs "$file" "$WORK/old" "$WORK/new"
-    ;;
-  MultiEdit)
-    file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-    n=$(printf '%s' "$input" | jq -r '.tool_input.edits | length' 2>/dev/null) || exit 0
-    [ -n "$file" ] && [ -n "$n" ] || exit 0
-    i=0
-    while [ "$i" -lt "$n" ]; do
-      printf '%s' "$input" | jq -j --argjson i "$i" '.tool_input.edits[$i].old_string // ""' > "$WORK/old" 2>/dev/null || exit 0
-      printf '%s' "$input" | jq -j --argjson i "$i" '.tool_input.edits[$i].new_string // ""' > "$WORK/new" 2>/dev/null || exit 0
-      emit_diff_runs "$file" "$WORK/old" "$WORK/new"
-      i=$((i + 1))
-    done
-    ;;
-  Write)
-    file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-    [ -n "$file" ] || exit 0
-    printf '%s' "$input" | jq -j '.tool_input.content // ""' > "$WORK/new" 2>/dev/null || exit 0
-    abs=$(abs_path "$file")
-    # A tracked file is compared with HEAD; a new or untracked file counts as all added.
-    if ! git -C "$(dirname "$abs")" show "HEAD:./$(basename "$abs")" > "$WORK/old" 2>/dev/null; then
-      : > "$WORK/old"
-    fi
-    emit_diff_runs "$file" "$WORK/old" "$WORK/new"
-    ;;
-  apply_patch)
-    # Codex patch headers: "*** Add File: p", "*** Update File: p" (optionally followed by
-    # "*** Move to: p") and "*** Delete File: p". Added lines start with "+"; any other line
-    # ends the current run.
-    printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null | awk '
-      { line = $0; sub(/^[ \t]+/, "", line) }
-      line ~ /^\*\*\* (Add|Update) File: / { f = line; sub(/^\*\*\* (Add|Update) File: /, "", f); print "B"; print "F\t" f; skip = 0; next }
-      line ~ /^\*\*\* Move to: /           { f = line; sub(/^\*\*\* Move to: /, "", f); print "B"; print "F\t" f; skip = 0; next }
-      line ~ /^\*\*\* Delete File: /       { print "B"; skip = 1; next }
-      line ~ /^\+/ && !skip                { print "A\t" substr(line, 2); next }
-      { print "B" }
-    ' >> "$STREAM"
-    ;;
-  *) exit 0 ;;
-esac
+# One record per line: "F<TAB>path" starts a file, "A<TAB>text" is an added line and "B" ends
+# a run of consecutive added lines (see _added-lines.sh).
+. "$(dirname "$0")/_added-lines.sh" 2>/dev/null || exit 0
+read_event "$WORK" || exit 0
+added_lines_stream "$WORK" > "$STREAM" || exit 0
 
 # Find the flagged comment blocks. Output per block: "P<TAB>path", one "X<TAB>line" per line
 # of the block, then "E".

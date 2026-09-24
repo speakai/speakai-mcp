@@ -24,7 +24,8 @@
       {
         "matcher": "^apply_patch$",
         "hooks": [
-          { "type": "command", "command": "sh -c 'exec \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.claude/hooks/ai-skills/eng-safety/comment-guard.sh\"'", "timeout": 30 }
+          { "type": "command", "command": "sh -c 'exec \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.claude/hooks/ai-skills/eng-safety/comment-guard.sh\"'", "timeout": 30 },
+          { "type": "command", "command": "sh -c 'exec \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.claude/hooks/ai-skills/eng-safety/test-guard.sh\"'", "timeout": 30 }
         ]
       }
     ]

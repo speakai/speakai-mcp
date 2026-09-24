@@ -1,0 +1,5 @@
+interface:
+  display_name: "Add rule"
+  short_description: "Sort a new agent rule into the right layer and propose it as a draft PR"
+policy:
+  allow_implicit_invocation: false

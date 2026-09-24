@@ -10,17 +10,12 @@ input=$(cat)
 tool=$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null)
 
 if [ "$tool" = apply_patch ]; then
-  # Codex patch headers: "*** Add File: p", "*** Update File: p" (optionally followed by
-  # "*** Move to: p"), "*** Delete File: p". Added lines start with "+". Print the added
-  # lines of every file that is not a .env file.
-  patch=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null)
-  content=$(printf '%s\n' "$patch" | awk '
+  # The added lines of every file in the patch that is not a .env file (see _added-lines.sh).
+  . "$(dirname "$0")/_added-lines.sh" || { echo "BLOCKED (eng-safety/block-secrets): _added-lines.sh is missing next to this hook. Re-run the ai-skills install.sh to restore it." >&2; exit 2; }
+  content=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null | patch_stream | awk '
     function envfile(p) { return p ~ /\.env$/ || p ~ /\.env\.[^\/]*$/ }
-    { line = $0; sub(/^[ \t]+/, "", line) }   # tolerate indented patch lines
-    line ~ /^\*\*\* (Add|Update) File: / { f = line; sub(/^\*\*\* (Add|Update) File: /, "", f); skip = envfile(f); next }
-    line ~ /^\*\*\* Move to: /           { f = line; sub(/^\*\*\* Move to: /, "", f); skip = envfile(f); next }
-    line ~ /^\*\*\* Delete File: /       { skip = 1; next }
-    line ~ /^\+/ && !skip                { print substr(line, 2) }
+    /^F\t/ { skip = envfile(substr($0, 3)); next }
+    /^A\t/ && !skip { print substr($0, 3) }
   ')
 else
   content=$(printf '%s' "$input" | jq -r '.tool_input.content // .tool_input.new_string // empty' 2>/dev/null)

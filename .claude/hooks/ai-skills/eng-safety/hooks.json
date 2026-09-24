@@ -24,7 +24,8 @@
       {
         "matcher": "Write|Edit|MultiEdit",
         "hooks": [
-          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/comment-guard.sh" }
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/comment-guard.sh" },
+          { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/test-guard.sh" }
         ]
       }
     ]
