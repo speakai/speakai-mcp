@@ -993,7 +993,7 @@ CI builds and tests every pull request on Ubuntu and Windows. The version, `CHAN
 
 Open pull requests as drafts. A maintainer reviews each one and marks it ready. [AGENTS.md](AGENTS.md) has the full contributor and AI agent guide; `CLAUDE.md` only imports it.
 
-AI coding agents: Claude Code and Codex both work in this repo. Codex reads [AGENTS.md](AGENTS.md) and skills in `.agents/skills/`; Claude Code reads `CLAUDE.md` (which imports AGENTS.md) and skills in `.claude/skills/`. Both run the same guardrail hooks, which keep agent-opened pull requests in draft, leave merging to a maintainer, block file writes that contain a credential and flag new multi-line code comments. In Codex (0.142 or newer), trust the project once and approve its hooks in `/hooks`.
+AI coding agents: Claude Code and Codex both work in this repo. Codex reads [AGENTS.md](AGENTS.md) and skills in `.agents/skills/`; Claude Code reads `CLAUDE.md` (which imports AGENTS.md) and skills in `.claude/skills/`. Both run the same guardrail hooks, which keep agent-opened pull requests in draft, leave merging to a maintainer, block file writes that contain a credential, flag new multi-line code comments and flag weak new tests. AGENTS.md also holds the shared team rules; to propose a new one, run `/add-rule` in Claude Code or `$add-rule` in Codex. In Codex (0.142 or newer), trust the project once and approve its hooks in `/hooks`.
 
 ---
 
