@@ -110,6 +110,18 @@ const dateRangeInputSchema = z
 // Fields shared by create and update writes (metadata that lives OUTSIDE the spec).
 const settingsFieldIds = z.array(z.string().regex(/^[0-9a-f]{12}$/, "a 12-character field id")).max(200);
 
+// Rules an agent must follow when writing dashboard viewer settings. Shared by the
+// settings field description and the create/update tool descriptions.
+const SETTINGS_RULES =
+  "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. " +
+  "Never pass settings for a Foxtons dashboard unless explicitly asked; Foxtons moves by a server script. " +
+  "Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use " +
+  "these groups and this Feedback setup from then on. " +
+  "Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and " +
+  "resend every key of the section you change; a key left out resets to its default. " +
+  "Get field ids from list_fields. Field ids must belong to the dashboard's company. " +
+  "When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty.";
+
 // Mirrors the server validator. Each section is optional and replaces only itself when sent.
 const dashboardSettingsSchema = z
   .object({
@@ -129,6 +141,12 @@ const dashboardSettingsSchema = z
           )
           .max(20)
           .describe("Pills on the media page Fields tab, each listing the field ids it shows. Empty means no pills."),
+        orderIds: settingsFieldIds
+          .optional()
+          .describe(
+            "Used only when includeIds is empty: these fields show first, in this order, then every other " +
+              "public field. Does not change which fields are visible.",
+          ),
       })
       .optional(),
     feedback: z
@@ -145,12 +163,24 @@ const dashboardSettingsSchema = z
           .array(z.string().min(1).max(100))
           .max(20)
           .describe("Reasons for removing a call from scoring. Empty hides that option."),
+        reviewScope: z
+          .enum(["dashboard", "company"])
+          .optional()
+          .describe(
+            "'dashboard' (default) lists and reviews only this dashboard's feedback; 'company' lists every " +
+              "dashboard's feedback in the company. Use 'company' only on a manager dashboard, never on a personal one.",
+          ),
+        allowOtherSubmitter: z
+          .boolean()
+          .optional()
+          .describe("Lets a reviewer type a name that is not in submitters."),
       })
       .optional(),
   })
   .describe(
     "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the " +
-      "Fields tab groups them, and the Feedback button. Get field ids from list_fields.",
+      "Fields tab groups them, and the Feedback button. " +
+      SETTINGS_RULES,
   );
 
 const metadataFields = {
@@ -368,7 +398,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on " +
       "a full build); if something can't be expressed by the widget catalog, put it in a narrative " +
       "widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, " +
-      "config vocabulary, design rules, and full examples.",
+      "config vocabulary, design rules, and full examples. " +
+      "Viewer settings (the settings input): " +
+      SETTINGS_RULES,
     {
       title: z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
       ...specFields,
@@ -409,13 +441,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "update_dashboard",
-    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings — no " +
-      "spec fields, no revision needed. (2) Spec update: pass the FULL spec — title, source, dateRange, " +
+    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no " +
+      "spec fields and no revision. (2) Spec update: pass the FULL spec — title, source, dateRange, " +
       "sections, widgets — plus `revision`. Widgets and sections are REPLACED, not merged, so call " +
       "get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency " +
       "token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, " +
       "then increments it. A 409 conflict means another writer saved first — re-fetch with get_dashboard, " +
-      "rebuild your changes on the fresh spec, and retry with the new revision.",
+      "rebuild your changes on the fresh spec, and retry with the new revision. " +
+      "Viewer settings (the settings input): " +
+      SETTINGS_RULES,
     {
       dashboardId: z.string().min(1).describe("Dashboard business id"),
       title: z
