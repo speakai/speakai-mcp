@@ -1,0 +1,21 @@
+# Codex execpolicy rules from ai-skills (plugins/eng-safety). A backstop to the pr-gate hook,
+# not a replacement: rules match a command's leading words only, so they cannot tell a draft
+# create from a ready one, gh -R o/r pr merge or a wrapped command slips past them, and
+# gh pr ready --undo prompts too.
+# install.sh copies this file to .codex/rules/ai-skills-eng-safety.rules; edit it in ai-skills.
+
+prefix_rule(
+    pattern = ["gh", "pr", "merge"],
+    decision = "forbidden",
+    justification = "Merging is left to a human on GitHub. Tell the developer the PR is ready for them to preview and merge.",
+    match = ["gh pr merge 3 --squash", "gh pr merge"],
+    not_match = ["gh pr view 3", "gh pr create --draft"],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "ready"],
+    decision = "prompt",
+    justification = "This marks the PR Ready for review. Confirm only if the developer asked for it, because Ready means a human can now preview and merge it.",
+    match = ["gh pr ready 3"],
+    not_match = ["gh pr view 3"],
+)

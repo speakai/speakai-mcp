@@ -1,0 +1,33 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^apply_patch$",
+        "hooks": [
+          { "type": "command", "command": "sh -c 'exec \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.claude/hooks/ai-skills/eng-safety/block-secrets.sh\"'", "timeout": 30 }
+        ]
+      },
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          { "type": "command", "command": "sh -c 'exec \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.claude/hooks/ai-skills/eng-safety/pr-gate.sh\" --codex'", "timeout": 30 }
+        ]
+      },
+      {
+        "matcher": "^mcp__.*_(create_pull_request|update_pull_request|merge_pull_request)$",
+        "hooks": [
+          { "type": "command", "command": "sh -c 'exec \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.claude/hooks/ai-skills/eng-safety/pr-gate.sh\" --codex'", "timeout": 30 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^apply_patch$",
+        "hooks": [
+          { "type": "command", "command": "sh -c 'exec \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.claude/hooks/ai-skills/eng-safety/comment-guard.sh\"'", "timeout": 30 },
+          { "type": "command", "command": "sh -c 'exec \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.claude/hooks/ai-skills/eng-safety/test-guard.sh\"'", "timeout": 30 }
+        ]
+      }
+    ]
+  }
+}

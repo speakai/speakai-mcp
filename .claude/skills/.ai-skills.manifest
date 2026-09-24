@@ -1,0 +1,36 @@
+# Synced from speakai/ai-skills @ 37a653d on 2026-09-24T17:17:14Z
+# DO NOT edit these skills here — edit them in ai-skills and re-run install.
+eng-safety/add-rule
+# hook-plugin: eng-safety
+# hook-file: eng-safety/hooks.json
+# hook-file: eng-safety/codex-hooks.json
+# hook-file: eng-safety/_added-lines.sh
+# hook-file: eng-safety/block-secrets.sh
+# hook-file: eng-safety/comment-guard.sh
+# hook-file: eng-safety/pr-gate.sh
+# hook-file: eng-safety/test-guard.sh
+# codex-rule: ai-skills-eng-safety.rules
+# agents-link: add-rule
+# rules-repo: speakai-mcp
+# rules: current-versions
+# rules: no-silent-errors
+# rules: plan-means-plan
+# rules: read-before-claiming
+# rules: reuse-existing
+# rules: scope-first
+# rules: smallest-change
+# rules: sync-with-base
+# rules: comments
+# rules: ids-not-names
+# rules: placement
+# rules: regression-test
+# rules: draft-prs
+# rules: one-pr-per-task
+# rules: ask-before-irreversible
+# rules: credentials
+# rules: evidence-not-green
+# rules: done-pushed
+# rules: done-report
+# rules: done-scope
+# rules: done-tests
+# checksum: d6a924658c94a00c612f4b747e2b0dcfaf0b6afa

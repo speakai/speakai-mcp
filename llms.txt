@@ -170,7 +170,7 @@ A: No. Your recordings stay in your Speak AI workspace. Claude / ChatGPT only se
 A: No. The OAuth flow runs entirely in the browser — you click Allow on a popup. The Bearer method also doesn't require a local install — just one URL paste and one header paste. The npm package exists for developers who want a CLI or stdio mode, but it's not needed for the standard install paths.
 
 **Q: I'm a developer — can I run this locally?**
-A: Yes. See the developer reference at the bottom of the README. The `@speakai/mcp-server` npm package provides stdio-mode MCP and a 28-command CLI.
+A: Yes. See the developer reference at the bottom of the README. The `@speakai/mcp-server` npm package provides stdio-mode MCP and a 32-command CLI.
 
 ## Links
 

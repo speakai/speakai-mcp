@@ -145,6 +145,8 @@ Still stuck? Email [success@speakai.co](mailto:success@speakai.co).
 
 If `/plugin install` doesn't find Speak AI, refresh the local catalog with `/plugin marketplace update claude-plugins-official` and retry.
 
+You can also install the plugin from this repository's own marketplace. Run `/plugin marketplace add speakai/speakai-mcp`, then `/plugin install speakai-mcp@speakai`.
+
 <details>
 <summary>Developer alternative — manual HTTP transport</summary>
 
@@ -272,7 +274,7 @@ Get a Speak AI API key at [app.speakai.co/developers/apikeys](https://app.speaka
 
 The `@speakai/mcp-server` npm package provides:
 
-- A CLI (`speakai-mcp`) for scripting and pipelines (30 commands).
+- A CLI (`speakai-mcp`) for scripting and pipelines (32 commands).
 - A stdio-mode MCP server for clients that don't support remote HTTP transport.
 - An auto-setup wizard that detects installed MCP clients and configures them.
 
@@ -393,6 +395,8 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_API_KEY` | Yes | -- | Your Speak AI API key |
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
+
+The CLI also reads `~/.speakai/config.json`, which `speakai-mcp config set-key` and `speakai-mcp config set-url` write. When an environment variable is set, it wins over the value in that file.
 
 ### MCP Tools (119)
 
@@ -689,7 +693,7 @@ Parameters: days (optional, default: 7), folder (optional)
 
 **Example:** "Use the meeting-brief prompt with days=14 to cover the last two weeks"
 
-### CLI (30 Commands)
+### CLI (32 Commands)
 
 Install globally and configure once:
 
@@ -759,12 +763,17 @@ npx @speakai/mcp-server config set-key
 | `live-transcript` | Fetch new sentences from an in-progress meeting (`--event-id` or `--media-id`, `--since-end-in-sec`) |
 | `create-text <name>` | Create a text note (`--text` or pipe via stdin) |
 
+#### Any MCP tool
+
+| Command | Description |
+|---|---|
+| `tools` | List every MCP tool you can run with `call` |
+| `call <tool> [json]` | Run any MCP tool by name, with its arguments as a JSON object. The result is always printed as JSON. |
+
 #### CLI options
 
-Every command supports:
-
-- `--json` — output raw JSON (for scripting and piping)
-- `--help` — show command-specific help
+- `--json` prints raw JSON for scripting and piping. Most read and write commands support it. The `config` commands, `init`, `delete`, `favorites` and `reanalyze` do not, and `call` always prints JSON.
+- `--help` shows help for any command.
 
 #### CLI examples
 
@@ -961,14 +970,30 @@ All tool errors follow this structure:
 
 ### Development
 
+You need Node.js 22 or newer and npm.
+
 ```sh
 git clone https://github.com/speakai/speakai-mcp.git
 cd speakai-mcp
 
-npm install
-npm run dev    # Run with hot reload
-npm run build  # Production build
+npm install                 # also builds dist/ through the prepare script
+npm run dev                 # run the server once from source (no watch mode)
+npm run build               # build dist/ with tsup
+npm test                    # run the Vitest suite
+npm run test:coverage       # the suite with coverage thresholds, as CI runs it
+npm run sync                # rewrite the derived version and tool counts
+npm run sync:check          # report derived values that are out of date
+npm run verify:plugin       # check the plugin manifests and skills
+npx tsx scripts/sync-tools-json.ts   # regenerate tools.json after adding or removing a tool
 ```
+
+To run the server or CLI against your account, set `SPEAK_API_KEY` (see Environment variables above).
+
+CI builds and tests every pull request on Ubuntu and Windows. The version, `CHANGELOG.md` and the tool counts in this README are written by the release job and by `npm run sync`, so do not edit them by hand. Every merge to `main` publishes a new release to npm, the MCP Registry and ClawHub.
+
+Open pull requests as drafts. A maintainer reviews each one and marks it ready. [AGENTS.md](AGENTS.md) has the full contributor and AI agent guide; `CLAUDE.md` only imports it.
+
+AI coding agents: Claude Code and Codex both work in this repo. Codex reads [AGENTS.md](AGENTS.md) and skills in `.agents/skills/`; Claude Code reads `CLAUDE.md` (which imports AGENTS.md) and skills in `.claude/skills/`. Both run the same guardrail hooks, which keep agent-opened pull requests in draft, leave merging to a maintainer, block file writes that contain a credential, flag new multi-line code comments and flag weak new tests. AGENTS.md also holds the shared team rules; to propose a new one, run `/add-rule` in Claude Code or `$add-rule` in Codex. In Codex (0.142 or newer), trust the project once and approve its hooks in `/hooks`.
 
 ---
 

@@ -5,7 +5,7 @@ A portable plugin that connects an AI agent to Speak AI. It follows the open
 client can load it, and it also ships the Claude Code and Codex manifests those clients
 expect.
 
-The plugin gives an agent 113 Speak AI tools, 5 resources, and 3 prompts, plus seven skills
+The plugin gives an agent 119 Speak AI tools, 5 resources, and 3 prompts, plus eight skills
 that teach it how to use them. Access alone is not much use: the skills are what turn "this
 agent can call 119 tools" into "this agent knows which three to call, in what order, and
 what to do when a recording is still processing".
@@ -18,14 +18,15 @@ Full documentation: <https://docs.speakai.co/mcp/plugin>
 plugins/speakai-mcp/
 ├── plugin.json                 # Agent Plugins manifest, the portable identity
 ├── mcp.json                    # Agent Plugins MCP config, the remote Speak AI server
-├── skills/                     # Seven skills, discovered at this fixed location
+├── skills/                     # Eight skills, discovered at this fixed location
 │   ├── getting-started/
 │   ├── meeting-summaries/
 │   ├── research-analysis/
 │   ├── clips-and-captions/
 │   ├── automations-and-webhooks/
 │   ├── surveys-and-recorders/
-│   └── dashboards-and-reporting/
+│   ├── dashboards-and-reporting/
+│   └── social-url-import/
 ├── .claude-plugin/plugin.json  # Claude Code's own manifest format
 ├── .codex-plugin/plugin.json   # Codex's own manifest format
 └── .mcp.json                   # stdio server config, used by Claude Code
@@ -78,6 +79,7 @@ endpoint instead. Create one at <https://app.speakai.co/developers/apikeys>.
 | `automations-and-webhooks` | Triggers and actions, and receiving events reliably over webhooks |
 | `surveys-and-recorders` | Running async voice and video surveys, then analyzing what comes back |
 | `dashboards-and-reporting` | Building, sharing and scoping analytics dashboards |
+| `social-url-import` | Importing public YouTube, TikTok and other social or video links, and explaining failed imports |
 
 Skills load progressively. The name and description of each load at startup, the body loads
 only when the agent activates that skill, and anything under `references/` loads only when
@@ -123,7 +125,7 @@ are propagated by:
 
 ```sh
 npm run sync          # rewrite every derived surface
-npm run sync:check    # report drift, used by CI
+npm run sync:check    # report drift, run by the release job
 ```
 
 `tests/derived-surfaces.test.ts` fails the build when any of them drift.
