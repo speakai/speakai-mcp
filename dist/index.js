@@ -245,10 +245,10 @@ var init_helpers = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/activities.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/activities.js
 var ActivityType;
 var init_activities = __esm({
-  "node_modules/@speakai/shared/dist/enums/activities.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/activities.js"() {
     "use strict";
     (function(ActivityType2) {
       ActivityType2["MEDIA_ANALYSIS"] = "mediaAnalysis";
@@ -261,10 +261,10 @@ var init_activities = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/auth.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/auth.js
 var SSOType, DevicePlatform;
 var init_auth = __esm({
-  "node_modules/@speakai/shared/dist/enums/auth.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/auth.js"() {
     "use strict";
     (function(SSOType2) {
       SSOType2["GOOGLE"] = "google";
@@ -282,10 +282,10 @@ var init_auth = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/automation.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/automation.js
 var AutomationTrigger, AutomationAction, AutomationStepType, AutomationRunStatus, AutomationIOType, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
 var init_automation = __esm({
-  "node_modules/@speakai/shared/dist/enums/automation.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/automation.js"() {
     "use strict";
     (function(AutomationTrigger2) {
       AutomationTrigger2["FOLDERS"] = "folders";
@@ -345,10 +345,10 @@ var init_automation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/calendar.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/calendar.js
 var CalendarType, EventStatus, AutoJoinStatus;
 var init_calendar = __esm({
-  "node_modules/@speakai/shared/dist/enums/calendar.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/calendar.js"() {
     "use strict";
     (function(CalendarType2) {
       CalendarType2["GOOGLE"] = "google";
@@ -368,10 +368,10 @@ var init_calendar = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/clip.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/clip.js
 var ClipState, ClipGenerationSource;
 var init_clip = __esm({
-  "node_modules/@speakai/shared/dist/enums/clip.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/clip.js"() {
     "use strict";
     (function(ClipState2) {
       ClipState2["QUEUED"] = "queued";
@@ -387,10 +387,10 @@ var init_clip = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/domain.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/domain.js
 var ServiceType, VerificationStatus;
 var init_domain = __esm({
-  "node_modules/@speakai/shared/dist/enums/domain.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/domain.js"() {
     "use strict";
     (function(ServiceType2) {
       ServiceType2["RECORDER"] = "recorder";
@@ -406,10 +406,10 @@ var init_domain = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/embed.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/embed.js
 var EmbedType, ImageSelectionType;
 var init_embed = __esm({
-  "node_modules/@speakai/shared/dist/enums/embed.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/embed.js"() {
     "use strict";
     (function(EmbedType2) {
       EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
@@ -424,10 +424,10 @@ var init_embed = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/export.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/export.js
 var ExportFormatType;
 var init_export = __esm({
-  "node_modules/@speakai/shared/dist/enums/export.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/export.js"() {
     "use strict";
     (function(ExportFormatType2) {
       ExportFormatType2["CSV"] = "csv";
@@ -450,10 +450,10 @@ var init_export = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/fields.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/fields.js
 var FieldType, AllowedValuesMode, DefaultViewColumn;
 var init_fields = __esm({
-  "node_modules/@speakai/shared/dist/enums/fields.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/fields.js"() {
     "use strict";
     (function(FieldType2) {
       FieldType2["TEXT"] = "text";
@@ -482,10 +482,10 @@ var init_fields = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/filter.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/filter.js
 var FilterFieldName, FilterOperator, FilterCondition;
 var init_filter = __esm({
-  "node_modules/@speakai/shared/dist/enums/filter.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/filter.js"() {
     "use strict";
     (function(FilterFieldName2) {
       FilterFieldName2["CATEGORY"] = "category";
@@ -514,10 +514,10 @@ var init_filter = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/integration.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/integration.js
 var IntegrationAuthType;
 var init_integration = __esm({
-  "node_modules/@speakai/shared/dist/enums/integration.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/integration.js"() {
     "use strict";
     (function(IntegrationAuthType2) {
       IntegrationAuthType2["OAUTH"] = "oauth";
@@ -526,10 +526,10 @@ var init_integration = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/media.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/media.js
 var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType;
 var init_media = __esm({
-  "node_modules/@speakai/shared/dist/enums/media.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/media.js"() {
     "use strict";
     (function(MediaType2) {
       MediaType2["AUDIO"] = "audio";
@@ -596,10 +596,10 @@ var init_media = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/meeting.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/meeting.js
 var MeetingPlatform, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource;
 var init_meeting = __esm({
-  "node_modules/@speakai/shared/dist/enums/meeting.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/meeting.js"() {
     "use strict";
     (function(MeetingPlatform2) {
       MeetingPlatform2["GOOGLE_MEET"] = "googleMeet";
@@ -665,10 +665,10 @@ var init_meeting = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/notification.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/notification.js
 var NotificationType, NotificationAction;
 var init_notification = __esm({
-  "node_modules/@speakai/shared/dist/enums/notification.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/notification.js"() {
     "use strict";
     (function(NotificationType2) {
       NotificationType2["CLIP"] = "clip";
@@ -715,10 +715,10 @@ var init_notification = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/prompt.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/prompt.js
 var PromptState, MessageRole, PromptSource, ToolName, FileType;
 var init_prompt = __esm({
-  "node_modules/@speakai/shared/dist/enums/prompt.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/prompt.js"() {
     "use strict";
     (function(PromptState2) {
       PromptState2["INITIATED"] = "initiated";
@@ -765,10 +765,10 @@ var init_prompt = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/recorder.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/recorder.js
 var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating;
 var init_recorder = __esm({
-  "node_modules/@speakai/shared/dist/enums/recorder.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/recorder.js"() {
     "use strict";
     (function(RecorderAnswerType2) {
       RecorderAnswerType2["Single"] = "single";
@@ -793,10 +793,10 @@ var init_recorder = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/subscription.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/subscription.js
 var SubscriptionStatus, SubscriptionDuration, TrialTier;
 var init_subscription = __esm({
-  "node_modules/@speakai/shared/dist/enums/subscription.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/subscription.js"() {
     "use strict";
     (function(SubscriptionStatus2) {
       SubscriptionStatus2["Active"] = "active";
@@ -822,10 +822,10 @@ var init_subscription = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/team.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/team.js
 var TeamInviteStatus;
 var init_team = __esm({
-  "node_modules/@speakai/shared/dist/enums/team.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/team.js"() {
     "use strict";
     (function(TeamInviteStatus2) {
       TeamInviteStatus2["ACTIVE"] = "active";
@@ -836,10 +836,10 @@ var init_team = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/transcription.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/transcription.js
 var TranscriptionEngine, TranscriptionJobState, TranscriptionJobRevisionState;
 var init_transcription = __esm({
-  "node_modules/@speakai/shared/dist/enums/transcription.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/transcription.js"() {
     "use strict";
     (function(TranscriptionEngine2) {
       TranscriptionEngine2["AZURE"] = "azure";
@@ -868,10 +868,10 @@ var init_transcription = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/transaction.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/transaction.js
 var TransactionSource, TransactionType, TransactionStatus;
 var init_transaction = __esm({
-  "node_modules/@speakai/shared/dist/enums/transaction.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/transaction.js"() {
     "use strict";
     (function(TransactionSource2) {
       TransactionSource2["STRIPE"] = "stripe";
@@ -901,10 +901,10 @@ var init_transaction = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/translation.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/translation.js
 var TranslationState, DubbingState;
 var init_translation = __esm({
-  "node_modules/@speakai/shared/dist/enums/translation.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/translation.js"() {
     "use strict";
     (function(TranslationState2) {
       TranslationState2["NOTFOUND"] = "notFound";
@@ -925,10 +925,10 @@ var init_translation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/user.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/user.js
 var UserRole, UserType, UserPermissionType, UserActionType;
 var init_user = __esm({
-  "node_modules/@speakai/shared/dist/enums/user.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/user.js"() {
     "use strict";
     (function(UserRole2) {
       UserRole2["ADMIN"] = "admin";
@@ -975,10 +975,10 @@ var init_user = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/webhook.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/webhook.js
 var WebhookEvent, WebhookEventSource;
 var init_webhook = __esm({
-  "node_modules/@speakai/shared/dist/enums/webhook.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/webhook.js"() {
     "use strict";
     (function(WebhookEvent2) {
       WebhookEvent2["embed_recorder.created"] = "embed_recorder.created";
@@ -1010,10 +1010,10 @@ var init_webhook = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/llm.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/llm.js
 var LLMProvider, LLMModels;
 var init_llm = __esm({
-  "node_modules/@speakai/shared/dist/enums/llm.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/llm.js"() {
     "use strict";
     (function(LLMProvider2) {
       LLMProvider2["OPENAI"] = "openai";
@@ -1069,9 +1069,9 @@ var init_llm = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/index.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/index.js
 var init_enums = __esm({
-  "node_modules/@speakai/shared/dist/enums/index.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/index.js"() {
     "use strict";
     init_activities();
     init_auth();
@@ -1100,157 +1100,157 @@ var init_enums = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/api.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/api.js
 var init_api = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/api.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/api.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/media.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/media.js
 var init_media2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/media.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/media.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/transcript.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/transcript.js
 var init_transcript = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/text.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/text.js
 var init_text = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/text.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/text.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/folder.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/folder.js
 var init_folder = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/folder.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/integration.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/integration.js
 var init_integration2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/integration.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/integration.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/recorder.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/recorder.js
 var init_recorder2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/embed.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/embed.js
 var init_embed2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/embed.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/embed.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/automation.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/automation.js
 var init_automation2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/automation.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/automation.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/webhook.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/webhook.js
 var init_webhook2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/field.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/field.js
 var init_field = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/field.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/field.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/meeting.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/meeting.js
 var init_meeting2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/export.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/export.js
 var init_export2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/export.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/export.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/prompt.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/prompt.js
 var init_prompt2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/user.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/user.js
 var init_user2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/user.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/user.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/subscription.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/subscription.js
 var init_subscription2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/calendar.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/calendar.js
 var init_calendar2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/category.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/category.js
 var init_category = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/category.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/category.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/clip.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/clip.js
 var init_clip2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/clip.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/clip.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/dashboard-spec.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/utils/dashboard-spec.js
 var init_dashboard_spec = __esm({
-  "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/dashboard.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/dashboard.js
 var init_dashboard = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
     "use strict";
     init_dashboard_spec();
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/index.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/index.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/index.js"() {
     "use strict";
     init_api();
     init_media2();
@@ -1275,17 +1275,17 @@ var init_interfaces = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/transcript.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/utils/transcript.js
 var init_transcript2 = __esm({
-  "node_modules/@speakai/shared/dist/utils/transcript.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/utils/transcript.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/pricing/modelPricing.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/pricing/modelPricing.js
 var MODEL_PRICING;
 var init_modelPricing = __esm({
-  "node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
     "use strict";
     init_llm();
     MODEL_PRICING = {
@@ -1346,9 +1346,9 @@ var init_modelPricing = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/index.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/index.js
 var init_dist = __esm({
-  "node_modules/@speakai/shared/dist/index.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/index.js"() {
     "use strict";
     init_enums();
     init_interfaces();
@@ -6776,6 +6776,8 @@ function defaultWidgetConfig(type) {
       return { metrics: ["uploads", "minutes", "lastActive"] };
     case "notes":
       return { content: "Add notes or context for this dashboard." };
+    case "chat-history":
+      return { limit: 25 };
   }
 }
 function buildDashboardWidgets(items, sections = []) {
@@ -6877,7 +6879,8 @@ var init_dashboard_widgets = __esm({
       "themes",
       "people",
       "team-activity",
-      "notes"
+      "notes",
+      "chat-history"
     ];
     DATE_RANGE_PRESETS = [
       "last7days",
@@ -6897,7 +6900,8 @@ var init_dashboard_widgets = __esm({
       themes: { w: 6, h: 4, titleDefault: "Themes" },
       people: { w: 6, h: 4, titleDefault: "People" },
       "team-activity": { w: 6, h: 4, titleDefault: "Team activity" },
-      notes: { w: GRID_COLS, h: 2, titleDefault: "Note" }
+      notes: { w: GRID_COLS, h: 2, titleDefault: "Note" },
+      "chat-history": { w: GRID_COLS, h: 6, titleDefault: "AI Chat History" }
     };
     KEBAB_ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
     AUTO_LAYOUT = { x: 0, y: 0, w: 0, h: 0 };
@@ -6956,6 +6960,11 @@ var init_dashboard_widgets = __esm({
         type: "notes",
         purpose: "Free-text note/context block (full width).",
         config: "content: string (1-4000 chars, required)"
+      },
+      {
+        type: "chat-history",
+        purpose: "Past AI chat conversations held on this dashboard (full width) \u2014 messages, feedback, and the thinking/tool-call trail when the viewer's embed allows it. Not a Media-aggregation widget.",
+        config: "limit?: number (1-100, optional, default 25) \u2014 conversations per page."
       }
     ];
     SPEC_VOCABULARY = {
@@ -7107,6 +7116,7 @@ function pickMetadata(body) {
   if (body.assignTo !== void 0) out.assignTo = body.assignTo;
   if (body.filters !== void 0) out.filters = body.filters;
   if (body.isDefault !== void 0) out.isDefault = body.isDefault;
+  if (body.settings !== void 0) out.settings = body.settings;
   return out;
 }
 function register16(server, client) {
@@ -7243,7 +7253,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "update_dashboard",
-    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault \u2014 no spec fields, no revision needed. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision.",
+    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings \u2014 no spec fields, no revision needed. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision.",
     {
       dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id"),
       title: import_zod17.z.string().min(1).max(60).optional().describe("Dashboard name \u2014 required (with revision) when updating the spec"),
@@ -7408,7 +7418,7 @@ function register16(server, client) {
     }
   );
 }
-var import_zod17, FILTER_LIST_DESCRIPTION, widgetInputSchema, sectionInputSchema, sourceInputSchema, dateRangeInputSchema, metadataFields, specFields, SPEAKERS_FILTER_SCHEMA;
+var import_zod17, FILTER_LIST_DESCRIPTION, widgetInputSchema, sectionInputSchema, sourceInputSchema, dateRangeInputSchema, settingsFieldIds, dashboardSettingsSchema, metadataFields, specFields, SPEAKERS_FILTER_SCHEMA;
 var init_dashboards = __esm({
   "src/tools/dashboards.ts"() {
     "use strict";
@@ -7419,14 +7429,14 @@ var init_dashboards = __esm({
     FILTER_LIST_DESCRIPTION = "Field filters. filters.filterList is an array of { fieldName, fieldOperator?, fieldValue?: string[], fieldCondition? }. Other keys pass through but only filterList is enforced.";
     widgetInputSchema = import_zod17.z.object({
       type: import_zod17.z.enum(WIDGET_TYPES).describe(
-        "Widget type: narrative | stat-cards | metric-chart | table | comparison | field-distribution | sentiment-trend | themes | people | team-activity | notes"
+        "Widget type: narrative | stat-cards | metric-chart | table | comparison | field-distribution | sentiment-trend | themes | people | team-activity | notes | chat-history"
       ),
       id: import_zod17.z.string().max(64).optional().describe(
         "Optional explicit widget id (kebab-case). Required if you reference the widget from sections[].widgetIds; auto-generated otherwise."
       ),
       title: import_zod17.z.string().min(1).max(40).optional().describe("Widget title, max 40 chars (defaults to a per-type label)"),
       config: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
-        "Per-type config (STRICT \u2014 unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content. Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. Omit for a sensible valid default (except field-distribution, which needs fieldName)."
+        "Per-type config (STRICT \u2014 unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content; chat-history: limit (optional, past conversations to list, 1-100, default 25). Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. Omit for a sensible valid default (except field-distribution, which needs fieldName)."
       ),
       binding: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
         "Per-widget scope override: { source?, dateRange?: {preset}, filter? }. Omit any key to inherit the dashboard's value."
@@ -7457,11 +7467,37 @@ var init_dashboards = __esm({
     dateRangeInputSchema = import_zod17.z.object({
       preset: import_zod17.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
     }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
+    settingsFieldIds = import_zod17.z.array(import_zod17.z.string().regex(/^[0-9a-f]{12}$/, "a 12-character field id")).max(200);
+    dashboardSettingsSchema = import_zod17.z.object({
+      fields: import_zod17.z.object({
+        includeIds: settingsFieldIds.describe(
+          "Field ids a viewer sees on each media page opened from this shared dashboard, in this order. Private fields are shown when listed. Empty shows only the company's public fields."
+        ),
+        groups: import_zod17.z.array(
+          import_zod17.z.object({
+            key: import_zod17.z.string().min(1).max(50),
+            label: import_zod17.z.string().min(1).max(60),
+            fieldIds: settingsFieldIds.min(1)
+          })
+        ).max(20).describe("Pills on the media page Fields tab, each listing the field ids it shows. Empty means no pills.")
+      }).optional(),
+      feedback: import_zod17.z.object({
+        isEnabled: import_zod17.z.boolean().describe("Show the Feedback button on media pages opened from this shared dashboard"),
+        fieldIds: settingsFieldIds.describe(
+          "Fields a reviewer gives feedback on. Empty means every field the media page shows."
+        ),
+        submitters: import_zod17.z.array(import_zod17.z.string().min(1).max(200)).max(300).describe("Names a reviewer picks from. Empty lets them type their own name."),
+        removeReasons: import_zod17.z.array(import_zod17.z.string().min(1).max(100)).max(20).describe("Reasons for removing a call from scoring. Empty hides that option.")
+      }).optional()
+    }).describe(
+      "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, and the Feedback button. Get field ids from list_fields."
+    );
     metadataFields = {
       icon: import_zod17.z.string().max(200).optional().describe("Icon identifier"),
       assignTo: import_zod17.z.array(import_zod17.z.string()).max(100).optional().describe('User ids, or group ids in the "<groupId> (G)" convention, to share view access with'),
       filters: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
-      isDefault: import_zod17.z.boolean().optional().describe("Make this the company default dashboard")
+      isDefault: import_zod17.z.boolean().optional().describe("Make this the company default dashboard"),
+      settings: dashboardSettingsSchema.optional()
     };
     specFields = {
       description: import_zod17.z.string().max(280).optional().describe("Dashboard description, max 280 chars"),

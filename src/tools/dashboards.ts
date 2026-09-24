@@ -108,6 +108,51 @@ const dateRangeInputSchema = z
   .describe("Date range — strict preset only, no free-form start/end dates");
 
 // Fields shared by create and update writes (metadata that lives OUTSIDE the spec).
+const settingsFieldIds = z.array(z.string().regex(/^[0-9a-f]{12}$/, "a 12-character field id")).max(200);
+
+// Mirrors the server validator. Each section is optional and replaces only itself when sent.
+const dashboardSettingsSchema = z
+  .object({
+    fields: z
+      .object({
+        includeIds: settingsFieldIds.describe(
+          "Field ids a viewer sees on each media page opened from this shared dashboard, in this order. " +
+            "Private fields are shown when listed. Empty shows only the company's public fields.",
+        ),
+        groups: z
+          .array(
+            z.object({
+              key: z.string().min(1).max(50),
+              label: z.string().min(1).max(60),
+              fieldIds: settingsFieldIds.min(1),
+            }),
+          )
+          .max(20)
+          .describe("Pills on the media page Fields tab, each listing the field ids it shows. Empty means no pills."),
+      })
+      .optional(),
+    feedback: z
+      .object({
+        isEnabled: z.boolean().describe("Show the Feedback button on media pages opened from this shared dashboard"),
+        fieldIds: settingsFieldIds.describe(
+          "Fields a reviewer gives feedback on. Empty means every field the media page shows.",
+        ),
+        submitters: z
+          .array(z.string().min(1).max(200))
+          .max(300)
+          .describe("Names a reviewer picks from. Empty lets them type their own name."),
+        removeReasons: z
+          .array(z.string().min(1).max(100))
+          .max(20)
+          .describe("Reasons for removing a call from scoring. Empty hides that option."),
+      })
+      .optional(),
+  })
+  .describe(
+    "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the " +
+      "Fields tab groups them, and the Feedback button. Get field ids from list_fields.",
+  );
+
 const metadataFields = {
   icon: z.string().max(200).optional().describe("Icon identifier"),
   assignTo: z
@@ -117,6 +162,7 @@ const metadataFields = {
     .describe("User ids, or group ids in the \"<groupId> (G)\" convention, to share view access with"),
   filters: z.record(z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
   isDefault: z.boolean().optional().describe("Make this the company default dashboard"),
+  settings: dashboardSettingsSchema.optional(),
 } as const;
 
 // Fields that make up the spec envelope body.
@@ -182,12 +228,14 @@ function pickMetadata(body: {
   assignTo?: string[];
   filters?: Record<string, unknown>;
   isDefault?: boolean;
+  settings?: z.infer<typeof dashboardSettingsSchema>;
 }): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   if (body.icon !== undefined) out.icon = body.icon;
   if (body.assignTo !== undefined) out.assignTo = body.assignTo;
   if (body.filters !== undefined) out.filters = body.filters;
   if (body.isDefault !== undefined) out.isDefault = body.isDefault;
+  if (body.settings !== undefined) out.settings = body.settings;
   return out;
 }
 
@@ -361,7 +409,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "update_dashboard",
-    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault — no " +
+    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings — no " +
       "spec fields, no revision needed. (2) Spec update: pass the FULL spec — title, source, dateRange, " +
       "sections, widgets — plus `revision`. Widgets and sections are REPLACED, not merged, so call " +
       "get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency " +
