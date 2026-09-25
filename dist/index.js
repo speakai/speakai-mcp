@@ -7467,8 +7467,8 @@ var init_dashboards = __esm({
     dateRangeInputSchema = import_zod17.z.object({
       preset: import_zod17.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
     }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
-    settingsFieldIds = import_zod17.z.array(import_zod17.z.string().regex(/^[0-9a-f]{12}$/, "a 12-character field id")).max(200);
-    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Never pass settings for a Foxtons dashboard unless explicitly asked; Foxtons moves by a server script. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Field ids must belong to the dashboard's company. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty.";
+    settingsFieldIds = import_zod17.z.array(import_zod17.z.string());
+    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Never pass settings for a Foxtons dashboard unless explicitly asked; Foxtons moves by a server script. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.";
     dashboardSettingsSchema = import_zod17.z.object({
       fields: import_zod17.z.object({
         includeIds: settingsFieldIds.describe(
@@ -7476,11 +7476,11 @@ var init_dashboards = __esm({
         ),
         groups: import_zod17.z.array(
           import_zod17.z.object({
-            key: import_zod17.z.string().min(1).max(50),
-            label: import_zod17.z.string().min(1).max(60),
+            key: import_zod17.z.string().min(1),
+            label: import_zod17.z.string().min(1),
             fieldIds: settingsFieldIds.min(1)
           })
-        ).max(20).describe("Pills on the media page Fields tab, each listing the field ids it shows. Empty means no pills."),
+        ).describe("Pills on the media page Fields tab, each listing the field ids it shows. Empty means no pills."),
         orderIds: settingsFieldIds.optional().describe(
           "Used only when includeIds is empty: these fields show first, in this order, then every other public field. Does not change which fields are visible."
         )
@@ -7490,12 +7490,34 @@ var init_dashboards = __esm({
         fieldIds: settingsFieldIds.describe(
           "Fields a reviewer gives feedback on. Empty means every field the media page shows."
         ),
-        submitters: import_zod17.z.array(import_zod17.z.string().min(1).max(200)).max(300).describe("Names a reviewer picks from. Empty lets them type their own name."),
-        removeReasons: import_zod17.z.array(import_zod17.z.string().min(1).max(100)).max(20).describe("Reasons for removing a call from scoring. Empty hides that option."),
+        submitters: import_zod17.z.array(import_zod17.z.string().min(1)).describe("Names a reviewer picks from. Empty lets them type their own name."),
+        removeReasons: import_zod17.z.array(import_zod17.z.string().min(1)).describe("Reasons for removing a call from scoring. Empty hides that option."),
         reviewScope: import_zod17.z.enum(["dashboard", "company"]).optional().describe(
           "'dashboard' (default) lists and reviews only this dashboard's feedback; 'company' lists every dashboard's feedback in the company. Use 'company' only on a manager dashboard, never on a personal one."
         ),
-        allowOtherSubmitter: import_zod17.z.boolean().optional().describe("Lets a reviewer type a name that is not in submitters.")
+        allowOtherSubmitter: import_zod17.z.boolean().optional().describe("Lets a reviewer type a name that is not in submitters."),
+        groups: import_zod17.z.array(
+          import_zod17.z.object({
+            key: import_zod17.z.string().min(1),
+            label: import_zod17.z.string().min(1),
+            fieldIds: settingsFieldIds.min(1)
+          })
+        ).optional().describe(
+          "Pills in the Feedback dialog, each listing feedback field ids in order. Leave out to reuse fields.groups."
+        ),
+        fieldRules: import_zod17.z.record(
+          import_zod17.z.string(),
+          import_zod17.z.object({
+            label: import_zod17.z.string().optional(),
+            min: import_zod17.z.number().optional(),
+            max: import_zod17.z.number().optional()
+          })
+        ).optional().describe(
+          "Per feedback field: a short row label and the allowed score range, used for both the reviewer's score and the approver's score."
+        ),
+        sheetWebhookUrl: import_zod17.z.string().optional().describe(
+          "Google Apps Script web app URL that receives one row per submission. Only script.google.com addresses are posted to. Never shown to viewers."
+        )
       }).optional()
     }).describe(
       "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, and the Feedback button. " + SETTINGS_RULES

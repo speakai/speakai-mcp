@@ -108,7 +108,7 @@ const dateRangeInputSchema = z
   .describe("Date range — strict preset only, no free-form start/end dates");
 
 // Fields shared by create and update writes (metadata that lives OUTSIDE the spec).
-const settingsFieldIds = z.array(z.string().regex(/^[0-9a-f]{12}$/, "a 12-character field id")).max(200);
+const settingsFieldIds = z.array(z.string());
 
 // Rules an agent must follow when writing dashboard viewer settings. Shared by the
 // settings field description and the create/update tool descriptions.
@@ -119,8 +119,9 @@ const SETTINGS_RULES =
   "these groups and this Feedback setup from then on. " +
   "Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and " +
   "resend every key of the section you change; a key left out resets to its default. " +
-  "Get field ids from list_fields. Field ids must belong to the dashboard's company. " +
-  "When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty.";
+  "Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. " +
+  "When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. " +
+  "Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.";
 
 // Mirrors the server validator. Each section is optional and replaces only itself when sent.
 const dashboardSettingsSchema = z
@@ -134,12 +135,11 @@ const dashboardSettingsSchema = z
         groups: z
           .array(
             z.object({
-              key: z.string().min(1).max(50),
-              label: z.string().min(1).max(60),
+              key: z.string().min(1),
+              label: z.string().min(1),
               fieldIds: settingsFieldIds.min(1),
             }),
           )
-          .max(20)
           .describe("Pills on the media page Fields tab, each listing the field ids it shows. Empty means no pills."),
         orderIds: settingsFieldIds
           .optional()
@@ -156,12 +156,10 @@ const dashboardSettingsSchema = z
           "Fields a reviewer gives feedback on. Empty means every field the media page shows.",
         ),
         submitters: z
-          .array(z.string().min(1).max(200))
-          .max(300)
+          .array(z.string().min(1))
           .describe("Names a reviewer picks from. Empty lets them type their own name."),
         removeReasons: z
-          .array(z.string().min(1).max(100))
-          .max(20)
+          .array(z.string().min(1))
           .describe("Reasons for removing a call from scoring. Empty hides that option."),
         reviewScope: z
           .enum(["dashboard", "company"])
@@ -174,6 +172,39 @@ const dashboardSettingsSchema = z
           .boolean()
           .optional()
           .describe("Lets a reviewer type a name that is not in submitters."),
+        groups: z
+          .array(
+            z.object({
+              key: z.string().min(1),
+              label: z.string().min(1),
+              fieldIds: settingsFieldIds.min(1),
+            }),
+          )
+          .optional()
+          .describe(
+            "Pills in the Feedback dialog, each listing feedback field ids in order. Leave out to reuse fields.groups.",
+          ),
+        fieldRules: z
+          .record(
+            z.string(),
+            z.object({
+              label: z.string().optional(),
+              min: z.number().optional(),
+              max: z.number().optional(),
+            }),
+          )
+          .optional()
+          .describe(
+            "Per feedback field: a short row label and the allowed score range, used for both the reviewer's " +
+              "score and the approver's score.",
+          ),
+        sheetWebhookUrl: z
+          .string()
+          .optional()
+          .describe(
+            "Google Apps Script web app URL that receives one row per submission. Only script.google.com " +
+              "addresses are posted to. Never shown to viewers.",
+          ),
       })
       .optional(),
   })
