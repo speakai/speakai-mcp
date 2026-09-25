@@ -258,4 +258,130 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       }
     }
   );
+
+  registerSpeakTool(server,
+    "delete_voice_agent",
+    "Permanently delete a voice agent. Requires the OWNER or ADMIN role. Irreversible: also removes its questions, test suite, and share link; past conversations are kept for record-keeping but are no longer reachable from this agent.",
+    { agentId: z.string().min(1).describe("ID of the voice agent to delete (from list_voice_agents)") },
+    { title: "Delete Voice Agent", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/agents/${agentId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "create_voice_agent_from_prompt",
+    "Create a new voice agent by describing it in plain English instead of filling in name/personality/instructions/voice yourself. Requires the OWNER or ADMIN role. Response always includes the new agentId, plus either the generated agent config, or needsFollowUp: true with a follow-up question if the prompt was too thin to act on — call generate_voice_agent_config again on that agentId with more detail (or manualInstructions) when that happens.",
+    {
+      prompt: z.string().min(1).describe("Plain-English description of the agent to build, e.g. \"a friendly dental clinic receptionist that books appointments and answers insurance questions\"."),
+      name: z.string().optional().describe("Agent name. Defaults to one derived from the prompt if omitted."),
+      manualInstructions: z.string().optional().describe("Skip generation and use this as the agent's instructions verbatim."),
+    },
+    { title: "Create Voice Agent From Prompt", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/agents/generation", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "generate_voice_agent_config",
+    "Run the same prompt-to-config generation as create_voice_agent_from_prompt, but against an existing agent instead of creating a new one. Requires the OWNER or ADMIN role. On success the generated config is persisted onto the agent immediately. If the prompt is too thin and manualInstructions was not sent, the response has needsFollowUp: true with a follow-up question instead — call this again with more detail.",
+    {
+      agentId: z.string().min(1).describe("ID of the existing voice agent to generate config for (from list_voice_agents)"),
+      prompt: z.string().min(1).describe("Plain-English description of what the agent should do."),
+      manualInstructions: z.string().optional().describe("Skip generation and set the agent's instructions to this verbatim."),
+    },
+    { title: "Generate Voice Agent Config", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/agents/${agentId}/generation/generate`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "get_voice_agent_setup_guide",
+    "Discovery + how-to helper for building and operating a Speak AI voice agent end to end. Returns the four configuration pieces every agent is built from, which tool covers each one, the recommended build order, and how testing/questions/knowledge-base/intelligence tools chain together after the agent exists. Call this before create_voice_agent or create_voice_agent_from_prompt if you are not already familiar with this tool surface.",
+    {},
+    { title: "Get Voice Agent Setup Guide", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async () => {
+      const data = {
+        overview:
+          "A voice agent is a standalone resource: create it once, then it holds live spoken conversations, asking configured questions and answering from a knowledge base. It is built from four independent pieces, plus optional testing, sharing, and self-improvement layers.",
+        buildOrder: [
+          {
+            step: 1,
+            piece: "The agent record itself",
+            tools: ["create_voice_agent", "create_voice_agent_from_prompt"],
+            notes: "name, personality, instructions, and voice (provider+voiceId) are the only required fields. Call list_voices and list_voice_avatars first to get valid ids.",
+          },
+          {
+            step: 2,
+            piece: "Voice & avatar",
+            tools: ["list_voices", "list_voice_avatars", "update_voice_agent"],
+            notes: "Every agent needs a voice. It only needs an avatar if conversationMode is video_avatar.",
+          },
+          {
+            step: 3,
+            piece: "Instructions & behavior",
+            tools: ["update_voice_agent", "generate_voice_agent_config"],
+            notes: "personality/instructions are plain fields on the agent record; generate_voice_agent_config can (re)write them from a prompt instead of hand-authoring.",
+          },
+          {
+            step: 4,
+            piece: "Questions",
+            tools: ["list_voice_question_templates", "create_voice_question", "reorder_voice_questions"],
+            notes: "Optional. Attaches a question template to the agent so it collects structured data mid-call. See the Questions tool group.",
+          },
+          {
+            step: 5,
+            piece: "Knowledge base",
+            tools: ["Knowledge Base tool group (separate from voice agents)"],
+            notes: "Optional. A knowledge base collection is attached to the agent from the Knowledge Base API, not a voice-agent tool -- an agent has no documents of its own until one is attached.",
+          },
+        ],
+        afterTheAgentExists: [
+          {
+            area: "Testing",
+            tools: ["get_voice_test_suite", "update_voice_test_suite", "generate_voice_test_suite", "start_voice_test_run"],
+            notes: "Scripted scenarios and a run history. The run lifecycle is live; the engine that drives a simulated conversation is not wired up yet, so a run stays queued.",
+          },
+          {
+            area: "Feedback / self-improvement (Intelligence)",
+            tools: [
+              "list_voice_kb_gaps",
+              "list_voice_faq_suggestions",
+              "analyze_voice_instruction_gaps",
+              "list_voice_agent_resources",
+            ],
+            notes: "What the agent surfaces from real calls: knowledge it lacked, questions callers repeat, and gaps in its own instructions. Nothing is written automatically -- every suggestion needs an explicit add/apply/dismiss call.",
+          },
+          {
+            area: "Conversations & analytics",
+            tools: ["list_voice_conversations", "get_voice_conversation"],
+            notes: "Read call history and transcripts once the agent has taken calls.",
+          },
+        ],
+        commonMistakes: [
+          "Calling create_voice_agent with a made-up voiceId instead of one from list_voices -- the create call fails validation.",
+          "Expecting start_voice_test_run to return real scores -- the execution engine isn't wired up yet, see the Testing tools' own descriptions.",
+          "Looking for a knowledge-base tool in this group -- collections are managed by the separate Knowledge Base tool group and only attached here.",
+        ],
+      };
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
 }

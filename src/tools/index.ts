@@ -19,6 +19,8 @@ import * as users from "./users.js";
 import * as dashboards from "./dashboards.js";
 import * as voice from "./voice.js";
 import * as voiceTesting from "./voice-testing.js";
+import * as voiceQuestions from "./voice-questions.js";
+import * as voiceIntelligence from "./voice-intelligence.js";
 
 const modules = [
   media,
@@ -39,6 +41,8 @@ const modules = [
   dashboards,
   voice,
   voiceTesting,
+  voiceQuestions,
+  voiceIntelligence,
 ];
 
 /**

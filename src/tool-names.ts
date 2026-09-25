@@ -187,6 +187,40 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "apply_voice_test_recommendation",
   "get_voice_test_baseline",
   "get_voice_test_score_history",
+
+  // voice: agents round-out + discovery
+  "delete_voice_agent",
+  "create_voice_agent_from_prompt",
+  "generate_voice_agent_config",
+  "get_voice_agent_setup_guide",
+
+  // voice: questions
+  "list_voice_questions",
+  "get_voice_question",
+  "create_voice_question",
+  "update_voice_question",
+  "delete_voice_question",
+  "reorder_voice_questions",
+  "list_voice_question_templates",
+  "create_voice_question_template",
+
+  // voice: intelligence (kb gaps, faq suggestions, agent resources, instruction gaps)
+  "list_voice_kb_gaps",
+  "analyze_voice_kb_gaps",
+  "add_voice_kb_gap",
+  "dismiss_voice_kb_gap",
+  "list_voice_faq_suggestions",
+  "generate_voice_faq_suggestions",
+  "add_voice_faq_suggestion",
+  "update_voice_faq_suggestion",
+  "dismiss_voice_faq_suggestion",
+  "list_voice_agent_resources",
+  "create_voice_agent_resource",
+  "bulk_create_voice_agent_resources",
+  "update_voice_agent_resource",
+  "delete_voice_agent_resource",
+  "analyze_voice_instruction_gaps",
+  "apply_voice_instruction_gap",
 ] as const satisfies readonly string[];
 
 export type SpeakMcpToolName = (typeof SPEAK_MCP_TOOL_NAMES)[number];

@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 140,
+  "totalTools": 168,
   "categories": [
     {
       "id": "media",
@@ -1237,6 +1237,42 @@
           "openWorldHint": false
         },
         {
+          "name": "delete_voice_agent",
+          "title": "Delete Voice Agent",
+          "description": "Permanently delete a voice agent. Requires the OWNER or ADMIN role. Irreversible: also removes its questions, test suite, and share link; past conversations are kept for record-keeping but are no longer reachable from this agent.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_voice_agent_from_prompt",
+          "title": "Create Voice Agent From Prompt",
+          "description": "Create a new voice agent by describing it in plain English instead of filling in name/personality/instructions/voice yourself. Requires the OWNER or ADMIN role. Response always includes the new agentId, plus either the generated agent config, or needsFollowUp: true with a follow-up question if the prompt was too thin to act on — call generate_voice_agent_config again on that agentId with more detail (or manualInstructions) when that happens.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "generate_voice_agent_config",
+          "title": "Generate Voice Agent Config",
+          "description": "Run the same prompt-to-config generation as create_voice_agent_from_prompt, but against an existing agent instead of creating a new one. Requires the OWNER or ADMIN role. On success the generated config is persisted onto the agent immediately. If the prompt is too thin and manualInstructions was not sent, the response has needsFollowUp: true with a follow-up question instead — call this again with more detail.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_agent_setup_guide",
+          "title": "Get Voice Agent Setup Guide",
+          "description": "Discovery + how-to helper for building and operating a Speak AI voice agent end to end. Returns the four configuration pieces every agent is built from, which tool covers each one, the recommended build order, and how testing/questions/knowledge-base/intelligence tools chain together after the agent exists. Call this before create_voice_agent or create_voice_agent_from_prompt if you are not already familiar with this tool surface.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
           "name": "list_voice_avatars",
           "title": "List Voice Avatars",
           "description": "List the video avatars available to attach to a voice agent (your company's own uploads plus the shared system catalog). Use the returned avatarId with create_voice_agent or update_voice_agent.",
@@ -1395,6 +1431,238 @@
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "voice-agent-questions",
+      "name": "Voice agent questions",
+      "iconKey": "voice-agent-questions",
+      "shortDescription": "Attach and manage the questions a voice agent asks mid-call, and the shared question template library.",
+      "tools": [
+        {
+          "name": "list_voice_questions",
+          "title": "List Voice Questions",
+          "description": "List the questions configured on a voice agent, in the order it asks them. Each is an agent-level instance of a question template with its own required/attempts/no-response settings and optional field mapping.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_question",
+          "title": "Get Voice Question",
+          "description": "Fetch a single voice agent question by its fieldId, scoped to your company.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_voice_question",
+          "title": "Create Voice Question",
+          "description": "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) — 404 if either isn't found.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_voice_question",
+          "title": "Update Voice Question",
+          "description": "Partially update a voice agent question — only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "delete_voice_question",
+          "title": "Delete Voice Question",
+          "description": "Permanently remove a question from a voice agent and decrement the underlying template's usageCount. Requires the OWNER or ADMIN role. The template itself is not deleted and can be attached to another agent later.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "reorder_voice_questions",
+          "title": "Reorder Voice Questions",
+          "description": "Set the order a voice agent asks its questions in. Requires the OWNER or ADMIN role. Bulk-writes the order value on each listed question (written directly, not resequenced), then returns the agent's full question list in its new order. Entries whose fieldId doesn't belong to agentId are silently skipped.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_question_templates",
+          "title": "List Voice Question Templates",
+          "description": "List the question templates visible to your company: Speak's shared system templates, plus your own company's templates. Use the returned templateId with create_voice_question.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_voice_question_template",
+          "title": "Create Voice Question Template",
+          "description": "Create a company-scoped question template — the \"custom question\" a user names themselves rather than picking from Speak's shared library. Requires the OWNER or ADMIN role. The server stamps companyId and forces isSystemTemplate to false, so this template is only ever visible to your company.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "voice-agent-intelligence",
+      "name": "Voice agent intelligence",
+      "iconKey": "voice-agent-intelligence",
+      "shortDescription": "Review and act on a voice agent's self-improvement surface: knowledge gaps, FAQ suggestions, instruction gaps, and its knowledge-base resources.",
+      "tools": [
+        {
+          "name": "list_voice_kb_gaps",
+          "title": "List Voice KB Gaps",
+          "description": "List a voice agent's pending knowledge-base gaps — questions callers asked that the agent answered with low confidence or an explicit \"I don't know,\" surfaced automatically after calls. Up to the 50 most recent pending gaps, newest first.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "analyze_voice_kb_gaps",
+          "title": "Analyze Voice KB Gaps",
+          "description": "Trigger knowledge-base gap analysis over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately — new gaps appear in list_voice_kb_gaps once analysis finishes, not synchronously with this response.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "add_voice_kb_gap",
+          "title": "Add Voice KB Gap",
+          "description": "Write a knowledge-base gap's answer into the voice agent's attached knowledge base as a new document, and mark the gap added. Requires the OWNER or ADMIN role. Fails with 409 if the gap was already added or dismissed, or if the agent has no knowledge base collection to write into.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "dismiss_voice_kb_gap",
+          "title": "Dismiss Voice KB Gap",
+          "description": "Mark a voice agent's knowledge-base gap dismissed without writing anything to the knowledge base. Requires the OWNER or ADMIN role.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_faq_suggestions",
+          "title": "List Voice FAQ Suggestions",
+          "description": "List a voice agent's pending FAQ suggestions — questions multiple callers asked in similar form, clustered and drafted into a reusable question/answer pair. Up to the 20 largest clusters, largest first.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "generate_voice_faq_suggestions",
+          "title": "Generate Voice FAQ Suggestions",
+          "description": "Trigger FAQ clustering over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately — new suggestions appear in list_voice_faq_suggestions once generation finishes, not synchronously with this response.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "add_voice_faq_suggestion",
+          "title": "Add Voice FAQ Suggestion",
+          "description": "Write an FAQ suggestion's question/answer into the voice agent's attached knowledge base as a new document, and mark the suggestion added. Requires the OWNER or ADMIN role. Fails with 409 if the suggestion was already added or dismissed, or if the agent has no knowledge base collection to write into.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_voice_faq_suggestion",
+          "title": "Update Voice FAQ Suggestion",
+          "description": "Edit a still-pending FAQ suggestion's question and/or answer before adding it. Requires the OWNER or ADMIN role. Fails with 400 if the suggestion was already added or dismissed.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "dismiss_voice_faq_suggestion",
+          "title": "Dismiss Voice FAQ Suggestion",
+          "description": "Mark a voice agent's FAQ suggestion dismissed without writing anything to the knowledge base. Requires the OWNER or ADMIN role.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_agent_resources",
+          "title": "List Voice Agent Resources",
+          "description": "List the knowledge documents/links a voice agent searches during calls — separate from KB gaps and FAQ suggestions, which are the self-improvement layer that surfaces what an agent is missing, not the content itself.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_voice_agent_resource",
+          "title": "Create Voice Agent Resource",
+          "description": "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server fetches and embeds the content in the background (status moves from pending to completed).",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "bulk_create_voice_agent_resources",
+          "title": "Bulk Create Voice Agent Resources",
+          "description": "Add up to 100 documents/links to a voice agent's knowledge base in one call. Requires the OWNER or ADMIN role. Each is fetched and embedded independently in the background. Use this instead of calling create_voice_agent_resource in a loop.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "update_voice_agent_resource",
+          "title": "Update Voice Agent Resource",
+          "description": "Partially update a voice agent resource — send at least one field. Requires the OWNER or ADMIN role. agentId cannot be changed. Changing url, title, or description re-triggers embedding.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "delete_voice_agent_resource",
+          "title": "Delete Voice Agent Resource",
+          "description": "Soft-delete a voice agent resource — it stops appearing in lists and the agent stops searching it, but the document is not physically removed. Requires the OWNER or ADMIN role.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "analyze_voice_instruction_gaps",
+          "title": "Analyze Voice Instruction Gaps",
+          "description": "Advisory only — compares a voice agent's current instructions against anchors/original intent/recent call summaries you supply and suggests up to 3 patches. Requires the OWNER or ADMIN role. Nothing is written; pass a suggestion's suggestedPatch to apply_voice_instruction_gap to actually apply it.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "apply_voice_instruction_gap",
+          "title": "Apply Voice Instruction Gap",
+          "description": "Insert a suggested instruction patch into a voice agent's instructions and persist the result. Requires the OWNER or ADMIN role. suggestedPatch is typically taken directly from analyze_voice_instruction_gaps.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
           "openWorldHint": false
         }
       ]

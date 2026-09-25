@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 140 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 168 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,7 +394,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (140)
+### MCP Tools (168)
 
 <details>
 <summary>Media (18 tools)</summary>
@@ -644,7 +644,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Voice agents (8 tools)</summary>
+<summary>Voice agents (12 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -652,10 +652,54 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `get_voice_agent` | Get a single voice agent by agentId |
 | `create_voice_agent` | Create a voice agent (name, personality, instructions, and voice are required) |
 | `update_voice_agent` | Update a voice agent; send only the fields you want to change |
+| `delete_voice_agent` | Permanently delete a voice agent and its questions, test suite, and share link |
+| `create_voice_agent_from_prompt` | Create a new agent from a plain-English description instead of filling in fields |
+| `generate_voice_agent_config` | Run the same prompt-to-config generation against an existing agent |
+| `get_voice_agent_setup_guide` | Discovery helper: the build order, which tool covers each piece, common mistakes |
 | `list_voice_avatars` | List the video avatars available to attach to a voice agent |
 | `list_voices` | List the text-to-speech voices available to a voice agent |
 | `list_voice_conversations` | List conversations handled by voice agents (filter by agentId) |
 | `get_voice_conversation` | Get a single conversation by conversationId |
+
+</details>
+
+<details>
+<summary>Voice agent questions (8 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `list_voice_questions` | List the questions configured on a voice agent, in ask order |
+| `get_voice_question` | Get a single question by fieldId |
+| `create_voice_question` | Attach a question template to a voice agent |
+| `update_voice_question` | Partially update a voice agent question |
+| `delete_voice_question` | Remove a question from a voice agent |
+| `reorder_voice_questions` | Set the order a voice agent asks its questions in |
+| `list_voice_question_templates` | List the shared and company-owned question template library |
+| `create_voice_question_template` | Create a company-scoped custom question template |
+
+</details>
+
+<details>
+<summary>Voice agent intelligence (16 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `list_voice_kb_gaps` | List a voice agent's pending knowledge-base gaps from real calls |
+| `analyze_voice_kb_gaps` | Trigger knowledge-base gap analysis over an agent's recent calls |
+| `add_voice_kb_gap` | Write a gap's answer into the agent's knowledge base |
+| `dismiss_voice_kb_gap` | Dismiss a gap without writing anything |
+| `list_voice_faq_suggestions` | List a voice agent's pending FAQ suggestions clustered from real calls |
+| `generate_voice_faq_suggestions` | Trigger FAQ clustering over an agent's recent calls |
+| `add_voice_faq_suggestion` | Write an FAQ suggestion into the agent's knowledge base |
+| `update_voice_faq_suggestion` | Edit a pending FAQ suggestion's question and/or answer |
+| `dismiss_voice_faq_suggestion` | Dismiss an FAQ suggestion without writing anything |
+| `list_voice_agent_resources` | List the documents/links a voice agent searches during calls |
+| `create_voice_agent_resource` | Add one document/link to a voice agent's knowledge base |
+| `bulk_create_voice_agent_resources` | Add up to 100 documents/links in one call |
+| `update_voice_agent_resource` | Partially update a voice agent resource |
+| `delete_voice_agent_resource` | Soft-delete a voice agent resource |
+| `analyze_voice_instruction_gaps` | Advisory-only patch suggestions for an agent's own instructions |
+| `apply_voice_instruction_gap` | Insert a suggested patch into an agent's instructions |
 
 </details>
 
