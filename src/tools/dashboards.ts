@@ -120,7 +120,8 @@ const SETTINGS_RULES =
   "Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and " +
   "resend every key of the section you change; a key left out resets to its default. " +
   "Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. " +
-  "When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty.";
+  "When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. " +
+  "Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.";
 
 // Mirrors the server validator. Each section is optional and replaces only itself when sent.
 const dashboardSettingsSchema = z
@@ -171,6 +172,39 @@ const dashboardSettingsSchema = z
           .boolean()
           .optional()
           .describe("Lets a reviewer type a name that is not in submitters."),
+        groups: z
+          .array(
+            z.object({
+              key: z.string().min(1),
+              label: z.string().min(1),
+              fieldIds: settingsFieldIds.min(1),
+            }),
+          )
+          .optional()
+          .describe(
+            "Pills in the Feedback dialog, each listing feedback field ids in order. Leave out to reuse fields.groups.",
+          ),
+        fieldRules: z
+          .record(
+            z.string(),
+            z.object({
+              label: z.string().optional(),
+              min: z.number().optional(),
+              max: z.number().optional(),
+            }),
+          )
+          .optional()
+          .describe(
+            "Per feedback field: a short row label and the allowed score range, used for both the reviewer's " +
+              "score and the approver's score.",
+          ),
+        sheetWebhookUrl: z
+          .string()
+          .optional()
+          .describe(
+            "Google Apps Script web app URL that receives one row per submission. Only script.google.com " +
+              "addresses are posted to. Never shown to viewers.",
+          ),
       })
       .optional(),
   })
