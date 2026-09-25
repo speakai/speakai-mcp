@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.26.0 (2026-09-25)
+
+- feat(dashboards): add feedback groups, fieldRules and sheetWebhookUrl to dashboard settings
+
 ## v1.25.0 (2026-09-14)
 
 - fix(automations): correct two things end-to-end testing caught
