@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 119,
+  "totalTools": 140,
   "categories": [
     {
       "id": "media",
@@ -1219,6 +1219,42 @@
           "openWorldHint": false
         },
         {
+          "name": "create_voice_agent",
+          "title": "Create Voice Agent",
+          "description": "Create a voice agent. Requires the OWNER or ADMIN role. name, personality, instructions, and voice (provider + voiceId) are required; everything else can be set now or later with update_voice_agent. Call list_voice_avatars or list_voices first to get valid ids.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_voice_agent",
+          "title": "Update Voice Agent",
+          "description": "Update a voice agent. Requires the OWNER or ADMIN role. Send only the fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_avatars",
+          "title": "List Voice Avatars",
+          "description": "List the video avatars available to attach to a voice agent (your company's own uploads plus the shared system catalog). Use the returned avatarId with create_voice_agent or update_voice_agent.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voices",
+          "title": "List Voices",
+          "description": "List the text-to-speech voices available to a voice agent. Use the returned provider/voiceId with create_voice_agent or update_voice_agent's voice field. When an agent's llm.model is a Live (speech-to-speech) model, its usable voices are a fixed, smaller set scoped to that model instead of this full catalog.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
           "name": "list_voice_conversations",
           "title": "List Voice Conversations",
           "description": "List the company's voice conversations (newest first). Optionally filter to a single agent. Each conversation includes its conversationId, agentId, status, duration, transcript summary, and usage/costs. Use conversationId with get_voice_conversation for the full record.",
@@ -1231,6 +1267,131 @@
           "name": "get_voice_conversation",
           "title": "Get Voice Conversation",
           "description": "Fetch a single voice conversation by its conversationId, including transcript, usage, costs, and analysis. A cross-company conversationId returns 404.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "voice-agent-testing",
+      "name": "Voice agent testing",
+      "iconKey": "voice-agent-testing",
+      "shortDescription": "Define scripted test suites for a voice agent and manage test runs.",
+      "tools": [
+        {
+          "name": "get_voice_test_suite",
+          "title": "Get Voice Test Suite",
+          "description": "Get a voice agent's test suite (its scenarios and run settings). Returns null in data.suite if none has been created yet — not a 404.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_voice_test_suite",
+          "title": "Update Voice Test Suite",
+          "description": "Create or update a voice agent's test suite. Requires the OWNER or ADMIN role. Upserts. Send the full scenarios array you want to keep — it replaces the stored one, it is not merged.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "generate_voice_test_suite",
+          "title": "Generate Voice Test Suite",
+          "description": "Auto-generate a default test suite for a voice agent from its own instructions and knowledge base, via an LLM call. Requires the OWNER or ADMIN role. Overwrites the suite's existing scenarios.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "start_voice_test_run",
+          "title": "Start Voice Test Run",
+          "description": "Start a test run against a voice agent's suite. Requires the OWNER or ADMIN role. Rejects with 409 if the agent has no test suite. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_active_voice_test_run",
+          "title": "Get Active Voice Test Run",
+          "description": "Get a voice agent's currently active test run (queued, running, or paused). Returns null in data.run if none is active — not a 404.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "pause_voice_test_run",
+          "title": "Pause Voice Test Run",
+          "description": "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "resume_voice_test_run",
+          "title": "Resume Voice Test Run",
+          "description": "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "cancel_voice_test_run",
+          "title": "Cancel Voice Test Run",
+          "description": "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. Terminal — a cancelled run can never be resumed.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_test_runs",
+          "title": "List Voice Test Runs",
+          "description": "List a voice agent's test runs, most recent first. Capped at 100 regardless of limit.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_test_run",
+          "title": "Get Voice Test Run",
+          "description": "Get a test run's full detail, including scenarioResults and recommendations. Scoped to your company; agentId is not used to filter this lookup, only runId.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "apply_voice_test_recommendation",
+          "title": "Apply Voice Test Recommendation",
+          "description": "Apply a test run recommendation's quick action to the agent (e.g. patch_instructions appends the suggested fix to the agent's instructions). Requires the OWNER or ADMIN role.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_test_baseline",
+          "title": "Get Voice Test Baseline",
+          "description": "Get a voice agent's best-scoring completed test run, used to detect regressions on later runs. Returns null in data.baseline if no run has completed yet.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_test_score_history",
+          "title": "Get Voice Test Score History",
+          "description": "Get completed-run score points for a voice agent, most recent first, for charting. Capped at 100 regardless of limit. Only status=completed runs are included.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,

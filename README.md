@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 119 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 140 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,7 +394,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (119)
+### MCP Tools (140)
 
 <details>
 <summary>Media (18 tools)</summary>
@@ -644,14 +644,39 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Voice agents (4 tools)</summary>
+<summary>Voice agents (8 tools)</summary>
 
 | Tool | Description |
 |---|---|
 | `list_voice_agents` | List the company's voice agents (newest first) with their config |
 | `get_voice_agent` | Get a single voice agent by agentId |
+| `create_voice_agent` | Create a voice agent (name, personality, instructions, and voice are required) |
+| `update_voice_agent` | Update a voice agent; send only the fields you want to change |
+| `list_voice_avatars` | List the video avatars available to attach to a voice agent |
+| `list_voices` | List the text-to-speech voices available to a voice agent |
 | `list_voice_conversations` | List conversations handled by voice agents (filter by agentId) |
 | `get_voice_conversation` | Get a single conversation by conversationId |
+
+</details>
+
+<details>
+<summary>Voice agent testing (13 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `get_voice_test_suite` | Get a voice agent's test suite (its scenarios and run settings) |
+| `update_voice_test_suite` | Create or update a voice agent's test suite (upserts; replaces scenarios) |
+| `generate_voice_test_suite` | Auto-generate a default test suite from the agent's instructions and knowledge base |
+| `start_voice_test_run` | Start a test run against a voice agent's suite |
+| `get_active_voice_test_run` | Get a voice agent's currently active run (queued, running, or paused) |
+| `pause_voice_test_run` | Pause a running or queued test run |
+| `resume_voice_test_run` | Resume a paused test run |
+| `cancel_voice_test_run` | Cancel a test run; terminal, cannot be resumed |
+| `list_voice_test_runs` | List a voice agent's test runs, most recent first |
+| `get_voice_test_run` | Get a test run's full detail, including scenario results and recommendations |
+| `apply_voice_test_recommendation` | Apply a test run recommendation's quick action to the agent |
+| `get_voice_test_baseline` | Get a voice agent's best-scoring completed run, for regression comparison |
+| `get_voice_test_score_history` | Get completed-run score points for charting |
 
 </details>
 

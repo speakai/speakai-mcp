@@ -18,6 +18,7 @@ import * as workflows from "./workflows.js";
 import * as users from "./users.js";
 import * as dashboards from "./dashboards.js";
 import * as voice from "./voice.js";
+import * as voiceTesting from "./voice-testing.js";
 
 const modules = [
   media,
@@ -37,6 +38,7 @@ const modules = [
   users,
   dashboards,
   voice,
+  voiceTesting,
 ];
 
 /**

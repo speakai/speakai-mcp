@@ -163,11 +163,30 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "share_dashboard",
   "get_dashboard_speakers_insight",
 
-  // voice (read-only: agents + conversations)
+  // voice: agents + conversations
   "list_voice_agents",
   "get_voice_agent",
+  "create_voice_agent",
+  "update_voice_agent",
+  "list_voice_avatars",
+  "list_voices",
   "list_voice_conversations",
   "get_voice_conversation",
+
+  // voice: testing
+  "get_voice_test_suite",
+  "update_voice_test_suite",
+  "generate_voice_test_suite",
+  "start_voice_test_run",
+  "get_active_voice_test_run",
+  "pause_voice_test_run",
+  "resume_voice_test_run",
+  "cancel_voice_test_run",
+  "list_voice_test_runs",
+  "get_voice_test_run",
+  "apply_voice_test_recommendation",
+  "get_voice_test_baseline",
+  "get_voice_test_score_history",
 ] as const satisfies readonly string[];
 
 export type SpeakMcpToolName = (typeof SPEAK_MCP_TOOL_NAMES)[number];
