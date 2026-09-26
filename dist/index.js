@@ -7556,6 +7556,1158 @@ var init_dashboards = __esm({
   }
 });
 
+// src/tools/voice.ts
+var voice_exports = {};
+__export(voice_exports, {
+  register: () => register17
+});
+function register17(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_voice_agents",
+    "List the voice agents in the company (newest first). Each agent includes its agentId, name, personality/instructions, and voice/stt/llm/avatar configuration. Use the returned agentId with get_voice_agent or to filter list_voice_conversations.",
+    {},
+    {
+      title: "List Voice Agents",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/voice/agents");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_agent",
+    "Fetch a single voice agent by its agentId. Returns the full agent configuration. A cross-company agentId returns 404.",
+    {
+      agentId: import_zod18.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)")
+    },
+    {
+      title: "Get Voice Agent",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/agents/${agentId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_conversations",
+    "List the company's voice conversations (newest first). Optionally filter to a single agent. Each conversation includes its conversationId, agentId, status, duration, transcript summary, and usage/costs. Use conversationId with get_voice_conversation for the full record.",
+    {
+      agentId: import_zod18.z.string().optional().describe("Filter conversations to a single agent (from list_voice_agents)"),
+      page: import_zod18.z.number().int().min(1).optional().describe("1-based page index (default 1)"),
+      limit: import_zod18.z.number().int().min(1).max(200).optional().describe("Results per page (default 50, max 200)")
+    },
+    {
+      title: "List Voice Conversations",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/voice/conversations", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_conversation",
+    "Fetch a single voice conversation by its conversationId, including transcript, usage, costs, and analysis. A cross-company conversationId returns 404.",
+    {
+      conversationId: import_zod18.z.string().min(1).describe("ID of the conversation (from list_voice_conversations)")
+    },
+    {
+      title: "Get Voice Conversation",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ conversationId }) => {
+      try {
+        const result = await api.get(`/v1/voice/conversations/${conversationId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_voice_agent",
+    "Create a voice agent. Requires the OWNER or ADMIN role. name, personality, instructions, and voice (provider + voiceId) are required; everything else can be set now or later with update_voice_agent. Call list_voice_avatars or list_voices first to get valid ids.",
+    voiceInputSchema,
+    {
+      title: "Create Voice Agent",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/agents", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_voice_agent",
+    "Update a voice agent. Requires the OWNER or ADMIN role. Send only the fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent.",
+    {
+      agentId: import_zod18.z.string().min(1).describe("ID of the voice agent to update (from list_voice_agents)"),
+      ...Object.fromEntries(
+        Object.entries(voiceInputSchema).map(([key, schema]) => [key, schema.optional()])
+      )
+    },
+    {
+      title: "Update Voice Agent",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/voice/agents/${agentId}`, body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_avatars",
+    "List the video avatars available to attach to a voice agent (your company's own uploads plus the shared system catalog). Use the returned avatarId with create_voice_agent or update_voice_agent.",
+    {},
+    {
+      title: "List Voice Avatars",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/voice/avatars");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voices",
+    "List the text-to-speech voices available to a voice agent. Use the returned provider/voiceId with create_voice_agent or update_voice_agent's voice field. When an agent's llm.model is a Live (speech-to-speech) model, its usable voices are a fixed, smaller set scoped to that model instead of this full catalog.",
+    {},
+    {
+      title: "List Voices",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/voice/voices");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_voice_agent",
+    "Permanently delete a voice agent. Requires the OWNER or ADMIN role. Irreversible: also removes its questions, test suite, and share link; past conversations are kept for record-keeping but are no longer reachable from this agent.",
+    { agentId: import_zod18.z.string().min(1).describe("ID of the voice agent to delete (from list_voice_agents)") },
+    { title: "Delete Voice Agent", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/agents/${agentId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_voice_agent_from_prompt",
+    "Create a new voice agent by describing it in plain English instead of filling in name/personality/instructions/voice yourself. Requires the OWNER or ADMIN role. Response always includes the new agentId, plus either the generated agent config, or needsFollowUp: true with a follow-up question if the prompt was too thin to act on \u2014 call generate_voice_agent_config again on that agentId with more detail (or manualInstructions) when that happens.",
+    {
+      prompt: import_zod18.z.string().min(1).describe('Plain-English description of the agent to build, e.g. "a friendly dental clinic receptionist that books appointments and answers insurance questions".'),
+      name: import_zod18.z.string().optional().describe("Agent name. Defaults to one derived from the prompt if omitted."),
+      manualInstructions: import_zod18.z.string().optional().describe("Skip generation and use this as the agent's instructions verbatim.")
+    },
+    { title: "Create Voice Agent From Prompt", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/agents/generation", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "generate_voice_agent_config",
+    "Run the same prompt-to-config generation as create_voice_agent_from_prompt, but against an existing agent instead of creating a new one. Requires the OWNER or ADMIN role. On success the generated config is persisted onto the agent immediately. If the prompt is too thin and manualInstructions was not sent, the response has needsFollowUp: true with a follow-up question instead \u2014 call this again with more detail.",
+    {
+      agentId: import_zod18.z.string().min(1).describe("ID of the existing voice agent to generate config for (from list_voice_agents)"),
+      prompt: import_zod18.z.string().min(1).describe("Plain-English description of what the agent should do."),
+      manualInstructions: import_zod18.z.string().optional().describe("Skip generation and set the agent's instructions to this verbatim.")
+    },
+    { title: "Generate Voice Agent Config", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/agents/${agentId}/generation/generate`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_agent_setup_guide",
+    "Discovery + how-to helper for building and operating a Speak AI voice agent end to end. Returns the four configuration pieces every agent is built from, which tool covers each one, the recommended build order, and how testing/questions/knowledge-base/intelligence tools chain together after the agent exists. Call this before create_voice_agent or create_voice_agent_from_prompt if you are not already familiar with this tool surface.",
+    {},
+    { title: "Get Voice Agent Setup Guide", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async () => {
+      const data = {
+        overview: "A voice agent is a standalone resource: create it once, then it holds live spoken conversations, asking configured questions and answering from a knowledge base. It is built from four independent pieces, plus optional testing, sharing, and self-improvement layers.",
+        buildOrder: [
+          {
+            step: 1,
+            piece: "The agent record itself",
+            tools: ["create_voice_agent", "create_voice_agent_from_prompt"],
+            notes: "name, personality, instructions, and voice (provider+voiceId) are the only required fields. Call list_voices and list_voice_avatars first to get valid ids."
+          },
+          {
+            step: 2,
+            piece: "Voice & avatar",
+            tools: ["list_voices", "list_voice_avatars", "update_voice_agent"],
+            notes: "Every agent needs a voice. It only needs an avatar if conversationMode is video_avatar."
+          },
+          {
+            step: 3,
+            piece: "Instructions & behavior",
+            tools: ["update_voice_agent", "generate_voice_agent_config"],
+            notes: "personality/instructions are plain fields on the agent record; generate_voice_agent_config can (re)write them from a prompt instead of hand-authoring."
+          },
+          {
+            step: 4,
+            piece: "Questions",
+            tools: ["list_voice_question_templates", "create_voice_question", "reorder_voice_questions"],
+            notes: "Optional. Attaches a question template to the agent so it collects structured data mid-call. See the Questions tool group."
+          },
+          {
+            step: 5,
+            piece: "Knowledge base",
+            tools: ["Knowledge Base tool group (separate from voice agents)"],
+            notes: "Optional. A knowledge base collection is attached to the agent from the Knowledge Base API, not a voice-agent tool -- an agent has no documents of its own until one is attached."
+          }
+        ],
+        afterTheAgentExists: [
+          {
+            area: "Testing",
+            tools: ["get_voice_test_suite", "update_voice_test_suite", "generate_voice_test_suite", "start_voice_test_run"],
+            notes: "Scripted scenarios and a run history. The run lifecycle is live; the engine that drives a simulated conversation is not wired up yet, so a run stays queued."
+          },
+          {
+            area: "Feedback / self-improvement (Intelligence)",
+            tools: [
+              "list_voice_kb_gaps",
+              "list_voice_faq_suggestions",
+              "analyze_voice_instruction_gaps",
+              "list_voice_agent_resources"
+            ],
+            notes: "What the agent surfaces from real calls: knowledge it lacked, questions callers repeat, and gaps in its own instructions. Nothing is written automatically -- every suggestion needs an explicit add/apply/dismiss call."
+          },
+          {
+            area: "Conversations & analytics",
+            tools: ["list_voice_conversations", "get_voice_conversation"],
+            notes: "Read call history and transcripts once the agent has taken calls."
+          }
+        ],
+        commonMistakes: [
+          "Calling create_voice_agent with a made-up voiceId instead of one from list_voices -- the create call fails validation.",
+          "Expecting start_voice_test_run to return real scores -- the execution engine isn't wired up yet, see the Testing tools' own descriptions.",
+          "Looking for a knowledge-base tool in this group -- collections are managed by the separate Knowledge Base tool group and only attached here."
+        ]
+      };
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+}
+var import_zod18, voiceInputSchema;
+var init_voice = __esm({
+  "src/tools/voice.ts"() {
+    "use strict";
+    import_zod18 = require("zod");
+    init_helpers();
+    init_client();
+    voiceInputSchema = {
+      name: import_zod18.z.string().min(1).describe("Required on create. Trimmed, non-empty."),
+      personality: import_zod18.z.string().describe("Required on create. Free text describing the agent's tone."),
+      instructions: import_zod18.z.string().describe("Required on create. The agent's system instructions."),
+      voice: import_zod18.z.object({
+        provider: import_zod18.z.string().describe("TTS provider, e.g. elevenlabs or openai."),
+        voiceId: import_zod18.z.string(),
+        model: import_zod18.z.string().optional()
+      }).describe("Required on create."),
+      llm: import_zod18.z.object({
+        provider: import_zod18.z.string().optional().describe("Must be one of the voice-agent LLM providers if sent."),
+        model: import_zod18.z.string().optional().describe("Must be one of the voice-agent model ids if sent.")
+      }).optional(),
+      avatar: import_zod18.z.object({
+        avatarId: import_zod18.z.string().describe("Must match a row in your company's avatar catalog (list_voice_avatars) or the shared system catalog.")
+      }).optional().describe("Set to attach a video avatar; avatarUrl/provider are derived server-side from the catalog row."),
+      conversationMode: import_zod18.z.enum(["voice_only", "video_avatar"]).optional(),
+      folderId: import_zod18.z.string().optional().describe("Folder to file this agent's conversations under."),
+      enableWebSearch: import_zod18.z.boolean().optional().describe("Let the agent search the web mid-call, separate from any attached knowledge base.")
+    };
+  }
+});
+
+// src/tools/voice-testing.ts
+var voice_testing_exports = {};
+__export(voice_testing_exports, {
+  register: () => register18
+});
+function register18(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "get_voice_test_suite",
+    "Get a voice agent's test suite (its scenarios and run settings). Returns null in data.suite if none has been created yet \u2014 not a 404.",
+    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Get Voice Test Suite", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/suite`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_voice_test_suite",
+    "Create or update a voice agent's test suite. Requires the OWNER or ADMIN role. Upserts. Send the full scenarios array you want to keep \u2014 it replaces the stored one, it is not merged.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      scenarios: import_zod19.z.array(scenarioSchema).optional(),
+      maxCostPerRun: import_zod19.z.number().min(0).optional(),
+      autoRunOnKbUpdate: import_zod19.z.boolean().optional(),
+      autoRunOnInstructionSave: import_zod19.z.boolean().optional(),
+      scheduledCron: import_zod19.z.string().optional().nullable()
+    },
+    { title: "Update Voice Test Suite", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/voice/testing/${agentId}/suite`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "generate_voice_test_suite",
+    "Auto-generate a default test suite for a voice agent from its own instructions and knowledge base, via an LLM call. Requires the OWNER or ADMIN role. Overwrites the suite's existing scenarios.",
+    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Generate Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/suite/generate`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "start_voice_test_run",
+    "Start a test run against a voice agent's suite. Requires the OWNER or ADMIN role. Rejects with 409 if the agent has no test suite." + NOT_WIRED_NOTE,
+    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Start Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/run`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_active_voice_test_run",
+    "Get a voice agent's currently active test run (queued, running, or paused). Returns null in data.run if none is active \u2014 not a 404.",
+    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Get Active Voice Test Run", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/run/active`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "pause_voice_test_run",
+    "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running." + NOT_WIRED_NOTE,
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
+    },
+    { title: "Pause Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, runId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/pause`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "resume_voice_test_run",
+    "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
+    },
+    { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, runId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/resume`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "cancel_voice_test_run",
+    "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. Terminal \u2014 a cancelled run can never be resumed.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
+    },
+    { title: "Cancel Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, runId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/cancel`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_test_runs",
+    "List a voice agent's test runs, most recent first. Capped at 100 regardless of limit.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      limit: import_zod19.z.number().int().min(1).optional()
+    },
+    { title: "List Voice Test Runs", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/runs`, { params });
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_test_run",
+    "Get a test run's full detail, including scenarioResults and recommendations. Scoped to your company; agentId is not used to filter this lookup, only runId.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod19.z.string().min(1).describe("ID of the run (from list_voice_test_runs)")
+    },
+    { title: "Get Voice Test Run", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, runId }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/runs/${runId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "apply_voice_test_recommendation",
+    "Apply a test run recommendation's quick action to the agent (e.g. patch_instructions appends the suggested fix to the agent's instructions). Requires the OWNER or ADMIN role.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_voice_test_run)"),
+      recId: import_zod19.z.string().min(1).describe("ID of the recommendation within that run's recommendations list")
+    },
+    { title: "Apply Voice Test Recommendation", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, runId, recId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/runs/${runId}/recommendations/${recId}/apply`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_test_baseline",
+    "Get a voice agent's best-scoring completed test run, used to detect regressions on later runs. Returns null in data.baseline if no run has completed yet.",
+    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Get Voice Test Baseline", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/baseline`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_test_score_history",
+    "Get completed-run score points for a voice agent, most recent first, for charting. Capped at 100 regardless of limit. Only status=completed runs are included.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      limit: import_zod19.z.number().int().min(1).optional()
+    },
+    { title: "Get Voice Test Score History", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/score-history`, { params });
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+}
+var import_zod19, NOT_WIRED_NOTE, criterionSchema, scenarioSchema;
+var init_voice_testing = __esm({
+  "src/tools/voice-testing.ts"() {
+    "use strict";
+    import_zod19 = require("zod");
+    init_helpers();
+    init_client();
+    NOT_WIRED_NOTE = " The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.";
+    criterionSchema = import_zod19.z.object({
+      criterionId: import_zod19.z.string().optional(),
+      name: import_zod19.z.string(),
+      evaluationPrompt: import_zod19.z.string().describe("What the LLM judge is asked to evaluate."),
+      weight: import_zod19.z.number().min(1).max(10).optional(),
+      isCritical: import_zod19.z.boolean().optional(),
+      type: import_zod19.z.enum(["llm_judged", "response_length", "regex_match", "tool_called"]).optional().describe("Defaults to llm_judged. The other three route through a deterministic code check before the LLM judge runs."),
+      maxWords: import_zod19.z.number().int().optional().describe("For type=response_length: fails if any agent response exceeds this word count."),
+      regexPattern: import_zod19.z.string().optional().describe("For type=regex_match: JS regex source, no slashes."),
+      mustMatch: import_zod19.z.boolean().optional().describe("For type=regex_match: true (default) requires a match, false requires none."),
+      expectedToolName: import_zod19.z.string().optional().describe("For type=tool_called: the tool name to look for in the transcript's tool calls.")
+    });
+    scenarioSchema = import_zod19.z.object({
+      scenarioId: import_zod19.z.string().optional(),
+      name: import_zod19.z.string(),
+      description: import_zod19.z.string().optional(),
+      userMessages: import_zod19.z.array(import_zod19.z.string()).min(1).describe("The scripted turns sent to the agent."),
+      criteria: import_zod19.z.array(criterionSchema).optional().describe("Defaults to an empty array."),
+      category: import_zod19.z.enum(["greeting", "kb_retrieval", "off_topic", "edge_case", "custom"]).optional(),
+      isEnabled: import_zod19.z.boolean().optional()
+    });
+  }
+});
+
+// src/tools/voice-questions.ts
+var voice_questions_exports = {};
+__export(voice_questions_exports, {
+  register: () => register19
+});
+function register19(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_voice_questions",
+    "List the questions configured on a voice agent, in the order it asks them. Each is an agent-level instance of a question template with its own required/attempts/no-response settings and optional field mapping.",
+    {
+      agentId: import_zod20.z.string().min(1).describe("Required. Returns 404 if the agent does not exist or does not belong to your company."),
+      enabledOnly: import_zod20.z.boolean().optional()
+    },
+    { title: "List Voice Questions", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/voice/questions", { params });
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_question",
+    "Fetch a single voice agent question by its fieldId, scoped to your company.",
+    { fieldId: import_zod20.z.string().min(1).describe("ID of the question (from list_voice_questions)") },
+    { title: "Get Voice Question", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ fieldId }) => {
+      try {
+        const result = await api.get(`/v1/voice/questions/${fieldId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_voice_question",
+    "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) \u2014 404 if either isn't found.",
+    {
+      agentId: import_zod20.z.string().min(1),
+      templateId: import_zod20.z.string().min(1).describe("From list_voice_question_templates."),
+      customConfig: customConfigSchema.optional().describe("Agent-level override of the template's defaultConfig; only the keys you send are overridden."),
+      required: import_zod20.z.boolean().optional(),
+      maxPromptAttempts: import_zod20.z.number().min(1).max(3).optional(),
+      noResponseBehavior: import_zod20.z.enum(["move_to_next_question", "end_conversation"]).optional(),
+      triggerCondition: import_zod20.z.string().optional(),
+      order: import_zod20.z.number().optional(),
+      enabled: import_zod20.z.boolean().optional(),
+      mappedFieldId: import_zod20.z.string().optional().nullable().describe("ID of an existing company Field to write this question's collected answer onto after each call.")
+    },
+    { title: "Create Voice Question", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/questions", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_voice_question",
+    "Partially update a voice agent question \u2014 only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped.",
+    {
+      fieldId: import_zod20.z.string().min(1).describe("ID of the question to update (from list_voice_questions)"),
+      customConfig: customConfigSchema.optional(),
+      required: import_zod20.z.boolean().optional(),
+      maxPromptAttempts: import_zod20.z.number().min(1).max(3).optional(),
+      noResponseBehavior: import_zod20.z.enum(["move_to_next_question", "end_conversation"]).optional(),
+      triggerCondition: import_zod20.z.string().optional(),
+      order: import_zod20.z.number().optional(),
+      enabled: import_zod20.z.boolean().optional(),
+      mappedFieldId: import_zod20.z.string().optional().nullable()
+    },
+    { title: "Update Voice Question", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ fieldId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/voice/questions/${fieldId}`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_voice_question",
+    "Permanently remove a question from a voice agent and decrement the underlying template's usageCount. Requires the OWNER or ADMIN role. The template itself is not deleted and can be attached to another agent later.",
+    { fieldId: import_zod20.z.string().min(1).describe("ID of the question to remove (from list_voice_questions)") },
+    { title: "Delete Voice Question", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ fieldId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/questions/${fieldId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "reorder_voice_questions",
+    "Set the order a voice agent asks its questions in. Requires the OWNER or ADMIN role. Bulk-writes the order value on each listed question (written directly, not resequenced), then returns the agent's full question list in its new order. Entries whose fieldId doesn't belong to agentId are silently skipped.",
+    {
+      agentId: import_zod20.z.string().min(1),
+      fieldOrders: import_zod20.z.array(import_zod20.z.object({ fieldId: import_zod20.z.string().min(1), order: import_zod20.z.number() })).min(1).describe("The new order for some or all of the agent's questions.")
+    },
+    { title: "Reorder Voice Questions", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async (body) => {
+      try {
+        const result = await api.put("/v1/voice/questions/reorder", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_question_templates",
+    "List the question templates visible to your company: Speak's shared system templates, plus your own company's templates. Use the returned templateId with create_voice_question.",
+    { category: import_zod20.z.enum(["contact", "booking", "qualification", "payment", "custom"]).optional() },
+    { title: "List Voice Question Templates", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/voice/question-templates", { params });
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_voice_question_template",
+    `Create a company-scoped question template \u2014 the "custom question" a user names themselves rather than picking from Speak's shared library. Requires the OWNER or ADMIN role. The server stamps companyId and forces isSystemTemplate to false, so this template is only ever visible to your company.`,
+    {
+      name: import_zod20.z.string().min(1),
+      description: import_zod20.z.string().min(1),
+      category: import_zod20.z.enum(["contact", "booking", "qualification", "payment", "custom"]),
+      fieldType: import_zod20.z.enum(["email", "phone", "date", "time", "datetime", "text", "number", "boolean", "choice", "url"]),
+      defaultConfig: import_zod20.z.object({
+        displayLabel: import_zod20.z.string(),
+        question: import_zod20.z.string().describe("The prompt text the agent speaks to ask this."),
+        confirmationText: import_zod20.z.string().optional(),
+        validationPrompt: import_zod20.z.string().optional(),
+        validation: validationSchema.optional()
+      }).describe("displayLabel and question are both required within this object."),
+      isPublic: import_zod20.z.boolean().optional(),
+      tags: import_zod20.z.array(import_zod20.z.string()).optional()
+    },
+    { title: "Create Voice Question Template", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/question-templates", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+}
+var import_zod20, validationSchema, customConfigSchema;
+var init_voice_questions = __esm({
+  "src/tools/voice-questions.ts"() {
+    "use strict";
+    import_zod20 = require("zod");
+    init_helpers();
+    init_client();
+    validationSchema = import_zod20.z.object({
+      pattern: import_zod20.z.string().optional(),
+      minLength: import_zod20.z.number().optional(),
+      maxLength: import_zod20.z.number().optional(),
+      min: import_zod20.z.number().optional(),
+      max: import_zod20.z.number().optional(),
+      allowedValues: import_zod20.z.array(import_zod20.z.string()).optional()
+    });
+    customConfigSchema = import_zod20.z.object({
+      displayLabel: import_zod20.z.string().optional(),
+      question: import_zod20.z.string().optional().describe("The prompt text the agent speaks to ask this question."),
+      confirmationText: import_zod20.z.string().optional(),
+      validationPrompt: import_zod20.z.string().optional(),
+      validation: validationSchema.optional()
+    });
+  }
+});
+
+// src/tools/voice-intelligence.ts
+var voice_intelligence_exports = {};
+__export(voice_intelligence_exports, {
+  register: () => register20
+});
+function register20(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_voice_kb_gaps",
+    `List a voice agent's pending knowledge-base gaps \u2014 questions callers asked that the agent answered with low confidence or an explicit "I don't know," surfaced automatically after calls. Up to the 50 most recent pending gaps, newest first.`,
+    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "List Voice KB Gaps", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/knowledge-base/${agentId}/gaps`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "analyze_voice_kb_gaps",
+    "Trigger knowledge-base gap analysis over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately \u2014 new gaps appear in list_voice_kb_gaps once analysis finishes, not synchronously with this response.",
+    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Analyze Voice KB Gaps", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.post(`/v1/voice/knowledge-base/${agentId}/gaps/analyze`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "add_voice_kb_gap",
+    "Write a knowledge-base gap's answer into the voice agent's attached knowledge base as a new document, and mark the gap added. Requires the OWNER or ADMIN role. Fails with 409 if the gap was already added or dismissed, or if the agent has no knowledge base collection to write into.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      gapId: import_zod21.z.string().min(1).describe("ID of the gap (from list_voice_kb_gaps)"),
+      answer: import_zod21.z.string().optional().describe("Overrides the gap's suggested answer."),
+      title: import_zod21.z.string().optional().describe("Overrides the gap's suggested title.")
+    },
+    { title: "Add Voice KB Gap", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, gapId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/knowledge-base/${agentId}/gaps/${gapId}/add`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "dismiss_voice_kb_gap",
+    "Mark a voice agent's knowledge-base gap dismissed without writing anything to the knowledge base. Requires the OWNER or ADMIN role.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      gapId: import_zod21.z.string().min(1).describe("ID of the gap (from list_voice_kb_gaps)")
+    },
+    { title: "Dismiss Voice KB Gap", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, gapId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/knowledge-base/${agentId}/gaps/${gapId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_faq_suggestions",
+    "List a voice agent's pending FAQ suggestions \u2014 questions multiple callers asked in similar form, clustered and drafted into a reusable question/answer pair. Up to the 20 largest clusters, largest first.",
+    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "List Voice FAQ Suggestions", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/knowledge-base/${agentId}/faqs`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "generate_voice_faq_suggestions",
+    "Trigger FAQ clustering over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately \u2014 new suggestions appear in list_voice_faq_suggestions once generation finishes, not synchronously with this response.",
+    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Generate Voice FAQ Suggestions", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.post(`/v1/voice/knowledge-base/${agentId}/faqs/generate`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "add_voice_faq_suggestion",
+    "Write an FAQ suggestion's question/answer into the voice agent's attached knowledge base as a new document, and mark the suggestion added. Requires the OWNER or ADMIN role. Fails with 409 if the suggestion was already added or dismissed, or if the agent has no knowledge base collection to write into.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestionId: import_zod21.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)"),
+      question: import_zod21.z.string().optional().describe("Overrides the suggested question."),
+      answer: import_zod21.z.string().optional().describe("Overrides the suggested answer.")
+    },
+    { title: "Add Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, suggestionId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}/add`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_voice_faq_suggestion",
+    "Edit a still-pending FAQ suggestion's question and/or answer before adding it. Requires the OWNER or ADMIN role. Fails with 400 if the suggestion was already added or dismissed.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestionId: import_zod21.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)"),
+      question: import_zod21.z.string().optional(),
+      answer: import_zod21.z.string().optional()
+    },
+    { title: "Update Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, suggestionId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "dismiss_voice_faq_suggestion",
+    "Mark a voice agent's FAQ suggestion dismissed without writing anything to the knowledge base. Requires the OWNER or ADMIN role.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestionId: import_zod21.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)")
+    },
+    { title: "Dismiss Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, suggestionId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_agent_resources",
+    "List the knowledge documents/links a voice agent searches during calls \u2014 separate from KB gaps and FAQ suggestions, which are the self-improvement layer that surfaces what an agent is missing, not the content itself.",
+    {
+      agentId: import_zod21.z.string().optional(),
+      page: import_zod21.z.number().int().min(1).optional(),
+      limit: import_zod21.z.number().int().min(1).optional(),
+      search: import_zod21.z.string().optional().describe("Search by title/description.")
+    },
+    { title: "List Voice Agent Resources", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/voice/agent-resources", { params });
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_voice_agent_resource",
+    "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server fetches and embeds the content in the background (status moves from pending to completed).",
+    { agentId: import_zod21.z.string().min(1), ...resourceBodySchema },
+    { title: "Create Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/agent-resources", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "bulk_create_voice_agent_resources",
+    "Add up to 100 documents/links to a voice agent's knowledge base in one call. Requires the OWNER or ADMIN role. Each is fetched and embedded independently in the background. Use this instead of calling create_voice_agent_resource in a loop.",
+    {
+      agentId: import_zod21.z.string().min(1),
+      resources: import_zod21.z.array(import_zod21.z.object(resourceBodySchema)).min(1).max(100).describe("1 to 100 entries, each shaped like create_voice_agent_resource's body minus agentId.")
+    },
+    { title: "Bulk Create Voice Agent Resources", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/agent-resources/bulk", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_voice_agent_resource",
+    "Partially update a voice agent resource \u2014 send at least one field. Requires the OWNER or ADMIN role. agentId cannot be changed. Changing url, title, or description re-triggers embedding.",
+    {
+      resourceId: import_zod21.z.string().min(1).describe("ID of the resource to update (from list_voice_agent_resources)"),
+      url: import_zod21.z.string().url().optional(),
+      title: import_zod21.z.string().max(200).optional(),
+      description: import_zod21.z.string().max(1e3).optional(),
+      action: import_zod21.z.enum(["link", "presentation"]).optional(),
+      contentType: import_zod21.z.enum(["video", "pdf", "image"]).optional()
+    },
+    { title: "Update Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    async ({ resourceId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/voice/agent-resources/${resourceId}`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_voice_agent_resource",
+    "Soft-delete a voice agent resource \u2014 it stops appearing in lists and the agent stops searching it, but the document is not physically removed. Requires the OWNER or ADMIN role.",
+    { resourceId: import_zod21.z.string().min(1).describe("ID of the resource to delete (from list_voice_agent_resources)") },
+    { title: "Delete Voice Agent Resource", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ resourceId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/agent-resources/${resourceId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "analyze_voice_instruction_gaps",
+    "Advisory only \u2014 compares a voice agent's current instructions against anchors/original intent/recent call summaries you supply and suggests up to 3 patches. Requires the OWNER or ADMIN role. Nothing is written; pass a suggestion's suggestedPatch to apply_voice_instruction_gap to actually apply it.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      anchors: import_zod21.z.array(import_zod21.z.string()).optional().describe("Specific requirements the instructions must cover. Defaults to empty."),
+      originalPrompt: import_zod21.z.string().optional().describe("The original generation prompt, for context."),
+      conversationSummaries: import_zod21.z.array(import_zod21.z.string()).optional().describe("Recent call summaries, to ground suggestions in what actually came up. Defaults to empty.")
+    },
+    { title: "Analyze Voice Instruction Gaps", readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/agents/${agentId}/generation/gaps/analyze`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "apply_voice_instruction_gap",
+    "Insert a suggested instruction patch into a voice agent's instructions and persist the result. Requires the OWNER or ADMIN role. suggestedPatch is typically taken directly from analyze_voice_instruction_gaps.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestedPatch: import_zod21.z.string().min(1),
+      insertAfterSection: import_zod21.z.string().optional().nullable().describe("Insert after this named section heading; omit or null to append at the end.")
+    },
+    { title: "Apply Voice Instruction Gap", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/agents/${agentId}/generation/gaps/apply`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+}
+var import_zod21, resourceBodySchema;
+var init_voice_intelligence = __esm({
+  "src/tools/voice-intelligence.ts"() {
+    "use strict";
+    import_zod21 = require("zod");
+    init_helpers();
+    init_client();
+    resourceBodySchema = {
+      url: import_zod21.z.string().url(),
+      title: import_zod21.z.string().max(200),
+      description: import_zod21.z.string().max(1e3),
+      action: import_zod21.z.enum(["link", "presentation"]),
+      contentType: import_zod21.z.enum(["video", "pdf", "image"]).optional()
+    };
+  }
+});
+
 // src/tools/index.ts
 var tools_exports = {};
 __export(tools_exports, {
@@ -7586,6 +8738,10 @@ var init_tools = __esm({
     init_workflows();
     init_users();
     init_dashboards();
+    init_voice();
+    init_voice_testing();
+    init_voice_questions();
+    init_voice_intelligence();
     modules = [
       media_exports,
       text_exports,
@@ -7602,7 +8758,11 @@ var init_tools = __esm({
       clips_exports,
       workflows_exports,
       users_exports,
-      dashboards_exports
+      dashboards_exports,
+      voice_exports,
+      voice_testing_exports,
+      voice_questions_exports,
+      voice_intelligence_exports
     ];
   }
 });
@@ -7719,8 +8879,8 @@ function registerPrompts(server) {
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
     {
-      url: import_zod18.z.string().describe(`URL of the meeting recording \u2014 a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
-      name: import_zod18.z.string().optional().describe("Meeting name (optional)")
+      url: import_zod22.z.string().describe(`URL of the meeting recording \u2014 a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
+      name: import_zod22.z.string().optional().describe("Meeting name (optional)")
     },
     async ({ url, name }) => ({
       messages: [
@@ -7755,8 +8915,8 @@ function registerPrompts(server) {
     "research-across-media",
     "Search for themes, patterns, or topics across multiple recordings or your entire media library.",
     {
-      topic: import_zod18.z.string().describe("The topic, theme, or question to research"),
-      folder: import_zod18.z.string().optional().describe("Folder ID to scope the research (optional)")
+      topic: import_zod22.z.string().describe("The topic, theme, or question to research"),
+      folder: import_zod22.z.string().optional().describe("Folder ID to scope the research (optional)")
     },
     async ({ topic, folder }) => ({
       messages: [
@@ -7789,8 +8949,8 @@ function registerPrompts(server) {
     "meeting-brief",
     "Prepare a brief from recent meetings \u2014 pull transcripts, extract decisions, and summarize open items.",
     {
-      days: import_zod18.z.string().optional().describe("Number of days to look back (default: 7)"),
-      folder: import_zod18.z.string().optional().describe("Folder ID to scope to (optional)")
+      days: import_zod22.z.string().optional().describe("Number of days to look back (default: 7)"),
+      folder: import_zod22.z.string().optional().describe("Folder ID to scope to (optional)")
     },
     async ({ days, folder }) => {
       const lookback = parseInt(days ?? "7");
@@ -7827,11 +8987,11 @@ function registerPrompts(server) {
     }
   );
 }
-var import_zod18;
+var import_zod22;
 var init_prompts = __esm({
   "src/prompts.ts"() {
     "use strict";
-    import_zod18 = require("zod");
+    import_zod22 = require("zod");
     init_media_utils();
   }
 });
@@ -7980,7 +9140,61 @@ var init_tool_names = __esm({
       "delete_dashboard",
       "duplicate_dashboard",
       "share_dashboard",
-      "get_dashboard_speakers_insight"
+      "get_dashboard_speakers_insight",
+      // voice: agents + conversations
+      "list_voice_agents",
+      "get_voice_agent",
+      "create_voice_agent",
+      "update_voice_agent",
+      "list_voice_avatars",
+      "list_voices",
+      "list_voice_conversations",
+      "get_voice_conversation",
+      // voice: testing
+      "get_voice_test_suite",
+      "update_voice_test_suite",
+      "generate_voice_test_suite",
+      "start_voice_test_run",
+      "get_active_voice_test_run",
+      "pause_voice_test_run",
+      "resume_voice_test_run",
+      "cancel_voice_test_run",
+      "list_voice_test_runs",
+      "get_voice_test_run",
+      "apply_voice_test_recommendation",
+      "get_voice_test_baseline",
+      "get_voice_test_score_history",
+      // voice: agents round-out + discovery
+      "delete_voice_agent",
+      "create_voice_agent_from_prompt",
+      "generate_voice_agent_config",
+      "get_voice_agent_setup_guide",
+      // voice: questions
+      "list_voice_questions",
+      "get_voice_question",
+      "create_voice_question",
+      "update_voice_question",
+      "delete_voice_question",
+      "reorder_voice_questions",
+      "list_voice_question_templates",
+      "create_voice_question_template",
+      // voice: intelligence (kb gaps, faq suggestions, agent resources, instruction gaps)
+      "list_voice_kb_gaps",
+      "analyze_voice_kb_gaps",
+      "add_voice_kb_gap",
+      "dismiss_voice_kb_gap",
+      "list_voice_faq_suggestions",
+      "generate_voice_faq_suggestions",
+      "add_voice_faq_suggestion",
+      "update_voice_faq_suggestion",
+      "dismiss_voice_faq_suggestion",
+      "list_voice_agent_resources",
+      "create_voice_agent_resource",
+      "bulk_create_voice_agent_resources",
+      "update_voice_agent_resource",
+      "delete_voice_agent_resource",
+      "analyze_voice_instruction_gaps",
+      "apply_voice_instruction_gap"
     ];
   }
 });
