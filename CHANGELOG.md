@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.27.0 (2026-09-26)
+
+- fix: correct stale tool count left over from rebase conflict resolution
+
 ## v1.26.0 (2026-09-25)
 
 - feat(dashboards): add feedback groups, fieldRules and sheetWebhookUrl to dashboard settings
