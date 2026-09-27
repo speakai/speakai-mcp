@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, speakerHintsShape } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
@@ -279,6 +279,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       name: z.string().min(1).describe("Display name for the new folder"),
       description: z.string().optional().describe("Optional folder description"),
+      ...speakerHintsShape,
     },
     {
       title: "Create Folder",
@@ -351,6 +352,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       folderId: z.string().min(1).describe("Unique identifier of the folder"),
       name: z.string().describe("Display name for the folder"),
       description: z.string().optional().describe("Optional folder description"),
+      ...speakerHintsShape,
     },
     {
       title: "Update Folder",
