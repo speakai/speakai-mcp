@@ -22,7 +22,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Embed Widget",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },

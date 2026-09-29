@@ -83,6 +83,11 @@ describe("MCP Server Smoke Tests", () => {
         tool.annotations?.idempotentHint,
         `Tool ${name} missing idempotentHint`
       ).toBeTypeOf("boolean");
+      // OpenAI review counts any create, update, post or send as destructive, wider than the MCP spec.
+      expect(
+        tool.annotations?.destructiveHint,
+        `Tool ${name}: destructiveHint must be the opposite of readOnlyHint`
+      ).toBe(!tool.annotations?.readOnlyHint);
     }
   });
 
@@ -98,6 +103,7 @@ describe("MCP Server Smoke Tests", () => {
 
     expect(openWorldTools).toEqual([
       "bulk_create_voice_agent_resources",
+      "create_text_note",
       "create_voice_agent_resource",
       "create_webhook",
       "delete_scheduled_assistant",
@@ -107,6 +113,7 @@ describe("MCP Server Smoke Tests", () => {
       "remove_assistant_from_meeting",
       "run_automations",
       "schedule_meeting_event",
+      "share_dashboard",
       "test_automation",
       "update_voice_agent_resource",
       "update_webhook",

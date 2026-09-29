@@ -103,7 +103,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Recorder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -164,7 +164,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Clone Recorder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -278,7 +278,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Recorder Settings",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },

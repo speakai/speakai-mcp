@@ -157,7 +157,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Voice Agent",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -188,7 +188,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Voice Agent",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -282,7 +282,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       name: z.string().optional().describe("Agent name. Defaults to one derived from the prompt if omitted."),
       manualInstructions: z.string().optional().describe("Skip generation and use this as the agent's instructions verbatim."),
     },
-    { title: "Create Voice Agent From Prompt", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Create Voice Agent From Prompt", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/agents/generation", body);

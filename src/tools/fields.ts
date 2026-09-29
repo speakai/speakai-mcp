@@ -66,7 +66,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Custom Field",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },

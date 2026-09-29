@@ -32,7 +32,7 @@
           "title": "Upload Media from URL",
           "description": "Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -41,7 +41,7 @@
           "title": "Upload Local File",
           "description": "Upload a local file to Speak AI for transcription and analysis. Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry. Works with any audio or video file on the local filesystem. After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -50,7 +50,7 @@
           "title": "Upload and Analyze Media",
           "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -140,7 +140,7 @@
           "title": "Toggle Media Favorite",
           "description": "Mark or unmark media files as favorites for quick access.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -149,7 +149,7 @@
           "title": "Re-analyze Media",
           "description": "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -167,7 +167,7 @@
           "title": "Upload and Analyze Several URLs",
           "description": "Upload several URLs in one call — the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to 25 URLs and starts at most 5 at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         }
@@ -184,7 +184,7 @@
           "title": "Ask AI Chat",
           "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone. That is a premium feature and costs credits per hour of media — call get_analysis_quote first to check eligibility and price.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -193,7 +193,7 @@
           "title": "Retry AI Chat",
           "description": "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -247,7 +247,7 @@
           "title": "Toggle Prompt Favorite",
           "description": "Mark or unmark a chat message as a favorite for easy retrieval later.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -256,7 +256,7 @@
           "title": "Rename Chat",
           "description": "Update the title of a chat conversation for easier identification in history.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -265,7 +265,7 @@
           "title": "Submit Chat Feedback",
           "description": "Submit feedback on a chat response (thumbs up/down). Helps improve AI answer quality.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -283,7 +283,7 @@
           "title": "Export Chat Answer",
           "description": "Export a specific AI Chat answer. Useful for saving AI-generated summaries, reports, or analysis results.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -362,7 +362,7 @@
           "title": "Create Folder",
           "description": "Create a new folder in the workspace.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -371,7 +371,7 @@
           "title": "Clone Folder",
           "description": "Duplicate an existing folder and all of its contents.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -416,7 +416,7 @@
           "title": "Create Folder View",
           "description": "Create a new saved view for a folder with a custom set of display columns.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -434,7 +434,7 @@
           "title": "Clone Folder View",
           "description": "Duplicate an existing folder view into a target folder.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         }
@@ -451,7 +451,7 @@
           "title": "Create Recorder",
           "description": "Create a new recorder or survey for collecting audio/video submissions.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -478,7 +478,7 @@
           "title": "Clone Recorder",
           "description": "Duplicate an existing recorder including all its settings and questions.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -505,7 +505,7 @@
           "title": "Update Recorder Settings",
           "description": "Update configuration settings for a recorder (branding, capture options, etc.). `name` must always be supplied.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -549,7 +549,7 @@
           "title": "Create Highlight Clip",
           "description": "Create a highlight clip from one or more media files by specifying time ranges. Clips are processed asynchronously (states: queued, processing, completed, failed) — use get_clips to check status. Maximum total clip duration is 30 minutes. Use multiple timeRanges to stitch segments from different media files together.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -567,7 +567,7 @@
           "title": "Update Clip",
           "description": "Update a clip's title, description, or tags.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -593,7 +593,7 @@
           "title": "Export Media Transcript",
           "description": "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -602,7 +602,7 @@
           "title": "Export Multiple Media Files",
           "description": "Export multiple media files at once, optionally merged into a single file.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         }
@@ -628,7 +628,7 @@
           "title": "Schedule AI Meeting Assistant",
           "description": "Schedule the Speak AI meeting assistant to join and record an upcoming meeting.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -637,7 +637,7 @@
           "title": "Remove Assistant from Meeting",
           "description": "Remove the Speak AI assistant from an active or scheduled meeting.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": true
         },
@@ -690,7 +690,7 @@
           "title": "Create Automation",
           "description": "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) — recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -708,7 +708,7 @@
           "title": "Toggle Automation Status",
           "description": "Toggle an automation rule between active and inactive. This flips the current state — call get_automation first if you need to know which way it will flip.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -735,7 +735,7 @@
           "title": "Bulk Update Automation Status",
           "description": "Activate or deactivate multiple automations at once.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -753,7 +753,7 @@
           "title": "Run Automations",
           "description": "Manually run one or more automations against one or more media items now (outside the normal trigger).",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -860,7 +860,7 @@
           "title": "Create Webhook",
           "description": "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -878,7 +878,7 @@
           "title": "Update Webhook",
           "description": "Update an existing webhook. This is a partial update — only the fields you supply are changed; `callbackUrl` is always required, the rest are left untouched if omitted.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": true
         },
@@ -896,7 +896,7 @@
           "title": "Provision Inbound Webhook",
           "description": "Provision a standalone inbound webhook and get its public receive URL (inboundUrl) BEFORE creating an automation. Webhook-first flow: provision, send a test payload to the URL (append ?test=1 to only capture a sample without running anything), inspect mappable payload paths with get_inbound_webhook, then pass the webhookId as trigger.webhookId to create_automation.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -931,9 +931,9 @@
           "title": "Create Text Note",
           "description": "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_text_insight",
@@ -949,7 +949,7 @@
           "title": "Re-analyze Text Note",
           "description": "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -984,7 +984,7 @@
           "title": "Create Custom Field",
           "description": "Create a new custom field for categorizing and tagging media.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1019,7 +1019,7 @@
           "title": "Create Embed Widget",
           "description": "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1081,7 +1081,7 @@
           "title": "Create User Group",
           "description": "Create a new user group and assign members. Member ids come from list_users. Fails with a 409 if a group with the same name already exists in the company.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1143,7 +1143,7 @@
           "title": "Create Dashboard",
           "description": "Create an analytics dashboard. Only `title` is required — source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Never pass settings for a Foxtons dashboard unless explicitly asked; Foxtons moves by a server script. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1170,7 +1170,7 @@
           "title": "Duplicate Dashboard",
           "description": "Clone an existing dashboard. The copy gets fresh widget ids, a \"<name> (copy)\" title, cleared sharing, and its revision reset to 0. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1179,9 +1179,9 @@
           "title": "Share Dashboard",
           "description": "Enable public sharing for a dashboard and return its share token + embed id. WARNING: by default the public link resolves with no passphrase, so anyone with the token can view the dashboard data until an owner sets one.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_dashboard_speakers_insight",
@@ -1223,7 +1223,7 @@
           "title": "Create Voice Agent",
           "description": "Create a voice agent. Requires the OWNER or ADMIN role. name, personality, instructions, and voice (provider + voiceId) are required; everything else can be set now or later with update_voice_agent. Call list_voice_avatars or list_voices first to get valid ids.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1232,7 +1232,7 @@
           "title": "Update Voice Agent",
           "description": "Update a voice agent. Requires the OWNER or ADMIN role. Send only the fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1250,7 +1250,7 @@
           "title": "Create Voice Agent From Prompt",
           "description": "Create a new voice agent by describing it in plain English instead of filling in name/personality/instructions/voice yourself. Requires the OWNER or ADMIN role. Response always includes the new agentId, plus either the generated agent config, or needsFollowUp: true with a follow-up question if the prompt was too thin to act on — call generate_voice_agent_config again on that agentId with more detail (or manualInstructions) when that happens.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1330,7 +1330,7 @@
           "title": "Update Voice Test Suite",
           "description": "Create or update a voice agent's test suite. Requires the OWNER or ADMIN role. Upserts. Send the full scenarios array you want to keep — it replaces the stored one, it is not merged.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -1348,7 +1348,7 @@
           "title": "Start Voice Test Run",
           "description": "Start a test run against a voice agent's suite. Requires the OWNER or ADMIN role. Rejects with 409 if the agent has no test suite. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1366,7 +1366,7 @@
           "title": "Pause Voice Test Run",
           "description": "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1375,7 +1375,7 @@
           "title": "Resume Voice Test Run",
           "description": "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1411,7 +1411,7 @@
           "title": "Apply Voice Test Recommendation",
           "description": "Apply a test run recommendation's quick action to the agent (e.g. patch_instructions appends the suggested fix to the agent's instructions). Requires the OWNER or ADMIN role.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1464,7 +1464,7 @@
           "title": "Create Voice Question",
           "description": "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) — 404 if either isn't found.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1473,7 +1473,7 @@
           "title": "Update Voice Question",
           "description": "Partially update a voice agent question — only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1491,7 +1491,7 @@
           "title": "Reorder Voice Questions",
           "description": "Set the order a voice agent asks its questions in. Requires the OWNER or ADMIN role. Bulk-writes the order value on each listed question (written directly, not resequenced), then returns the agent's full question list in its new order. Entries whose fieldId doesn't belong to agentId are silently skipped.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -1509,7 +1509,7 @@
           "title": "Create Voice Question Template",
           "description": "Create a company-scoped question template — the \"custom question\" a user names themselves rather than picking from Speak's shared library. Requires the OWNER or ADMIN role. The server stamps companyId and forces isSystemTemplate to false, so this template is only ever visible to your company.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         }
@@ -1535,7 +1535,7 @@
           "title": "Analyze Voice KB Gaps",
           "description": "Trigger knowledge-base gap analysis over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately — new gaps appear in list_voice_kb_gaps once analysis finishes, not synchronously with this response.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1544,7 +1544,7 @@
           "title": "Add Voice KB Gap",
           "description": "Write a knowledge-base gap's answer into the voice agent's attached knowledge base as a new document, and mark the gap added. Requires the OWNER or ADMIN role. Fails with 409 if the gap was already added or dismissed, or if the agent has no knowledge base collection to write into.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1571,7 +1571,7 @@
           "title": "Generate Voice FAQ Suggestions",
           "description": "Trigger FAQ clustering over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately — new suggestions appear in list_voice_faq_suggestions once generation finishes, not synchronously with this response.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1580,7 +1580,7 @@
           "title": "Add Voice FAQ Suggestion",
           "description": "Write an FAQ suggestion's question/answer into the voice agent's attached knowledge base as a new document, and mark the suggestion added. Requires the OWNER or ADMIN role. Fails with 409 if the suggestion was already added or dismissed, or if the agent has no knowledge base collection to write into.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1589,7 +1589,7 @@
           "title": "Update Voice FAQ Suggestion",
           "description": "Edit a still-pending FAQ suggestion's question and/or answer before adding it. Requires the OWNER or ADMIN role. Fails with 400 if the suggestion was already added or dismissed.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -1616,7 +1616,7 @@
           "title": "Create Voice Agent Resource",
           "description": "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server fetches and embeds the content in the background (status moves from pending to completed).",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -1625,7 +1625,7 @@
           "title": "Bulk Create Voice Agent Resources",
           "description": "Add up to 100 documents/links to a voice agent's knowledge base in one call. Requires the OWNER or ADMIN role. Each is fetched and embedded independently in the background. Use this instead of calling create_voice_agent_resource in a loop.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -1634,7 +1634,7 @@
           "title": "Update Voice Agent Resource",
           "description": "Partially update a voice agent resource — send at least one field. Requires the OWNER or ADMIN role. agentId cannot be changed. Changing url, title, or description re-triggers embedding.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -1661,7 +1661,7 @@
           "title": "Apply Voice Instruction Gap",
           "description": "Insert a suggested instruction patch into a voice agent's instructions and persist the result. Requires the OWNER or ADMIN role. suggestedPatch is typically taken directly from analyze_voice_instruction_gaps.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         }

@@ -63,7 +63,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       autoRunOnInstructionSave: z.boolean().optional(),
       scheduledCron: z.string().optional().nullable(),
     },
-    { title: "Update Voice Test Suite", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    { title: "Update Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/testing/${agentId}/suite`, body);
@@ -93,7 +93,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "start_voice_test_run",
     "Start a test run against a voice agent's suite. Requires the OWNER or ADMIN role. Rejects with 409 if the agent has no test suite." + NOT_WIRED_NOTE,
     { agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Start Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Start Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run`);
@@ -126,7 +126,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)"),
     },
-    { title: "Pause Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Pause Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/pause`);
@@ -144,7 +144,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)"),
     },
-    { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/resume`);
@@ -217,7 +217,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       runId: z.string().min(1).describe("ID of the run (from get_voice_test_run)"),
       recId: z.string().min(1).describe("ID of the recommendation within that run's recommendations list"),
     },
-    { title: "Apply Voice Test Recommendation", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Apply Voice Test Recommendation", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId, recId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/runs/${runId}/recommendations/${recId}/apply`);

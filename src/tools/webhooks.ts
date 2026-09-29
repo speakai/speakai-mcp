@@ -25,7 +25,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Webhook",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -85,7 +85,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Webhook",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: true,
     },
@@ -113,7 +113,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Provision Inbound Webhook",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },

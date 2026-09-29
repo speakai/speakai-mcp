@@ -645,7 +645,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Upload and Analyze Media",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -729,7 +729,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Upload and Analyze Several URLs",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -827,7 +827,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Upload Local File",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },

@@ -39,7 +39,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Highlight Clip",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -104,7 +104,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Clip",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },

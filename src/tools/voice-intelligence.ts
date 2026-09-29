@@ -35,7 +35,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "analyze_voice_kb_gaps",
     "Trigger knowledge-base gap analysis over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately — new gaps appear in list_voice_kb_gaps once analysis finishes, not synchronously with this response.",
     { agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Analyze Voice KB Gaps", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Analyze Voice KB Gaps", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/gaps/analyze`);
@@ -55,7 +55,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       answer: z.string().optional().describe("Overrides the gap's suggested answer."),
       title: z.string().optional().describe("Overrides the gap's suggested title."),
     },
-    { title: "Add Voice KB Gap", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Add Voice KB Gap", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, gapId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/gaps/${gapId}/add`, body);
@@ -103,7 +103,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "generate_voice_faq_suggestions",
     "Trigger FAQ clustering over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately — new suggestions appear in list_voice_faq_suggestions once generation finishes, not synchronously with this response.",
     { agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Generate Voice FAQ Suggestions", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Generate Voice FAQ Suggestions", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/faqs/generate`);
@@ -123,7 +123,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       question: z.string().optional().describe("Overrides the suggested question."),
       answer: z.string().optional().describe("Overrides the suggested answer."),
     },
-    { title: "Add Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Add Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, suggestionId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}/add`, body);
@@ -143,7 +143,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       question: z.string().optional(),
       answer: z.string().optional(),
     },
-    { title: "Update Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    { title: "Update Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, suggestionId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}`, body);
@@ -196,7 +196,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "create_voice_agent_resource",
     "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server fetches and embeds the content in the background (status moves from pending to completed).",
     { agentId: z.string().min(1), ...resourceBodySchema },
-    { title: "Create Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    { title: "Create Voice Agent Resource", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/agent-resources", body);
@@ -218,7 +218,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .max(100)
         .describe("1 to 100 entries, each shaped like create_voice_agent_resource's body minus agentId."),
     },
-    { title: "Bulk Create Voice Agent Resources", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    { title: "Bulk Create Voice Agent Resources", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/agent-resources/bulk", body);
@@ -240,7 +240,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       action: z.enum(["link", "presentation"]).optional(),
       contentType: z.enum(["video", "pdf", "image"]).optional(),
     },
-    { title: "Update Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    { title: "Update Voice Agent Resource", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     async ({ resourceId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/agent-resources/${resourceId}`, body);
@@ -294,7 +294,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       suggestedPatch: z.string().min(1),
       insertAfterSection: z.string().optional().nullable().describe("Insert after this named section heading; omit or null to append at the end."),
     },
-    { title: "Apply Voice Instruction Gap", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Apply Voice Instruction Gap", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/agents/${agentId}/generation/gaps/apply`, body);

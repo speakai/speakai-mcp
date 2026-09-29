@@ -73,7 +73,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       enabled: z.boolean().optional(),
       mappedFieldId: z.string().optional().nullable().describe("ID of an existing company Field to write this question's collected answer onto after each call."),
     },
-    { title: "Create Voice Question", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Create Voice Question", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/questions", body);
@@ -98,7 +98,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       enabled: z.boolean().optional(),
       mappedFieldId: z.string().optional().nullable(),
     },
-    { title: "Update Voice Question", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Update Voice Question", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ fieldId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/questions/${fieldId}`, body);
@@ -131,7 +131,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       agentId: z.string().min(1),
       fieldOrders: z.array(z.object({ fieldId: z.string().min(1), order: z.number() })).min(1).describe("The new order for some or all of the agent's questions."),
     },
-    { title: "Reorder Voice Questions", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    { title: "Reorder Voice Questions", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.put("/v1/voice/questions/reorder", body);
@@ -177,7 +177,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       isPublic: z.boolean().optional(),
       tags: z.array(z.string()).optional(),
     },
-    { title: "Create Voice Question Template", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Create Voice Question Template", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/question-templates", body);
