@@ -93,7 +93,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Folder View",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -186,7 +186,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Clone Folder View",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -283,7 +283,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Folder",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -323,7 +323,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Clone Folder",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },

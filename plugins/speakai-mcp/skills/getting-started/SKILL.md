@@ -62,35 +62,10 @@ curl -s https://api.speakai.co/v1/mcp \
 
 ### Path 2: local stdio with an API key
 
-Use this for CLI agents, scripts, and clients without remote MCP support. Node.js 22 or
-newer is required. Pin the version instead of `@latest` so an upstream release cannot
-reach the user without review.
-
-```json
-{
-  "mcpServers": {
-    "speakai": {
-      "command": "npx",
-      "args": ["-y", "@speakai/mcp-server@1.27.0"],
-      "env": {
-        "SPEAK_API_KEY": "speak_sk_example_000000000000"
-      }
-    }
-  }
-}
-```
-
-- Create the key at <https://app.speakai.co/developers/apikeys>.
-- The package is `@speakai/mcp-server` on npm. It also installs a CLI named
-  `speakai-mcp` that mirrors the tool surface.
-- Set `SPEAK_BASE_URL` only when Speak AI support tells you to. The default is
-  `https://api.speakai.co`. Treat any other value as a choice the user must confirm.
-
-Check the connection before you do real work:
-
-```sh
-SPEAK_API_KEY=speak_sk_example_000000000000 npx @speakai/mcp-server@1.27.0 config test
-```
+Use this for CLI agents, scripts, and clients without remote MCP support. It runs the
+`@speakai/mcp-server` npm package on the user's machine with a Speak AI API key, and the
+same package installs a CLI named `speakai-mcp` that mirrors the tool surface. Setup,
+version pinning and key handling are documented at <https://docs.speakai.co/mcp/authentication>.
 
 ## What the 168 tools cover
 
@@ -148,8 +123,9 @@ Prefer these over hand-built tool chains when the request matches.
 ### Transcribe a recording and read the results
 
 1. `upload_and_analyze` with a direct file URL or a shareable page link. It returns
-   `mediaId` right away. For a file on disk use `upload_local_file`. For a two-step
-   upload use `get_signed_upload_url`, PUT the bytes, then `upload_media`.
+   `mediaId` right away. For a file on disk, use `get_signed_upload_url`, PUT the bytes,
+   then `upload_media`. `upload_local_file` does this in one call, but it exists only when
+   the server runs locally over stdio, never on the remote endpoint.
 
    Page links are resolved to the underlying media server-side. Supported: YouTube,
    TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion,
@@ -291,12 +267,10 @@ meeting events, and `update_embed` or `delete_clip` for shared assets.
    list in Claude.ai or ChatGPT.
 2. For OAuth, confirm the connection is still authorized at
    <https://api.speakai.co/v1/oauth/connections>. Reconnect if it was revoked.
-3. For stdio, confirm `SPEAK_API_KEY` is set, `node --version` reports 22 or newer, and
-   the pinned version in the config matches what you installed.
-4. Run `npx @speakai/mcp-server@1.27.0 config test` to validate the key and reach the API.
-5. On 401 or 403, rotate the key at <https://app.speakai.co/developers/apikeys> and
+3. For stdio or the CLI, follow the setup checks at <https://docs.speakai.co/mcp/authentication>.
+4. On 401 or 403, rotate the key at <https://app.speakai.co/developers/apikeys> and
    reconfigure.
-6. If you overrode `SPEAK_BASE_URL`, point it back at `https://api.speakai.co`.
+5. If you overrode `SPEAK_BASE_URL`, point it back at `https://api.speakai.co`.
 
 ## Where to go next
 

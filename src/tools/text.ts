@@ -38,7 +38,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Text Note",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true,
     },

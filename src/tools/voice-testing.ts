@@ -93,7 +93,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "start_voice_test_run",
     "Start a test run against a voice agent's suite. Requires the OWNER or ADMIN role. Rejects with 409 if the agent has no test suite." + NOT_WIRED_NOTE,
     { agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Start Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Start Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run`);

@@ -2,6 +2,7 @@
 
 // Public API — for use as a library (e.g., from speak-server)
 export { registerAllTools } from "./tools/index.js";
+export type { RegisterOptions } from "./tools/index.js";
 export { registerResources } from "./resources.js";
 export { registerPrompts } from "./prompts.js";
 export { createSpeakClient, formatAxiosError } from "./client.js";
@@ -87,7 +88,7 @@ if (isCliMode) {
             version: "1.0.0",
           });
 
-          registerAllTools(server);
+          registerAllTools(server, undefined, { localFileAccess: true });
           registerResources(server);
           registerPrompts(server);
 

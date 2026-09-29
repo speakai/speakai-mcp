@@ -94,7 +94,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const askAiChatAnnotations = {
     title: "Ask AI Chat",
     readOnlyHint: false,
-    destructiveHint: true,
+    destructiveHint: false,
     idempotentHint: false,
     openWorldHint: false,
   };
@@ -288,7 +288,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Retry AI Chat",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -557,7 +557,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Submit Chat Feedback",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -618,7 +618,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Export Chat Answer",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },

@@ -178,7 +178,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true,
+      openWorldHint: false,
     },
     async ({ meetingAssistantEventId, mediaId, sinceEndInSec }) => {
       if (!meetingAssistantEventId && !mediaId) {

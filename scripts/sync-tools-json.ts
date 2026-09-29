@@ -43,7 +43,7 @@ const stub = {
     return {} as any;
   },
 } as any;
-registerAllTools(stub, {} as any);
+registerAllTools(stub, {} as any, { localFileAccess: true });
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const toolsPath = path.join(root, "tools.json");

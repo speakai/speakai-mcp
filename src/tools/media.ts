@@ -104,7 +104,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Upload Media from URL",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true,
     },

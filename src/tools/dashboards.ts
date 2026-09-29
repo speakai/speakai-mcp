@@ -440,7 +440,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Dashboard",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -595,7 +595,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Duplicate Dashboard",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },

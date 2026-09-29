@@ -122,7 +122,8 @@ const RULES: Rule[] = [
 
   jsonRule("plugins/speakai-mcp/.mcp.json", (d) => {
     for (const server of Object.values<any>(d.mcpServers ?? {})) {
-      server.args = (server.args ?? []).map((a: string) =>
+      if (!server.args) continue;
+      server.args = server.args.map((a: string) =>
         a.replace(/^@speakai\/mcp-server@[\d.]+$/, `@speakai/mcp-server@${version}`),
       );
     }

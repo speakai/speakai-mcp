@@ -39,23 +39,7 @@ https://app.speakai.co/developers/apikeys.
   first.
 
 You do not need raw REST for this skill, since the tools cover it. If you do call it
-directly, the exchange looks like this:
-
-```sh
-export SPEAK_API_KEY="speak_sk_example_000000000000"
-
-# Step 1: exchange the API key for an access token.
-curl -s -X POST https://api.speakai.co/v1/auth/accessToken \
-  -H "Content-Type: application/json" \
-  -H "x-speakai-key: $SPEAK_API_KEY"
-
-# Step 2: send both headers on the real call.
-curl -s https://api.speakai.co/v1/analytics/search \
-  -H "Content-Type: application/json" \
-  -H "x-speakai-key: $SPEAK_API_KEY" \
-  -H "x-access-token: eyJhbG-example-access-token" \
-  -d '{"query":"onboarding friction","startDate":"2026-01-01T00:00:00.000Z","endDate":"2026-06-30T23:59:59.000Z"}'
-```
+directly, the token exchange is documented at <https://docs.speakai.co/mcp/authentication>.
 
 ## Step 1. Find the right recordings
 

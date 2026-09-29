@@ -19,7 +19,7 @@ a direct file URL first.
 |---|---|
 | One link | `upload_and_analyze` |
 | Two or more links | `upload_and_analyze_batch` |
-| A file on the user's disk | `upload_local_file` |
+| A file on the user's disk | `get_signed_upload_url`, PUT the bytes, then `upload_media` (`upload_local_file` on local stdio only) |
 | A direct file URL you already have | `upload_and_analyze` works for these too |
 
 Never call `upload_and_analyze` in a loop. `upload_and_analyze_batch` takes up to 25

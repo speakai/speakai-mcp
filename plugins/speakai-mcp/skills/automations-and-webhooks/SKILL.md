@@ -201,7 +201,6 @@ curl -X POST https://api.speakai.co/v1/webhook \
 Or through the CLI, which calls the same tool:
 
 ```sh
-export SPEAK_API_KEY="speak_sk_example_000000000000"
 speakai-mcp call create_webhook '{"callbackUrl":"https://example.com/hooks/speak"}'
 ```
 

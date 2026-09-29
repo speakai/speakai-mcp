@@ -1462,7 +1462,7 @@ function register(server, client) {
     {
       title: "Upload Media from URL",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -2050,7 +2050,7 @@ function register2(server, client) {
     {
       title: "Create Text Note",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -2204,7 +2204,7 @@ function register3(server, client) {
     {
       title: "Export Media Transcript",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2245,7 +2245,7 @@ function register3(server, client) {
     {
       title: "Export Multiple Media Files",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2366,7 +2366,7 @@ function register4(server, client) {
     {
       title: "Create Folder View",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2448,7 +2448,7 @@ function register4(server, client) {
     {
       title: "Clone Folder View",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2541,7 +2541,7 @@ function register4(server, client) {
     {
       title: "Create Folder",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2575,7 +2575,7 @@ function register4(server, client) {
     {
       title: "Clone Folder",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2717,7 +2717,7 @@ function register5(server, client) {
     {
       title: "Create Recorder",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2778,7 +2778,7 @@ function register5(server, client) {
     {
       title: "Clone Recorder",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -3021,7 +3021,7 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "create_embed",
-    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed.",
+    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. The embed is publicly viewable by default; use update_embed to set a password or privacy mode.",
     {
       mediaId: import_zod7.z.string().optional().describe("Media file to embed (for a single-media embed)"),
       folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs to embed (for a folder/library embed)")
@@ -3031,7 +3031,7 @@ function register6(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -3192,7 +3192,7 @@ function register7(server, client) {
   const askAiChatAnnotations = {
     title: "Ask AI Chat",
     readOnlyHint: false,
-    destructiveHint: true,
+    destructiveHint: false,
     idempotentHint: false,
     openWorldHint: false
   };
@@ -3312,7 +3312,7 @@ function register7(server, client) {
     {
       title: "Retry AI Chat",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -3545,7 +3545,7 @@ function register7(server, client) {
     {
       title: "Submit Chat Feedback",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -3604,7 +3604,7 @@ function register7(server, client) {
     {
       title: "Export Chat Answer",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -3785,7 +3785,7 @@ function register8(server, client) {
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ meetingAssistantEventId, mediaId, sinceEndInSec }) => {
       if (!meetingAssistantEventId && !mediaId) {
@@ -3917,7 +3917,7 @@ function register9(server, client) {
     {
       title: "Create Custom Field",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -4867,7 +4867,7 @@ function register10(server, client) {
     {
       title: "Create Automation",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -5439,7 +5439,7 @@ function register11(server, client) {
     {
       title: "Create Webhook",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -5522,7 +5522,7 @@ function register11(server, client) {
     {
       title: "Provision Inbound Webhook",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -5778,7 +5778,7 @@ function register13(server, client) {
     {
       title: "Create Highlight Clip",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -5949,7 +5949,7 @@ function resolveField(ref, fields) {
   const available = fields.map((f) => f.name).slice(0, 25).join(", ");
   throw new Error(`Unknown custom field "${ref}". Available fields: ${available || "(none \u2014 create one with create_field)"}`);
 }
-function register14(server, client) {
+function register14(server, client, options = {}) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -6297,7 +6297,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
     {
       title: "Upload and Analyze Media",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6357,7 +6357,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     {
       title: "Upload and Analyze Several URLs",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6420,7 +6420,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       };
     }
   );
-  registerSpeakTool(
+  if (options.localFileAccess) registerSpeakTool(
     server,
     "upload_local_file",
     [
@@ -6440,7 +6440,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     {
       title: "Upload Local File",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6638,7 +6638,7 @@ function register15(server, client) {
     {
       title: "Create User Group",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -7221,7 +7221,7 @@ function register16(server, client) {
     {
       title: "Create Dashboard",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -7345,7 +7345,7 @@ function register16(server, client) {
     {
       title: "Duplicate Dashboard",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -7683,7 +7683,7 @@ function register17(server, client) {
     {
       title: "Create Voice Agent",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -7808,7 +7808,7 @@ function register17(server, client) {
       name: import_zod18.z.string().optional().describe("Agent name. Defaults to one derived from the prompt if omitted."),
       manualInstructions: import_zod18.z.string().optional().describe("Skip generation and use this as the agent's instructions verbatim.")
     },
-    { title: "Create Voice Agent From Prompt", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Create Voice Agent From Prompt", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/agents/generation", body);
@@ -8004,7 +8004,7 @@ function register18(server, client) {
     "start_voice_test_run",
     "Start a test run against a voice agent's suite. Requires the OWNER or ADMIN role. Rejects with 409 if the agent has no test suite." + NOT_WIRED_NOTE,
     { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Start Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Start Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run`);
@@ -8260,7 +8260,7 @@ function register19(server, client) {
       enabled: import_zod20.z.boolean().optional(),
       mappedFieldId: import_zod20.z.string().optional().nullable().describe("ID of an existing company Field to write this question's collected answer onto after each call.")
     },
-    { title: "Create Voice Question", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Create Voice Question", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/questions", body);
@@ -8362,7 +8362,7 @@ function register19(server, client) {
       isPublic: import_zod20.z.boolean().optional(),
       tags: import_zod20.z.array(import_zod20.z.string()).optional()
     },
-    { title: "Create Voice Question Template", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Create Voice Question Template", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/question-templates", body);
@@ -8425,7 +8425,7 @@ function register20(server, client) {
     "analyze_voice_kb_gaps",
     "Trigger knowledge-base gap analysis over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately \u2014 new gaps appear in list_voice_kb_gaps once analysis finishes, not synchronously with this response.",
     { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Analyze Voice KB Gaps", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Analyze Voice KB Gaps", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/gaps/analyze`);
@@ -8445,7 +8445,7 @@ function register20(server, client) {
       answer: import_zod21.z.string().optional().describe("Overrides the gap's suggested answer."),
       title: import_zod21.z.string().optional().describe("Overrides the gap's suggested title.")
     },
-    { title: "Add Voice KB Gap", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Add Voice KB Gap", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId, gapId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/gaps/${gapId}/add`, body);
@@ -8493,7 +8493,7 @@ function register20(server, client) {
     "generate_voice_faq_suggestions",
     "Trigger FAQ clustering over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately \u2014 new suggestions appear in list_voice_faq_suggestions once generation finishes, not synchronously with this response.",
     { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Generate Voice FAQ Suggestions", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Generate Voice FAQ Suggestions", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/faqs/generate`);
@@ -8513,7 +8513,7 @@ function register20(server, client) {
       question: import_zod21.z.string().optional().describe("Overrides the suggested question."),
       answer: import_zod21.z.string().optional().describe("Overrides the suggested answer.")
     },
-    { title: "Add Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Add Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId, suggestionId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}/add`, body);
@@ -8586,7 +8586,7 @@ function register20(server, client) {
     "create_voice_agent_resource",
     "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server fetches and embeds the content in the background (status moves from pending to completed).",
     { agentId: import_zod21.z.string().min(1), ...resourceBodySchema },
-    { title: "Create Voice Agent Resource", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
+    { title: "Create Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/agent-resources", body);
@@ -8604,7 +8604,7 @@ function register20(server, client) {
       agentId: import_zod21.z.string().min(1),
       resources: import_zod21.z.array(import_zod21.z.object(resourceBodySchema)).min(1).max(100).describe("1 to 100 entries, each shaped like create_voice_agent_resource's body minus agentId.")
     },
-    { title: "Bulk Create Voice Agent Resources", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
+    { title: "Bulk Create Voice Agent Resources", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/agent-resources/bulk", body);
@@ -8713,9 +8713,9 @@ var tools_exports = {};
 __export(tools_exports, {
   registerAllTools: () => registerAllTools
 });
-function registerAllTools(server, client) {
+function registerAllTools(server, client, options = {}) {
   for (const mod of modules) {
-    mod.register(server, client);
+    mod.register(server, client, options);
   }
 }
 var modules;
@@ -10251,7 +10251,7 @@ function createCli() {
       }
     };
     const { registerAllTools: registerAllTools2 } = await Promise.resolve().then(() => (init_tools(), tools_exports));
-    registerAllTools2(stub, client);
+    registerAllTools2(stub, client, { localFileAccess: true });
     return handlers;
   }
   program.command("tools").description("List every MCP tool callable via `call`").option("--json", "Output raw JSON").action(async (opts) => {
@@ -10397,7 +10397,7 @@ if (isCliMode) {
             name: "speak-ai",
             version: "1.0.0"
           });
-          registerAllTools2(server);
+          registerAllTools2(server, void 0, { localFileAccess: true });
           registerResources2(server);
           registerPrompts2(server);
           const transport = new StdioServerTransport();

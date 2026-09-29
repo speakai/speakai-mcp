@@ -43,7 +43,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Export Media Transcript",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -109,7 +109,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Export Multiple Media Files",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
     },

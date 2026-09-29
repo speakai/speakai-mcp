@@ -32,16 +32,25 @@ describe("MCP Server Smoke Tests", () => {
 
   it("registers all 168 MCP tools without errors", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    expect(() => registerAllTools(server)).not.toThrow();
+    expect(() => registerAllTools(server, undefined, { localFileAccess: true })).not.toThrow();
 
     const tools = getRegisteredTools(server);
     const toolNames = Object.keys(tools);
     expect(toolNames).toHaveLength(168);
   });
 
-  it("registers all tools with unique names", async () => {
+  it("never exposes local-disk tools on the hosted server", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
     registerAllTools(server);
+
+    const toolNames = Object.keys(getRegisteredTools(server));
+    expect(toolNames).not.toContain("upload_local_file");
+    expect(toolNames).toHaveLength(167);
+  });
+
+  it("registers all tools with unique names", async () => {
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server, undefined, { localFileAccess: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);
@@ -51,7 +60,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("every tool has a non-empty description", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
+    registerAllTools(server, undefined, { localFileAccess: true });
 
     const tools = getRegisteredTools(server);
     for (const [name, tool] of Object.entries(tools)) {
@@ -62,7 +71,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("every tool declares Apps SDK annotations and an output schema", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
+    registerAllTools(server, undefined, { localFileAccess: true });
 
     const tools = getRegisteredTools(server);
     for (const [name, tool] of Object.entries(tools)) {
@@ -83,17 +92,66 @@ describe("MCP Server Smoke Tests", () => {
         tool.annotations?.idempotentHint,
         `Tool ${name} missing idempotentHint`
       ).toBeTypeOf("boolean");
-      // OpenAI review counts any create, update, post or send as destructive, wider than the MCP spec.
-      expect(
-        tool.annotations?.destructiveHint,
-        `Tool ${name}: destructiveHint must be the opposite of readOnlyHint`
-      ).toBe(!tool.annotations?.readOnlyHint);
+      if (tool.annotations?.readOnlyHint) {
+        expect(tool.annotations?.destructiveHint, `Read-only tool ${name} cannot be destructive`).toBe(false);
+      }
     }
+  });
+
+  it("only marks writes non-destructive when they are purely additive", async () => {
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server, undefined, { localFileAccess: true });
+
+    const tools = getRegisteredTools(server);
+    const additiveWrites = Object.entries(tools)
+      .filter(([, tool]) => !tool.annotations?.readOnlyHint && !tool.annotations?.destructiveHint)
+      .map(([name]) => name)
+      .sort();
+
+    // OpenAI: destructive for deletion, overwriting, cancellation, access changes or irreversible sends.
+    expect(additiveWrites).toEqual([
+      "add_voice_faq_suggestion",
+      "add_voice_kb_gap",
+      "analyze_voice_kb_gaps",
+      "ask_ai_chat",
+      "bulk_create_voice_agent_resources",
+      "clone_folder",
+      "clone_folder_view",
+      "clone_recorder",
+      "create_automation",
+      "create_clip",
+      "create_dashboard",
+      "create_field",
+      "create_folder",
+      "create_folder_view",
+      "create_recorder",
+      "create_text_note",
+      "create_user_group",
+      "create_voice_agent",
+      "create_voice_agent_from_prompt",
+      "create_voice_agent_resource",
+      "create_voice_question",
+      "create_voice_question_template",
+      "create_webhook",
+      "duplicate_dashboard",
+      "export_chat_answer",
+      "export_media",
+      "export_multiple_media",
+      "generate_voice_faq_suggestions",
+      "provision_inbound_webhook",
+      "retry_ai_chat",
+      "start_voice_test_run",
+      "submit_chat_feedback",
+      "upload_and_analyze",
+      "upload_and_analyze_batch",
+      "upload_local_file",
+      "upload_media",
+    ].sort());
   });
 
   it("only marks tools open-world when they affect public or external systems", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
+    registerAllTools(server, undefined, { localFileAccess: true });
 
     const tools = getRegisteredTools(server);
     const openWorldTools = Object.entries(tools)
@@ -103,12 +161,12 @@ describe("MCP Server Smoke Tests", () => {
 
     expect(openWorldTools).toEqual([
       "bulk_create_voice_agent_resources",
+      "create_embed",
       "create_text_note",
       "create_voice_agent_resource",
       "create_webhook",
       "delete_scheduled_assistant",
       "delete_webhook",
-      "get_live_meeting_transcript",
       "provision_inbound_webhook",
       "remove_assistant_from_meeting",
       "run_automations",
@@ -327,7 +385,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("includes expected tool categories", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
+    registerAllTools(server, undefined, { localFileAccess: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);

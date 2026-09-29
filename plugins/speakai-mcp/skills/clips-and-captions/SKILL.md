@@ -27,8 +27,6 @@ the whole library. It searches transcripts, insights, and metadata, and returns
 matching media with excerpts, tags, and sentiment.
 
 ```sh
-export SPEAK_API_KEY="speak_sk_example_000000000000"
-
 speakai-mcp call search_media '{
   "query": "pricing objection",
   "startDate": "2026-01-01T00:00:00Z",
