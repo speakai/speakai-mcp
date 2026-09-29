@@ -270,7 +270,6 @@ meeting events, and `update_embed` or `delete_clip` for shared assets.
 3. For stdio or the CLI, follow the setup checks at <https://docs.speakai.co/mcp/authentication>.
 4. On 401 or 403, rotate the key at <https://app.speakai.co/developers/apikeys> and
    reconfigure.
-5. If you overrode `SPEAK_BASE_URL`, point it back at `https://api.speakai.co`.
 
 ## Where to go next
 

@@ -32,8 +32,8 @@ https://app.speakai.co/developers/apikeys.
 
 - **Remote MCP endpoint**, `https://api.speakai.co/v1/mcp`: OAuth, or
   `Authorization: Bearer <speak-api-key>`.
-- **stdio mode and the CLI**: the `SPEAK_API_KEY` environment variable only. There is no
-  header to set.
+- **stdio mode and the CLI**: an API key configured on the user's machine, as described
+  at <https://docs.speakai.co/mcp/authentication>. There is no header to set.
 - **The REST API directly**: two headers on every call, `x-speakai-key` and
   `x-access-token`. It does not accept Bearer. You exchange your key for the access token
   first.
