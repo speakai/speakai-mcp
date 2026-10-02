@@ -201,8 +201,9 @@ const dashboardSettingsSchema = z
           .string()
           .optional()
           .describe(
-            "Google Apps Script web app URL that receives one row per submission. Only script.google.com " +
-              "addresses are posted to. Never shown to viewers.",
+            "External Google Apps Script web app URL. Speak posts one row per Feedback submission (call date, " +
+              "media link, scores, submitter name, notes) to it. Only https://script.google.com/macros/s/<id>/exec " +
+              "addresses are called; other values are saved but never called. Never shown to viewers.",
           ),
       })
       .optional(),
@@ -429,6 +430,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "a full build); if something can't be expressed by the widget catalog, put it in a narrative " +
       "widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, " +
       "config vocabulary, design rules, and full examples. " +
+      "Creating a dashboard does not share it publicly; only share_dashboard creates a public link. " +
+      "If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard " +
+      "is posted to that external Google Apps Script URL. " +
       "Viewer settings (the settings input): " +
       SETTINGS_RULES,
     {
@@ -441,7 +445,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ title, description, source, dateRange, sections, widgets, ...metadata }) => {
       try {

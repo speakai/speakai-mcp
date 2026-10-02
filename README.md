@@ -402,10 +402,10 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | Tool | Description |
 |---|---|
 | `get_signed_upload_url` | Get a pre-signed S3 URL for direct file upload |
-| `upload_media` | Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a social/video page link resolved automatically (YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru, Rutube). Vimeo and Loom page links are not supported. |
+| `upload_media` | Import an audio or video file from a direct public URL, a `get_signed_upload_url` URL, or a supported page link (YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru, Rutube). Vimeo and Loom page links are not supported. Bills the media duration. |
 | `upload_local_file` | Upload a local file directly from disk (stdio and CLI only, never on the remote server) |
 | `upload_and_analyze` | Upload media from a URL (direct file, or any social/video page link `upload_media` accepts — resolved automatically) and return its `media_id` immediately. Poll `get_media_status` until `processed`, then call `get_media_insights` for AI summaries. Set `mediaType` when the user has said which they want; leave it off otherwise and the server picks the best available track. |
-| `upload_and_analyze_batch` | Upload up to 25 URLs in one call, 5 at a time. Each URL is reported as uploaded or failed with its reason, so one bad link does not sink the batch. Use this instead of calling `upload_and_analyze` in a loop. |
+| `upload_and_analyze_batch` | Upload up to 25 URLs in one call, 5 at a time. Each URL is reported as uploaded or failed with its reason, so one bad link does not sink the batch. |
 | `list_media` | List and search media files with filters, pagination, and optional inline data (transcripts, speakers, keywords) via `include` param |
 | `get_media_insights` | Get AI insights — topics, sentiment, summaries, action items |
 | `get_transcript` | Get full transcript with speaker labels and timestamps |
@@ -502,7 +502,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `bulk_assign_automation_folders` | Set folder scope for multiple automations |
 | `run_automations` | Manually run automations against media now |
 | `delete_automation` | Permanently delete an automation |
-| `list_automation_apps` | List catalog apps (native + integrations) |
+| `list_automation_apps` | List catalog apps: Speak built-ins plus third-party apps marked connected or not connected (read-only) |
 | `list_automation_triggers` | List catalog trigger types (optionally by app) |
 | `list_automation_actions` | List catalog action/step types (optionally by app) |
 
@@ -652,8 +652,8 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `get_voice_agent` | Get a single voice agent by agentId |
 | `create_voice_agent` | Create a voice agent (name, personality, instructions, and voice are required) |
 | `update_voice_agent` | Update a voice agent; send only the fields you want to change |
-| `delete_voice_agent` | Permanently delete a voice agent and its questions, test suite, and share link |
-| `create_voice_agent_from_prompt` | Create a new agent from a plain-English description instead of filling in fields |
+| `delete_voice_agent` | Delete a voice agent; its share link, questions, and test suite stop working (no restore tool) |
+| `create_voice_agent_from_prompt` | Create a new agent from a plain-English description; an LLM generates its name, instructions, and settings |
 | `generate_voice_agent_config` | Run the same prompt-to-config generation against an existing agent |
 | `get_voice_agent_setup_guide` | Discovery helper: the build order, which tool covers each piece, common mistakes |
 | `list_voice_avatars` | List the video avatars available to attach to a voice agent |
@@ -711,7 +711,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `get_voice_test_suite` | Get a voice agent's test suite (its scenarios and run settings) |
 | `update_voice_test_suite` | Create or update a voice agent's test suite (upserts; replaces scenarios) |
 | `generate_voice_test_suite` | Auto-generate a default test suite from the agent's instructions and knowledge base |
-| `start_voice_test_run` | Start a test run against a voice agent's suite |
+| `start_voice_test_run` | Queue a test run of a voice agent's scripted test suite (creates a queued run record; no calls are placed) |
 | `get_active_voice_test_run` | Get a voice agent's currently active run (queued, running, or paused) |
 | `pause_voice_test_run` | Pause a running or queued test run |
 | `resume_voice_test_run` | Resume a paused test run |
