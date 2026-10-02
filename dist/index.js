@@ -2719,7 +2719,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2780,7 +2780,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2894,7 +2894,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ recorderId, ...body }) => {
       try {
@@ -2930,7 +2930,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ recorderId, ...body }) => {
       try {
@@ -2958,7 +2958,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ recorderId }) => {
       try {
@@ -3067,7 +3067,7 @@ function register6(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ embedId, ...body }) => {
       try {
@@ -7268,7 +7268,7 @@ function register16(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ dashboardId, title, revision, description, source, dateRange, sections, widgets, ...metadata }) => {
       try {
@@ -7319,7 +7319,7 @@ function register16(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ dashboardId }) => {
       try {

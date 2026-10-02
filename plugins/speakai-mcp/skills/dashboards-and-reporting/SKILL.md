@@ -8,6 +8,8 @@ metadata:
 
 # Dashboards and reporting
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 A dashboard is a saved set of widgets over a scope of media. It answers "how is this
 changing" rather than "what did this call say", and it can be shared with people who do not
 have a Speak AI account.

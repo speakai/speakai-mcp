@@ -8,6 +8,8 @@ metadata:
 
 # Surveys and recorders
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 A recorder is a public page that collects audio or video answers. You send a link, people
 record replies on their own time, and each submission lands in the workspace as normal
 media with a transcript and insights. It replaces booking a call for every participant.

@@ -118,6 +118,10 @@ const RULES: Rule[] = [
 
   jsonRule("plugins/speakai-mcp/.codex-plugin/plugin.json", (d) => {
     d.version = version;
+    // The listing is authored once, in the portable manifest, and mirrored here for Codex.
+    const root = JSON.parse(readFileSync(path.join(ROOT, "plugins/speakai-mcp/plugin.json"), "utf8"));
+    const listing = root.extensions?.["com.openai"]?.interface;
+    if (listing) d.interface = listing;
   }),
 
   jsonRule("plugins/speakai-mcp/.mcp.json", (d) => {

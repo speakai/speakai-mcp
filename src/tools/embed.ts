@@ -70,7 +70,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ embedId, ...body }) => {
       try {

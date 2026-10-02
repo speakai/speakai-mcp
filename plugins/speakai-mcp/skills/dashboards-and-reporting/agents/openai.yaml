@@ -1,0 +1,10 @@
+interface:
+  display_name: "Dashboards and reporting"
+  short_description: "Build and share dashboards"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "speakai"
+      description: "Speak AI MCP server"
+      transport: "streamable_http"
+      url: "https://api.speakai.co/v1/mcp"

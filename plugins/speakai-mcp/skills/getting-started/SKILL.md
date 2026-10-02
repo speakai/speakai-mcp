@@ -9,6 +9,8 @@ metadata:
 
 # Speak AI: getting started
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 Speak AI transcribes and analyzes audio, video, and text. The MCP server gives you
 **168 tools, 5 resources, and 3 prompts** over one workspace of recordings, transcripts,
 AI insights, folders, recorders, automations, and dashboards.

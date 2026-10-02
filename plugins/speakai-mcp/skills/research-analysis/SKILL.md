@@ -10,6 +10,8 @@ metadata:
 
 # Research analysis across many recordings
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 You use this skill when someone asks a research question that spans more than one
 recording. The work always follows the same shape. Find the right recordings, confirm
 they are ready to read, scope the question, ask it, then pull the exact words back out

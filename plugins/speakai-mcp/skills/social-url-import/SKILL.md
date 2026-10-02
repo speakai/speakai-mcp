@@ -9,6 +9,8 @@ metadata:
 
 # Importing public social and video links
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 Speak AI resolves a shareable page link to the media behind it, server-side. You pass
 the link as the user gave it. You never download the file, scrape the page, or hunt for
 a direct file URL first.

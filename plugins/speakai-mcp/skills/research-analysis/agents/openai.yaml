@@ -1,0 +1,10 @@
+interface:
+  display_name: "Research analysis"
+  short_description: "Answer questions across recordings"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "speakai"
+      description: "Speak AI MCP server"
+      transport: "streamable_http"
+      url: "https://api.speakai.co/v1/mcp"
