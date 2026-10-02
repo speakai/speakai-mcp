@@ -30,7 +30,7 @@ plugins/speakai-mcp/
 ├── .claude-plugin/plugin.json  # Claude Code's own manifest format
 ├── .codex-plugin/plugin.json   # Codex's own manifest format
 ├── .mcp.json                   # remote HTTP server config, used by Claude Code
-└── assets/icon.png             # 512x512 listing icon
+└── assets/                    # listing icons and logos (no code)
 ```
 
 `plugin.json` and `mcp.json` are the portable core. The dot-directories are each client's
