@@ -8332,7 +8332,7 @@ function register19(server, client) {
     server,
     "list_voice_question_templates",
     "List the question templates visible to your company: Speak's shared system templates, plus your own company's templates. Use the returned templateId with create_voice_question.",
-    { category: import_zod20.z.enum(["contact", "booking", "qualification", "payment", "custom"]).optional() },
+    { category: import_zod20.z.enum(QUESTION_CATEGORIES).optional() },
     { title: "List Voice Question Templates", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async (params) => {
       try {
@@ -8350,7 +8350,7 @@ function register19(server, client) {
     {
       name: import_zod20.z.string().min(1),
       description: import_zod20.z.string().min(1),
-      category: import_zod20.z.enum(["contact", "booking", "qualification", "payment", "custom"]),
+      category: import_zod20.z.enum(QUESTION_CATEGORIES),
       fieldType: import_zod20.z.enum(["email", "phone", "date", "time", "datetime", "text", "number", "boolean", "choice", "url"]),
       defaultConfig: import_zod20.z.object({
         displayLabel: import_zod20.z.string(),
@@ -8373,13 +8373,14 @@ function register19(server, client) {
     }
   );
 }
-var import_zod20, validationSchema, customConfigSchema;
+var import_zod20, QUESTION_CATEGORIES, validationSchema, customConfigSchema;
 var init_voice_questions = __esm({
   "src/tools/voice-questions.ts"() {
     "use strict";
     import_zod20 = require("zod");
     init_helpers();
     init_client();
+    QUESTION_CATEGORIES = ["contact", "booking", "qualification", "custom"];
     validationSchema = import_zod20.z.object({
       pattern: import_zod20.z.string().optional(),
       minLength: import_zod20.z.number().optional(),

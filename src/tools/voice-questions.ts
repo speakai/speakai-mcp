@@ -5,6 +5,10 @@ import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 // Questions a voice agent asks mid-call, under /v1/voice/questions and /v1/voice/question-templates.
+
+// "payment" is left out: plugin directory policy forbids collecting payment card data.
+const QUESTION_CATEGORIES = ["contact", "booking", "qualification", "custom"] as const;
+
 const validationSchema = z.object({
   pattern: z.string().optional(),
   minLength: z.number().optional(),
@@ -145,7 +149,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   registerSpeakTool(server,
     "list_voice_question_templates",
     "List the question templates visible to your company: Speak's shared system templates, plus your own company's templates. Use the returned templateId with create_voice_question.",
-    { category: z.enum(["contact", "booking", "qualification", "payment", "custom"]).optional() },
+    { category: z.enum(QUESTION_CATEGORIES).optional() },
     { title: "List Voice Question Templates", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async (params) => {
       try {
@@ -163,7 +167,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       name: z.string().min(1),
       description: z.string().min(1),
-      category: z.enum(["contact", "booking", "qualification", "payment", "custom"]),
+      category: z.enum(QUESTION_CATEGORIES),
       fieldType: z.enum(["email", "phone", "date", "time", "datetime", "text", "number", "boolean", "choice", "url"]),
       defaultConfig: z
         .object({
