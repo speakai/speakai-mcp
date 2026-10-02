@@ -108,7 +108,6 @@ describe("MCP Server Smoke Tests", () => {
       .map(([name]) => name)
       .sort();
 
-    // OpenAI: destructive for deletion, overwriting, cancellation, access changes or irreversible sends.
     expect(additiveWrites).toEqual([
       "add_voice_faq_suggestion",
       "add_voice_kb_gap",

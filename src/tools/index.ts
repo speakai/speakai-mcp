@@ -23,7 +23,6 @@ import * as voiceQuestions from "./voice-questions.js";
 import * as voiceIntelligence from "./voice-intelligence.js";
 
 export interface RegisterOptions {
-  /** Register tools that read the local disk. Only for servers on the user's own machine (stdio, CLI). */
   localFileAccess?: boolean;
 }
 
