@@ -160,8 +160,10 @@ describe("MCP Server Smoke Tests", () => {
       .sort();
 
     expect(openWorldTools).toEqual([
+      "build_automation",
       "bulk_create_voice_agent_resources",
       "clone_recorder",
+      "create_automation",
       "create_embed",
       "create_recorder",
       "create_text_note",
@@ -177,6 +179,7 @@ describe("MCP Server Smoke Tests", () => {
       "schedule_meeting_event",
       "share_dashboard",
       "test_automation",
+      "update_automation",
       "update_dashboard",
       "update_embed",
       "update_recorder_questions",

@@ -4869,7 +4869,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -4911,7 +4911,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ automationId, ...body }) => {
       try {
@@ -5961,7 +5961,7 @@ function register14(server, client, options = {}) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (args2) => {
       const { name, trigger, steps, automationId, description, isActive, orTriggers } = args2;

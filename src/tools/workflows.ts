@@ -223,7 +223,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (args: unknown) => {
       const { name, trigger, steps, automationId, description, isActive, orTriggers } =

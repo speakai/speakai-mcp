@@ -692,7 +692,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_automation",
@@ -701,7 +701,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "toggle_automation_status",
@@ -800,7 +800,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_automation_run",
