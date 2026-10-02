@@ -10,6 +10,8 @@ metadata:
 
 # Research analysis across many recordings
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 You use this skill when someone asks a research question that spans more than one
 recording. The work always follows the same shape. Find the right recordings, confirm
 they are ready to read, scope the question, ask it, then pull the exact words back out
@@ -32,30 +34,14 @@ https://app.speakai.co/developers/apikeys.
 
 - **Remote MCP endpoint**, `https://api.speakai.co/v1/mcp`: OAuth, or
   `Authorization: Bearer <speak-api-key>`.
-- **stdio mode and the CLI**: the `SPEAK_API_KEY` environment variable only. There is no
-  header to set.
+- **stdio mode and the CLI**: an API key configured on the user's machine, as described
+  at <https://docs.speakai.co/mcp/authentication>. There is no header to set.
 - **The REST API directly**: two headers on every call, `x-speakai-key` and
   `x-access-token`. It does not accept Bearer. You exchange your key for the access token
   first.
 
 You do not need raw REST for this skill, since the tools cover it. If you do call it
-directly, the exchange looks like this:
-
-```sh
-export SPEAK_API_KEY="speak_sk_example_000000000000"
-
-# Step 1: exchange the API key for an access token.
-curl -s -X POST https://api.speakai.co/v1/auth/accessToken \
-  -H "Content-Type: application/json" \
-  -H "x-speakai-key: $SPEAK_API_KEY"
-
-# Step 2: send both headers on the real call.
-curl -s https://api.speakai.co/v1/analytics/search \
-  -H "Content-Type: application/json" \
-  -H "x-speakai-key: $SPEAK_API_KEY" \
-  -H "x-access-token: eyJhbG-example-access-token" \
-  -d '{"query":"onboarding friction","startDate":"2026-01-01T00:00:00.000Z","endDate":"2026-06-30T23:59:59.000Z"}'
-```
+directly, the token exchange is documented at <https://docs.speakai.co/mcp/authentication>.
 
 ## Step 1. Find the right recordings
 

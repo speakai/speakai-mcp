@@ -121,7 +121,7 @@ describe("CLI Smoke Tests", () => {
         return {};
       },
     };
-    registerAllTools(stub as any);
+    registerAllTools(stub as any, undefined, { localFileAccess: true });
 
     expect(Object.keys(handlers).sort()).toEqual([...SPEAK_MCP_TOOL_NAMES].sort());
   });

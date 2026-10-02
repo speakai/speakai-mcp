@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
+import type { RegisterOptions } from "./index.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType } from "@speakai/shared";
 import * as fs from "fs";
@@ -206,7 +207,7 @@ const buildAutomationSchema: z.ZodRawShape = {
     ),
 };
 
-export function register(server: McpServer, client?: AxiosInstance): void {
+export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
 
   registerSpeakTool(server,
@@ -222,7 +223,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (args: unknown) => {
       const { name, trigger, steps, automationId, description, isActive, orTriggers } =
@@ -808,7 +809,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  registerSpeakTool(server,
+  // Reads filePath from local disk, so a hosted server must never expose it.
+  if (options.localFileAccess) registerSpeakTool(server,
     "upload_local_file",
     [
       "Upload a local file to Speak AI for transcription and analysis.",

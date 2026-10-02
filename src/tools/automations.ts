@@ -428,7 +428,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -472,7 +472,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ automationId, ...body }) => {
       try {
@@ -511,7 +511,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Toggle Automation Status",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -544,7 +544,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Bulk Update Automation Status",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
@@ -609,7 +609,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Run Automations",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },

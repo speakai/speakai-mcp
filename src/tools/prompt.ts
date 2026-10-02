@@ -493,7 +493,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Toggle Prompt Favorite",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
@@ -522,7 +522,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Rename Chat",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },

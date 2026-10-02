@@ -188,7 +188,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Voice Agent",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },

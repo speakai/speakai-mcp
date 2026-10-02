@@ -9,6 +9,8 @@ metadata:
 
 # Importing public social and video links
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 Speak AI resolves a shareable page link to the media behind it, server-side. You pass
 the link as the user gave it. You never download the file, scrape the page, or hunt for
 a direct file URL first.
@@ -19,7 +21,7 @@ a direct file URL first.
 |---|---|
 | One link | `upload_and_analyze` |
 | Two or more links | `upload_and_analyze_batch` |
-| A file on the user's disk | `upload_local_file` |
+| A file on the user's disk | `get_signed_upload_url`, PUT the bytes, then `upload_media` (`upload_local_file` on local stdio only) |
 | A direct file URL you already have | `upload_and_analyze` works for these too |
 
 Never call `upload_and_analyze` in a loop. `upload_and_analyze_batch` takes up to 25

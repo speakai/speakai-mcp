@@ -67,7 +67,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Schedule AI Meeting Assistant",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -100,7 +100,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Remove Assistant from Meeting",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: true,
     },
@@ -178,7 +178,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true,
+      openWorldHint: false,
     },
     async ({ meetingAssistantEventId, mediaId, sinceEndInSec }) => {
       if (!meetingAssistantEventId && !mediaId) {

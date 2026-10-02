@@ -9,6 +9,8 @@ metadata:
 
 # Clips and captions
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 This skill covers the tools that produce something a person can watch, read, or
 publish. Four categories matter here: clips (4 tools), exports (2 tools), media
 (18 tools), and embed-other (4 tools).
@@ -27,8 +29,6 @@ the whole library. It searches transcripts, insights, and metadata, and returns
 matching media with excerpts, tags, and sentiment.
 
 ```sh
-export SPEAK_API_KEY="speak_sk_example_000000000000"
-
 speakai-mcp call search_media '{
   "query": "pricing objection",
   "startDate": "2026-01-01T00:00:00Z",

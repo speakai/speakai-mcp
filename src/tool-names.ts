@@ -1,5 +1,7 @@
 /**
- * Static manifest of every Speak MCP tool name exposed by `registerAllTools`.
+ * Static manifest of every Speak MCP tool name exposed by `registerAllTools`
+ * with `{ localFileAccess: true }`. Without that option, local-disk tools such
+ * as `upload_local_file` are not registered, so a hosted server exposes fewer.
  *
  * This list is the single source of truth that consumers (e.g. speak-server's
  * orchestrator bridge) can import to route or validate tool calls without

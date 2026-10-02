@@ -1,7 +1,16 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 
-export declare function registerAllTools(server: McpServer, client?: AxiosInstance): void;
+export interface RegisterOptions {
+  /** Register tools that read the local disk. Only for servers on the user's own machine (stdio, CLI). */
+  localFileAccess?: boolean;
+}
+
+export declare function registerAllTools(
+  server: McpServer,
+  client?: AxiosInstance,
+  options?: RegisterOptions
+): void;
 
 export declare function createSpeakClient(options: {
   baseUrl: string;

@@ -8,6 +8,7 @@
     "url": "https://speakai.co"
   },
   "homepage": "https://docs.speakai.co/mcp",
+  "icon": "./assets/icon.png",
   "repository": "https://github.com/speakai/speakai-mcp",
   "license": "MIT",
   "keywords": [
@@ -21,20 +22,5 @@
     "clips",
     "captions"
   ],
-  "mcpServers": "./.mcp.json",
-  "userConfig": {
-    "speak_api_key": {
-      "type": "string",
-      "title": "Speak AI API key",
-      "description": "Generate an API key at https://app.speakai.co/developers/apikeys.",
-      "sensitive": true,
-      "required": true
-    },
-    "speak_base_url": {
-      "type": "string",
-      "title": "Speak AI API base URL",
-      "description": "Leave as https://api.speakai.co unless Speak AI support gave you a different endpoint.",
-      "default": "https://api.speakai.co"
-    }
-  }
+  "mcpServers": "./.mcp.json"
 }

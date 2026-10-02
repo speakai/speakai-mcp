@@ -10,6 +10,8 @@ license: MIT
 
 # Meeting summaries
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 You produce one artifact: a structured meeting readout with decisions, action items
 with owners, open questions, and risks. Everything below is in service of that.
 

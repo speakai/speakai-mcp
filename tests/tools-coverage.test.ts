@@ -759,7 +759,7 @@ describe("Workflows tools (upload_and_analyze)", () => {
     mockPost.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/workflows.js");
-    register(server, mockClient);
+    register(server, mockClient, { localFileAccess: true });
   });
 
   it("upload_and_analyze returns media_id immediately without polling", async () => {

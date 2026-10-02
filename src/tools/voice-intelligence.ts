@@ -143,7 +143,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       question: z.string().optional(),
       answer: z.string().optional(),
     },
-    { title: "Update Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    { title: "Update Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, suggestionId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}`, body);
@@ -240,7 +240,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       action: z.enum(["link", "presentation"]).optional(),
       contentType: z.enum(["video", "pdf", "image"]).optional(),
     },
-    { title: "Update Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    { title: "Update Voice Agent Resource", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     async ({ resourceId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/agent-resources/${resourceId}`, body);
@@ -294,7 +294,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       suggestedPatch: z.string().min(1),
       insertAfterSection: z.string().optional().nullable().describe("Insert after this named section heading; omit or null to append at the end."),
     },
-    { title: "Apply Voice Instruction Gap", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Apply Voice Instruction Gap", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/agents/${agentId}/generation/gaps/apply`, body);

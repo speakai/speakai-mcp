@@ -85,7 +85,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Webhook",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: true,
     },

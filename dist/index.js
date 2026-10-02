@@ -1871,7 +1871,7 @@ function register(server, client) {
     {
       title: "Toggle Media Favorite",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -1905,7 +1905,7 @@ function register(server, client) {
     {
       title: "Re-analyze Media",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2052,7 +2052,7 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2110,7 +2110,7 @@ function register2(server, client) {
     {
       title: "Re-analyze Text Note",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2719,7 +2719,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2780,7 +2780,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2892,9 +2892,9 @@ function register5(server, client) {
     {
       title: "Update Recorder Settings",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ recorderId, ...body }) => {
       try {
@@ -2930,7 +2930,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ recorderId, ...body }) => {
       try {
@@ -2958,7 +2958,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ recorderId }) => {
       try {
@@ -3021,7 +3021,7 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "create_embed",
-    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed.",
+    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. The embed is publicly viewable by default; use update_embed to set a password or privacy mode.",
     {
       mediaId: import_zod7.z.string().optional().describe("Media file to embed (for a single-media embed)"),
       folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs to embed (for a folder/library embed)")
@@ -3029,9 +3029,9 @@ function register6(server, client) {
     {
       title: "Create Embed Widget",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -3067,7 +3067,7 @@ function register6(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ embedId, ...body }) => {
       try {
@@ -3485,7 +3485,7 @@ function register7(server, client) {
     {
       title: "Toggle Prompt Favorite",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -3514,7 +3514,7 @@ function register7(server, client) {
     {
       title: "Rename Chat",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -3688,7 +3688,7 @@ function register8(server, client) {
     {
       title: "Schedule AI Meeting Assistant",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -3719,7 +3719,7 @@ function register8(server, client) {
     {
       title: "Remove Assistant from Meeting",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: true
     },
@@ -3785,7 +3785,7 @@ function register8(server, client) {
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ meetingAssistantEventId, mediaId, sinceEndInSec }) => {
       if (!meetingAssistantEventId && !mediaId) {
@@ -4869,7 +4869,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -4911,7 +4911,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ automationId, ...body }) => {
       try {
@@ -4949,7 +4949,7 @@ function register10(server, client) {
     {
       title: "Toggle Automation Status",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -4978,7 +4978,7 @@ function register10(server, client) {
     {
       title: "Bulk Update Automation Status",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -5036,7 +5036,7 @@ function register10(server, client) {
     {
       title: "Run Automations",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -5496,7 +5496,7 @@ function register11(server, client) {
     {
       title: "Update Webhook",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: true
     },
@@ -5840,7 +5840,7 @@ function register13(server, client) {
     {
       title: "Update Clip",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -5949,7 +5949,7 @@ function resolveField(ref, fields) {
   const available = fields.map((f) => f.name).slice(0, 25).join(", ");
   throw new Error(`Unknown custom field "${ref}". Available fields: ${available || "(none \u2014 create one with create_field)"}`);
 }
-function register14(server, client) {
+function register14(server, client, options = {}) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -5961,7 +5961,7 @@ function register14(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (args2) => {
       const { name, trigger, steps, automationId, description, isActive, orTriggers } = args2;
@@ -6420,7 +6420,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       };
     }
   );
-  registerSpeakTool(
+  if (options.localFileAccess) registerSpeakTool(
     server,
     "upload_local_file",
     [
@@ -7268,7 +7268,7 @@ function register16(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ dashboardId, title, revision, description, source, dateRange, sections, widgets, ...metadata }) => {
       try {
@@ -7319,7 +7319,7 @@ function register16(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ dashboardId }) => {
       try {
@@ -7373,9 +7373,9 @@ function register16(server, client) {
     {
       title: "Share Dashboard",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ dashboardId }) => {
       try {
@@ -7714,7 +7714,7 @@ function register17(server, client) {
     {
       title: "Update Voice Agent",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -7974,7 +7974,7 @@ function register18(server, client) {
       autoRunOnInstructionSave: import_zod19.z.boolean().optional(),
       scheduledCron: import_zod19.z.string().optional().nullable()
     },
-    { title: "Update Voice Test Suite", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    { title: "Update Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/testing/${agentId}/suite`, body);
@@ -8037,7 +8037,7 @@ function register18(server, client) {
       agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
     },
-    { title: "Pause Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Pause Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/pause`);
@@ -8055,7 +8055,7 @@ function register18(server, client) {
       agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
     },
-    { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/resume`);
@@ -8128,7 +8128,7 @@ function register18(server, client) {
       runId: import_zod19.z.string().min(1).describe("ID of the run (from get_voice_test_run)"),
       recId: import_zod19.z.string().min(1).describe("ID of the recommendation within that run's recommendations list")
     },
-    { title: "Apply Voice Test Recommendation", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Apply Voice Test Recommendation", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId, recId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/runs/${runId}/recommendations/${recId}/apply`);
@@ -8285,7 +8285,7 @@ function register19(server, client) {
       enabled: import_zod20.z.boolean().optional(),
       mappedFieldId: import_zod20.z.string().optional().nullable()
     },
-    { title: "Update Voice Question", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Update Voice Question", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ fieldId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/questions/${fieldId}`, body);
@@ -8318,7 +8318,7 @@ function register19(server, client) {
       agentId: import_zod20.z.string().min(1),
       fieldOrders: import_zod20.z.array(import_zod20.z.object({ fieldId: import_zod20.z.string().min(1), order: import_zod20.z.number() })).min(1).describe("The new order for some or all of the agent's questions.")
     },
-    { title: "Reorder Voice Questions", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    { title: "Reorder Voice Questions", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.put("/v1/voice/questions/reorder", body);
@@ -8332,7 +8332,7 @@ function register19(server, client) {
     server,
     "list_voice_question_templates",
     "List the question templates visible to your company: Speak's shared system templates, plus your own company's templates. Use the returned templateId with create_voice_question.",
-    { category: import_zod20.z.enum(["contact", "booking", "qualification", "payment", "custom"]).optional() },
+    { category: import_zod20.z.enum(QUESTION_CATEGORIES).optional() },
     { title: "List Voice Question Templates", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async (params) => {
       try {
@@ -8350,7 +8350,7 @@ function register19(server, client) {
     {
       name: import_zod20.z.string().min(1),
       description: import_zod20.z.string().min(1),
-      category: import_zod20.z.enum(["contact", "booking", "qualification", "payment", "custom"]),
+      category: import_zod20.z.enum(QUESTION_CATEGORIES),
       fieldType: import_zod20.z.enum(["email", "phone", "date", "time", "datetime", "text", "number", "boolean", "choice", "url"]),
       defaultConfig: import_zod20.z.object({
         displayLabel: import_zod20.z.string(),
@@ -8373,13 +8373,14 @@ function register19(server, client) {
     }
   );
 }
-var import_zod20, validationSchema, customConfigSchema;
+var import_zod20, QUESTION_CATEGORIES, validationSchema, customConfigSchema;
 var init_voice_questions = __esm({
   "src/tools/voice-questions.ts"() {
     "use strict";
     import_zod20 = require("zod");
     init_helpers();
     init_client();
+    QUESTION_CATEGORIES = ["contact", "booking", "qualification", "custom"];
     validationSchema = import_zod20.z.object({
       pattern: import_zod20.z.string().optional(),
       minLength: import_zod20.z.number().optional(),
@@ -8533,7 +8534,7 @@ function register20(server, client) {
       question: import_zod21.z.string().optional(),
       answer: import_zod21.z.string().optional()
     },
-    { title: "Update Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    { title: "Update Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, suggestionId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}`, body);
@@ -8626,7 +8627,7 @@ function register20(server, client) {
       action: import_zod21.z.enum(["link", "presentation"]).optional(),
       contentType: import_zod21.z.enum(["video", "pdf", "image"]).optional()
     },
-    { title: "Update Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    { title: "Update Voice Agent Resource", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     async ({ resourceId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/agent-resources/${resourceId}`, body);
@@ -8680,7 +8681,7 @@ function register20(server, client) {
       suggestedPatch: import_zod21.z.string().min(1),
       insertAfterSection: import_zod21.z.string().optional().nullable().describe("Insert after this named section heading; omit or null to append at the end.")
     },
-    { title: "Apply Voice Instruction Gap", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Apply Voice Instruction Gap", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/agents/${agentId}/generation/gaps/apply`, body);
@@ -8713,9 +8714,9 @@ var tools_exports = {};
 __export(tools_exports, {
   registerAllTools: () => registerAllTools
 });
-function registerAllTools(server, client) {
+function registerAllTools(server, client, options = {}) {
   for (const mod of modules) {
-    mod.register(server, client);
+    mod.register(server, client, options);
   }
 }
 var modules;
@@ -10251,7 +10252,7 @@ function createCli() {
       }
     };
     const { registerAllTools: registerAllTools2 } = await Promise.resolve().then(() => (init_tools(), tools_exports));
-    registerAllTools2(stub, client);
+    registerAllTools2(stub, client, { localFileAccess: true });
     return handlers;
   }
   program.command("tools").description("List every MCP tool callable via `call`").option("--json", "Output raw JSON").action(async (opts) => {
@@ -10397,7 +10398,7 @@ if (isCliMode) {
             name: "speak-ai",
             version: "1.0.0"
           });
-          registerAllTools2(server);
+          registerAllTools2(server, void 0, { localFileAccess: true });
           registerResources2(server);
           registerPrompts2(server);
           const transport = new StdioServerTransport();

@@ -140,7 +140,7 @@
           "title": "Toggle Media Favorite",
           "description": "Mark or unmark media files as favorites for quick access.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -149,7 +149,7 @@
           "title": "Re-analyze Media",
           "description": "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -247,7 +247,7 @@
           "title": "Toggle Prompt Favorite",
           "description": "Mark or unmark a chat message as a favorite for easy retrieval later.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -256,7 +256,7 @@
           "title": "Rename Chat",
           "description": "Update the title of a chat conversation for easier identification in history.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -453,7 +453,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "list_recorders",
@@ -480,7 +480,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_recorder_recordings",
@@ -505,9 +505,9 @@
           "title": "Update Recorder Settings",
           "description": "Update configuration settings for a recorder (branding, capture options, etc.). `name` must always be supplied.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_recorder_questions",
@@ -516,7 +516,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "check_recorder_status",
@@ -534,7 +534,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         }
       ]
     },
@@ -567,7 +567,7 @@
           "title": "Update Clip",
           "description": "Update a clip's title, description, or tags.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -628,7 +628,7 @@
           "title": "Schedule AI Meeting Assistant",
           "description": "Schedule the Speak AI meeting assistant to join and record an upcoming meeting.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -637,7 +637,7 @@
           "title": "Remove Assistant from Meeting",
           "description": "Remove the Speak AI assistant from an active or scheduled meeting.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": true
         },
@@ -657,7 +657,7 @@
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         }
       ]
     },
@@ -692,7 +692,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_automation",
@@ -701,14 +701,14 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "toggle_automation_status",
           "title": "Toggle Automation Status",
           "description": "Toggle an automation rule between active and inactive. This flips the current state — call get_automation first if you need to know which way it will flip.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -735,7 +735,7 @@
           "title": "Bulk Update Automation Status",
           "description": "Activate or deactivate multiple automations at once.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -753,7 +753,7 @@
           "title": "Run Automations",
           "description": "Manually run one or more automations against one or more media items now (outside the normal trigger).",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -800,7 +800,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_automation_run",
@@ -878,7 +878,7 @@
           "title": "Update Webhook",
           "description": "Update an existing webhook. This is a partial update — only the fields you supply are changed; `callbackUrl` is always required, the rest are left untouched if omitted.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": true
         },
@@ -933,7 +933,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_text_insight",
@@ -949,7 +949,7 @@
           "title": "Re-analyze Text Note",
           "description": "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1017,11 +1017,11 @@
         {
           "name": "create_embed",
           "title": "Create Embed Widget",
-          "description": "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed.",
+          "description": "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. The embed is publicly viewable by default; use update_embed to set a password or privacy mode.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_embed",
@@ -1030,7 +1030,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "check_embed",
@@ -1154,7 +1154,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "delete_dashboard",
@@ -1163,7 +1163,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "duplicate_dashboard",
@@ -1179,9 +1179,9 @@
           "title": "Share Dashboard",
           "description": "Enable public sharing for a dashboard and return its share token + embed id. WARNING: by default the public link resolves with no passphrase, so anyone with the token can view the dashboard data until an owner sets one.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_dashboard_speakers_insight",
@@ -1232,7 +1232,7 @@
           "title": "Update Voice Agent",
           "description": "Update a voice agent. Requires the OWNER or ADMIN role. Send only the fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1330,7 +1330,7 @@
           "title": "Update Voice Test Suite",
           "description": "Create or update a voice agent's test suite. Requires the OWNER or ADMIN role. Upserts. Send the full scenarios array you want to keep — it replaces the stored one, it is not merged.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -1366,7 +1366,7 @@
           "title": "Pause Voice Test Run",
           "description": "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1375,7 +1375,7 @@
           "title": "Resume Voice Test Run",
           "description": "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1411,7 +1411,7 @@
           "title": "Apply Voice Test Recommendation",
           "description": "Apply a test run recommendation's quick action to the agent (e.g. patch_instructions appends the suggested fix to the agent's instructions). Requires the OWNER or ADMIN role.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1473,7 +1473,7 @@
           "title": "Update Voice Question",
           "description": "Partially update a voice agent question — only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1491,7 +1491,7 @@
           "title": "Reorder Voice Questions",
           "description": "Set the order a voice agent asks its questions in. Requires the OWNER or ADMIN role. Bulk-writes the order value on each listed question (written directly, not resequenced), then returns the agent's full question list in its new order. Entries whose fieldId doesn't belong to agentId are silently skipped.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -1589,7 +1589,7 @@
           "title": "Update Voice FAQ Suggestion",
           "description": "Edit a still-pending FAQ suggestion's question and/or answer before adding it. Requires the OWNER or ADMIN role. Fails with 400 if the suggestion was already added or dismissed.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -1634,7 +1634,7 @@
           "title": "Update Voice Agent Resource",
           "description": "Partially update a voice agent resource — send at least one field. Requires the OWNER or ADMIN role. agentId cannot be changed. Changing url, title, or description re-triggers embedding.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -1661,7 +1661,7 @@
           "title": "Apply Voice Instruction Gap",
           "description": "Insert a suggested instruction patch into a voice agent's instructions and persist the result. Requires the OWNER or ADMIN role. suggestedPatch is typically taken directly from analyze_voice_instruction_gaps.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         }
