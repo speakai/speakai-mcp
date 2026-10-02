@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.28.1 (2026-10-02)
+
+- fix(release): wait for npm before logging in to the MCP Registry
+
 ## v1.28.0 (2026-10-02)
 
 - fix(voice): stop offering the payment question category through MCP
