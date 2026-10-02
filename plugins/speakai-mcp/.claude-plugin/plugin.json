@@ -3,11 +3,11 @@
   "description": "Capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows — all from your AI assistant.",
   "version": "1.28.0",
   "author": {
-    "name": "Vatsal Shah",
+    "name": "Speak AI",
     "email": "accounts@speakai.co",
     "url": "https://speakai.co"
   },
-  "homepage": "https://docs.speakai.co/mcp",
+  "homepage": "https://docs.speakai.co/mcp/",
   "icon": "./assets/icon.png",
   "repository": "https://github.com/speakai/speakai-mcp",
   "license": "MIT",
@@ -20,7 +20,13 @@
     "meetings",
     "research",
     "clips",
-    "captions"
+    "captions",
+    "automations"
   ],
-  "mcpServers": "./.mcp.json"
+  "mcpServers": "./.mcp.json",
+  "displayName": "Speak AI",
+  "documentationUrl": "https://docs.speakai.co/mcp/",
+  "supportUrl": "https://docs.speakai.co/help/",
+  "privacyPolicyUrl": "https://speakai.co/privacy-policy/",
+  "termsOfServiceUrl": "https://speakai.co/terms-of-service/"
 }

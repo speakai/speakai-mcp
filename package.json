@@ -37,7 +37,7 @@
     "claude",
     "model-context-protocol"
   ],
-  "author": "Vatsal Shah",
+  "author": "Speak AI",
   "license": "MIT",
   "engines": {
     "node": ">=22"

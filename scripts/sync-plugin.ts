@@ -101,6 +101,11 @@ const jsonRule = (file: string, edit: (data: any) => void): Rule => ({
   },
 });
 
+/** Identity and listing fields are authored once, in the portable manifest, and mirrored elsewhere. */
+function readRootManifest(): any {
+  return JSON.parse(readFileSync(path.join(ROOT, "plugins/speakai-mcp/plugin.json"), "utf8"));
+}
+
 const RULES: Rule[] = [
   jsonRule("server.json", (d) => {
     d.version = version;
@@ -114,12 +119,24 @@ const RULES: Rule[] = [
 
   jsonRule("plugins/speakai-mcp/.claude-plugin/plugin.json", (d) => {
     d.version = version;
+    const root = readRootManifest();
+    const listing = root.extensions?.["com.openai"]?.interface ?? {};
+    d.author = root.author;
+    d.keywords = root.keywords;
+    d.displayName = listing.displayName;
+    d.homepage = listing.websiteURL;
+    // Anthropic's directory reads these links from plugin.json for the listing; Claude Code ignores them.
+    d.documentationUrl = listing.websiteURL;
+    d.supportUrl = listing.supportURL;
+    d.privacyPolicyUrl = listing.privacyPolicyURL;
+    d.termsOfServiceUrl = listing.termsOfServiceURL;
   }),
 
   jsonRule("plugins/speakai-mcp/.codex-plugin/plugin.json", (d) => {
     d.version = version;
-    // The listing is authored once, in the portable manifest, and mirrored here for Codex.
-    const root = JSON.parse(readFileSync(path.join(ROOT, "plugins/speakai-mcp/plugin.json"), "utf8"));
+    const root = readRootManifest();
+    d.author = root.author;
+    d.keywords = root.keywords;
     const listing = root.extensions?.["com.openai"]?.interface;
     if (listing) d.interface = listing;
   }),
@@ -156,8 +173,14 @@ const RULES: Rule[] = [
 
 
   jsonRule(".claude-plugin/marketplace.json", (d) => {
+    const root = readRootManifest();
+    if (d.owner) d.owner.name = root.author.name;
     for (const plugin of d.plugins ?? []) {
       if (plugin.version) plugin.version = version;
+      if (plugin.name === root.name) {
+        plugin.author = { name: root.author.name, email: root.author.email };
+        plugin.keywords = root.keywords;
+      }
     }
     if (d.version) d.version = version;
   }),

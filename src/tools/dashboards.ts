@@ -114,7 +114,6 @@ const settingsFieldIds = z.array(z.string());
 // settings field description and the create/update tool descriptions.
 const SETTINGS_RULES =
   "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. " +
-  "Never pass settings for a Foxtons dashboard unless explicitly asked; Foxtons moves by a server script. " +
   "Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use " +
   "these groups and this Feedback setup from then on. " +
   "Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and " +

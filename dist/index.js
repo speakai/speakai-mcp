@@ -1607,7 +1607,7 @@ function register(server, client) {
       speakers: import_zod2.z.array(
         import_zod2.z.object({
           id: import_zod2.z.string().min(1).describe(
-            `Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. "Speaker 0", "Vatsal Shah"), or its numeric id from insight.speakers[].id (e.g. "0"). Not a fixed identifier \u2014 it changes when the speaker is renamed.`
+            `Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. "Speaker 0", "Jane Doe"), or its numeric id from insight.speakers[].id (e.g. "0"). Not a fixed identifier \u2014 it changes when the speaker is renamed.`
           ),
           name: import_zod2.z.string().min(1).describe("New display name to assign to the speaker")
         })
@@ -1934,7 +1934,7 @@ function register(server, client) {
       speakers: import_zod2.z.array(
         import_zod2.z.object({
           id: import_zod2.z.string().min(1).describe(
-            `Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. "Vatsal Shah"). Only safe when that label already identifies the same person in every file listed \u2014 a default label like "Speaker 1", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed.`
+            `Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. "Jane Doe"). Only safe when that label already identifies the same person in every file listed \u2014 a default label like "Speaker 1", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed.`
           ),
           name: import_zod2.z.string().min(1).describe("New display name to assign to the speaker")
         })
@@ -7468,7 +7468,7 @@ var init_dashboards = __esm({
       preset: import_zod17.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
     }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
     settingsFieldIds = import_zod17.z.array(import_zod17.z.string());
-    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Never pass settings for a Foxtons dashboard unless explicitly asked; Foxtons moves by a server script. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.";
+    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.";
     dashboardSettingsSchema = import_zod17.z.object({
       fields: import_zod17.z.object({
         includeIds: settingsFieldIds.describe(

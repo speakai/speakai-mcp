@@ -1,7 +1,7 @@
 {
   "name": "speakai",
   "owner": {
-    "name": "Vatsal Shah",
+    "name": "Speak AI",
     "email": "accounts@speakai.co"
   },
   "metadata": {
@@ -15,7 +15,7 @@
       "description": "Search transcripts, summarize meetings, extract quotes, create clips, and manage Speak AI media through MCP.",
       "version": "1.28.0",
       "author": {
-        "name": "Vatsal Shah",
+        "name": "Speak AI",
         "email": "accounts@speakai.co"
       },
       "homepage": "https://docs.speakai.co/mcp",
@@ -23,10 +23,15 @@
       "license": "MIT",
       "keywords": [
         "mcp",
+        "speak-ai",
         "transcription",
         "media",
         "insights",
-        "speak-ai"
+        "meetings",
+        "research",
+        "clips",
+        "captions",
+        "automations"
       ],
       "category": "productivity",
       "tags": [
