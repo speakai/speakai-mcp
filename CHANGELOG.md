@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.28.0 (2026-10-02)
+
+- fix(voice): stop offering the payment question category through MCP
+
 ## v1.27.0 (2026-09-26)
 
 - fix: correct stale tool count left over from rebase conflict resolution
