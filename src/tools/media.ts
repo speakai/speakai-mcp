@@ -301,7 +301,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
               .string()
               .min(1)
               .describe(
-                "Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. \"Speaker 0\", \"Vatsal Shah\"), or its numeric id from insight.speakers[].id (e.g. \"0\"). Not a fixed identifier — it changes when the speaker is renamed."
+                "Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. \"Speaker 0\", \"Jane Doe\"), or its numeric id from insight.speakers[].id (e.g. \"0\"). Not a fixed identifier — it changes when the speaker is renamed."
               ),
             name: z.string().min(1).describe("New display name to assign to the speaker"),
           })
@@ -672,7 +672,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
               .string()
               .min(1)
               .describe(
-                "Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. \"Vatsal Shah\"). Only safe when that label already identifies the same person in every file listed — a default label like \"Speaker 1\", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed."
+                "Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. \"Jane Doe\"). Only safe when that label already identifies the same person in every file listed — a default label like \"Speaker 1\", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed."
               ),
             name: z.string().min(1).describe("New display name to assign to the speaker"),
           })
