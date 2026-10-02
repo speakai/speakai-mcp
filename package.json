@@ -26,6 +26,7 @@
     "sync:check": "tsx scripts/sync-plugin.ts --check",
     "verify:plugin": "tsx scripts/verify-plugin.ts",
     "verify:plugin:live": "tsx scripts/verify-plugin.ts --live",
+    "build:openai-zip": "tsx scripts/build-openai-zip.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },

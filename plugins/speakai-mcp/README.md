@@ -137,6 +137,12 @@ permits a closed set of top-level fields, `SKILL.md` frontmatter permits a close
 keys and has no `version`, and only `${PLUGIN_ROOT}` and `${PLUGIN_DATA}` expand inside
 `mcp.json`.
 
+## Submitting a new version to the OpenAI plugin directory
+
+Run `npm run build:openai-zip`. It runs `verify-plugin` (including the OpenAI listing, icon and name checks), then writes `.openai-package/speakai-mcp-openai-<version>.zip`. Upload that ZIP to the existing plugin at <https://platform.openai.com/plugins> with **Upload plugin to make changes**.
+
+OpenAI reads the package identity from the root `plugin.json`, and an update must keep the name OpenAI assigned to the existing listing (`OPENAI_PLUGIN_NAME` in `scripts/openai-plugin.ts`). The builder swaps only that name inside the ZIP; the repo keeps `speakai-mcp` for Claude, Codex and the marketplaces. Tool annotation changes reach OpenAI through **Rescan** on the plugin's MCPs tab, not through the ZIP.
+
 ## Troubleshooting
 
 - If tools do not appear, check that your client connected the `speakai` server. In Claude
