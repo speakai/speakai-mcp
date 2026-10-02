@@ -8,7 +8,13 @@
   "icons": [
     {
       "src": "https://docs.speakai.co/speak-logo-light.png",
-      "mimeType": "image/png"
+      "mimeType": "image/png",
+      "theme": "light"
+    },
+    {
+      "src": "https://docs.speakai.co/speak-logo-dark.png",
+      "mimeType": "image/png",
+      "theme": "dark"
     }
   ],
   "repository": {
