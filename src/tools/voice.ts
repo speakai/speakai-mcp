@@ -261,7 +261,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "delete_voice_agent",
-    "Permanently delete a voice agent. Requires the OWNER or ADMIN role. Irreversible: also removes its questions, test suite, and share link; past conversations are kept for record-keeping but are no longer reachable from this agent.",
+    "Delete a voice agent. Requires the OWNER or ADMIN role. The agent is marked deleted and no tool can restore it: it stops appearing in list_voice_agents, and its share link, embedded widget, questions, and test suite stop working. Its stored data is not erased, past conversations stay in list_voice_conversations, and phone numbers assigned to it are not released.",
     { agentId: z.string().min(1).describe("ID of the voice agent to delete (from list_voice_agents)") },
     { title: "Delete Voice Agent", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId }) => {
@@ -276,11 +276,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "create_voice_agent_from_prompt",
-    "Create a new voice agent by describing it in plain English instead of filling in name/personality/instructions/voice yourself. Requires the OWNER or ADMIN role. Response always includes the new agentId, plus either the generated agent config, or needsFollowUp: true with a follow-up question if the prompt was too thin to act on — call generate_voice_agent_config again on that agentId with more detail (or manualInstructions) when that happens.",
+    "Create a new voice agent from a plain-English description, via an LLM call. Requires the OWNER or ADMIN role. Saves a draft agent, then generates and saves its name, personality, instructions, chat settings, and default voice, speech-to-text, and LLM settings. Does not assign a phone number. The response includes the new agentId plus either the generated agent, or needsFollowUp: true with a followUpQuestion when the prompt is too vague. In that case the draft agent still exists with placeholder settings; call generate_voice_agent_config on that agentId with more detail.",
     {
       prompt: z.string().min(1).describe("Plain-English description of the agent to build, e.g. \"a friendly dental clinic receptionist that books appointments and answers insurance questions\"."),
-      name: z.string().optional().describe("Agent name. Defaults to one derived from the prompt if omitted."),
-      manualInstructions: z.string().optional().describe("Skip generation and use this as the agent's instructions verbatim."),
+      name: z.string().optional().describe("Initial name for the draft agent. Replaced by the generated name when generation succeeds; kept only if the response asks a follow-up question."),
+      manualInstructions: z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague."),
     },
     { title: "Create Voice Agent From Prompt", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async (body) => {
@@ -299,7 +299,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       agentId: z.string().min(1).describe("ID of the existing voice agent to generate config for (from list_voice_agents)"),
       prompt: z.string().min(1).describe("Plain-English description of what the agent should do."),
-      manualInstructions: z.string().optional().describe("Skip generation and set the agent's instructions to this verbatim."),
+      manualInstructions: z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague."),
     },
     { title: "Generate Voice Agent Config", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, ...body }) => {

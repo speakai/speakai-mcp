@@ -14,7 +14,7 @@
  *   npx tsx scripts/sync-plugin.ts           # rewrite derived surfaces
  *   npx tsx scripts/sync-plugin.ts --check   # exit 1 on drift, for CI
  */
-import { readFileSync, writeFileSync, readdirSync } from "fs";
+import { readFileSync, writeFileSync, readdirSync, mkdirSync } from "fs";
 import { fileURLToPath, pathToFileURL } from "url";
 import path from "path";
 
@@ -22,6 +22,11 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CHECK = process.argv.includes("--check");
 
 const read = (rel: string) => readFileSync(path.join(ROOT, rel), "utf8");
+
+// Claude reads only plugins/speakai-mcp; everything for Agent Plugins, Codex and OpenAI lives in
+// the portable folder, so the directory scan of the Claude folder sees nothing it doesn't use.
+const CLAUDE_PLUGIN = "plugins/speakai-mcp";
+const PORTABLE_PLUGIN = "plugins/speakai-mcp-portable";
 
 /* ---------------------------------------------------------------- truth --- */
 
@@ -89,7 +94,8 @@ const readmeSections = (text: string) =>
   }
 }
 
-type Rule = { file: string; edit: (text: string) => string };
+/** `generated` marks a file the rule writes in full, so a missing copy is created rather than an error. */
+type Rule = { file: string; edit: (text: string) => string; generated?: boolean };
 
 /** Replace inside a JSON file without reformatting the rest of it. */
 const jsonRule = (file: string, edit: (data: any) => void): Rule => ({
@@ -103,7 +109,7 @@ const jsonRule = (file: string, edit: (data: any) => void): Rule => ({
 
 /** Identity and listing fields are authored once, in the portable manifest, and mirrored elsewhere. */
 function readRootManifest(): any {
-  return JSON.parse(readFileSync(path.join(ROOT, "plugins/speakai-mcp/plugin.json"), "utf8"));
+  return JSON.parse(read(`${PORTABLE_PLUGIN}/plugin.json`));
 }
 
 const RULES: Rule[] = [
@@ -112,12 +118,12 @@ const RULES: Rule[] = [
     for (const pkg of d.packages ?? []) pkg.version = version;
   }),
 
-  jsonRule("plugins/speakai-mcp/plugin.json", (d) => {
+  jsonRule(`${PORTABLE_PLUGIN}/plugin.json`, (d) => {
     d.version = version;
     d.description = d.description.replace(/\b\d+ MCP tools\b/, `${toolCount} MCP tools`);
   }),
 
-  jsonRule("plugins/speakai-mcp/.claude-plugin/plugin.json", (d) => {
+  jsonRule(`${CLAUDE_PLUGIN}/.claude-plugin/plugin.json`, (d) => {
     d.version = version;
     const root = readRootManifest();
     const listing = root.extensions?.["com.openai"]?.interface ?? {};
@@ -132,7 +138,7 @@ const RULES: Rule[] = [
     d.termsOfServiceUrl = listing.termsOfServiceURL;
   }),
 
-  jsonRule("plugins/speakai-mcp/.codex-plugin/plugin.json", (d) => {
+  jsonRule(`${PORTABLE_PLUGIN}/.codex-plugin/plugin.json`, (d) => {
     d.version = version;
     const root = readRootManifest();
     d.author = root.author;
@@ -141,7 +147,7 @@ const RULES: Rule[] = [
     if (listing) d.interface = listing;
   }),
 
-  jsonRule("plugins/speakai-mcp/.mcp.json", (d) => {
+  jsonRule(`${CLAUDE_PLUGIN}/.mcp.json`, (d) => {
     for (const server of Object.values<any>(d.mcpServers ?? {})) {
       if (!server.args) continue;
       server.args = server.args.map((a: string) =>
@@ -197,22 +203,28 @@ const RULES: Rule[] = [
 
 // Skills state the total and the server version. Per-category counts inside a
 // skill are validated against the registry by the audit below.
-const SKILLS_DIR = "plugins/speakai-mcp/skills";
+// The Claude folder holds the source skills; the portable folder gets generated copies.
+const SKILLS_DIR = `${CLAUDE_PLUGIN}/skills`;
+const PORTABLE_SKILLS_DIR = `${PORTABLE_PLUGIN}/skills`;
 const skillNames = readdirSync(path.join(ROOT, SKILLS_DIR), { withFileTypes: true })
   .filter((e) => e.isDirectory())
   .map((e) => e.name);
 
+const syncSkill = (t: string) =>
+  t
+    .replace(/\b\d+ MCP tools\b/g, `${toolCount} MCP tools`)
+    .replace(/\b\d+ tools across\b/g, `${toolCount} tools across`)
+    // The server version in frontmatter metadata, under either key spelling.
+    .replace(/^(\s+(?:server-)?version:\s*")[\d.]+(")$/gm, `$1${version}$2`)
+    // Pinned installs in prose and config samples.
+    .replace(/@speakai\/mcp-server@[\d.]+/g, `@speakai/mcp-server@${version}`);
+
 for (const skill of skillNames) {
+  RULES.push({ file: `${SKILLS_DIR}/${skill}/SKILL.md`, edit: syncSkill });
   RULES.push({
-    file: `${SKILLS_DIR}/${skill}/SKILL.md`,
-    edit: (t) =>
-      t
-        .replace(/\b\d+ MCP tools\b/g, `${toolCount} MCP tools`)
-        .replace(/\b\d+ tools across\b/g, `${toolCount} tools across`)
-        // The server version in frontmatter metadata, under either key spelling.
-        .replace(/^(\s+(?:server-)?version:\s*")[\d.]+(")$/gm, `$1${version}$2`)
-        // Pinned installs in prose and config samples.
-        .replace(/@speakai\/mcp-server@[\d.]+/g, `@speakai/mcp-server@${version}`),
+    file: `${PORTABLE_SKILLS_DIR}/${skill}/SKILL.md`,
+    edit: () => syncSkill(read(`${SKILLS_DIR}/${skill}/SKILL.md`)),
+    generated: true,
   });
 }
 
@@ -232,7 +244,8 @@ export function syncDerivedSurfaces(write: boolean) {
   try {
     before = read(rule.file);
   } catch {
-    throw new Error(`missing derived surface ${rule.file}`);
+    if (!rule.generated) throw new Error(`missing derived surface ${rule.file}`);
+    before = "";
   }
   const after = rule.edit(before);
   // Compare without line endings: a Windows checkout carries CRLF while the
@@ -240,10 +253,17 @@ export function syncDerivedSurfaces(write: boolean) {
   if (after.replace(/\r\n/g, "\n") === before.replace(/\r\n/g, "\n")) continue;
 
   drifted.push(rule.file);
-  if (write) writeFileSync(path.join(ROOT, rule.file), after);
+  if (write) {
+    mkdirSync(path.dirname(path.join(ROOT, rule.file)), { recursive: true });
+    writeFileSync(path.join(ROOT, rule.file), after);
+  }
   }
 
   /* ----------------------------------------------------------------- audit -- */
+
+  const orphans = readdirSync(path.join(ROOT, PORTABLE_SKILLS_DIR), { withFileTypes: true })
+    .filter((e) => e.isDirectory() && !skillNames.includes(e.name))
+    .map((e) => e.name);
 
   /**
  * Catches counts in phrasings no rule covers. Per-category counts in README
@@ -252,7 +272,8 @@ export function syncDerivedSurfaces(write: boolean) {
   const AUDIT_FILES = [
   "README.md",
   "llms.txt",
-  "plugins/speakai-mcp/README.md",
+  `${CLAUDE_PLUGIN}/README.md`,
+  `${PORTABLE_PLUGIN}/README.md`,
   ...skillNames.map((s) => `${SKILLS_DIR}/${s}/SKILL.md`),
   ];
   const stale: string[] = [];
@@ -295,10 +316,10 @@ export function syncDerivedSurfaces(write: boolean) {
   // package version, so it is synced but not audited against it.
   const VERSION_AUDIT_FILES = [
   "server.json",
-  "plugins/speakai-mcp/plugin.json",
-  "plugins/speakai-mcp/.claude-plugin/plugin.json",
-  "plugins/speakai-mcp/.codex-plugin/plugin.json",
-  "plugins/speakai-mcp/.mcp.json",
+  `${PORTABLE_PLUGIN}/plugin.json`,
+  `${CLAUDE_PLUGIN}/.claude-plugin/plugin.json`,
+  `${PORTABLE_PLUGIN}/.codex-plugin/plugin.json`,
+  `${CLAUDE_PLUGIN}/.mcp.json`,
   ...skillNames.map((s) => `${SKILLS_DIR}/${s}/SKILL.md`),
   ];
 
@@ -320,6 +341,10 @@ export function syncDerivedSurfaces(write: boolean) {
   });
   }
 
+  for (const name of orphans) {
+    stale.push(`  ${PORTABLE_SKILLS_DIR}/${name} has no source in ${SKILLS_DIR}; remove it or add the skill there`);
+  }
+
   return { drifted, stale };
 }
 
@@ -332,9 +357,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 
   if (stale.length) {
   console.error(
-    `sync-plugin: ${stale.length} stale tool count(s) that no rule covers.\n` +
+    `sync-plugin: ${stale.length} problem(s) that no rule can fix.\n` +
       stale.join("\n") +
-      `\n\nAdd a rule for the phrasing, or correct the text by hand.`,
+      `\n\nCorrect these by hand, or add a rule for the phrasing.`,
   );
   process.exit(1);
   }

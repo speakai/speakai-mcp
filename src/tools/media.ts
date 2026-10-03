@@ -62,14 +62,14 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 2. Upload media
   registerSpeakTool(server, 
     "upload_media",
-    `Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.`,
+    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and fires the workspace's media.created webhook if one is registered. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
       name: z.string().min(1).describe("Display name for the media file"),
       url: z
         .string()
         // A plain literal, not a template: the docs generator drops a tool's whole parameter
         // table when a description interpolates a value it cannot resolve statically.
-        .describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
+        .describe("Direct public media file URL, a URL returned by get_signed_upload_url, or a page link from a platform listed in this tool's description. Page links are resolved server-side, so pass the URL the user gave you as-is."),
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
@@ -78,7 +78,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       sourceLanguage: z
         .string()
         .optional()
-        .describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
+        .describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL". Omit to use the default language on the user profile. An unsupported code falls back to automatic detection instead of failing.'),
       tags: z
         .string()
         .optional()
@@ -86,11 +86,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       folderId: z
         .string()
         .optional()
-        .describe("ID of the folder to place the media in"),
+        .describe("ID of the folder to place the media in. If the folder is not found, the media goes to the workspace's first folder."),
       callbackUrl: z
         .string()
         .optional()
-        .describe("Webhook callback URL for this specific upload"),
+        .describe("URL that replaces the workspace webhook's destination for this media's webhook events. It takes effect only when the workspace already has an active webhook for the event; on its own it does not create a webhook or send anything."),
       fields: z
         .array(
           z.object({
@@ -99,7 +99,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           })
         )
         .optional()
-        .describe("Custom field values to attach to the media"),
+        .describe("Custom field values to attach to the media. Field IDs that do not belong to the workspace are ignored without an error."),
     },
     {
       title: "Upload Media from URL",

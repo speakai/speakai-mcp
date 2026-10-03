@@ -163,6 +163,7 @@ describe("MCP Server Smoke Tests", () => {
       "bulk_create_voice_agent_resources",
       "clone_recorder",
       "create_automation",
+      "create_dashboard",
       "create_embed",
       "create_recorder",
       "create_text_note",
