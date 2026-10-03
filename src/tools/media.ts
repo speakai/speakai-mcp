@@ -62,7 +62,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 2. Upload media
   registerSpeakTool(server, 
     "upload_media",
-    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and fires the workspace's media.created webhook if one is registered. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
+    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and sends the media.created event to the workspace's webhooks and Slack channels if any are configured. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
       name: z.string().min(1).describe("Display name for the media file"),
       url: z
@@ -104,7 +104,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Upload Media from URL",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -413,7 +413,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 8. Update media metadata
   registerSpeakTool(server, 
     "update_media_metadata",
-    "Update metadata fields (name, description, tags, status) for an existing media file.",
+    "Update metadata fields (name, description, tags, status) for an existing media file. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
       name: z.string().describe("Display name for the media (required — the server replaces the metadata)"),
@@ -444,7 +444,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ mediaId, ...body }) => {
       try {
@@ -466,7 +466,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 9. Delete media
   registerSpeakTool(server, 
     "delete_media",
-    "Permanently delete a media file and all associated transcripts and insights.",
+    "Permanently delete a media file and all associated transcripts and insights. Sends the media.deleted event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file to delete"),
     },
@@ -475,7 +475,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ mediaId }) => {
       try {
@@ -623,7 +623,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 14. Re-analyze media
   registerSpeakTool(server, 
     "reanalyze_media",
-    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
+    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts. Sends the media.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
       isInsights: z.boolean().optional().describe("Re-run insights analysis"),
@@ -636,7 +636,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ mediaId, ...params }) => {
       try {
@@ -722,7 +722,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 16. Bulk move media to folder
   registerSpeakTool(server, 
     "bulk_move_media",
-    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
+    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       folderId: z.string().min(1).describe("Target folder ID to move media into"),
       mediaIds: z
@@ -735,7 +735,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {

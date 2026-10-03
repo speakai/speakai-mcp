@@ -112,39 +112,22 @@ describe("MCP Server Smoke Tests", () => {
       "add_voice_faq_suggestion",
       "add_voice_kb_gap",
       "analyze_voice_kb_gaps",
-      "ask_ai_chat",
       "bulk_create_voice_agent_resources",
       "clone_folder",
-      "clone_folder_view",
-      "clone_recorder",
-      "create_automation",
-      "create_clip",
-      "create_dashboard",
       "create_field",
       "create_folder",
-      "create_folder_view",
-      "create_recorder",
-      "create_text_note",
       "create_user_group",
       "create_voice_agent",
       "create_voice_agent_from_prompt",
       "create_voice_agent_resource",
       "create_voice_question",
       "create_voice_question_template",
-      "create_webhook",
       "duplicate_dashboard",
       "export_chat_answer",
-      "export_media",
       "export_multiple_media",
       "generate_voice_faq_suggestions",
       "provision_inbound_webhook",
-      "retry_ai_chat",
       "start_voice_test_run",
-      "submit_chat_feedback",
-      "upload_and_analyze",
-      "upload_and_analyze_batch",
-      "upload_local_file",
-      "upload_media",
     ].sort());
   });
 
@@ -159,31 +142,44 @@ describe("MCP Server Smoke Tests", () => {
       .sort();
 
     expect(openWorldTools).toEqual([
+      "ask_ai_chat",
       "build_automation",
       "bulk_create_voice_agent_resources",
+      "bulk_move_media",
+      "bulk_update_automation_status",
       "clone_recorder",
       "create_automation",
+      "create_clip",
       "create_dashboard",
       "create_embed",
       "create_recorder",
       "create_text_note",
       "create_voice_agent_resource",
       "create_webhook",
+      "delete_automation",
       "delete_dashboard",
+      "delete_media",
       "delete_recorder",
       "delete_scheduled_assistant",
       "delete_webhook",
       "provision_inbound_webhook",
+      "reanalyze_media",
+      "reanalyze_text",
       "remove_assistant_from_meeting",
+      "retry_ai_chat",
       "run_automations",
       "schedule_meeting_event",
       "share_dashboard",
       "test_automation",
+      "toggle_automation_status",
       "update_automation",
       "update_dashboard",
       "update_embed",
+      "update_media_metadata",
+      "update_multiple_fields",
       "update_recorder_questions",
       "update_recorder_settings",
+      "update_text_note",
       "update_voice_agent_resource",
       "update_webhook",
       "upload_and_analyze",
@@ -191,6 +187,37 @@ describe("MCP Server Smoke Tests", () => {
       "upload_local_file",
       "upload_media",
     ].sort());
+  });
+
+  it("never describes an outside send or irreversible effect that the hints don't declare", async () => {
+    // OpenAI's tool scan reads the description against the annotations. A write that says it sends
+    // outside Speak AI must be open-world; one that says it bills, overwrites or permanently deletes
+    // must be destructive. Clauses that negate the effect, or describe another tool, are ignored.
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server, undefined, { localFileAccess: true });
+
+    const tools = getRegisteredTools(server);
+    const names = Object.keys(tools);
+    const OUTSIDE_SEND =
+      /\b(sends?|posts?|emails?)\b[^.]*\b(email|slack|webhook|any address|third-party|external)|\bpublic (url|link|page)|\bphone call|\bjoins? [^.]*meeting|\bcomposio\b/i;
+    const IRREVERSIBLE = /\b(charges?|bills?|billed|credits?|permanently|overwrites?|replaces?)\b/i;
+    const NEGATED = /\b(not|no|never|without)\b/i;
+
+    const mismatches: string[] = [];
+    for (const [name, tool] of Object.entries(tools)) {
+      if (tool.annotations?.readOnlyHint) continue;
+      const clauses = String(tool.description ?? "")
+        .split(/[.;]/)
+        .filter((c) => !NEGATED.test(c) && !names.some((other) => other !== name && c.includes(other)));
+      const text = clauses.join(". ");
+      if (OUTSIDE_SEND.test(text) && !tool.annotations?.openWorldHint) {
+        mismatches.push(`${name}: describes "${text.match(OUTSIDE_SEND)![0]}" but openWorldHint is false`);
+      }
+      if (IRREVERSIBLE.test(text) && !tool.annotations?.destructiveHint) {
+        mismatches.push(`${name}: describes "${text.match(IRREVERSIBLE)![0]}" but destructiveHint is false`);
+      }
+    }
+    expect(mismatches).toEqual([]);
   });
 
   it("adds structuredContent to tool responses", async () => {

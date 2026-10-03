@@ -20,6 +20,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
     "reading the transcript alone. That is a premium feature and costs credits per hour of media —",
     "call get_analysis_quote first to check eligibility and price.",
+    "Each question is charged to the account's chat usage.",
+    "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
   ].join(" ");
 
   const askAiChatInputSchema = {
@@ -43,7 +45,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     assistantTemplateId: z
       .string()
       .optional()
-      .describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
+      .describe("Required when assistantType is 'custom'. ID of a custom assistant template."),
     promptId: z
       .string()
       .optional()
@@ -94,9 +96,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const askAiChatAnnotations = {
     title: "Ask AI Chat",
     readOnlyHint: false,
-    destructiveHint: false,
+    destructiveHint: true,
     idempotentHint: false,
-    openWorldHint: false,
+    openWorldHint: true,
   };
 
   /**
@@ -207,54 +209,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
     {
       mediaId: z.string().min(1).describe("Media file to price"),
+      analysisInput: z
+        .enum(["audio", "video"])
+        .describe(
+          "Which pass to price: 'audio' (tone, pacing, delivery) or 'video' (also on-screen visuals, gestures, slides). Required."
+        ),
       modelId: z
         .string()
         .optional()
-         .describe("Optional model id to price against. Omit for the workspace default."),
-      assistantType: z
-        .enum(Object.values(AssistantType) as [string, ...string[]])
-        .optional()
-        .describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
-      assistantTemplateId: z
-        .string()
-        .optional()
-        .describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
-      promptId: z
-        .string()
-        .optional()
-        .describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
-      speakers: z
-        .array(z.string())
-        .optional()
-        .describe("Filter to specific speaker IDs from the transcript"),
-      tags: z
-        .array(z.string())
-        .optional()
-        .describe("Filter media by tags"),
-      startDate: z
-        .string()
-        .optional()
-        .describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
-      endDate: z
-        .string()
-        .optional()
-        .describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
-      isIndividualPrompt: z
-        .boolean()
-        .optional()
-        .describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
-      analysisInput: z
-        .enum(["audio", "video"])
-        .optional()
-        .describe(
-          "Send the media itself to a multimodal model, not just its transcript. 'audio' analyses tone, pacing, and delivery; 'video' analyses on-screen visuals, gestures, and slides. Requires analysisMediaId. The workspace must have multimodal analysis enabled and the file must be a supported container within the duration limit, otherwise the turn runs transcript-only."
-        ),
-      analysisMediaId: z
-        .string()
-        .optional()
-        .describe(
-          "The mediaId to analyse multimodally this turn. Required together with analysisInput, and it must be one of the ids in mediaIds; either field alone is rejected."
-        ),
+        .describe("Optional model id to price against. Omit for the workspace default."),
     },
     {
       title: "Get Analysis Quote",
@@ -280,7 +243,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "retry_ai_chat",
-    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
+    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
     {
       promptId: z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: z.string().min(1).describe("ID of the specific message to retry"),
@@ -288,9 +251,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Retry AI Chat",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -402,9 +365,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "delete_chat_message",
-    "Delete a specific chat message from conversation history.",
+    "Delete an entire chat conversation, including all of its messages, from conversation history.",
     {
-      promptId: z.string().min(1).describe("ID of the message to delete"),
+      promptId: z.string().min(1).describe("ID of the conversation (promptId) to delete"),
     },
     {
       title: "Delete Chat Message",
@@ -432,10 +395,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "list_prompts",
-    "List all available AI Chat templates. Use template IDs with ask_ai_chat's assistantTemplateId parameter when using assistantType 'custom'.",
+    "List recent AI Chat messages across the workspace, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns the 25 most recently updated conversations the caller can access.",
     {},
     {
-      title: "List Prompt Templates",
+      title: "List Recent Chat Messages",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -545,7 +508,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "submit_chat_feedback",
-    "Submit feedback on a chat response (thumbs up/down). Helps improve AI answer quality.",
+    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are shared with the Speak AI team to help improve answer quality.",
     {
       promptId: z.string().min(1).describe("ID of the conversation"),
       messageId: z.string().min(1).describe("ID of the message to rate"),
@@ -557,7 +520,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Submit Chat Feedback",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },

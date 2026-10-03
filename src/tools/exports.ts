@@ -9,7 +9,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   registerSpeakTool(server, 
     "export_media",
-    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
+    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv). Generates the file and returns it without saving or sharing anything.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
       fileType: z
@@ -42,7 +42,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     },
     {
       title: "Export Media Transcript",
-      readOnlyHint: false,
+      readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false,
@@ -104,7 +104,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       folderId: z
         .string()
         .optional()
-        .describe("Folder ID for the merged export"),
+        .describe("Export every media file in this folder instead. Used only when mediaIds is an empty array."),
     },
     {
       title: "Export Multiple Media Files",
