@@ -130,8 +130,10 @@ const CLAUDE_ALLOWED = [
   /^\.claude-plugin\/plugin\.json$/,
   /^\.mcp\.json$/,
   /^README\.md$/,
+  /^LICENSE$/,
   /^assets\/icon\.png$/,
   /^skills\/[a-z0-9-]+\/SKILL\.md$/,
+  /^skills\/[a-z0-9-]+\/references\/.+$/,
 ];
 
 check("the Claude plugin folder holds only files Claude reads", () => {
@@ -210,6 +212,15 @@ for (const dir of skillDirs) {
     return null;
   });
 }
+
+check("every portable skill declares OpenAI metadata for the same endpoint", () => {
+  const url = json("mcp.json").mcpServers.speakai.url;
+  const problems = skillDirs.filter((dir) => {
+    const file = `skills/${dir}/agents/openai.yaml`;
+    return !existsSync(path.join(PLUGIN, file)) || !read(file).includes(`url: "${url}"`);
+  });
+  return problems.length ? `missing agents/openai.yaml or a different server url: ${problems.join(", ")}` : null;
+});
 
 /* ------------------------------------------------- factual correctness ---- */
 
