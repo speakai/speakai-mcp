@@ -170,6 +170,7 @@ describe("MCP Server Smoke Tests", () => {
       "run_automations",
       "schedule_meeting_event",
       "share_dashboard",
+      "submit_chat_feedback",
       "test_automation",
       "toggle_automation_status",
       "update_automation",
@@ -192,29 +193,40 @@ describe("MCP Server Smoke Tests", () => {
   it("never describes an outside send or irreversible effect that the hints don't declare", async () => {
     // OpenAI's tool scan reads the description against the annotations. A write that says it sends
     // outside Speak AI must be open-world; one that says it bills, overwrites or permanently deletes
-    // must be destructive. Clauses that negate the effect, or describe another tool, are ignored.
+    // must be destructive. A match is ignored when its clause negates it, or names another tool, first.
     const { registerAllTools } = await import("../src/tools/index.js");
     registerAllTools(server, undefined, { localFileAccess: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);
     const OUTSIDE_SEND =
-      /\b(sends?|posts?|emails?)\b[^.]*\b(email|slack|webhook|any address|third-party|external)|\bpublic (url|link|page)|\bphone call|\bjoins? [^.]*meeting|\bcomposio\b/i;
+      /\b(sends?|sent|posts?|posted|emails?|fires?|triggers?|notifies)\b[^;]{0,160}?\b(email|slack|webhook|automation|any address|third-party|external)|\bpublic (url|link|page)|\bphone call|\bjoins? [^;]*?\bmeeting|\bcomposio\b/i;
     const IRREVERSIBLE = /\b(charges?|bills?|billed|credits?|permanently|overwrites?|replaces?)\b/i;
-    const NEGATED = /\b(not|no|never|without)\b/i;
+    const NEGATED = /\b(not|no|never|without|cannot)\b/i;
+
+    // A match counts unless the clause negates it, or names another tool, before the match.
+    const declares = (clause: string, pattern: RegExp, self: string) => {
+      const match = pattern.exec(clause);
+      if (!match) return null;
+      const before = clause.slice(0, match.index);
+      if (NEGATED.test(before)) return null;
+      if (names.some((other) => other !== self && new RegExp(`\\b${other}\\b`).test(before))) return null;
+      return match[0];
+    };
 
     const mismatches: string[] = [];
     for (const [name, tool] of Object.entries(tools)) {
       if (tool.annotations?.readOnlyHint) continue;
-      const clauses = String(tool.description ?? "")
-        .split(/[.;]/)
-        .filter((c) => !NEGATED.test(c) && !names.some((other) => other !== name && c.includes(other)));
-      const text = clauses.join(". ");
-      if (OUTSIDE_SEND.test(text) && !tool.annotations?.openWorldHint) {
-        mismatches.push(`${name}: describes "${text.match(OUTSIDE_SEND)![0]}" but openWorldHint is false`);
-      }
-      if (IRREVERSIBLE.test(text) && !tool.annotations?.destructiveHint) {
-        mismatches.push(`${name}: describes "${text.match(IRREVERSIBLE)![0]}" but destructiveHint is false`);
+      // Split on sentence ends only, so event names such as media.created stay inside their clause.
+      for (const clause of String(tool.description ?? "").split(/[.;](?=\s|$)/)) {
+        const send = declares(clause, OUTSIDE_SEND, name);
+        if (send && !tool.annotations?.openWorldHint) {
+          mismatches.push(`${name}: describes "${send}" but openWorldHint is false`);
+        }
+        const effect = declares(clause, IRREVERSIBLE, name);
+        if (effect && !tool.annotations?.destructiveHint) {
+          mismatches.push(`${name}: describes "${effect}" but destructiveHint is false`);
+        }
       }
     }
     expect(mismatches).toEqual([]);

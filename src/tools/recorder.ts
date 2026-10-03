@@ -48,7 +48,7 @@ const recorderConfigShape = {
   notification: z
     .record(z.unknown())
     .optional()
-    .describe("Notification toggles: { upload, client }, both booleans. upload emails workspace users about each new submission; client emails a confirmation to each respondent who gives an email."),
+    .describe("Notification toggles: { upload, client }, both booleans. upload emails the recorder owner (if they opted in to submission emails) and any users in notifyUsers about each new submission; client emails a confirmation to each respondent who gives an email."),
   meta: z
     .record(z.unknown())
     .optional()
@@ -89,7 +89,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "create_recorder",
-    "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails workspace users and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
+    "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
     {
       name: z.string().describe("Display name for the recorder"),
       ...recorderConfigShape,

@@ -8,7 +8,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   registerSpeakTool(server, 
     "create_text_note",
-    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, or charges credits or account balance once the allowance is used up, and fails if the balance is insufficient. Sends the text.created and text.analyzed events to the workspace's webhooks and Slack channels if any are configured.",
+    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, and once the allowance is used up charges credits, the account balance, or the card on file; the request is refused only when none of these can cover it. Sends the text.created and text.analyzed events to the workspace's webhooks and Slack channels if any are configured.",
     {
       name: z.string().min(1).describe("Title/name for the text note"),
       text: z.string().optional().describe("Full text content to analyze"),

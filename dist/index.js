@@ -2032,7 +2032,7 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "create_text_note",
-    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, or charges credits or account balance once the allowance is used up, and fails if the balance is insufficient. Sends the text.created and text.analyzed events to the workspace's webhooks and Slack channels if any are configured.",
+    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, and once the allowance is used up charges credits, the account balance, or the card on file; the request is refused only when none of these can cover it. Sends the text.created and text.analyzed events to the workspace's webhooks and Slack channels if any are configured.",
     {
       name: import_zod3.z.string().min(1).describe("Title/name for the text note"),
       text: import_zod3.z.string().optional().describe("Full text content to analyze"),
@@ -2708,7 +2708,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "create_recorder",
-    "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails workspace users and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
+    "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
     {
       name: import_zod6.z.string().describe("Display name for the recorder"),
       ...recorderConfigShape,
@@ -3005,7 +3005,7 @@ var init_recorder3 = __esm({
       options: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
         "Capture options: { audio, video, screenShare, liveTranscription, upload:{ file, text, multiple, url } } \u2014 all booleans"
       ),
-      notification: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client }, both booleans. upload emails workspace users about each new submission; client emails a confirmation to each respondent who gives an email."),
+      notification: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client }, both booleans. upload emails the recorder owner (if they opted in to submission emails) and any users in notifyUsers about each new submission; client emails a confirmation to each respondent who gives an email."),
       meta: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
         "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }"
       )
@@ -3389,7 +3389,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "delete_chat_message",
-    "Delete an entire chat conversation, including all of its messages, from conversation history.",
+    "Delete an entire chat conversation from conversation history, so it and its messages no longer appear. No tool can restore it.",
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation (promptId) to delete")
     },
@@ -3417,7 +3417,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "list_prompts",
-    "List recent AI Chat messages across the workspace, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns the 25 most recently updated conversations the caller can access.",
+    "List recent AI Chat messages across the workspace, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns messages from the 25 most recently updated conversations in the workspace, filtered to those the caller can access, so a member may see fewer.",
     {},
     {
       title: "List Recent Chat Messages",
@@ -3528,7 +3528,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "submit_chat_feedback",
-    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are shared with the Speak AI team to help improve answer quality.",
+    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are posted to Speak AI's internal Slack channel for the Speak AI team to review.",
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation"),
       messageId: import_zod8.z.string().min(1).describe("ID of the message to rate"),
@@ -3540,7 +3540,7 @@ function register7(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {

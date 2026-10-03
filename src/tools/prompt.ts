@@ -365,7 +365,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "delete_chat_message",
-    "Delete an entire chat conversation, including all of its messages, from conversation history.",
+    "Delete an entire chat conversation from conversation history, so it and its messages no longer appear. No tool can restore it.",
     {
       promptId: z.string().min(1).describe("ID of the conversation (promptId) to delete"),
     },
@@ -395,7 +395,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "list_prompts",
-    "List recent AI Chat messages across the workspace, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns the 25 most recently updated conversations the caller can access.",
+    "List recent AI Chat messages across the workspace, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns messages from the 25 most recently updated conversations in the workspace, filtered to those the caller can access, so a member may see fewer.",
     {},
     {
       title: "List Recent Chat Messages",
@@ -508,7 +508,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "submit_chat_feedback",
-    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are shared with the Speak AI team to help improve answer quality.",
+    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are posted to Speak AI's internal Slack channel for the Speak AI team to review.",
     {
       promptId: z.string().min(1).describe("ID of the conversation"),
       messageId: z.string().min(1).describe("ID of the message to rate"),
@@ -522,7 +522,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
