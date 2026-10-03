@@ -1,11 +1,12 @@
 /**
  * Build the ZIP uploaded to OpenAI's plugin portal (platform.openai.com/plugins)
- * from plugins/speakai-mcp.
+ * from plugins/speakai-mcp-portable.
  *
  * OpenAI reads the package identity from the root plugin.json, and an update must
  * keep the name OpenAI assigned to the existing listing. Everything else in the
- * repo keeps "speakai-mcp" (the Claude and Codex manifests and both marketplaces),
- * so only the ZIP's root plugin.json name is swapped. verify-plugin runs first.
+ * repo keeps "speakai-mcp" (the Codex manifest, the Claude plugin and both
+ * marketplaces), so only the ZIP's root plugin.json name is swapped. verify-plugin
+ * runs first.
  *
  *   npx tsx scripts/build-openai-zip.ts
  */
@@ -17,7 +18,7 @@ import path from "path";
 import { OPENAI_PLUGIN_NAME } from "./openai-plugin.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const PLUGIN = path.join(ROOT, "plugins/speakai-mcp");
+const PLUGIN = path.join(ROOT, "plugins/speakai-mcp-portable");
 const OUT_DIR = path.join(ROOT, ".openai-package");
 const NPX = process.platform === "win32" ? "npx.cmd" : "npx";
 

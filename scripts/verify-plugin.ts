@@ -1,9 +1,11 @@
 /**
- * Pre-ship checks for plugins/speakai-mcp.
+ * Pre-ship checks for plugins/speakai-mcp (Claude) and plugins/speakai-mcp-portable
+ * (Agent Plugins, Codex and OpenAI).
  *
- * Validates both manifests against the Agent Plugins 1.0.0 schemas, every
- * SKILL.md against the Agent Skills specification, and the tool names the skills
- * reference against tools.json.
+ * Validates the portable manifests against the Agent Plugins 1.0.0 schemas, every
+ * SKILL.md against the Agent Skills specification, the tool names the skills
+ * reference against tools.json, the OpenAI directory limits, and that the Claude
+ * folder holds only what Claude's directory reads.
  *
  *   npx tsx scripts/verify-plugin.ts          # static checks
  *   npx tsx scripts/verify-plugin.ts --live   # also probe the remote endpoint
@@ -24,7 +26,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 /** npx resolves to npx.cmd on Windows, which execFile will not find. */
 const NPX = process.platform === "win32" ? "npx.cmd" : "npx";
-const PLUGIN = path.join(ROOT, "plugins/speakai-mcp");
+const PLUGIN = path.join(ROOT, "plugins/speakai-mcp-portable");
+const CLAUDE_PLUGIN = path.join(ROOT, "plugins/speakai-mcp");
 const LIVE = process.argv.includes("--live");
 
 const results: { name: string; ok: boolean; detail: string }[] = [];
@@ -39,6 +42,15 @@ const check = (name: string, fn: () => string | null) => {
 
 const read = (rel: string) => readFileSync(path.join(PLUGIN, rel), "utf8");
 const json = (rel: string) => JSON.parse(read(rel));
+const readClaude = (rel: string) => readFileSync(path.join(CLAUDE_PLUGIN, rel), "utf8");
+const jsonClaude = (rel: string) => JSON.parse(readClaude(rel));
+
+/** Every file under a folder, as forward-slash paths relative to it. */
+const listFiles = (dir: string, prefix = ""): string[] =>
+  readdirSync(path.join(dir, prefix), { withFileTypes: true }).flatMap((e) => {
+    const rel = prefix ? `${prefix}/${e.name}` : e.name;
+    return e.isDirectory() ? listFiles(dir, rel) : [rel];
+  });
 
 /* ------------------------------------------------- Agent Plugins 1.0.0 ---- */
 
@@ -102,24 +114,58 @@ check("mcp.json carries no unresolvable placeholder", () => {
 check("every client-native placeholder has a manifest that fills it", () => {
   // .mcp.json interpolates ${user_config.*}, which is filled from a userConfig
   // block. A manifest pointing at it without one leaves the value unresolved.
-  const keys = [...read(".mcp.json").matchAll(/\$\{user_config\.([a-z0-9_]+)\}/gi)].map((m) => m[1]);
+  const keys = [...readClaude(".mcp.json").matchAll(/\$\{user_config\.([a-z0-9_]+)\}/gi)].map((m) => m[1]);
   if (!keys.length) return null;
+  const d = jsonClaude(".claude-plugin/plugin.json");
+  if (d.mcpServers !== "./.mcp.json") return null;
+  const unfilled = keys.filter((k) => !Object.keys(d.userConfig ?? {}).includes(k));
+  return unfilled.length ? `.claude-plugin/plugin.json declares no userConfig for ${unfilled.join(", ")}` : null;
+});
 
+/* ------------------------------------------------ Claude plugin folder ---- */
+
+// Claude's directory scans every file in the plugin folder and raises a note or
+// warning for anything Claude doesn't read, so the folder holds only these.
+const CLAUDE_ALLOWED = [
+  /^\.claude-plugin\/plugin\.json$/,
+  /^\.mcp\.json$/,
+  /^README\.md$/,
+  /^assets\/icon\.png$/,
+  /^skills\/[a-z0-9-]+\/SKILL\.md$/,
+];
+
+check("the Claude plugin folder holds only files Claude reads", () => {
+  const extra = listFiles(CLAUDE_PLUGIN).filter((f) => !CLAUDE_ALLOWED.some((re) => re.test(f)));
+  return extra.length ? `move to plugins/speakai-mcp-portable: ${extra.join(", ")}` : null;
+});
+
+check("the Claude manifest carries every directory listing field", () => {
+  const d = jsonClaude(".claude-plugin/plugin.json");
   const problems: string[] = [];
-  for (const manifest of [".claude-plugin/plugin.json", ".codex-plugin/plugin.json"]) {
-    let d: any;
-    try {
-      d = json(manifest);
-    } catch {
-      continue;
-    }
-    if (d.mcpServers !== "./.mcp.json") continue;
-    const declared = Object.keys(d.userConfig ?? {});
-    const unfilled = keys.filter((k) => !declared.includes(k));
-    if (unfilled.length) {
-      problems.push(`${manifest} uses .mcp.json but declares no userConfig for ${unfilled.join(", ")}`);
-    }
+  if (!d.icon || !existsSync(path.join(CLAUDE_PLUGIN, d.icon))) problems.push(`icon ${d.icon} not found`);
+  for (const field of ["homepage", "documentationUrl", "supportUrl", "privacyPolicyUrl", "termsOfServiceUrl"]) {
+    if (!/^https:\/\/\S+$/.test(d[field] ?? "")) problems.push(`${field} must be an HTTPS URL`);
   }
+  if (d.mcpServers !== "./.mcp.json") problems.push(`mcpServers should be "./.mcp.json"`);
+  return problems.length ? problems.join("; ") : null;
+});
+
+check("Claude connects only to the remote endpoint the portable package uses", () => {
+  const servers = Object.entries<any>(jsonClaude(".mcp.json").mcpServers ?? {});
+  const portableUrl = json("mcp.json").mcpServers.speakai.url;
+  const bad = servers.filter(([, s]) => s.type !== "http" || s.url !== portableUrl || s.command || s.headers);
+  return bad.length ? `servers must be { type: "http", url: "${portableUrl}" }: ${bad.map(([id]) => id).join(", ")}` : null;
+});
+
+check("the Claude README is long enough and names no bundled image in code", () => {
+  const text = readClaude("README.md");
+  const prose = text.replace(/```[\s\S]*?```/g, "");
+  const words = prose.split(/\s+/).filter((w) => /[A-Za-z]/.test(w)).length;
+  const code = [...text.matchAll(/```[\s\S]*?```|`[^`\n]+`/g)].map((m) => m[0]).join("\n");
+  const named = code.match(/[\w./-]+\.(png|jpe?g|gif|webp|svg|ico|ttf|otf|woff2?)\b/gi) ?? [];
+  const problems: string[] = [];
+  if (words < 40) problems.push(`${words} words outside code blocks, the directory needs 40`);
+  if (named.length) problems.push(`image or font paths in code: ${named.join(", ")}`);
   return problems.length ? problems.join("; ") : null;
 });
 

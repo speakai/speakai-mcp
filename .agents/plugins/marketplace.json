@@ -8,7 +8,7 @@
       "name": "speakai-mcp",
       "source": {
         "source": "local",
-        "path": "./plugins/speakai-mcp"
+        "path": "./plugins/speakai-mcp-portable"
       },
       "policy": {
         "installation": "AVAILABLE",
