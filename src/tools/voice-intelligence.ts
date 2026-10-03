@@ -194,7 +194,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "create_voice_agent_resource",
-    "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server fetches and embeds the content in the background (status moves from pending to completed).",
+    "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server does not fetch the URL; it embeds the title, description, and URL slug so the agent can retrieve the link during live calls.",
     { agentId: z.string().min(1), ...resourceBodySchema },
     { title: "Create Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     async (body) => {
@@ -209,7 +209,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "bulk_create_voice_agent_resources",
-    "Add up to 100 documents/links to a voice agent's knowledge base in one call. Requires the OWNER or ADMIN role. Each is fetched and embedded independently in the background. Use this instead of calling create_voice_agent_resource in a loop.",
+    "Add up to 100 documents/links to a voice agent's knowledge base in one call. Requires the OWNER or ADMIN role. The URLs are not fetched; each entry's title, description, and URL slug is embedded independently. Use this instead of calling create_voice_agent_resource in a loop.",
     {
       agentId: z.string().min(1),
       resources: z

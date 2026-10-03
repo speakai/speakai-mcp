@@ -245,10 +245,10 @@ var init_helpers = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/activities.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/activities.js
 var ActivityType;
 var init_activities = __esm({
-  "node_modules/@speakai/shared/dist/enums/activities.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/activities.js"() {
     "use strict";
     (function(ActivityType2) {
       ActivityType2["MEDIA_ANALYSIS"] = "mediaAnalysis";
@@ -261,10 +261,10 @@ var init_activities = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/auth.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/auth.js
 var SSOType, DevicePlatform;
 var init_auth = __esm({
-  "node_modules/@speakai/shared/dist/enums/auth.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/auth.js"() {
     "use strict";
     (function(SSOType2) {
       SSOType2["GOOGLE"] = "google";
@@ -282,10 +282,10 @@ var init_auth = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/automation.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/automation.js
 var AutomationTrigger, AutomationAction, AutomationStepType, AutomationRunStatus, AutomationIOType, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
 var init_automation = __esm({
-  "node_modules/@speakai/shared/dist/enums/automation.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/automation.js"() {
     "use strict";
     (function(AutomationTrigger2) {
       AutomationTrigger2["FOLDERS"] = "folders";
@@ -345,10 +345,10 @@ var init_automation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/calendar.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/calendar.js
 var CalendarType, EventStatus, AutoJoinStatus;
 var init_calendar = __esm({
-  "node_modules/@speakai/shared/dist/enums/calendar.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/calendar.js"() {
     "use strict";
     (function(CalendarType2) {
       CalendarType2["GOOGLE"] = "google";
@@ -368,10 +368,10 @@ var init_calendar = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/clip.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/clip.js
 var ClipState, ClipGenerationSource;
 var init_clip = __esm({
-  "node_modules/@speakai/shared/dist/enums/clip.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/clip.js"() {
     "use strict";
     (function(ClipState2) {
       ClipState2["QUEUED"] = "queued";
@@ -387,10 +387,10 @@ var init_clip = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/domain.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/domain.js
 var ServiceType, VerificationStatus;
 var init_domain = __esm({
-  "node_modules/@speakai/shared/dist/enums/domain.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/domain.js"() {
     "use strict";
     (function(ServiceType2) {
       ServiceType2["RECORDER"] = "recorder";
@@ -406,10 +406,10 @@ var init_domain = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/embed.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/embed.js
 var EmbedType, ImageSelectionType;
 var init_embed = __esm({
-  "node_modules/@speakai/shared/dist/enums/embed.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/embed.js"() {
     "use strict";
     (function(EmbedType2) {
       EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
@@ -424,10 +424,10 @@ var init_embed = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/export.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/export.js
 var ExportFormatType;
 var init_export = __esm({
-  "node_modules/@speakai/shared/dist/enums/export.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/export.js"() {
     "use strict";
     (function(ExportFormatType2) {
       ExportFormatType2["CSV"] = "csv";
@@ -450,10 +450,10 @@ var init_export = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/fields.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/fields.js
 var FieldType, AllowedValuesMode, DefaultViewColumn;
 var init_fields = __esm({
-  "node_modules/@speakai/shared/dist/enums/fields.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/fields.js"() {
     "use strict";
     (function(FieldType2) {
       FieldType2["TEXT"] = "text";
@@ -482,10 +482,10 @@ var init_fields = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/filter.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/filter.js
 var FilterFieldName, FilterOperator, FilterCondition;
 var init_filter = __esm({
-  "node_modules/@speakai/shared/dist/enums/filter.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/filter.js"() {
     "use strict";
     (function(FilterFieldName2) {
       FilterFieldName2["CATEGORY"] = "category";
@@ -514,10 +514,10 @@ var init_filter = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/integration.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/integration.js
 var IntegrationAuthType;
 var init_integration = __esm({
-  "node_modules/@speakai/shared/dist/enums/integration.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/integration.js"() {
     "use strict";
     (function(IntegrationAuthType2) {
       IntegrationAuthType2["OAUTH"] = "oauth";
@@ -526,10 +526,10 @@ var init_integration = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/media.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/media.js
 var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType;
 var init_media = __esm({
-  "node_modules/@speakai/shared/dist/enums/media.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/media.js"() {
     "use strict";
     (function(MediaType2) {
       MediaType2["AUDIO"] = "audio";
@@ -596,10 +596,10 @@ var init_media = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/meeting.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/meeting.js
 var MeetingPlatform, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource;
 var init_meeting = __esm({
-  "node_modules/@speakai/shared/dist/enums/meeting.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/meeting.js"() {
     "use strict";
     (function(MeetingPlatform2) {
       MeetingPlatform2["GOOGLE_MEET"] = "googleMeet";
@@ -665,10 +665,10 @@ var init_meeting = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/notification.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/notification.js
 var NotificationType, NotificationAction;
 var init_notification = __esm({
-  "node_modules/@speakai/shared/dist/enums/notification.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/notification.js"() {
     "use strict";
     (function(NotificationType2) {
       NotificationType2["CLIP"] = "clip";
@@ -715,10 +715,10 @@ var init_notification = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/prompt.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/prompt.js
 var PromptState, MessageRole, PromptSource, ToolName, FileType;
 var init_prompt = __esm({
-  "node_modules/@speakai/shared/dist/enums/prompt.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/prompt.js"() {
     "use strict";
     (function(PromptState2) {
       PromptState2["INITIATED"] = "initiated";
@@ -765,10 +765,10 @@ var init_prompt = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/recorder.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/recorder.js
 var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating;
 var init_recorder = __esm({
-  "node_modules/@speakai/shared/dist/enums/recorder.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/recorder.js"() {
     "use strict";
     (function(RecorderAnswerType2) {
       RecorderAnswerType2["Single"] = "single";
@@ -793,10 +793,10 @@ var init_recorder = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/subscription.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/subscription.js
 var SubscriptionStatus, SubscriptionDuration, TrialTier;
 var init_subscription = __esm({
-  "node_modules/@speakai/shared/dist/enums/subscription.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/subscription.js"() {
     "use strict";
     (function(SubscriptionStatus2) {
       SubscriptionStatus2["Active"] = "active";
@@ -822,10 +822,10 @@ var init_subscription = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/team.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/team.js
 var TeamInviteStatus;
 var init_team = __esm({
-  "node_modules/@speakai/shared/dist/enums/team.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/team.js"() {
     "use strict";
     (function(TeamInviteStatus2) {
       TeamInviteStatus2["ACTIVE"] = "active";
@@ -836,10 +836,10 @@ var init_team = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/transcription.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/transcription.js
 var TranscriptionEngine, TranscriptionJobState, TranscriptionJobRevisionState;
 var init_transcription = __esm({
-  "node_modules/@speakai/shared/dist/enums/transcription.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/transcription.js"() {
     "use strict";
     (function(TranscriptionEngine2) {
       TranscriptionEngine2["AZURE"] = "azure";
@@ -868,10 +868,10 @@ var init_transcription = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/transaction.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/transaction.js
 var TransactionSource, TransactionType, TransactionStatus;
 var init_transaction = __esm({
-  "node_modules/@speakai/shared/dist/enums/transaction.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/transaction.js"() {
     "use strict";
     (function(TransactionSource2) {
       TransactionSource2["STRIPE"] = "stripe";
@@ -901,10 +901,10 @@ var init_transaction = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/translation.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/translation.js
 var TranslationState, DubbingState;
 var init_translation = __esm({
-  "node_modules/@speakai/shared/dist/enums/translation.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/translation.js"() {
     "use strict";
     (function(TranslationState2) {
       TranslationState2["NOTFOUND"] = "notFound";
@@ -925,10 +925,10 @@ var init_translation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/user.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/user.js
 var UserRole, UserType, UserPermissionType, UserActionType;
 var init_user = __esm({
-  "node_modules/@speakai/shared/dist/enums/user.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/user.js"() {
     "use strict";
     (function(UserRole2) {
       UserRole2["ADMIN"] = "admin";
@@ -975,10 +975,10 @@ var init_user = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/webhook.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/webhook.js
 var WebhookEvent, WebhookEventSource;
 var init_webhook = __esm({
-  "node_modules/@speakai/shared/dist/enums/webhook.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/webhook.js"() {
     "use strict";
     (function(WebhookEvent2) {
       WebhookEvent2["embed_recorder.created"] = "embed_recorder.created";
@@ -1010,10 +1010,10 @@ var init_webhook = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/llm.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/llm.js
 var LLMProvider, LLMModels;
 var init_llm = __esm({
-  "node_modules/@speakai/shared/dist/enums/llm.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/llm.js"() {
     "use strict";
     (function(LLMProvider2) {
       LLMProvider2["OPENAI"] = "openai";
@@ -1069,9 +1069,9 @@ var init_llm = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/index.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/index.js
 var init_enums = __esm({
-  "node_modules/@speakai/shared/dist/enums/index.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/index.js"() {
     "use strict";
     init_activities();
     init_auth();
@@ -1100,157 +1100,157 @@ var init_enums = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/api.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/api.js
 var init_api = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/api.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/api.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/media.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/media.js
 var init_media2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/media.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/media.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/transcript.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/transcript.js
 var init_transcript = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/text.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/text.js
 var init_text = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/text.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/text.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/folder.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/folder.js
 var init_folder = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/folder.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/integration.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/integration.js
 var init_integration2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/integration.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/integration.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/recorder.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/recorder.js
 var init_recorder2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/embed.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/embed.js
 var init_embed2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/embed.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/embed.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/automation.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/automation.js
 var init_automation2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/automation.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/automation.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/webhook.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/webhook.js
 var init_webhook2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/field.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/field.js
 var init_field = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/field.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/field.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/meeting.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/meeting.js
 var init_meeting2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/export.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/export.js
 var init_export2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/export.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/export.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/prompt.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/prompt.js
 var init_prompt2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/user.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/user.js
 var init_user2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/user.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/user.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/subscription.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/subscription.js
 var init_subscription2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/calendar.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/calendar.js
 var init_calendar2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/category.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/category.js
 var init_category = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/category.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/category.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/clip.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/clip.js
 var init_clip2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/clip.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/clip.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/dashboard-spec.js
+// ../directory-listing/node_modules/@speakai/shared/dist/utils/dashboard-spec.js
 var init_dashboard_spec = __esm({
-  "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/dashboard.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/dashboard.js
 var init_dashboard = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
     "use strict";
     init_dashboard_spec();
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/index.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/index.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/index.js"() {
     "use strict";
     init_api();
     init_media2();
@@ -1275,17 +1275,17 @@ var init_interfaces = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/transcript.js
+// ../directory-listing/node_modules/@speakai/shared/dist/utils/transcript.js
 var init_transcript2 = __esm({
-  "node_modules/@speakai/shared/dist/utils/transcript.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/utils/transcript.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/pricing/modelPricing.js
+// ../directory-listing/node_modules/@speakai/shared/dist/pricing/modelPricing.js
 var MODEL_PRICING;
 var init_modelPricing = __esm({
-  "node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
     "use strict";
     init_llm();
     MODEL_PRICING = {
@@ -1346,9 +1346,9 @@ var init_modelPricing = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/index.js
+// ../directory-listing/node_modules/@speakai/shared/dist/index.js
 var init_dist = __esm({
-  "node_modules/@speakai/shared/dist/index.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/index.js"() {
     "use strict";
     init_enums();
     init_interfaces();
@@ -1442,7 +1442,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "upload_media",
-    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and fires the workspace's media.created webhook if one is registered. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
+    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and sends the media.created event to the workspace's webhooks and Slack channels if any are configured. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
       name: import_zod2.z.string().min(1).describe("Display name for the media file"),
       url: import_zod2.z.string().describe("Direct public media file URL, a URL returned by get_signed_upload_url, or a page link from a platform listed in this tool's description. Page links are resolved server-side, so pass the URL the user gave you as-is."),
@@ -1462,7 +1462,7 @@ function register(server, client) {
     {
       title: "Upload Media from URL",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -1710,7 +1710,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "update_media_metadata",
-    "Update metadata fields (name, description, tags, status) for an existing media file.",
+    "Update metadata fields (name, description, tags, status) for an existing media file. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file"),
       name: import_zod2.z.string().describe("Display name for the media (required \u2014 the server replaces the metadata)"),
@@ -1726,7 +1726,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ mediaId, ...body }) => {
       try {
@@ -1747,7 +1747,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "delete_media",
-    "Permanently delete a media file and all associated transcripts and insights.",
+    "Permanently delete a media file and all associated transcripts and insights. Sends the media.deleted event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file to delete")
     },
@@ -1756,7 +1756,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ mediaId }) => {
       try {
@@ -1894,7 +1894,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "reanalyze_media",
-    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
+    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts. Sends the media.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
       isInsights: import_zod2.z.boolean().optional().describe("Re-run insights analysis"),
@@ -1907,7 +1907,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ mediaId, ...params }) => {
       try {
@@ -1979,7 +1979,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "bulk_move_media",
-    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
+    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       folderId: import_zod2.z.string().min(1).describe("Target folder ID to move media into"),
       mediaIds: import_zod2.z.array(import_zod2.z.string().min(1)).min(1).describe("Array of media IDs to move")
@@ -1989,7 +1989,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2032,14 +2032,14 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "create_text_note",
-    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
+    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, and once the allowance is used up charges credits, the account balance, or the card on file; the request is refused only when none of these can cover it. Sends the text.created and text.analyzed events to the workspace's webhooks and Slack channels if any are configured.",
     {
       name: import_zod3.z.string().min(1).describe("Title/name for the text note"),
       text: import_zod3.z.string().optional().describe("Full text content to analyze"),
       description: import_zod3.z.string().optional().describe("Description for the text note"),
       folderId: import_zod3.z.string().optional().describe("ID of the folder to place the note in"),
       tags: import_zod3.z.string().optional().describe("Comma-separated tags or array of tag strings"),
-      callbackUrl: import_zod3.z.string().optional().describe("Webhook callback URL for completion notification"),
+      callbackUrl: import_zod3.z.string().optional().describe("URL that replaces the workspace webhook's destination for this note's webhook events. It takes effect only when the workspace already has an active webhook for the event; on its own it does not create a webhook or send anything."),
       fields: import_zod3.z.array(
         import_zod3.z.object({
           id: import_zod3.z.string().min(1).describe("Custom field ID"),
@@ -2050,13 +2050,14 @@ function register2(server, client) {
     {
       title: "Create Text Note",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
     async (body) => {
       try {
-        const result = await api.post("/v1/text/create", body);
+        const payload = body.text !== void 0 ? { ...body, rawText: body.text } : body;
+        const result = await api.post("/v1/text/create", payload);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -2103,7 +2104,7 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "reanalyze_text",
-    "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models.",
+    "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment. Sends the text.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: import_zod3.z.string().describe("Unique identifier of the text note to reanalyze")
     },
@@ -2112,11 +2113,13 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ mediaId }) => {
       try {
-        const result = await api.get(`/v1/media/reanalyze/${mediaId}`);
+        const result = await api.get(`/v1/media/reanalyze/${mediaId}`, {
+          params: { isInsights: true, isSentiment: true, isFillerWords: true, isEmbeddings: true }
+        });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -2133,13 +2136,12 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "update_text_note",
-    "Update an existing text note's name, content, or metadata. Updating text content will trigger re-analysis.",
+    "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: import_zod3.z.string().min(1).describe("Unique identifier of the text note"),
       name: import_zod3.z.string().optional().describe("New name for the text note"),
-      text: import_zod3.z.string().optional().describe("New text content (will trigger re-analysis)"),
+      text: import_zod3.z.string().optional().describe("New text content. Replaces the existing text of the note."),
       description: import_zod3.z.string().optional().describe("Updated description"),
-      folderId: import_zod3.z.string().optional().describe("Move to a different folder"),
       tags: import_zod3.z.string().optional().describe("Updated comma-separated tags")
     },
     {
@@ -2147,7 +2149,7 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ mediaId, ...body }) => {
       try {
@@ -2190,7 +2192,7 @@ function register3(server, client) {
   registerSpeakTool(
     server,
     "export_media",
-    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
+    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv). Generates the file and returns it without saving or sharing anything.",
     {
       mediaId: import_zod4.z.string().min(1).describe("Unique identifier of the media file"),
       fileType: import_zod4.z.nativeEnum(ExportFormatType).describe("Desired export format"),
@@ -2203,7 +2205,7 @@ function register3(server, client) {
     },
     {
       title: "Export Media Transcript",
-      readOnlyHint: false,
+      readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
@@ -2240,7 +2242,7 @@ function register3(server, client) {
       isInsightVisualized: import_zod4.z.boolean().optional().describe("Include insight visualizations"),
       isRedacted: import_zod4.z.boolean().optional().describe("Apply PII redaction to export"),
       isMerged: import_zod4.z.boolean().optional().describe("Merge all exports into a single file"),
-      folderId: import_zod4.z.string().optional().describe("Folder ID for the merged export")
+      folderId: import_zod4.z.string().optional().describe("Export every media file in this folder instead. Used only when mediaIds is an empty array.")
     },
     {
       title: "Export Multiple Media Files",
@@ -2352,7 +2354,7 @@ function register4(server, client) {
     {
       folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder"),
       name: import_zod5.z.string().describe("Display name for the view"),
-      isDefault: import_zod5.z.boolean().optional().describe("Whether this view is the folder's default view"),
+      isDefault: import_zod5.z.boolean().optional().describe("Whether this view is the folder's default view. Setting true clears the default flag on the folder's other views"),
       columns: import_zod5.z.array(
         import_zod5.z.object({
           fieldId: import_zod5.z.string().optional().describe("Field ID this column maps to (omit for built-in columns)"),
@@ -2366,7 +2368,7 @@ function register4(server, client) {
     {
       title: "Create Folder View",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2443,12 +2445,12 @@ function register4(server, client) {
       targetFolderId: import_zod5.z.string().min(1).describe("Folder to copy the view into (must differ from sourceFolderId)"),
       viewId: import_zod5.z.string().min(1).describe("Unique identifier of the view to clone"),
       name: import_zod5.z.string().describe("Display name for the cloned view"),
-      isDefault: import_zod5.z.boolean().optional().describe("Whether the cloned view becomes the target folder's default")
+      isDefault: import_zod5.z.boolean().optional().describe("Whether the cloned view becomes the target folder's default. Setting true clears the default flag on the target folder's other views")
     },
     {
       title: "Clone Folder View",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2564,7 +2566,7 @@ function register4(server, client) {
   registerSpeakTool(
     server,
     "clone_folder",
-    "Duplicate an existing folder and all of its contents.",
+    "Create a new folder copied from an existing folder's name and description. Media in the source folder is not copied. Set isSaveDefaultView to also copy the source folder's default view.",
     {
       folderId: import_zod5.z.string().min(1).describe("ID of the folder to clone"),
       name: import_zod5.z.string().optional().describe("Name for the cloned folder"),
@@ -2630,7 +2632,7 @@ function register4(server, client) {
   registerSpeakTool(
     server,
     "delete_folder",
-    "Permanently delete a folder. Media within the folder will be moved, not deleted.",
+    "Permanently delete a folder. The folder must be empty: the request is refused if it still holds any media or if it is the workspace's last folder, so move or delete its media first.",
     {
       folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder to delete")
     },
@@ -2706,7 +2708,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "create_recorder",
-    "Create a new recorder or survey for collecting audio/video submissions.",
+    "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
     {
       name: import_zod6.z.string().describe("Display name for the recorder"),
       ...recorderConfigShape,
@@ -2717,7 +2719,7 @@ function register5(server, client) {
     {
       title: "Create Recorder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -2768,7 +2770,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "clone_recorder",
-    "Duplicate an existing recorder including all its settings and questions.",
+    "Duplicate an existing recorder including all its settings and questions. The copy gets its own public link, accepts submissions right away and sends the same submission emails, webhooks and automations as any recorder. Fires the workspace's embed_recorder.created webhook if one is registered.",
     {
       recorderId: import_zod6.z.string().min(1).describe("ID of the recorder to clone"),
       name: import_zod6.z.string().optional().describe("Name for the cloned recorder"),
@@ -2778,7 +2780,7 @@ function register5(server, client) {
     {
       title: "Clone Recorder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -2883,7 +2885,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "update_recorder_settings",
-    "Update configuration settings for a recorder (branding, capture options, etc.). `name` must always be supplied.",
+    "Update configuration settings for a recorder (branding, capture options, etc.). Only the supplied settings change, and they apply to the recorder's live public page right away. `name` must always be supplied.",
     {
       recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder"),
       name: import_zod6.z.string().describe("Display name for the recorder"),
@@ -2913,7 +2915,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "update_recorder_questions",
-    "Update the survey questions and respondent-info settings for a recorder.",
+    "Update the survey questions and respondent-info settings for a recorder. The `questions` array replaces the recorder's existing questions, and changes apply to the recorder's live public page right away.",
     {
       recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder"),
       name: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's name"),
@@ -2949,7 +2951,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "delete_recorder",
-    "Permanently delete a recorder/survey. Existing recordings are preserved.",
+    "Permanently delete a recorder/survey. Its public link stops accepting submissions. Existing recordings are preserved. Fires the workspace's embed_recorder.deleted webhook if one is registered.",
     {
       recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder to delete")
     },
@@ -3003,7 +3005,7 @@ var init_recorder3 = __esm({
       options: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
         "Capture options: { audio, video, screenShare, liveTranscription, upload:{ file, text, multiple, url } } \u2014 all booleans"
       ),
-      notification: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client } \u2014 booleans"),
+      notification: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client }, both booleans. upload emails the recorder owner (if they opted in to submission emails) and any users in notifyUsers about each new submission; client emails a confirmation to each respondent who gives an email."),
       meta: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
         "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }"
       )
@@ -3021,7 +3023,7 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "create_embed",
-    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. The embed is publicly viewable by default; use update_embed to set a password or privacy mode.",
+    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password.",
     {
       mediaId: import_zod7.z.string().optional().describe("Media file to embed (for a single-media embed)"),
       folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs to embed (for a folder/library embed)")
@@ -3050,10 +3052,10 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "update_embed",
-    "Update an existing embed widget \u2014 appearance/feature toggles via `meta`, plus scope and privacy. Setting `privacyMode` clears any existing password unless a new one is supplied in the same call.",
+    "Update an existing embed widget: appearance/feature toggles via `meta`, and privacy. Passing `mediaId` with `privacyMode` sets that privacy mode on the media file itself; a public mode makes the media viewable by anyone with the embed link. Setting `privacyMode` clears any existing password unless a new one is supplied in the same call.",
     {
       embedId: import_zod7.z.string().min(1).describe("Unique identifier of the embed"),
-      mediaId: import_zod7.z.string().optional().describe("Media file the embed points to"),
+      mediaId: import_zod7.z.string().optional().describe("Media file whose privacy mode is set to privacyMode. Does not change which media the embed points to."),
       privacyMode: import_zod7.z.string().optional().describe(
         "Privacy mode for the embed. Changing this clears the existing password unless `password` is also supplied in the same call."
       ),
@@ -3168,7 +3170,9 @@ function register7(server, client) {
     "Returns a promptId \u2014 save it to continue the conversation with follow-up questions.",
     "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
     "reading the transcript alone. That is a premium feature and costs credits per hour of media \u2014",
-    "call get_analysis_quote first to check eligibility and price."
+    "call get_analysis_quote first to check eligibility and price.",
+    "Each question is charged to the account's chat usage.",
+    "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat."
   ].join(" ");
   const askAiChatInputSchema = {
     prompt: import_zod8.z.string().min(1).describe("The question or prompt to ask about the media"),
@@ -3176,7 +3180,7 @@ function register7(server, client) {
     folderIds: import_zod8.z.array(import_zod8.z.string()).optional().describe("Array of folder IDs to scope the query to. Omit along with mediaIds to search across all media."),
     folderId: import_zod8.z.string().optional().describe("Single folder ID to scope the query to. Use folderIds for multiple folders."),
     assistantType: import_zod8.z.enum(Object.values(AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
-    assistantTemplateId: import_zod8.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
+    assistantTemplateId: import_zod8.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template."),
     promptId: import_zod8.z.string().optional().describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
     speakers: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter to specific speaker IDs from the transcript"),
     tags: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter media by tags"),
@@ -3192,9 +3196,9 @@ function register7(server, client) {
   const askAiChatAnnotations = {
     title: "Ask AI Chat",
     readOnlyHint: false,
-    destructiveHint: false,
+    destructiveHint: true,
     idempotentHint: false,
-    openWorldHint: false
+    openWorldHint: true
   };
   const ANALYSIS_TIMEOUT_MS = 6 * 60 * 1e3;
   const refuse = (message) => ({
@@ -3264,21 +3268,10 @@ function register7(server, client) {
     "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason \u2014 an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
     {
       mediaId: import_zod8.z.string().min(1).describe("Media file to price"),
-      modelId: import_zod8.z.string().optional().describe("Optional model id to price against. Omit for the workspace default."),
-      assistantType: import_zod8.z.enum(Object.values(AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
-      assistantTemplateId: import_zod8.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
-      promptId: import_zod8.z.string().optional().describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
-      speakers: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter to specific speaker IDs from the transcript"),
-      tags: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter media by tags"),
-      startDate: import_zod8.z.string().optional().describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
-      endDate: import_zod8.z.string().optional().describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
-      isIndividualPrompt: import_zod8.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
-      analysisInput: import_zod8.z.enum(["audio", "video"]).optional().describe(
-        "Send the media itself to a multimodal model, not just its transcript. 'audio' analyses tone, pacing, and delivery; 'video' analyses on-screen visuals, gestures, and slides. Requires analysisMediaId. The workspace must have multimodal analysis enabled and the file must be a supported container within the duration limit, otherwise the turn runs transcript-only."
+      analysisInput: import_zod8.z.enum(["audio", "video"]).describe(
+        "Which pass to price: 'audio' (tone, pacing, delivery) or 'video' (also on-screen visuals, gestures, slides). Required."
       ),
-      analysisMediaId: import_zod8.z.string().optional().describe(
-        "The mediaId to analyse multimodally this turn. Required together with analysisInput, and it must be one of the ids in mediaIds; either field alone is rejected."
-      )
+      modelId: import_zod8.z.string().optional().describe("Optional model id to price against. Omit for the workspace default.")
     },
     {
       title: "Get Analysis Quote",
@@ -3304,7 +3297,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "retry_ai_chat",
-    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
+    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: import_zod8.z.string().min(1).describe("ID of the specific message to retry")
@@ -3312,9 +3305,9 @@ function register7(server, client) {
     {
       title: "Retry AI Chat",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -3396,9 +3389,9 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "delete_chat_message",
-    "Delete a specific chat message from conversation history.",
+    "Delete an entire chat conversation from conversation history, so it and its messages no longer appear. No tool can restore it.",
     {
-      promptId: import_zod8.z.string().min(1).describe("ID of the message to delete")
+      promptId: import_zod8.z.string().min(1).describe("ID of the conversation (promptId) to delete")
     },
     {
       title: "Delete Chat Message",
@@ -3424,10 +3417,10 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "list_prompts",
-    "List all available AI Chat templates. Use template IDs with ask_ai_chat's assistantTemplateId parameter when using assistantType 'custom'.",
+    "List recent AI Chat messages across the workspace, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns messages from the 25 most recently updated conversations in the workspace, filtered to those the caller can access, so a member may see fewer.",
     {},
     {
-      title: "List Prompt Templates",
+      title: "List Recent Chat Messages",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -3535,7 +3528,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "submit_chat_feedback",
-    "Submit feedback on a chat response (thumbs up/down). Helps improve AI answer quality.",
+    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are posted to Speak AI's internal Slack channel for the Speak AI team to review.",
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation"),
       messageId: import_zod8.z.string().min(1).describe("ID of the message to rate"),
@@ -3545,9 +3538,9 @@ function register7(server, client) {
     {
       title: "Submit Chat Feedback",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -3677,7 +3670,7 @@ function register8(server, client) {
   registerSpeakTool(
     server,
     "schedule_meeting_event",
-    "Schedule the Speak AI meeting assistant to join and record an upcoming meeting.",
+    "Schedule the Speak AI meeting assistant to join and record an online meeting (Zoom, Google Meet, Microsoft Teams, or Webex). The assistant joins as a participant other attendees can see, at meetingDate or right away when meetingDate is omitted. Recorded minutes are charged to the account, and on trial plans each scheduled meeting uses one meeting from the allowance.",
     {
       title: import_zod9.z.string().min(1).describe("Display title for the event"),
       meetingURL: import_zod9.z.string().min(1).describe("URL of the meeting to join"),
@@ -3938,7 +3931,7 @@ function register9(server, client) {
   registerSpeakTool(
     server,
     "update_multiple_fields",
-    "Set custom field values across media in a single batch operation. Scope the update with `folderId` (all media in a folder) and/or `mediaIds`.",
+    "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. Each value that changes fires your field_updated automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions.",
     {
       folderId: import_zod10.z.string().optional().describe("Apply the field values to all media in this folder"),
       mediaIds: import_zod10.z.array(import_zod10.z.string()).optional().describe("Apply the field values to these specific media files"),
@@ -3954,7 +3947,7 @@ function register9(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -4777,7 +4770,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "list_automation_names",
-    "List automations as lightweight { name, id } pairs \u2014 useful for pickers without fetching full configs.",
+    "List the names and ids of active automations that contain an AI chat (magic prompt) step. Inactive automations and automations without an AI chat step are not included; use list_automations for the full list.",
     {},
     {
       title: "List Automation Names",
@@ -4867,7 +4860,7 @@ function register10(server, client) {
     {
       title: "Create Automation",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -4942,7 +4935,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "toggle_automation_status",
-    "Toggle an automation rule between active and inactive. This flips the current state \u2014 call get_automation first if you need to know which way it will flip.",
+    "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation first if you need to know which way it will flip. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected third-party account.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation")
     },
@@ -4951,7 +4944,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ automationId }) => {
       try {
@@ -4970,7 +4963,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "bulk_update_automation_status",
-    "Activate or deactivate multiple automations at once.",
+    "Activate or deactivate multiple automations at once. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the connected third-party account.",
     {
       automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
       isActive: import_zod11.z.boolean().describe("true to activate, false to deactivate, for all listed automations")
@@ -4980,7 +4973,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -5057,7 +5050,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "delete_automation",
-    "Permanently delete an automation rule.",
+    "Permanently delete an automation rule. If it has an inbound webhook URL, that URL stops accepting payloads, and any event subscription it holds on a connected third-party account through Composio is removed.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation to delete")
     },
@@ -5066,7 +5059,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ automationId }) => {
       try {
@@ -5430,7 +5423,7 @@ function register11(server, client) {
   registerSpeakTool(
     server,
     "create_webhook",
-    "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
+    "Create an outbound webhook. From then on, Speak automatically POSTs a JSON payload to callbackUrl, an external endpoint, for each subscribed event (event type, ids such as mediaId or folderId, state, and for chat events the prompt and answer text).",
     {
       callbackUrl: import_zod12.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
       events: import_zod12.z.array(import_zod12.z.string()).optional().describe("Array of event types to subscribe to"),
@@ -5439,7 +5432,7 @@ function register11(server, client) {
     {
       title: "Create Webhook",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -5637,7 +5630,7 @@ function register11(server, client) {
   registerSpeakTool(
     server,
     "delete_webhook",
-    "Delete a webhook and stop receiving notifications at its endpoint.",
+    "Permanently delete an outbound webhook and its delivery attempt history; its endpoint stops receiving notifications. Cannot be undone.",
     {
       webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the webhook to delete")
     },
@@ -5759,7 +5752,8 @@ function register13(server, client) {
       "Create a highlight clip from one or more media files by specifying time ranges.",
       `Clips are processed asynchronously (states: ${Object.values(ClipState).join(", ")}) \u2014 use get_clips to check status.`,
       "Maximum total clip duration is 30 minutes.",
-      "Use multiple timeRanges to stitch segments from different media files together."
+      "Use multiple timeRanges to stitch segments from different media files together.",
+      "When the clip finishes processing it fires your clip_created automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions."
     ].join(" "),
     {
       title: import_zod14.z.string().min(1).describe("Title for the clip"),
@@ -5778,9 +5772,9 @@ function register13(server, client) {
     {
       title: "Create Highlight Clip",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -5954,7 +5948,7 @@ function register14(server, client, options = {}) {
   registerSpeakTool(
     server,
     "build_automation",
-    "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. Prefer this over create_automation unless you need raw control.",
+    "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL and bill its duration, ai_chat steps use AI credits, slack notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
     buildAutomationSchema,
     {
       title: "Build Automation",
@@ -6283,7 +6277,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
   registerSpeakTool(
     server,
     "upload_and_analyze",
-    `Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.`,
+    `Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.`,
     {
       // A plain literal, not a template: the docs generator drops a tool's whole parameter
       // table when a description interpolates a value it cannot resolve statically.
@@ -6297,7 +6291,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
     {
       title: "Upload and Analyze Media",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6357,7 +6351,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     {
       title: "Upload and Analyze Several URLs",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6427,6 +6421,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       "Upload a local file to Speak AI for transcription and analysis.",
       "Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry.",
       "Works with any audio or video file on the local filesystem.",
+      "Each upload creates a media item and bills its duration against the workspace's minutes or credits.",
       "After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights."
     ].join(" "),
     {
@@ -6440,7 +6435,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     {
       title: "Upload Local File",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6689,7 +6684,7 @@ function register15(server, client) {
   registerSpeakTool(
     server,
     "delete_user_group",
-    "Delete a user group. This removes the group only; it does not delete the users themselves.",
+    "Permanently delete a user group. The users themselves are not deleted, but members lose any access that was shared with the group (for example dashboards assigned to it).",
     {
       id: import_zod16.z.string().min(1).describe("Group _id to delete (from list_user_groups)")
     },
@@ -7221,7 +7216,7 @@ function register16(server, client) {
     {
       title: "Create Dashboard",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -7253,7 +7248,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "update_dashboard",
-    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. Viewer settings (the settings input): " + SETTINGS_RULES,
+    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): " + SETTINGS_RULES,
     {
       dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id"),
       title: import_zod17.z.string().min(1).max(60).optional().describe("Dashboard name \u2014 required (with revision) when updating the spec"),
@@ -7338,7 +7333,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "duplicate_dashboard",
-    'Clone an existing dashboard. The copy gets fresh widget ids, a "<name> (copy)" title, cleared sharing, and its revision reset to 0. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.',
+    `Clone an existing dashboard into a new dashboard owned by the caller. The copy keeps the source's widgets (same widget ids), sections, filters, and viewer settings, gets a "<name> (copy)" title, has no shared users and no public link, and starts at revision 0. Edit it afterwards with update_dashboard.`,
     {
       dashboardId: import_zod17.z.string().min(1).describe("Source dashboard business id to clone")
     },
@@ -7526,7 +7521,7 @@ var init_dashboards = __esm({
       icon: import_zod17.z.string().max(200).optional().describe("Icon identifier"),
       assignTo: import_zod17.z.array(import_zod17.z.string()).max(100).optional().describe('User ids, or group ids in the "<groupId> (G)" convention, to share view access with'),
       filters: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
-      isDefault: import_zod17.z.boolean().optional().describe("Make this the company default dashboard"),
+      isDefault: import_zod17.z.boolean().optional().describe("Make this the owner's default dashboard. Setting true clears the default flag on the owner's other dashboards"),
       settings: dashboardSettingsSchema.optional()
     };
     specFields = {
@@ -7821,7 +7816,7 @@ function register17(server, client) {
   registerSpeakTool(
     server,
     "generate_voice_agent_config",
-    "Run the same prompt-to-config generation as create_voice_agent_from_prompt, but against an existing agent instead of creating a new one. Requires the OWNER or ADMIN role. On success the generated config is persisted onto the agent immediately. If the prompt is too thin and manualInstructions was not sent, the response has needsFollowUp: true with a follow-up question instead \u2014 call this again with more detail.",
+    "Run the same prompt-to-config generation as create_voice_agent_from_prompt, but against an existing agent instead of creating a new one. Requires the OWNER or ADMIN role. On success the generated config is saved onto the agent immediately, overwriting its current name, personality, instructions, chat settings, and voice, speech-to-text, and LLM settings. If the prompt is too thin and manualInstructions was not sent, the response has needsFollowUp: true with a follow-up question instead \u2014 call this again with more detail.",
     {
       agentId: import_zod18.z.string().min(1).describe("ID of the existing voice agent to generate config for (from list_voice_agents)"),
       prompt: import_zod18.z.string().min(1).describe("Plain-English description of what the agent should do."),
@@ -7987,7 +7982,7 @@ function register18(server, client) {
   registerSpeakTool(
     server,
     "generate_voice_test_suite",
-    "Auto-generate a default test suite for a voice agent from its own instructions and knowledge base, via an LLM call. Requires the OWNER or ADMIN role. Overwrites the suite's existing scenarios.",
+    "Auto-generate a default test suite for a voice agent from its configuration (name, personality, instructions, welcome message, topics to avoid), via an LLM call. Requires the OWNER or ADMIN role. Overwrites the suite's existing scenarios.",
     { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Generate Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
@@ -8050,7 +8045,7 @@ function register18(server, client) {
   registerSpeakTool(
     server,
     "resume_voice_test_run",
-    "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused.",
+    "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused. Only the run's status changes. The live execution engine is not wired up yet, so no scenarios execute.",
     {
       agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
@@ -8585,7 +8580,7 @@ function register20(server, client) {
   registerSpeakTool(
     server,
     "create_voice_agent_resource",
-    "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server fetches and embeds the content in the background (status moves from pending to completed).",
+    "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server does not fetch the URL; it embeds the title, description, and URL slug so the agent can retrieve the link during live calls.",
     { agentId: import_zod21.z.string().min(1), ...resourceBodySchema },
     { title: "Create Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     async (body) => {
@@ -8600,7 +8595,7 @@ function register20(server, client) {
   registerSpeakTool(
     server,
     "bulk_create_voice_agent_resources",
-    "Add up to 100 documents/links to a voice agent's knowledge base in one call. Requires the OWNER or ADMIN role. Each is fetched and embedded independently in the background. Use this instead of calling create_voice_agent_resource in a loop.",
+    "Add up to 100 documents/links to a voice agent's knowledge base in one call. Requires the OWNER or ADMIN role. The URLs are not fetched; each entry's title, description, and URL slug is embedded independently. Use this instead of calling create_voice_agent_resource in a loop.",
     {
       agentId: import_zod21.z.string().min(1),
       resources: import_zod21.z.array(import_zod21.z.object(resourceBodySchema)).min(1).max(100).describe("1 to 100 entries, each shaped like create_voice_agent_resource's body minus agentId.")

@@ -76,7 +76,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "generate_voice_test_suite",
-    "Auto-generate a default test suite for a voice agent from its own instructions and knowledge base, via an LLM call. Requires the OWNER or ADMIN role. Overwrites the suite's existing scenarios.",
+    "Auto-generate a default test suite for a voice agent from its configuration (name, personality, instructions, welcome message, topics to avoid), via an LLM call. Requires the OWNER or ADMIN role. Overwrites the suite's existing scenarios.",
     { agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Generate Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
@@ -139,7 +139,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "resume_voice_test_run",
-    "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused.",
+    "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused. Only the run's status changes. The live execution engine is not wired up yet, so no scenarios execute.",
     {
       agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)"),

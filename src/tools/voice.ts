@@ -295,7 +295,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "generate_voice_agent_config",
-    "Run the same prompt-to-config generation as create_voice_agent_from_prompt, but against an existing agent instead of creating a new one. Requires the OWNER or ADMIN role. On success the generated config is persisted onto the agent immediately. If the prompt is too thin and manualInstructions was not sent, the response has needsFollowUp: true with a follow-up question instead — call this again with more detail.",
+    "Run the same prompt-to-config generation as create_voice_agent_from_prompt, but against an existing agent instead of creating a new one. Requires the OWNER or ADMIN role. On success the generated config is saved onto the agent immediately, overwriting its current name, personality, instructions, chat settings, and voice, speech-to-text, and LLM settings. If the prompt is too thin and manualInstructions was not sent, the response has needsFollowUp: true with a follow-up question instead — call this again with more detail.",
     {
       agentId: z.string().min(1).describe("ID of the existing voice agent to generate config for (from list_voice_agents)"),
       prompt: z.string().min(1).describe("Plain-English description of what the agent should do."),

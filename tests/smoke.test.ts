@@ -112,39 +112,22 @@ describe("MCP Server Smoke Tests", () => {
       "add_voice_faq_suggestion",
       "add_voice_kb_gap",
       "analyze_voice_kb_gaps",
-      "ask_ai_chat",
       "bulk_create_voice_agent_resources",
       "clone_folder",
-      "clone_folder_view",
-      "clone_recorder",
-      "create_automation",
-      "create_clip",
-      "create_dashboard",
       "create_field",
       "create_folder",
-      "create_folder_view",
-      "create_recorder",
-      "create_text_note",
       "create_user_group",
       "create_voice_agent",
       "create_voice_agent_from_prompt",
       "create_voice_agent_resource",
       "create_voice_question",
       "create_voice_question_template",
-      "create_webhook",
       "duplicate_dashboard",
       "export_chat_answer",
-      "export_media",
       "export_multiple_media",
       "generate_voice_faq_suggestions",
       "provision_inbound_webhook",
-      "retry_ai_chat",
       "start_voice_test_run",
-      "submit_chat_feedback",
-      "upload_and_analyze",
-      "upload_and_analyze_batch",
-      "upload_local_file",
-      "upload_media",
     ].sort());
   });
 
@@ -159,31 +142,45 @@ describe("MCP Server Smoke Tests", () => {
       .sort();
 
     expect(openWorldTools).toEqual([
+      "ask_ai_chat",
       "build_automation",
       "bulk_create_voice_agent_resources",
+      "bulk_move_media",
+      "bulk_update_automation_status",
       "clone_recorder",
       "create_automation",
+      "create_clip",
       "create_dashboard",
       "create_embed",
       "create_recorder",
       "create_text_note",
       "create_voice_agent_resource",
       "create_webhook",
+      "delete_automation",
       "delete_dashboard",
+      "delete_media",
       "delete_recorder",
       "delete_scheduled_assistant",
       "delete_webhook",
       "provision_inbound_webhook",
+      "reanalyze_media",
+      "reanalyze_text",
       "remove_assistant_from_meeting",
+      "retry_ai_chat",
       "run_automations",
       "schedule_meeting_event",
       "share_dashboard",
+      "submit_chat_feedback",
       "test_automation",
+      "toggle_automation_status",
       "update_automation",
       "update_dashboard",
       "update_embed",
+      "update_media_metadata",
+      "update_multiple_fields",
       "update_recorder_questions",
       "update_recorder_settings",
+      "update_text_note",
       "update_voice_agent_resource",
       "update_webhook",
       "upload_and_analyze",
@@ -191,6 +188,48 @@ describe("MCP Server Smoke Tests", () => {
       "upload_local_file",
       "upload_media",
     ].sort());
+  });
+
+  it("never describes an outside send or irreversible effect that the hints don't declare", async () => {
+    // OpenAI's tool scan reads the description against the annotations. A write that says it sends
+    // outside Speak AI must be open-world; one that says it bills, overwrites or permanently deletes
+    // must be destructive. A match is ignored when its clause negates it, or names another tool, first.
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server, undefined, { localFileAccess: true });
+
+    const tools = getRegisteredTools(server);
+    const names = Object.keys(tools);
+    const OUTSIDE_SEND =
+      /\b(sends?|sent|sending|posts?|posted|emails?|fires?|triggers?|notifies|calls?)\b[^;]{0,160}?\b(email|slack|webhook|automation|any address|third-party|external)|\bpublic (url|link|page)|\bphone call|\bjoins? [^;]*?\bmeeting|\bcomposio\b/i;
+    const IRREVERSIBLE = /\b(charges?|bills?|billed|credits?|permanently|overwrites?|replaces?)\b/i;
+    const NEGATED = /\b(not|no|never|without|cannot)\b/i;
+
+    // A match counts unless the clause negates it, or names another tool, before the match.
+    const declares = (clause: string, pattern: RegExp, self: string) => {
+      const match = pattern.exec(clause);
+      if (!match) return null;
+      const before = clause.slice(0, match.index);
+      if (NEGATED.test(before)) return null;
+      if (names.some((other) => other !== self && new RegExp(`\\b${other}\\b`).test(before))) return null;
+      return match[0];
+    };
+
+    const mismatches: string[] = [];
+    for (const [name, tool] of Object.entries(tools)) {
+      if (tool.annotations?.readOnlyHint) continue;
+      // Split on sentence ends only, so event names such as media.created stay inside their clause.
+      for (const clause of String(tool.description ?? "").split(/[.;](?=\s|$)/)) {
+        const send = declares(clause, OUTSIDE_SEND, name);
+        if (send && !tool.annotations?.openWorldHint) {
+          mismatches.push(`${name}: describes "${send}" but openWorldHint is false`);
+        }
+        const effect = declares(clause, IRREVERSIBLE, name);
+        if (effect && !tool.annotations?.destructiveHint) {
+          mismatches.push(`${name}: describes "${effect}" but destructiveHint is false`);
+        }
+      }
+    }
+    expect(mismatches).toEqual([]);
   });
 
   it("adds structuredContent to tool responses", async () => {
