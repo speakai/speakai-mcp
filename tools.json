@@ -30,7 +30,7 @@
         {
           "name": "upload_media",
           "title": "Upload Media from URL",
-          "description": "Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
+          "description": "Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and fires the workspace's media.created webhook if one is registered. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -165,7 +165,7 @@
         {
           "name": "upload_and_analyze_batch",
           "title": "Upload and Analyze Several URLs",
-          "description": "Upload several URLs in one call — the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to 25 URLs and starts at most 5 at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.",
+          "description": "Import up to 25 audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most 5 uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -688,7 +688,7 @@
         {
           "name": "create_automation",
           "title": "Create Automation",
-          "description": "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) — recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
+          "description": "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio, and use AI credits. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -697,7 +697,7 @@
         {
           "name": "update_automation",
           "title": "Update Automation",
-          "description": "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes.",
+          "description": "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes. The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. Changing a Composio app-event trigger updates the subscription on that third-party account.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -751,7 +751,7 @@
         {
           "name": "run_automations",
           "title": "Run Automations",
-          "description": "Manually run one or more automations against one or more media items now (outside the normal trigger).",
+          "description": "Manually run one or more automations against one or more media items now (outside the normal trigger). Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without an error. The runs happen in the background and this returns only an acknowledgement, so check results with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook URLs, run actions in connected third-party apps, and use AI credits.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -769,7 +769,7 @@
         {
           "name": "list_automation_apps",
           "title": "List Automation Apps",
-          "description": "List the apps available in the automation catalog (e.g. Speak native + connected integrations). Use to discover what triggers/actions exist before building an automation.",
+          "description": "List the apps in Speak's automation catalog: Speak's built-in apps plus, when enabled, third-party apps available through Composio, each marked connected or not_connected for this user. Read-only: the list comes from Speak's own catalog and the user's saved connections, and no third-party service is called. Use the app slugs with list_automation_triggers and list_automation_actions.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -787,7 +787,7 @@
         {
           "name": "list_automation_actions",
           "title": "List Automation Actions",
-          "description": "List the action/step types available in the automation catalog. Optionally filter by app.",
+          "description": "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the fields each filter or condition step can test. Read-only: served from Speak's own catalog and the user's saved connections, with no third-party calls. Listing an action does not run it.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -823,7 +823,7 @@
         {
           "name": "test_automation",
           "title": "Test Automation",
-          "description": "Run an automation once against one media item to see which way it branches. THIS HAS REAL SIDE EFFECTS: only Speak's own run notifications are suppressed — outbound webhooks fire, Composio actions run against the connected third party, and AI steps are billed. Ask the user before calling it on an automation that posts anywhere outside Speak. It also needs a mediaId and sends no webhook payload, so an inbound-webhook automation cannot be meaningfully tested this way — its payload tokens will resolve to empty. Returns a runId; read the result with get_automation_run.",
+          "description": "Run one automation once against one media item to see which way it branches. This is a real run, not a dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks still fire, Composio actions still run against the connected third-party account, and AI steps use credits. Confirm with the user before testing an automation that sends anything outside Speak. It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens resolve to empty. Returns a runId; read the result with get_automation_run.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1141,11 +1141,11 @@
         {
           "name": "create_dashboard",
           "title": "Create Dashboard",
-          "description": "Create an analytics dashboard. Only `title` is required — source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.",
+          "description": "Create an analytics dashboard. Only `title` is required — source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_dashboard",
@@ -1239,7 +1239,7 @@
         {
           "name": "delete_voice_agent",
           "title": "Delete Voice Agent",
-          "description": "Permanently delete a voice agent. Requires the OWNER or ADMIN role. Irreversible: also removes its questions, test suite, and share link; past conversations are kept for record-keeping but are no longer reachable from this agent.",
+          "description": "Delete a voice agent. Requires the OWNER or ADMIN role. The agent is marked deleted and no tool can restore it: it stops appearing in list_voice_agents, and its share link, embedded widget, questions, and test suite stop working. Its stored data is not erased, past conversations stay in list_voice_conversations, and phone numbers assigned to it are not released.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -1248,7 +1248,7 @@
         {
           "name": "create_voice_agent_from_prompt",
           "title": "Create Voice Agent From Prompt",
-          "description": "Create a new voice agent by describing it in plain English instead of filling in name/personality/instructions/voice yourself. Requires the OWNER or ADMIN role. Response always includes the new agentId, plus either the generated agent config, or needsFollowUp: true with a follow-up question if the prompt was too thin to act on — call generate_voice_agent_config again on that agentId with more detail (or manualInstructions) when that happens.",
+          "description": "Create a new voice agent from a plain-English description, via an LLM call. Requires the OWNER or ADMIN role. Saves a draft agent, then generates and saves its name, personality, instructions, chat settings, and default voice, speech-to-text, and LLM settings. Does not assign a phone number. The response includes the new agentId plus either the generated agent, or needsFollowUp: true with a followUpQuestion when the prompt is too vague. In that case the draft agent still exists with placeholder settings; call generate_voice_agent_config on that agentId with more detail.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -1345,8 +1345,8 @@
         },
         {
           "name": "start_voice_test_run",
-          "title": "Start Voice Test Run",
-          "description": "Start a test run against a voice agent's suite. Requires the OWNER or ADMIN role. Rejects with 409 if the agent has no test suite. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
+          "title": "Queue Voice Agent Test Run",
+          "description": "Queue a test run of a voice agent's scripted test suite. Creates a run record in queued status and returns it; it does not place phone calls, start a conversation, or use credits. Requires the OWNER or ADMIN role. Returns 404 if the agent or its test suite does not exist, and 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,

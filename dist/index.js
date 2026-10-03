@@ -245,10 +245,10 @@ var init_helpers = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/activities.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/activities.js
 var ActivityType;
 var init_activities = __esm({
-  "node_modules/@speakai/shared/dist/enums/activities.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/activities.js"() {
     "use strict";
     (function(ActivityType2) {
       ActivityType2["MEDIA_ANALYSIS"] = "mediaAnalysis";
@@ -261,10 +261,10 @@ var init_activities = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/auth.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/auth.js
 var SSOType, DevicePlatform;
 var init_auth = __esm({
-  "node_modules/@speakai/shared/dist/enums/auth.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/auth.js"() {
     "use strict";
     (function(SSOType2) {
       SSOType2["GOOGLE"] = "google";
@@ -282,10 +282,10 @@ var init_auth = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/automation.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/automation.js
 var AutomationTrigger, AutomationAction, AutomationStepType, AutomationRunStatus, AutomationIOType, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
 var init_automation = __esm({
-  "node_modules/@speakai/shared/dist/enums/automation.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/automation.js"() {
     "use strict";
     (function(AutomationTrigger2) {
       AutomationTrigger2["FOLDERS"] = "folders";
@@ -345,10 +345,10 @@ var init_automation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/calendar.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/calendar.js
 var CalendarType, EventStatus, AutoJoinStatus;
 var init_calendar = __esm({
-  "node_modules/@speakai/shared/dist/enums/calendar.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/calendar.js"() {
     "use strict";
     (function(CalendarType2) {
       CalendarType2["GOOGLE"] = "google";
@@ -368,10 +368,10 @@ var init_calendar = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/clip.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/clip.js
 var ClipState, ClipGenerationSource;
 var init_clip = __esm({
-  "node_modules/@speakai/shared/dist/enums/clip.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/clip.js"() {
     "use strict";
     (function(ClipState2) {
       ClipState2["QUEUED"] = "queued";
@@ -387,10 +387,10 @@ var init_clip = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/domain.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/domain.js
 var ServiceType, VerificationStatus;
 var init_domain = __esm({
-  "node_modules/@speakai/shared/dist/enums/domain.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/domain.js"() {
     "use strict";
     (function(ServiceType2) {
       ServiceType2["RECORDER"] = "recorder";
@@ -406,10 +406,10 @@ var init_domain = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/embed.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/embed.js
 var EmbedType, ImageSelectionType;
 var init_embed = __esm({
-  "node_modules/@speakai/shared/dist/enums/embed.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/embed.js"() {
     "use strict";
     (function(EmbedType2) {
       EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
@@ -424,10 +424,10 @@ var init_embed = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/export.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/export.js
 var ExportFormatType;
 var init_export = __esm({
-  "node_modules/@speakai/shared/dist/enums/export.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/export.js"() {
     "use strict";
     (function(ExportFormatType2) {
       ExportFormatType2["CSV"] = "csv";
@@ -450,10 +450,10 @@ var init_export = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/fields.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/fields.js
 var FieldType, AllowedValuesMode, DefaultViewColumn;
 var init_fields = __esm({
-  "node_modules/@speakai/shared/dist/enums/fields.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/fields.js"() {
     "use strict";
     (function(FieldType2) {
       FieldType2["TEXT"] = "text";
@@ -482,10 +482,10 @@ var init_fields = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/filter.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/filter.js
 var FilterFieldName, FilterOperator, FilterCondition;
 var init_filter = __esm({
-  "node_modules/@speakai/shared/dist/enums/filter.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/filter.js"() {
     "use strict";
     (function(FilterFieldName2) {
       FilterFieldName2["CATEGORY"] = "category";
@@ -514,10 +514,10 @@ var init_filter = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/integration.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/integration.js
 var IntegrationAuthType;
 var init_integration = __esm({
-  "node_modules/@speakai/shared/dist/enums/integration.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/integration.js"() {
     "use strict";
     (function(IntegrationAuthType2) {
       IntegrationAuthType2["OAUTH"] = "oauth";
@@ -526,10 +526,10 @@ var init_integration = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/media.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/media.js
 var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType;
 var init_media = __esm({
-  "node_modules/@speakai/shared/dist/enums/media.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/media.js"() {
     "use strict";
     (function(MediaType2) {
       MediaType2["AUDIO"] = "audio";
@@ -596,10 +596,10 @@ var init_media = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/meeting.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/meeting.js
 var MeetingPlatform, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource;
 var init_meeting = __esm({
-  "node_modules/@speakai/shared/dist/enums/meeting.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/meeting.js"() {
     "use strict";
     (function(MeetingPlatform2) {
       MeetingPlatform2["GOOGLE_MEET"] = "googleMeet";
@@ -665,10 +665,10 @@ var init_meeting = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/notification.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/notification.js
 var NotificationType, NotificationAction;
 var init_notification = __esm({
-  "node_modules/@speakai/shared/dist/enums/notification.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/notification.js"() {
     "use strict";
     (function(NotificationType2) {
       NotificationType2["CLIP"] = "clip";
@@ -715,10 +715,10 @@ var init_notification = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/prompt.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/prompt.js
 var PromptState, MessageRole, PromptSource, ToolName, FileType;
 var init_prompt = __esm({
-  "node_modules/@speakai/shared/dist/enums/prompt.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/prompt.js"() {
     "use strict";
     (function(PromptState2) {
       PromptState2["INITIATED"] = "initiated";
@@ -765,10 +765,10 @@ var init_prompt = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/recorder.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/recorder.js
 var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating;
 var init_recorder = __esm({
-  "node_modules/@speakai/shared/dist/enums/recorder.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/recorder.js"() {
     "use strict";
     (function(RecorderAnswerType2) {
       RecorderAnswerType2["Single"] = "single";
@@ -793,10 +793,10 @@ var init_recorder = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/subscription.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/subscription.js
 var SubscriptionStatus, SubscriptionDuration, TrialTier;
 var init_subscription = __esm({
-  "node_modules/@speakai/shared/dist/enums/subscription.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/subscription.js"() {
     "use strict";
     (function(SubscriptionStatus2) {
       SubscriptionStatus2["Active"] = "active";
@@ -822,10 +822,10 @@ var init_subscription = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/team.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/team.js
 var TeamInviteStatus;
 var init_team = __esm({
-  "node_modules/@speakai/shared/dist/enums/team.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/team.js"() {
     "use strict";
     (function(TeamInviteStatus2) {
       TeamInviteStatus2["ACTIVE"] = "active";
@@ -836,10 +836,10 @@ var init_team = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/transcription.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/transcription.js
 var TranscriptionEngine, TranscriptionJobState, TranscriptionJobRevisionState;
 var init_transcription = __esm({
-  "node_modules/@speakai/shared/dist/enums/transcription.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/transcription.js"() {
     "use strict";
     (function(TranscriptionEngine2) {
       TranscriptionEngine2["AZURE"] = "azure";
@@ -868,10 +868,10 @@ var init_transcription = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/transaction.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/transaction.js
 var TransactionSource, TransactionType, TransactionStatus;
 var init_transaction = __esm({
-  "node_modules/@speakai/shared/dist/enums/transaction.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/transaction.js"() {
     "use strict";
     (function(TransactionSource2) {
       TransactionSource2["STRIPE"] = "stripe";
@@ -901,10 +901,10 @@ var init_transaction = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/translation.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/translation.js
 var TranslationState, DubbingState;
 var init_translation = __esm({
-  "node_modules/@speakai/shared/dist/enums/translation.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/translation.js"() {
     "use strict";
     (function(TranslationState2) {
       TranslationState2["NOTFOUND"] = "notFound";
@@ -925,10 +925,10 @@ var init_translation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/user.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/user.js
 var UserRole, UserType, UserPermissionType, UserActionType;
 var init_user = __esm({
-  "node_modules/@speakai/shared/dist/enums/user.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/user.js"() {
     "use strict";
     (function(UserRole2) {
       UserRole2["ADMIN"] = "admin";
@@ -975,10 +975,10 @@ var init_user = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/webhook.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/webhook.js
 var WebhookEvent, WebhookEventSource;
 var init_webhook = __esm({
-  "node_modules/@speakai/shared/dist/enums/webhook.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/webhook.js"() {
     "use strict";
     (function(WebhookEvent2) {
       WebhookEvent2["embed_recorder.created"] = "embed_recorder.created";
@@ -1010,10 +1010,10 @@ var init_webhook = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/llm.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/llm.js
 var LLMProvider, LLMModels;
 var init_llm = __esm({
-  "node_modules/@speakai/shared/dist/enums/llm.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/llm.js"() {
     "use strict";
     (function(LLMProvider2) {
       LLMProvider2["OPENAI"] = "openai";
@@ -1069,9 +1069,9 @@ var init_llm = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/index.js
+// ../directory-listing/node_modules/@speakai/shared/dist/enums/index.js
 var init_enums = __esm({
-  "node_modules/@speakai/shared/dist/enums/index.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/enums/index.js"() {
     "use strict";
     init_activities();
     init_auth();
@@ -1100,157 +1100,157 @@ var init_enums = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/api.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/api.js
 var init_api = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/api.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/api.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/media.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/media.js
 var init_media2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/media.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/media.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/transcript.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/transcript.js
 var init_transcript = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/text.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/text.js
 var init_text = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/text.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/text.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/folder.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/folder.js
 var init_folder = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/folder.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/integration.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/integration.js
 var init_integration2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/integration.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/integration.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/recorder.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/recorder.js
 var init_recorder2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/embed.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/embed.js
 var init_embed2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/embed.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/embed.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/automation.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/automation.js
 var init_automation2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/automation.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/automation.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/webhook.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/webhook.js
 var init_webhook2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/field.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/field.js
 var init_field = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/field.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/field.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/meeting.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/meeting.js
 var init_meeting2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/export.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/export.js
 var init_export2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/export.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/export.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/prompt.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/prompt.js
 var init_prompt2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/user.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/user.js
 var init_user2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/user.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/user.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/subscription.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/subscription.js
 var init_subscription2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/calendar.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/calendar.js
 var init_calendar2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/category.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/category.js
 var init_category = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/category.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/category.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/clip.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/clip.js
 var init_clip2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/clip.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/clip.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/dashboard-spec.js
+// ../directory-listing/node_modules/@speakai/shared/dist/utils/dashboard-spec.js
 var init_dashboard_spec = __esm({
-  "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/dashboard.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/dashboard.js
 var init_dashboard = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
     "use strict";
     init_dashboard_spec();
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/index.js
+// ../directory-listing/node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/index.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/interfaces/index.js"() {
     "use strict";
     init_api();
     init_media2();
@@ -1275,17 +1275,17 @@ var init_interfaces = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/transcript.js
+// ../directory-listing/node_modules/@speakai/shared/dist/utils/transcript.js
 var init_transcript2 = __esm({
-  "node_modules/@speakai/shared/dist/utils/transcript.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/utils/transcript.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/pricing/modelPricing.js
+// ../directory-listing/node_modules/@speakai/shared/dist/pricing/modelPricing.js
 var MODEL_PRICING;
 var init_modelPricing = __esm({
-  "node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
     "use strict";
     init_llm();
     MODEL_PRICING = {
@@ -1346,9 +1346,9 @@ var init_modelPricing = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/index.js
+// ../directory-listing/node_modules/@speakai/shared/dist/index.js
 var init_dist = __esm({
-  "node_modules/@speakai/shared/dist/index.js"() {
+  "../directory-listing/node_modules/@speakai/shared/dist/index.js"() {
     "use strict";
     init_enums();
     init_interfaces();
@@ -1442,22 +1442,22 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "upload_media",
-    `Upload media from a URL \u2014 a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.`,
+    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and fires the workspace's media.created webhook if one is registered. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
       name: import_zod2.z.string().min(1).describe("Display name for the media file"),
-      url: import_zod2.z.string().describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
+      url: import_zod2.z.string().describe("Direct public media file URL, a URL returned by get_signed_upload_url, or a page link from a platform listed in this tool's description. Page links are resolved server-side, so pass the URL the user gave you as-is."),
       mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       description: import_zod2.z.string().optional().describe("Description of the media file"),
-      sourceLanguage: import_zod2.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
+      sourceLanguage: import_zod2.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL". Omit to use the default language on the user profile. An unsupported code falls back to automatic detection instead of failing.'),
       tags: import_zod2.z.string().optional().describe("Comma-separated tags for the media"),
-      folderId: import_zod2.z.string().optional().describe("ID of the folder to place the media in"),
-      callbackUrl: import_zod2.z.string().optional().describe("Webhook callback URL for this specific upload"),
+      folderId: import_zod2.z.string().optional().describe("ID of the folder to place the media in. If the folder is not found, the media goes to the workspace's first folder."),
+      callbackUrl: import_zod2.z.string().optional().describe("URL that replaces the workspace webhook's destination for this media's webhook events. It takes effect only when the workspace already has an active webhook for the event; on its own it does not create a webhook or send anything."),
       fields: import_zod2.z.array(
         import_zod2.z.object({
           id: import_zod2.z.string().min(1).describe("Custom field ID"),
           value: import_zod2.z.string().min(1).describe("Custom field value")
         })
-      ).optional().describe("Custom field values to attach to the media")
+      ).optional().describe("Custom field values to attach to the media. Field IDs that do not belong to the workspace are ignored without an error.")
     },
     {
       title: "Upload Media from URL",
@@ -4862,7 +4862,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "create_automation",
-    "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) \u2014 recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
+    "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio, and use AI credits. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
     writeSchema,
     {
       title: "Create Automation",
@@ -4901,7 +4901,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "update_automation",
-    "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes.",
+    "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes. The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. Changing a Composio app-event trigger updates the subscription on that third-party account.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
       ...writeSchema
@@ -5028,7 +5028,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "run_automations",
-    "Manually run one or more automations against one or more media items now (outside the normal trigger).",
+    "Manually run one or more automations against one or more media items now (outside the normal trigger). Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without an error. The runs happen in the background and this returns only an acknowledgement, so check results with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook URLs, run actions in connected third-party apps, and use AI credits.",
     {
       mediaIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).describe("Media ids to run the automations against"),
       automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).describe("Automation ids to run")
@@ -5148,7 +5148,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "test_automation",
-    "Run an automation once against one media item to see which way it branches. THIS HAS REAL SIDE EFFECTS: only Speak's own run notifications are suppressed \u2014 outbound webhooks fire, Composio actions run against the connected third party, and AI steps are billed. Ask the user before calling it on an automation that posts anywhere outside Speak. It also needs a mediaId and sends no webhook payload, so an inbound-webhook automation cannot be meaningfully tested this way \u2014 its payload tokens will resolve to empty. Returns a runId; read the result with get_automation_run.",
+    "Run one automation once against one media item to see which way it branches. This is a real run, not a dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks still fire, Composio actions still run against the connected third-party account, and AI steps use credits. Confirm with the user before testing an automation that sends anything outside Speak. It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens resolve to empty. Returns a runId; read the result with get_automation_run.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation to test"),
       mediaId: import_zod11.z.string().min(1).describe("Media item to run the automation against")
@@ -5288,7 +5288,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "list_automation_apps",
-    "List the apps available in the automation catalog (e.g. Speak native + connected integrations). Use to discover what triggers/actions exist before building an automation.",
+    "List the apps in Speak's automation catalog: Speak's built-in apps plus, when enabled, third-party apps available through Composio, each marked connected or not_connected for this user. Read-only: the list comes from Speak's own catalog and the user's saved connections, and no third-party service is called. Use the app slugs with list_automation_triggers and list_automation_actions.",
     {},
     {
       title: "List Automation Apps",
@@ -5342,7 +5342,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "list_automation_actions",
-    "List the action/step types available in the automation catalog. Optionally filter by app.",
+    "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the fields each filter or condition step can test. Read-only: served from Speak's own catalog and the user's saved connections, with no third-party calls. Listing an action does not run it.",
     {
       app: import_zod11.z.string().min(1).max(100).optional().describe("Filter actions to a specific app slug")
     },
@@ -6345,9 +6345,9 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
   registerSpeakTool(
     server,
     "upload_and_analyze_batch",
-    `Upload several URLs in one call \u2014 the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to ${MAX_BATCH_URLS} URLs and starts at most ${MAX_BATCH_CONCURRENCY} at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.`,
+    `Import up to ${MAX_BATCH_URLS} audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most ${MAX_BATCH_CONCURRENCY} uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.`,
     {
-      urls: import_zod15.z.array(import_zod15.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Duplicates are uploaded once."),
+      urls: import_zod15.z.array(import_zod15.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Exact duplicate URLs are sent once."),
       mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Applies to every URL in the batch. Send it only when the user has said which they want for all of them \u2014 "audio" if they asked for audio only, "video" if they called them videos. Otherwise omit it and the server decides per URL. Mixed batches: leave it off, or split into two calls.'),
       folderId: import_zod15.z.string().optional().describe("Folder ID for every upload in the batch"),
       sourceLanguage: import_zod15.z.string().optional().describe('BCP-47 language code applied to every upload, e.g. "en-US"'),
@@ -7212,7 +7212,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "create_dashboard",
-    `Create an analytics dashboard. Only \`title\` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad \u2014 every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Viewer settings (the settings input): ` + SETTINGS_RULES,
+    `Create an analytics dashboard. Only \`title\` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad \u2014 every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): ` + SETTINGS_RULES,
     {
       title: import_zod17.z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
       ...specFields,
@@ -7223,7 +7223,7 @@ function register16(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ title, description, source, dateRange, sections, widgets, ...metadata }) => {
       try {
@@ -7516,7 +7516,7 @@ var init_dashboards = __esm({
           "Per feedback field: a short row label and the allowed score range, used for both the reviewer's score and the approver's score."
         ),
         sheetWebhookUrl: import_zod17.z.string().optional().describe(
-          "Google Apps Script web app URL that receives one row per submission. Only script.google.com addresses are posted to. Never shown to viewers."
+          "External Google Apps Script web app URL. Speak posts one row per Feedback submission (call date, media link, scores, submitter name, notes) to it. Only https://script.google.com/macros/s/<id>/exec addresses are called; other values are saved but never called. Never shown to viewers."
         )
       }).optional()
     }).describe(
@@ -7787,7 +7787,7 @@ function register17(server, client) {
   registerSpeakTool(
     server,
     "delete_voice_agent",
-    "Permanently delete a voice agent. Requires the OWNER or ADMIN role. Irreversible: also removes its questions, test suite, and share link; past conversations are kept for record-keeping but are no longer reachable from this agent.",
+    "Delete a voice agent. Requires the OWNER or ADMIN role. The agent is marked deleted and no tool can restore it: it stops appearing in list_voice_agents, and its share link, embedded widget, questions, and test suite stop working. Its stored data is not erased, past conversations stay in list_voice_conversations, and phone numbers assigned to it are not released.",
     { agentId: import_zod18.z.string().min(1).describe("ID of the voice agent to delete (from list_voice_agents)") },
     { title: "Delete Voice Agent", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId }) => {
@@ -7802,11 +7802,11 @@ function register17(server, client) {
   registerSpeakTool(
     server,
     "create_voice_agent_from_prompt",
-    "Create a new voice agent by describing it in plain English instead of filling in name/personality/instructions/voice yourself. Requires the OWNER or ADMIN role. Response always includes the new agentId, plus either the generated agent config, or needsFollowUp: true with a follow-up question if the prompt was too thin to act on \u2014 call generate_voice_agent_config again on that agentId with more detail (or manualInstructions) when that happens.",
+    "Create a new voice agent from a plain-English description, via an LLM call. Requires the OWNER or ADMIN role. Saves a draft agent, then generates and saves its name, personality, instructions, chat settings, and default voice, speech-to-text, and LLM settings. Does not assign a phone number. The response includes the new agentId plus either the generated agent, or needsFollowUp: true with a followUpQuestion when the prompt is too vague. In that case the draft agent still exists with placeholder settings; call generate_voice_agent_config on that agentId with more detail.",
     {
       prompt: import_zod18.z.string().min(1).describe('Plain-English description of the agent to build, e.g. "a friendly dental clinic receptionist that books appointments and answers insurance questions".'),
-      name: import_zod18.z.string().optional().describe("Agent name. Defaults to one derived from the prompt if omitted."),
-      manualInstructions: import_zod18.z.string().optional().describe("Skip generation and use this as the agent's instructions verbatim.")
+      name: import_zod18.z.string().optional().describe("Initial name for the draft agent. Replaced by the generated name when generation succeeds; kept only if the response asks a follow-up question."),
+      manualInstructions: import_zod18.z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague.")
     },
     { title: "Create Voice Agent From Prompt", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async (body) => {
@@ -7825,7 +7825,7 @@ function register17(server, client) {
     {
       agentId: import_zod18.z.string().min(1).describe("ID of the existing voice agent to generate config for (from list_voice_agents)"),
       prompt: import_zod18.z.string().min(1).describe("Plain-English description of what the agent should do."),
-      manualInstructions: import_zod18.z.string().optional().describe("Skip generation and set the agent's instructions to this verbatim.")
+      manualInstructions: import_zod18.z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague.")
     },
     { title: "Generate Voice Agent Config", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, ...body }) => {
@@ -8002,9 +8002,9 @@ function register18(server, client) {
   registerSpeakTool(
     server,
     "start_voice_test_run",
-    "Start a test run against a voice agent's suite. Requires the OWNER or ADMIN role. Rejects with 409 if the agent has no test suite." + NOT_WIRED_NOTE,
+    "Queue a test run of a voice agent's scripted test suite. Creates a run record in queued status and returns it; it does not place phone calls, start a conversation, or use credits. Requires the OWNER or ADMIN role. Returns 404 if the agent or its test suite does not exist, and 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run." + NOT_WIRED_NOTE,
     { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Start Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Queue Voice Agent Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run`);
