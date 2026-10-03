@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.28.2 (2026-10-03)
+
+- fix(plugin): split Claude and portable plugin folders, fix flagged tools, build the OpenAI ZIP (#96)
+
 ## v1.28.1 (2026-10-02)
 
 - fix(release): wait for npm before logging in to the MCP Registry
