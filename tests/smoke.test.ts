@@ -200,7 +200,7 @@ describe("MCP Server Smoke Tests", () => {
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);
     const OUTSIDE_SEND =
-      /\b(sends?|sent|posts?|posted|emails?|fires?|triggers?|notifies)\b[^;]{0,160}?\b(email|slack|webhook|automation|any address|third-party|external)|\bpublic (url|link|page)|\bphone call|\bjoins? [^;]*?\bmeeting|\bcomposio\b/i;
+      /\b(sends?|sent|sending|posts?|posted|emails?|fires?|triggers?|notifies|calls?)\b[^;]{0,160}?\b(email|slack|webhook|automation|any address|third-party|external)|\bpublic (url|link|page)|\bphone call|\bjoins? [^;]*?\bmeeting|\bcomposio\b/i;
     const IRREVERSIBLE = /\b(charges?|bills?|billed|credits?|permanently|overwrites?|replaces?)\b/i;
     const NEGATED = /\b(not|no|never|without|cannot)\b/i;
 
