@@ -433,7 +433,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `get_chat_history` | List recent AI Chat conversations |
 | `get_chat_messages` | Get full message history for conversations |
 | `delete_chat_message` | Delete a specific chat message |
-| `list_prompts` | List available AI prompt templates |
+| `list_prompts` | List recent AI chat messages with their answers and sources |
 | `get_favorite_prompts` | Get all favorited prompts and answers |
 | `toggle_prompt_favorite` | Mark or unmark a chat message as favorite |
 | `update_chat_title` | Rename a chat conversation |
@@ -487,7 +487,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 |---|---|
 | `list_automations` | List automation rules with paging and filters |
 | `build_automation` | Create or update an automation from a friendly spec, without the wire format |
-| `list_automation_names` | List automations as lightweight name + id pairs |
+| `list_automation_names` | List names and ids of active automations that have an AI chat step |
 | `get_automation` | Get automation details (trigger + step graph) |
 | `get_automation_runs` | Get an automation's run history |
 | `get_automation_run` | Get one run in full — every step, plus which way each branch went |
@@ -607,10 +607,10 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 
 | Tool | Description |
 |---|---|
-| `create_text_note` | Create a text note for AI analysis |
+| `create_text_note` | Create a text note for AI analysis (uses the plan allowance, then credits) |
 | `get_text_insight` | Get AI insights for a text note |
 | `reanalyze_text` | Re-run AI analysis on a text note |
-| `update_text_note` | Update note content (triggers re-analysis) |
+| `update_text_note` | Update a note's name or content (only a note not yet analyzed is analyzed) |
 
 </details>
 

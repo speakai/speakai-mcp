@@ -222,7 +222,10 @@ const metadataFields = {
     .optional()
     .describe("User ids, or group ids in the \"<groupId> (G)\" convention, to share view access with"),
   filters: z.record(z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
-  isDefault: z.boolean().optional().describe("Make this the company default dashboard"),
+  isDefault: z
+    .boolean()
+    .optional()
+    .describe("Make this the owner's default dashboard. Setting true clears the default flag on the owner's other dashboards"),
   settings: dashboardSettingsSchema.optional(),
 } as const;
 
@@ -443,7 +446,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Dashboard",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -482,6 +485,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, " +
       "then increments it. A 409 conflict means another writer saved first — re-fetch with get_dashboard, " +
       "rebuild your changes on the fresh spec, and retry with the new revision. " +
+      "If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard " +
+      "is posted to that external Google Apps Script URL. " +
       "Viewer settings (the settings input): " +
       SETTINGS_RULES,
     {
@@ -589,9 +594,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "duplicate_dashboard",
-    "Clone an existing dashboard. The copy gets fresh widget ids, a \"<name> (copy)\" title, cleared " +
-      "sharing, and its revision reset to 0. Ideal for cloning a fully-configured dashboard, then tweaking " +
-      "it via update_dashboard.",
+    "Clone an existing dashboard into a new dashboard owned by the caller. The copy keeps the source's widgets " +
+      "(same widget ids), sections, filters, and viewer settings, gets a \"<name> (copy)\" title, has no shared " +
+      "users and no public link, and starts at revision 0. Edit it afterwards with update_dashboard.",
     {
       dashboardId: z.string().min(1).describe("Source dashboard business id to clone"),
     },

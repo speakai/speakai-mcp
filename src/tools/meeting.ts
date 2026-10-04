@@ -47,7 +47,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "schedule_meeting_event",
-    "Schedule the Speak AI meeting assistant to join and record an upcoming meeting.",
+    "Schedule the Speak AI meeting assistant to join and record an online meeting (Zoom, Google Meet, Microsoft Teams, or Webex). The assistant joins as a participant other attendees can see, at meetingDate or right away when meetingDate is omitted. Recorded minutes are charged to the account, and on trial plans each scheduled meeting uses one meeting from the allowance.",
     {
       title: z.string().min(1).describe("Display title for the event"),
       meetingURL: z.string().min(1).describe("URL of the meeting to join"),

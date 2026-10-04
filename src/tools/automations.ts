@@ -329,7 +329,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "list_automation_names",
-    "List automations as lightweight { name, id } pairs — useful for pickers without fetching full configs.",
+    "List the names and ids of active automations that contain an AI chat (magic prompt) step. Inactive " +
+      "automations and automations without an AI chat step are not included; use list_automations for the full list.",
     {},
     {
       title: "List Automation Names",
@@ -429,7 +430,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Automation",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -510,7 +511,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "toggle_automation_status",
-    "Toggle an automation rule between active and inactive. This flips the current state — call get_automation first if you need to know which way it will flip.",
+    "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation " +
+      "first if you need to know which way it will flip. An active automation runs on its own every time its trigger " +
+      "fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party " +
+      "apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected " +
+      "third-party account.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
     },
@@ -519,7 +524,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ automationId }) => {
       try {
@@ -538,7 +543,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "bulk_update_automation_status",
-    "Activate or deactivate multiple automations at once.",
+    "Activate or deactivate multiple automations at once. An active automation runs on its own every time its " +
+      "trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected " +
+      "third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the " +
+      "connected third-party account.",
     {
       automationIds: z
         .array(z.string().min(1))
@@ -552,7 +560,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -640,7 +648,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "delete_automation",
-    "Permanently delete an automation rule.",
+    "Permanently delete an automation rule. If it has an inbound webhook URL, that URL stops accepting payloads, " +
+      "and any event subscription it holds on a connected third-party account through Composio is removed.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation to delete"),
     },
@@ -649,7 +658,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ automationId }) => {
       try {

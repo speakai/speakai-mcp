@@ -8,7 +8,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   registerSpeakTool(server, 
     "create_text_note",
-    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
+    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, and once the allowance is used up charges credits, the account balance, or the card on file; the request is refused only when none of these can cover it. Sends the text.created and text.analyzed events to the workspace's webhooks and Slack channels if any are configured.",
     {
       name: z.string().min(1).describe("Title/name for the text note"),
       text: z.string().optional().describe("Full text content to analyze"),
@@ -24,7 +24,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       callbackUrl: z
         .string()
         .optional()
-        .describe("Webhook callback URL for completion notification"),
+        .describe("URL that replaces the workspace webhook's destination for this note's webhook events. It takes effect only when the workspace already has an active webhook for the event; on its own it does not create a webhook or send anything."),
       fields: z
         .array(
           z.object({
@@ -38,13 +38,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Text Note",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
     async (body) => {
       try {
-        const result = await api.post("/v1/text/create", body);
+        // The endpoint analyzes and counts words only from `rawText`; without it the note is saved unanalyzed.
+        const payload = body.text !== undefined ? { ...body, rawText: body.text } : body;
+        const result = await api.post("/v1/text/create", payload);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -91,7 +93,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "reanalyze_text",
-    "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models.",
+    "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment. Sends the text.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: z
         .string()
@@ -102,11 +104,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ mediaId }) => {
       try {
-        const result = await api.get(`/v1/media/reanalyze/${mediaId}`);
+        const result = await api.get(`/v1/media/reanalyze/${mediaId}`, {
+          params: { isInsights: true, isSentiment: true, isFillerWords: true, isEmbeddings: true },
+        });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -123,16 +127,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_text_note",
-    "Update an existing text note's name, content, or metadata. Updating text content will trigger re-analysis.",
+    "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the text note"),
       name: z.string().optional().describe("New name for the text note"),
       text: z
         .string()
         .optional()
-        .describe("New text content (will trigger re-analysis)"),
+        .describe("New text content. Replaces the existing text of the note."),
       description: z.string().optional().describe("Updated description"),
-      folderId: z.string().optional().describe("Move to a different folder"),
       tags: z
         .string()
         .optional()
@@ -143,7 +146,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ mediaId, ...body }) => {
       try {
