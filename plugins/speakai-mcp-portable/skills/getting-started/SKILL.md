@@ -243,7 +243,7 @@ proceed.
 State the action, the exact ids, and the consequence, then wait for a clear yes.
 
 - **Deletes:** `delete_media`, `delete_folder`, `delete_clip`, `delete_recorder`,
-  `delete_webhook`, `delete_automation`, `delete_dashboard`, `delete_chat_message`,
+  `delete_webhook`, `delete_automation`, `delete_dashboard`, `delete_chat_conversation`,
   `delete_user_group`, `delete_scheduled_assistant`. `delete_media` is permanent.
 - **Bulk changes:** `bulk_move_media`, `bulk_update_transcript_speakers`,
   `bulk_update_automation_status`, `bulk_assign_automation_folders`,

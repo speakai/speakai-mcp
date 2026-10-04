@@ -4,6 +4,8 @@ import { AxiosInstance } from "axios";
 export interface RegisterOptions {
   /** Register tools that read the local disk. Only for servers on the user's own machine (stdio, CLI). */
   localFileAccess?: boolean;
+  /** Register the voice test-run tools (start, pause, resume, cancel, results). Their execution engine is not live yet, so the hosted server leaves them off. */
+  voiceTestRuns?: boolean;
 }
 
 export declare function registerAllTools(

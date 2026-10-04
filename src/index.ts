@@ -88,7 +88,7 @@ if (isCliMode) {
             version: "1.0.0",
           });
 
-          registerAllTools(server, undefined, { localFileAccess: true });
+          registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
           registerResources(server);
           registerPrompts(server);
 

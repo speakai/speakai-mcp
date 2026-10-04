@@ -108,7 +108,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "get_chat_history",
   "get_chat_messages",
   "update_chat_title",
-  "delete_chat_message",
+  "delete_chat_conversation",
   "submit_chat_feedback",
   "retry_ai_chat",
   "export_chat_answer",

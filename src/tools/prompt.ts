@@ -364,13 +364,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   );
 
   registerSpeakTool(server, 
-    "delete_chat_message",
+    "delete_chat_conversation",
     "Delete an entire chat conversation from conversation history, so it and its messages no longer appear. No tool can restore it.",
     {
       promptId: z.string().min(1).describe("ID of the conversation (promptId) to delete"),
     },
     {
-      title: "Delete Chat Message",
+      title: "Delete Chat Conversation",
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,

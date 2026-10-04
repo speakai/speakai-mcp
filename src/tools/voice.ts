@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
+import type { RegisterOptions } from "./index.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 // Voice agents and conversations, under /v1/voice; companyId is stamped server-side, no tenancy id is passed here.
@@ -35,7 +36,7 @@ const voiceInputSchema = {
   enableWebSearch: z.boolean().optional().describe("Let the agent search the web mid-call, separate from any attached knowledge base."),
 };
 
-export function register(server: McpServer, client?: AxiosInstance): void {
+export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
 
   registerSpeakTool(server,
@@ -356,8 +357,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         afterTheAgentExists: [
           {
             area: "Testing",
-            tools: ["get_voice_test_suite", "update_voice_test_suite", "generate_voice_test_suite", "start_voice_test_run"],
-            notes: "Scripted scenarios and a run history. The run lifecycle is live; the engine that drives a simulated conversation is not wired up yet, so a run stays queued.",
+            tools: [
+              "get_voice_test_suite",
+              "update_voice_test_suite",
+              "generate_voice_test_suite",
+              ...(options.voiceTestRuns ? ["start_voice_test_run"] : []),
+            ],
+            notes: options.voiceTestRuns
+              ? "Scripted scenarios and a run history. The run lifecycle is live; the engine that drives a simulated conversation is not wired up yet, so a run stays queued."
+              : "Scripted test scenarios for the agent. Running them is not available yet, because the engine that drives a simulated conversation is not live.",
           },
           {
             area: "Feedback / self-improvement (Intelligence)",
@@ -377,7 +385,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         ],
         commonMistakes: [
           "Calling create_voice_agent with a made-up voiceId instead of one from list_voices -- the create call fails validation.",
-          "Expecting start_voice_test_run to return real scores -- the execution engine isn't wired up yet, see the Testing tools' own descriptions.",
+          ...(options.voiceTestRuns
+            ? ["Expecting start_voice_test_run to return real scores -- the execution engine isn't wired up yet, see the Testing tools' own descriptions."]
+            : []),
           "Looking for a knowledge-base tool in this group -- collections are managed by the separate Knowledge Base tool group and only attached here.",
         ],
       };

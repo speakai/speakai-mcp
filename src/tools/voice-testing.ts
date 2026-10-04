@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
+import type { RegisterOptions } from "./index.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 // Scripted test suites and runs, under /v1/voice/testing/{agentId}; the run lifecycle is live but the simulated-conversation engine is not wired up yet.
@@ -34,7 +35,7 @@ const scenarioSchema = z.object({
   isEnabled: z.boolean().optional(),
 });
 
-export function register(server: McpServer, client?: AxiosInstance): void {
+export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
 
   registerSpeakTool(server,
@@ -88,6 +89,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       }
     }
   );
+
+  // The run tools drive an execution engine that is not live yet, so only servers that opt in expose them.
+  if (!options.voiceTestRuns) return;
 
   registerSpeakTool(server,
     "start_voice_test_run",
