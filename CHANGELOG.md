@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.28.4 (2026-10-04)
+
+- fix(tools): mark delete_voice_agent open-world and lint public-surface changes (#99)
+
 ## v1.28.3 (2026-10-04)
 
 - fix(tools): declare every outside send and irreversible effect in tool hints (#98)
