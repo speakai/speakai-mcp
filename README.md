@@ -432,7 +432,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `retry_ai_chat` | Retry a failed or incomplete AI Chat response |
 | `get_chat_history` | List recent AI Chat conversations |
 | `get_chat_messages` | Get full message history for conversations |
-| `delete_chat_message` | Delete a specific chat message |
+| `delete_chat_conversation` | Delete a whole chat conversation and its messages |
 | `list_prompts` | List recent AI chat messages with their answers and sources |
 | `get_favorite_prompts` | Get all favorited prompts and answers |
 | `toggle_prompt_favorite` | Mark or unmark a chat message as favorite |
@@ -710,7 +710,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 |---|---|
 | `get_voice_test_suite` | Get a voice agent's test suite (its scenarios and run settings) |
 | `update_voice_test_suite` | Create or update a voice agent's test suite (upserts; replaces scenarios) |
-| `generate_voice_test_suite` | Auto-generate a default test suite from the agent's instructions and knowledge base |
+| `generate_voice_test_suite` | Auto-generate a default test suite from the agent's name, personality and instructions |
 | `start_voice_test_run` | Queue a test run of a voice agent's scripted test suite (creates a queued run record; no calls are placed) |
 | `get_active_voice_test_run` | Get a voice agent's currently active run (queued, running, or paused) |
 | `pause_voice_test_run` | Pause a running or queued test run |
@@ -721,6 +721,8 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `apply_voice_test_recommendation` | Apply a test run recommendation's quick action to the agent |
 | `get_voice_test_baseline` | Get a voice agent's best-scoring completed run, for regression comparison |
 | `get_voice_test_score_history` | Get completed-run score points for charting |
+
+The ten run tools, from `start_voice_test_run` down, register only with `voiceTestRuns: true`. The stdio server and Speak's in-app assistant include them; the hosted endpoint does not, until the engine that runs the scenarios is live.
 
 </details>
 

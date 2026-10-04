@@ -762,7 +762,7 @@ describe("Workflows tools (upload_and_analyze)", () => {
     mockPost.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/workflows.js");
-    register(server, mockClient, { localFileAccess: true });
+    register(server, mockClient, { localFileAccess: true, voiceTestRuns: true });
   });
 
   it("upload_and_analyze returns media_id immediately without polling", async () => {
@@ -1079,8 +1079,8 @@ describe("Prompt tools — remaining untested endpoints", () => {
     });
   });
 
-  it("delete_chat_message calls DELETE /v1/prompt/message/:id", async () => {
-    const cb = getToolCallback(server, "delete_chat_message");
+  it("delete_chat_conversation calls DELETE /v1/prompt/message/:id", async () => {
+    const cb = getToolCallback(server, "delete_chat_conversation");
     await cb({ promptId: "p1" });
     expect(mockDelete).toHaveBeenCalledWith("/v1/prompt/message/p1");
   });

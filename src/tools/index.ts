@@ -24,6 +24,7 @@ import * as voiceIntelligence from "./voice-intelligence.js";
 
 export interface RegisterOptions {
   localFileAccess?: boolean;
+  voiceTestRuns?: boolean;
 }
 
 type ToolModule = {
@@ -58,7 +59,8 @@ const modules: ToolModule[] = [
  * @param server - McpServer instance
  * @param client - Optional custom axios client (for server-side use with per-request auth).
  *                 If omitted, uses the default client from env vars (STDIO mode).
- * @param options - Set localFileAccess only where the server runs on the user's machine.
+ * @param options - Set localFileAccess only where the server runs on the user's machine. Set
+ *                  voiceTestRuns to expose the voice test-run tools, whose execution engine is not live yet.
  */
 export function registerAllTools(
   server: McpServer,

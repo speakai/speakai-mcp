@@ -216,8 +216,8 @@
           "openWorldHint": false
         },
         {
-          "name": "delete_chat_message",
-          "title": "Delete Chat Message",
+          "name": "delete_chat_conversation",
+          "title": "Delete Chat Conversation",
           "description": "Delete an entire chat conversation from conversation history, so it and its messages no longer appear. No tool can restore it.",
           "readOnlyHint": false,
           "destructiveHint": true,
