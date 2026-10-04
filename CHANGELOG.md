@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.28.3 (2026-10-04)
+
+- fix(tools): declare every outside send and irreversible effect in tool hints (#98)
+
 ## v1.28.2 (2026-10-03)
 
 - fix(plugin): split Claude and portable plugin folders, fix flagged tools, build the OpenAI ZIP (#96)
