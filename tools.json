@@ -1243,7 +1243,7 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "create_voice_agent_from_prompt",

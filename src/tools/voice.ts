@@ -263,7 +263,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "delete_voice_agent",
     "Delete a voice agent. Requires the OWNER or ADMIN role. The agent is marked deleted and no tool can restore it: it stops appearing in list_voice_agents, and its share link, embedded widget, questions, and test suite stop working. Its stored data is not erased, past conversations stay in list_voice_conversations, and phone numbers assigned to it are not released.",
     { agentId: z.string().min(1).describe("ID of the voice agent to delete (from list_voice_agents)") },
-    { title: "Delete Voice Agent", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    { title: "Delete Voice Agent", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     async ({ agentId }) => {
       try {
         const result = await api.delete(`/v1/voice/agents/${agentId}`);

@@ -161,6 +161,7 @@ describe("MCP Server Smoke Tests", () => {
       "delete_media",
       "delete_recorder",
       "delete_scheduled_assistant",
+      "delete_voice_agent",
       "delete_webhook",
       "provision_inbound_webhook",
       "reanalyze_media",
@@ -192,7 +193,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("never describes an outside send or irreversible effect that the hints don't declare", async () => {
     // OpenAI's tool scan reads the description against the annotations. A write that says it sends
-    // outside Speak AI must be open-world; one that says it bills, overwrites or permanently deletes
+    // outside Speak AI, or changes a share link, embedded widget or phone number, must be open-world; one that says it bills, overwrites or permanently deletes
     // must be destructive. A match is ignored when its clause negates it, or names another tool, first.
     const { registerAllTools } = await import("../src/tools/index.js");
     registerAllTools(server, undefined, { localFileAccess: true });
@@ -200,7 +201,7 @@ describe("MCP Server Smoke Tests", () => {
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);
     const OUTSIDE_SEND =
-      /\b(sends?|sent|sending|posts?|posted|emails?|fires?|triggers?|notifies|calls?)\b[^;]{0,160}?\b(email|slack|webhook|automation|any address|third-party|external)|\bpublic (url|link|page)|\bphone call|\bjoins? [^;]*?\bmeeting|\bcomposio\b/i;
+      /\b(sends?|sent|sending|posts?|posted|emails?|fires?|triggers?|notifies|calls?)\b[^;]{0,160}?\b(email|slack|webhook|automation|any address|third-party|external)|\bpublic (url|link|page)|\bshare link|\bembedded widget|\bphone numbers?\b|\bphone call|\bjoins? [^;]*?\bmeeting|\bcomposio\b/i;
     const IRREVERSIBLE = /\b(charges?|bills?|billed|credits?|permanently|overwrites?|replaces?)\b/i;
     const NEGATED = /\b(not|no|never|without|cannot)\b/i;
 
@@ -209,8 +210,11 @@ describe("MCP Server Smoke Tests", () => {
       const match = pattern.exec(clause);
       if (!match) return null;
       const before = clause.slice(0, match.index);
-      if (NEGATED.test(before)) return null;
-      if (names.some((other) => other !== self && new RegExp(`\\b${other}\\b`).test(before))) return null;
+      // A negation covers its list ("does not place calls, or use credits") but stops at a colon.
+      if (NEGATED.test(before.slice(before.lastIndexOf(":") + 1))) return null;
+      // Only another tool named in the same comma-separated phrase as the match makes it that tool's effect.
+      const phrase = before.slice(before.lastIndexOf(",") + 1);
+      if (names.some((other) => other !== self && new RegExp(`\\b${other}\\b`).test(phrase))) return null;
       return match[0];
     };
 
