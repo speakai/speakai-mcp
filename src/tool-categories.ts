@@ -3,7 +3,7 @@
 export const SPEAK_MCP_TOOL_CATEGORIES = [
   {
     id: "media",
-    name: "Media library",
+    name: "Media",
     tools: [
       "update_transcription",
       "get_signed_upload_url",
@@ -27,7 +27,7 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
   },
   {
     id: "magic-prompt",
-    name: "Ask AI Chat",
+    name: "AI Chat",
     tools: [
       "ask_ai_chat",
       "retry_ai_chat",
@@ -106,7 +106,7 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
   },
   {
     id: "meeting-bot",
-    name: "Meeting bot",
+    name: "Meeting assistant",
     tools: [
       "list_meeting_events",
       "schedule_meeting_event",
@@ -166,7 +166,7 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
   },
   {
     id: "custom-fields",
-    name: "Custom fields",
+    name: "Fields",
     tools: [
       "list_fields",
       "create_field",
@@ -226,12 +226,14 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "list_voices",
       "list_voice_conversations",
       "get_voice_conversation",
-    ],
-  },
-  {
-    id: "voice-agent-testing",
-    name: "Voice agent testing",
-    tools: [
+      "list_voice_questions",
+      "get_voice_question",
+      "create_voice_question",
+      "update_voice_question",
+      "delete_voice_question",
+      "reorder_voice_questions",
+      "list_voice_question_templates",
+      "create_voice_question_template",
       "get_voice_test_suite",
       "update_voice_test_suite",
       "generate_voice_test_suite",
@@ -248,22 +250,8 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
     ],
   },
   {
-    id: "voice-agent-questions",
-    name: "Voice agent questions",
-    tools: [
-      "list_voice_questions",
-      "get_voice_question",
-      "create_voice_question",
-      "update_voice_question",
-      "delete_voice_question",
-      "reorder_voice_questions",
-      "list_voice_question_templates",
-      "create_voice_question_template",
-    ],
-  },
-  {
     id: "voice-agent-intelligence",
-    name: "Voice agent intelligence",
+    name: "Voice agent insights",
     tools: [
       "list_voice_kb_gaps",
       "analyze_voice_kb_gaps",

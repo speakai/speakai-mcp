@@ -93,6 +93,20 @@ const readmeSections = (text: string) =>
     }
     process.exit(1);
   }
+
+  const sections = readmeSections(read("README.md"));
+  const mismatched = toolsJson.categories.filter(
+    (c: { name: string; tools: { name: string }[] }, i: number) =>
+      sections[i]?.label !== c.name ||
+      [...sections[i].tools].sort().join() !== c.tools.map((t) => t.name).sort().join(),
+  );
+  if (mismatched.length || sections.length !== toolsJson.categories.length) {
+    console.error(
+      `sync-plugin: README.md tool sections must match tools.json categories (name, order and tools). ` +
+        `Out of step: ${mismatched.map((c: { name: string }) => c.name).join(", ") || "section count"}.`,
+    );
+    process.exit(1);
+  }
 }
 
 /** `generated` marks a file the rule writes in full, so a missing copy is created rather than an error. */
