@@ -245,10 +245,10 @@ var init_helpers = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/activities.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/activities.js
 var ActivityType;
 var init_activities = __esm({
-  "node_modules/@speakai/shared/dist/enums/activities.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/activities.js"() {
     "use strict";
     (function(ActivityType2) {
       ActivityType2["MEDIA_ANALYSIS"] = "mediaAnalysis";
@@ -261,10 +261,10 @@ var init_activities = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/auth.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/auth.js
 var SSOType, DevicePlatform;
 var init_auth = __esm({
-  "node_modules/@speakai/shared/dist/enums/auth.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/auth.js"() {
     "use strict";
     (function(SSOType2) {
       SSOType2["GOOGLE"] = "google";
@@ -282,10 +282,10 @@ var init_auth = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/automation.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/automation.js
 var AutomationTrigger, AutomationAction, AutomationStepType, AutomationRunStatus, AutomationIOType, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
 var init_automation = __esm({
-  "node_modules/@speakai/shared/dist/enums/automation.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/automation.js"() {
     "use strict";
     (function(AutomationTrigger2) {
       AutomationTrigger2["FOLDERS"] = "folders";
@@ -345,10 +345,10 @@ var init_automation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/calendar.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/calendar.js
 var CalendarType, EventStatus, AutoJoinStatus;
 var init_calendar = __esm({
-  "node_modules/@speakai/shared/dist/enums/calendar.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/calendar.js"() {
     "use strict";
     (function(CalendarType2) {
       CalendarType2["GOOGLE"] = "google";
@@ -368,10 +368,10 @@ var init_calendar = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/clip.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/clip.js
 var ClipState, ClipGenerationSource;
 var init_clip = __esm({
-  "node_modules/@speakai/shared/dist/enums/clip.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/clip.js"() {
     "use strict";
     (function(ClipState2) {
       ClipState2["QUEUED"] = "queued";
@@ -387,10 +387,10 @@ var init_clip = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/domain.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/domain.js
 var ServiceType, VerificationStatus;
 var init_domain = __esm({
-  "node_modules/@speakai/shared/dist/enums/domain.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/domain.js"() {
     "use strict";
     (function(ServiceType2) {
       ServiceType2["RECORDER"] = "recorder";
@@ -406,10 +406,10 @@ var init_domain = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/embed.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/embed.js
 var EmbedType, ImageSelectionType;
 var init_embed = __esm({
-  "node_modules/@speakai/shared/dist/enums/embed.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/embed.js"() {
     "use strict";
     (function(EmbedType2) {
       EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
@@ -424,10 +424,10 @@ var init_embed = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/export.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/export.js
 var ExportFormatType;
 var init_export = __esm({
-  "node_modules/@speakai/shared/dist/enums/export.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/export.js"() {
     "use strict";
     (function(ExportFormatType2) {
       ExportFormatType2["CSV"] = "csv";
@@ -450,10 +450,10 @@ var init_export = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/fields.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/fields.js
 var FieldType, AllowedValuesMode, DefaultViewColumn;
 var init_fields = __esm({
-  "node_modules/@speakai/shared/dist/enums/fields.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/fields.js"() {
     "use strict";
     (function(FieldType2) {
       FieldType2["TEXT"] = "text";
@@ -482,10 +482,10 @@ var init_fields = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/filter.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/filter.js
 var FilterFieldName, FilterOperator, FilterCondition;
 var init_filter = __esm({
-  "node_modules/@speakai/shared/dist/enums/filter.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/filter.js"() {
     "use strict";
     (function(FilterFieldName2) {
       FilterFieldName2["CATEGORY"] = "category";
@@ -514,10 +514,10 @@ var init_filter = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/integration.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/integration.js
 var IntegrationAuthType;
 var init_integration = __esm({
-  "node_modules/@speakai/shared/dist/enums/integration.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/integration.js"() {
     "use strict";
     (function(IntegrationAuthType2) {
       IntegrationAuthType2["OAUTH"] = "oauth";
@@ -526,10 +526,10 @@ var init_integration = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/media.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/media.js
 var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType;
 var init_media = __esm({
-  "node_modules/@speakai/shared/dist/enums/media.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/media.js"() {
     "use strict";
     (function(MediaType2) {
       MediaType2["AUDIO"] = "audio";
@@ -596,10 +596,10 @@ var init_media = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/meeting.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/meeting.js
 var MeetingPlatform, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource;
 var init_meeting = __esm({
-  "node_modules/@speakai/shared/dist/enums/meeting.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/meeting.js"() {
     "use strict";
     (function(MeetingPlatform2) {
       MeetingPlatform2["GOOGLE_MEET"] = "googleMeet";
@@ -665,10 +665,10 @@ var init_meeting = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/notification.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/notification.js
 var NotificationType, NotificationAction;
 var init_notification = __esm({
-  "node_modules/@speakai/shared/dist/enums/notification.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/notification.js"() {
     "use strict";
     (function(NotificationType2) {
       NotificationType2["CLIP"] = "clip";
@@ -715,10 +715,10 @@ var init_notification = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/prompt.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/prompt.js
 var PromptState, MessageRole, PromptSource, ToolName, FileType;
 var init_prompt = __esm({
-  "node_modules/@speakai/shared/dist/enums/prompt.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/prompt.js"() {
     "use strict";
     (function(PromptState2) {
       PromptState2["INITIATED"] = "initiated";
@@ -765,10 +765,10 @@ var init_prompt = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/recorder.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/recorder.js
 var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating;
 var init_recorder = __esm({
-  "node_modules/@speakai/shared/dist/enums/recorder.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/recorder.js"() {
     "use strict";
     (function(RecorderAnswerType2) {
       RecorderAnswerType2["Single"] = "single";
@@ -793,10 +793,10 @@ var init_recorder = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/subscription.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/subscription.js
 var SubscriptionStatus, SubscriptionDuration, TrialTier;
 var init_subscription = __esm({
-  "node_modules/@speakai/shared/dist/enums/subscription.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/subscription.js"() {
     "use strict";
     (function(SubscriptionStatus2) {
       SubscriptionStatus2["Active"] = "active";
@@ -822,10 +822,10 @@ var init_subscription = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/team.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/team.js
 var TeamInviteStatus;
 var init_team = __esm({
-  "node_modules/@speakai/shared/dist/enums/team.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/team.js"() {
     "use strict";
     (function(TeamInviteStatus2) {
       TeamInviteStatus2["ACTIVE"] = "active";
@@ -836,10 +836,10 @@ var init_team = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/transcription.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/transcription.js
 var TranscriptionEngine, TranscriptionJobState, TranscriptionJobRevisionState;
 var init_transcription = __esm({
-  "node_modules/@speakai/shared/dist/enums/transcription.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/transcription.js"() {
     "use strict";
     (function(TranscriptionEngine2) {
       TranscriptionEngine2["AZURE"] = "azure";
@@ -868,10 +868,10 @@ var init_transcription = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/transaction.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/transaction.js
 var TransactionSource, TransactionType, TransactionStatus;
 var init_transaction = __esm({
-  "node_modules/@speakai/shared/dist/enums/transaction.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/transaction.js"() {
     "use strict";
     (function(TransactionSource2) {
       TransactionSource2["STRIPE"] = "stripe";
@@ -901,10 +901,10 @@ var init_transaction = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/translation.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/translation.js
 var TranslationState, DubbingState;
 var init_translation = __esm({
-  "node_modules/@speakai/shared/dist/enums/translation.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/translation.js"() {
     "use strict";
     (function(TranslationState2) {
       TranslationState2["NOTFOUND"] = "notFound";
@@ -925,10 +925,10 @@ var init_translation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/user.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/user.js
 var UserRole, UserType, UserPermissionType, UserActionType;
 var init_user = __esm({
-  "node_modules/@speakai/shared/dist/enums/user.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/user.js"() {
     "use strict";
     (function(UserRole2) {
       UserRole2["ADMIN"] = "admin";
@@ -975,10 +975,10 @@ var init_user = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/webhook.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/webhook.js
 var WebhookEvent, WebhookEventSource;
 var init_webhook = __esm({
-  "node_modules/@speakai/shared/dist/enums/webhook.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/webhook.js"() {
     "use strict";
     (function(WebhookEvent2) {
       WebhookEvent2["embed_recorder.created"] = "embed_recorder.created";
@@ -1010,10 +1010,10 @@ var init_webhook = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/llm.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/llm.js
 var LLMProvider, LLMModels;
 var init_llm = __esm({
-  "node_modules/@speakai/shared/dist/enums/llm.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/llm.js"() {
     "use strict";
     (function(LLMProvider2) {
       LLMProvider2["OPENAI"] = "openai";
@@ -1069,9 +1069,9 @@ var init_llm = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/index.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/index.js
 var init_enums = __esm({
-  "node_modules/@speakai/shared/dist/enums/index.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/index.js"() {
     "use strict";
     init_activities();
     init_auth();
@@ -1100,157 +1100,157 @@ var init_enums = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/api.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/api.js
 var init_api = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/api.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/api.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/media.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/media.js
 var init_media2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/media.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/media.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/transcript.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/transcript.js
 var init_transcript = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/text.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/text.js
 var init_text = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/text.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/text.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/folder.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/folder.js
 var init_folder = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/folder.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/integration.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/integration.js
 var init_integration2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/integration.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/integration.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/recorder.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/recorder.js
 var init_recorder2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/embed.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/embed.js
 var init_embed2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/embed.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/embed.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/automation.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/automation.js
 var init_automation2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/automation.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/automation.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/webhook.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/webhook.js
 var init_webhook2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/field.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/field.js
 var init_field = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/field.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/field.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/meeting.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/meeting.js
 var init_meeting2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/export.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/export.js
 var init_export2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/export.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/export.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/prompt.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/prompt.js
 var init_prompt2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/user.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/user.js
 var init_user2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/user.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/user.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/subscription.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/subscription.js
 var init_subscription2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/calendar.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/calendar.js
 var init_calendar2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/category.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/category.js
 var init_category = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/category.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/category.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/clip.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/clip.js
 var init_clip2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/clip.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/clip.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/dashboard-spec.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/utils/dashboard-spec.js
 var init_dashboard_spec = __esm({
-  "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/dashboard.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/dashboard.js
 var init_dashboard = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
     "use strict";
     init_dashboard_spec();
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/index.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/index.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/index.js"() {
     "use strict";
     init_api();
     init_media2();
@@ -1275,17 +1275,17 @@ var init_interfaces = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/transcript.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/utils/transcript.js
 var init_transcript2 = __esm({
-  "node_modules/@speakai/shared/dist/utils/transcript.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/utils/transcript.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/pricing/modelPricing.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/pricing/modelPricing.js
 var MODEL_PRICING;
 var init_modelPricing = __esm({
-  "node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
     "use strict";
     init_llm();
     MODEL_PRICING = {
@@ -1346,9 +1346,9 @@ var init_modelPricing = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/index.js
+// ../../speak-mcp/node_modules/@speakai/shared/dist/index.js
 var init_dist = __esm({
-  "node_modules/@speakai/shared/dist/index.js"() {
+  "../../speak-mcp/node_modules/@speakai/shared/dist/index.js"() {
     "use strict";
     init_enums();
     init_interfaces();
@@ -10323,6 +10323,7 @@ var init_cli = __esm({
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
+  SPEAK_MCP_TOOL_CATEGORIES: () => SPEAK_MCP_TOOL_CATEGORIES,
   SPEAK_MCP_TOOL_NAMES: () => SPEAK_MCP_TOOL_NAMES,
   createSpeakClient: () => createSpeakClient,
   formatAxiosError: () => formatAxiosError,
@@ -10336,6 +10337,294 @@ init_resources();
 init_prompts();
 init_client();
 init_tool_names();
+
+// src/tool-categories.ts
+var SPEAK_MCP_TOOL_CATEGORIES = [
+  {
+    id: "media",
+    name: "Media library",
+    tools: [
+      "update_transcription",
+      "get_signed_upload_url",
+      "upload_media",
+      "upload_local_file",
+      "upload_and_analyze",
+      "list_media",
+      "get_media_insights",
+      "get_transcript",
+      "get_captions",
+      "update_transcript_speakers",
+      "bulk_update_transcript_speakers",
+      "get_media_status",
+      "update_media_metadata",
+      "delete_media",
+      "toggle_media_favorite",
+      "reanalyze_media",
+      "bulk_move_media",
+      "upload_and_analyze_batch"
+    ]
+  },
+  {
+    id: "magic-prompt",
+    name: "Ask AI Chat",
+    tools: [
+      "ask_ai_chat",
+      "retry_ai_chat",
+      "get_chat_history",
+      "get_chat_messages",
+      "delete_chat_conversation",
+      "list_prompts",
+      "get_favorite_prompts",
+      "toggle_prompt_favorite",
+      "update_chat_title",
+      "submit_chat_feedback",
+      "get_chat_statistics",
+      "export_chat_answer",
+      "get_analysis_quote"
+    ]
+  },
+  {
+    id: "search-analytics",
+    name: "Search & analytics",
+    tools: [
+      "search_media",
+      "get_media_statistics",
+      "list_supported_languages"
+    ]
+  },
+  {
+    id: "folders-views",
+    name: "Folders & views",
+    tools: [
+      "list_folders",
+      "get_folder_info",
+      "create_folder",
+      "clone_folder",
+      "update_folder",
+      "delete_folder",
+      "get_all_folder_views",
+      "get_folder_views",
+      "create_folder_view",
+      "update_folder_view",
+      "clone_folder_view"
+    ]
+  },
+  {
+    id: "recorders-surveys",
+    name: "Recorders & surveys",
+    tools: [
+      "create_recorder",
+      "list_recorders",
+      "get_recorder_info",
+      "clone_recorder",
+      "get_recorder_recordings",
+      "generate_recorder_url",
+      "update_recorder_settings",
+      "update_recorder_questions",
+      "check_recorder_status",
+      "delete_recorder"
+    ]
+  },
+  {
+    id: "clips",
+    name: "Clips",
+    tools: [
+      "create_clip",
+      "get_clips",
+      "update_clip",
+      "delete_clip"
+    ]
+  },
+  {
+    id: "exports",
+    name: "Exports",
+    tools: [
+      "export_media",
+      "export_multiple_media"
+    ]
+  },
+  {
+    id: "meeting-bot",
+    name: "Meeting bot",
+    tools: [
+      "list_meeting_events",
+      "schedule_meeting_event",
+      "remove_assistant_from_meeting",
+      "delete_scheduled_assistant",
+      "get_live_meeting_transcript"
+    ]
+  },
+  {
+    id: "automations",
+    name: "Automations",
+    tools: [
+      "list_automations",
+      "get_automation",
+      "create_automation",
+      "update_automation",
+      "toggle_automation_status",
+      "list_automation_names",
+      "get_automation_runs",
+      "bulk_update_automation_status",
+      "bulk_assign_automation_folders",
+      "run_automations",
+      "delete_automation",
+      "list_automation_apps",
+      "list_automation_triggers",
+      "list_automation_actions",
+      "build_automation",
+      "get_automation_run",
+      "get_automation_run_stats",
+      "test_automation",
+      "validate_automation_graph",
+      "describe_automation_graph"
+    ]
+  },
+  {
+    id: "webhooks",
+    name: "Webhooks",
+    tools: [
+      "create_webhook",
+      "list_webhooks",
+      "update_webhook",
+      "delete_webhook",
+      "provision_inbound_webhook",
+      "get_inbound_webhook",
+      "get_webhook_attempts"
+    ]
+  },
+  {
+    id: "text-notes",
+    name: "Text notes",
+    tools: [
+      "create_text_note",
+      "get_text_insight",
+      "reanalyze_text",
+      "update_text_note"
+    ]
+  },
+  {
+    id: "custom-fields",
+    name: "Custom fields",
+    tools: [
+      "list_fields",
+      "create_field",
+      "update_field",
+      "update_multiple_fields"
+    ]
+  },
+  {
+    id: "embed-other",
+    name: "Embed players",
+    tools: [
+      "create_embed",
+      "update_embed",
+      "check_embed",
+      "get_embed_iframe_url"
+    ]
+  },
+  {
+    id: "users-team",
+    name: "Users & teams",
+    tools: [
+      "list_users",
+      "list_user_groups",
+      "create_user_group",
+      "update_user_group",
+      "delete_user_group"
+    ]
+  },
+  {
+    id: "dashboards",
+    name: "Dashboards",
+    tools: [
+      "list_dashboard_widgets",
+      "list_dashboards",
+      "get_dashboard",
+      "create_dashboard",
+      "update_dashboard",
+      "delete_dashboard",
+      "duplicate_dashboard",
+      "share_dashboard",
+      "get_dashboard_speakers_insight"
+    ]
+  },
+  {
+    id: "voice-agents",
+    name: "Voice agents",
+    tools: [
+      "list_voice_agents",
+      "get_voice_agent",
+      "create_voice_agent",
+      "update_voice_agent",
+      "delete_voice_agent",
+      "create_voice_agent_from_prompt",
+      "generate_voice_agent_config",
+      "get_voice_agent_setup_guide",
+      "list_voice_avatars",
+      "list_voices",
+      "list_voice_conversations",
+      "get_voice_conversation"
+    ]
+  },
+  {
+    id: "voice-agent-testing",
+    name: "Voice agent testing",
+    tools: [
+      "get_voice_test_suite",
+      "update_voice_test_suite",
+      "generate_voice_test_suite",
+      "start_voice_test_run",
+      "get_active_voice_test_run",
+      "pause_voice_test_run",
+      "resume_voice_test_run",
+      "cancel_voice_test_run",
+      "list_voice_test_runs",
+      "get_voice_test_run",
+      "apply_voice_test_recommendation",
+      "get_voice_test_baseline",
+      "get_voice_test_score_history"
+    ]
+  },
+  {
+    id: "voice-agent-questions",
+    name: "Voice agent questions",
+    tools: [
+      "list_voice_questions",
+      "get_voice_question",
+      "create_voice_question",
+      "update_voice_question",
+      "delete_voice_question",
+      "reorder_voice_questions",
+      "list_voice_question_templates",
+      "create_voice_question_template"
+    ]
+  },
+  {
+    id: "voice-agent-intelligence",
+    name: "Voice agent intelligence",
+    tools: [
+      "list_voice_kb_gaps",
+      "analyze_voice_kb_gaps",
+      "add_voice_kb_gap",
+      "dismiss_voice_kb_gap",
+      "list_voice_faq_suggestions",
+      "generate_voice_faq_suggestions",
+      "add_voice_faq_suggestion",
+      "update_voice_faq_suggestion",
+      "dismiss_voice_faq_suggestion",
+      "list_voice_agent_resources",
+      "create_voice_agent_resource",
+      "bulk_create_voice_agent_resources",
+      "update_voice_agent_resource",
+      "delete_voice_agent_resource",
+      "analyze_voice_instruction_gaps",
+      "apply_voice_instruction_gap"
+    ]
+  }
+];
+
+// src/index.ts
 var args = process.argv.slice(2);
 var cliCommands = [
   "config",
@@ -10415,6 +10704,7 @@ if (isCliMode) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  SPEAK_MCP_TOOL_CATEGORIES,
   SPEAK_MCP_TOOL_NAMES,
   createSpeakClient,
   formatAxiosError,

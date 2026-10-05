@@ -30,3 +30,11 @@ export declare function formatAxiosError(error: unknown): string;
 export declare const SPEAK_MCP_TOOL_NAMES: readonly string[];
 
 export type SpeakMcpToolName = (typeof SPEAK_MCP_TOOL_NAMES)[number];
+
+/** Every tool's category (id, display name, tool names), generated from tools.json. */
+export declare const SPEAK_MCP_TOOL_CATEGORIES: readonly {
+  readonly id: string;
+  readonly name: string;
+  readonly tools: readonly string[];
+}[];
+export type SpeakMcpToolCategory = (typeof SPEAK_MCP_TOOL_CATEGORIES)[number];
