@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.29.0 (2026-10-05)
+
+- feat(exports): regroup tool categories and keep the README in step with them
+
 ## v1.28.6 (2026-10-05)
 
 - Maintenance release
