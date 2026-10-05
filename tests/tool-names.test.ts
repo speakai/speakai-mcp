@@ -47,4 +47,14 @@ describe("SPEAK_MCP_TOOL_NAMES manifest", () => {
     const unique = new Set(SPEAK_MCP_TOOL_NAMES);
     expect(unique.size).toBe(SPEAK_MCP_TOOL_NAMES.length);
   });
+
+  it("SPEAK_MCP_TOOL_CATEGORIES puts every tool in exactly one category", async () => {
+    const { SPEAK_MCP_TOOL_NAMES } = await import("../src/tool-names.js");
+    const { SPEAK_MCP_TOOL_CATEGORIES } = await import("../src/tool-categories.js");
+
+    const categorized = SPEAK_MCP_TOOL_CATEGORIES.flatMap((c) => [...c.tools]);
+    expect(new Set(categorized).size).toBe(categorized.length);
+    expect([...categorized].sort()).toEqual([...SPEAK_MCP_TOOL_NAMES].sort());
+    expect(SPEAK_MCP_TOOL_CATEGORIES.every((c) => c.id && c.name && c.tools.length > 0)).toBe(true);
+  });
 });
