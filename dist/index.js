@@ -66,8 +66,8 @@ async function authenticate() {
       tokenExpiresAt = Date.now() + 50 * 60 * 1e3;
       process.stderr.write("[speakai-mcp] Authenticated successfully\n");
     }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+  } catch (err2) {
+    const message = err2 instanceof Error ? err2.message : String(err2);
     process.stderr.write(`[speakai-mcp] Authentication failed: ${message}
 `);
     throw new Error(`Authentication failed: ${message}`);
@@ -203,6 +203,18 @@ var init_client = __esm({
 });
 
 // src/tools/_helpers.ts
+function ok(data) {
+  return {
+    content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+    structuredContent: { data }
+  };
+}
+function err(error) {
+  return {
+    content: [{ type: "text", text: `Error: ${formatAxiosError(error)}` }],
+    isError: true
+  };
+}
 function registerSpeakTool(server, name, description, inputSchema, annotations, handler) {
   const { title, ...toolAnnotations } = annotations;
   return server.registerTool(
@@ -1431,9 +1443,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1474,9 +1486,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1530,9 +1542,9 @@ function register(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1560,9 +1572,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1590,9 +1602,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1633,9 +1645,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1669,9 +1681,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1699,9 +1711,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1736,9 +1748,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1766,9 +1778,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1796,9 +1808,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1824,9 +1836,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1852,9 +1864,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1883,9 +1895,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1917,9 +1929,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -1955,8 +1967,8 @@ function register(server, client) {
         try {
           await api.put(`/v1/media/speakers/${mediaId}`, speakers);
           results.push({ mediaId, success: true });
-        } catch (err) {
-          results.push({ mediaId, success: false, error: formatAxiosError(err) });
+        } catch (err2) {
+          results.push({ mediaId, success: false, error: formatAxiosError(err2) });
         }
       }
       const succeeded = results.filter((r) => r.success).length;
@@ -1999,9 +2011,9 @@ function register(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2063,9 +2075,9 @@ function register2(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2093,9 +2105,9 @@ function register2(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2125,9 +2137,9 @@ function register2(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2163,9 +2175,9 @@ function register2(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2221,9 +2233,9 @@ function register3(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2262,9 +2274,9 @@ function register3(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2309,9 +2321,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2339,9 +2351,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2383,9 +2395,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2428,9 +2440,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2462,9 +2474,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2494,9 +2506,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2524,9 +2536,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2555,9 +2567,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2589,9 +2601,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2621,9 +2633,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2651,9 +2663,9 @@ function register4(server, client) {
             { type: "text", text: JSON.stringify(result.data, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2697,9 +2709,9 @@ function register5(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2729,9 +2741,9 @@ function register5(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2759,9 +2771,9 @@ function register5(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2790,9 +2802,9 @@ function register5(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2818,9 +2830,9 @@ function register5(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2846,9 +2858,9 @@ function register5(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2874,9 +2886,9 @@ function register5(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2904,9 +2916,9 @@ function register5(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2940,9 +2952,9 @@ function register5(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -2968,9 +2980,9 @@ function register5(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3041,9 +3053,9 @@ function register6(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3077,9 +3089,9 @@ function register6(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3105,9 +3117,9 @@ function register6(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3135,9 +3147,9 @@ function register6(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3247,9 +3259,9 @@ function register7(server, client) {
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }]
       };
-    } catch (err) {
+    } catch (err2) {
       return {
-        content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+        content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
         isError: true
       };
     }
@@ -3286,9 +3298,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3315,9 +3327,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3345,9 +3357,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3378,9 +3390,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3406,9 +3418,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3432,9 +3444,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3458,9 +3470,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3488,9 +3500,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3517,9 +3529,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3548,9 +3560,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3577,9 +3589,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3607,9 +3619,9 @@ function register7(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3659,9 +3671,9 @@ function register8(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3694,9 +3706,9 @@ function register8(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3725,9 +3737,9 @@ function register8(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3756,9 +3768,9 @@ function register8(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3840,9 +3852,9 @@ function register8(server, client) {
           content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
           structuredContent: { data: payload }
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3884,9 +3896,9 @@ function register9(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3920,9 +3932,9 @@ function register9(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3955,9 +3967,9 @@ function register9(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -3992,9 +4004,9 @@ function register9(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -4073,6 +4085,488 @@ function isInboundWebhookTrigger(trigger) {
 var init_inbound_webhook_utils = __esm({
   "src/tools/inbound-webhook-utils.ts"() {
     "use strict";
+  }
+});
+
+// src/tools/transcript-range.ts
+function normalizeWord(word) {
+  return word.normalize("NFC").toLowerCase().replace(CURLY_APOSTROPHE, "'").replace(EDGE_PUNCTUATION, "");
+}
+function tokens(text) {
+  return (text ?? "").split(WHITESPACE).map((token) => ({ text: token, norm: normalizeWord(token) })).filter((token) => token.norm !== "");
+}
+function transcriptWords(transcript) {
+  const words = [];
+  for (const segment of transcript ?? []) {
+    const entities = segment.entities ?? [];
+    if (entities.length === 0) {
+      words.push(...tokens(segment.text));
+    } else {
+      for (const entity of entities) words.push(...tokens(entity.text));
+    }
+  }
+  return words;
+}
+function findQuoteRange(words, quote, occurrence) {
+  const needle = tokens(quote).map((t) => t.norm);
+  if (needle.length === 0) {
+    throw new Error("quote has no words once punctuation is removed.");
+  }
+  const starts = [];
+  for (let i = 0; i + needle.length <= words.length; i++) {
+    if (needle.every((norm, j) => words[i + j].norm === norm)) starts.push(i);
+  }
+  if (starts.length === 0) {
+    throw new Error(
+      `quote was not found in the transcript (${words.length} words). Copy the words exactly from get_transcript; a quote cannot skip words.`
+    );
+  }
+  const toRange = (start) => ({ start, end: start + needle.length - 1 });
+  if (occurrence !== void 0) {
+    if (occurrence > starts.length) {
+      throw new Error(`occurrence ${occurrence} requested, but quote appears ${starts.length} time(s).`);
+    }
+    return toRange(starts[occurrence - 1]);
+  }
+  if (starts.length === 1) return toRange(starts[0]);
+  const listed = starts.slice(0, MAX_LISTED_MATCHES).map((start, i) => {
+    const from = Math.max(0, start - MATCH_CONTEXT_WORDS);
+    const to = Math.min(words.length, start + needle.length + MATCH_CONTEXT_WORDS);
+    const context = words.slice(from, to).map((w) => w.text).join(" ");
+    return `  occurrence ${i + 1} (words ${start}-${start + needle.length - 1}): "...${context}..."`;
+  });
+  throw new Error(
+    `quote appears ${starts.length} times. Pass occurrence (1-${starts.length}) or a longer quote.
+${listed.join("\n")}`
+  );
+}
+async function resolveRange(api, mediaId, input) {
+  const { range, expectedTranscriptRevision, quote, occurrence } = input;
+  if (range && quote !== void 0) {
+    throw new Error("Pass either range or quote, not both.");
+  }
+  if (occurrence !== void 0 && quote === void 0) {
+    throw new Error("occurrence only applies together with quote.");
+  }
+  if (range) {
+    if (range.end < range.start) throw new Error("range.end must be greater than or equal to range.start.");
+    if (expectedTranscriptRevision === void 0) {
+      throw new Error(
+        "expectedTranscriptRevision is required with range. Read it from get_transcript, list_media_labels or list_media_comments."
+      );
+    }
+    return { range, expectedTranscriptRevision };
+  }
+  if (quote === void 0) {
+    if (expectedTranscriptRevision !== void 0) {
+      throw new Error("expectedTranscriptRevision only applies together with range or quote.");
+    }
+    return null;
+  }
+  const res = await api.get(`/v1/media/transcript/${mediaId}`);
+  const media = unwrapData(res.data) ?? {};
+  const revision = media.transcriptRevision;
+  if (!Number.isInteger(revision)) {
+    throw new Error("The server did not return transcriptRevision for this media, so the quote cannot be anchored.");
+  }
+  const words = transcriptWords(media.insight?.transcript);
+  return {
+    range: findQuoteRange(words, quote, occurrence),
+    expectedTranscriptRevision: expectedTranscriptRevision ?? revision
+  };
+}
+var import_zod11, WHITESPACE, EDGE_PUNCTUATION, CURLY_APOSTROPHE, MATCH_CONTEXT_WORDS, MAX_LISTED_MATCHES, WORD_INDEX_RULE, rangeInputSchema, STALE_TRANSCRIPT_NOTE, publicId;
+var init_transcript_range = __esm({
+  "src/tools/transcript-range.ts"() {
+    "use strict";
+    import_zod11 = require("zod");
+    init_inbound_webhook_utils();
+    WHITESPACE = /\s+/;
+    EDGE_PUNCTUATION = /^\p{P}+|\p{P}+$/gu;
+    CURLY_APOSTROPHE = /[‘’ʼ]/g;
+    MATCH_CONTEXT_WORDS = 6;
+    MAX_LISTED_MATCHES = 10;
+    WORD_INDEX_RULE = "Word indices count the words of get_transcript's insight.transcript in order, from 0: for each sentence, the words of its entities[].text when it has entities, otherwise its text split on spaces; tokens that are only punctuation are not counted.";
+    rangeInputSchema = {
+      range: import_zod11.z.object({
+        start: import_zod11.z.number().int().min(0).describe("Index of the first word (0-based, inclusive)"),
+        end: import_zod11.z.number().int().min(0).describe("Index of the last word (inclusive, >= start)")
+      }).optional().describe(`Exact word range. Needs expectedTranscriptRevision. Prefer quote unless you already hold word indices. ${WORD_INDEX_RULE}`),
+      expectedTranscriptRevision: import_zod11.z.number().int().min(0).optional().describe(
+        "transcriptRevision the range was read at (returned by get_transcript, list_media_labels and list_media_comments). Required with range. Optional with quote: the quote is found in the current transcript, and a revision you pass makes the call fail with 409 if the transcript changed since you read it."
+      ),
+      quote: import_zod11.z.string().trim().min(1).max(5e3).optional().describe(
+        "Words copied from the transcript, used instead of range. Matching ignores case and leading or trailing punctuation, and must cover whole words in order. If the words appear more than once, pass occurrence."
+      ),
+      occurrence: import_zod11.z.number().int().min(1).optional().describe("Which match of quote to use (1 = first) when the quote appears more than once")
+    };
+    STALE_TRANSCRIPT_NOTE = "A 409 that says the transcript changed means someone edited it after your revision was read: read the transcript again (get_transcript) and retry with the new range or quote. Nothing was saved.";
+    publicId = (what) => import_zod11.z.string().trim().regex(/^[A-Za-z0-9_-]{1,64}$/, `${what} must be a Speak id (letters, digits, _ or -)`);
+  }
+});
+
+// src/tools/labels.ts
+var labels_exports = {};
+__export(labels_exports, {
+  register: () => register10
+});
+function register10(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_labels",
+    "List the workspace's labels as a tree: groups (isGroup true) carry their labels in `labels`, and ungrouped labels sit at the top level. Each item has labelId, name, description, color, parentId, source (`speak` for Speak label sets), usageCount and isActive. Use the labelIds of non-group labels with apply_label. Anyone in the workspace can read labels.",
+    {
+      status: import_zod12.z.enum(["active", "archived", "all"]).optional().describe("Which labels to list (default active)"),
+      search: import_zod12.z.string().trim().max(LABEL_NAME_MAX).optional().describe("Case-insensitive name match; a group is listed when it or any of its labels match")
+    },
+    { title: "List Labels", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/labels", { params });
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_label",
+    "Create a label, or a label group with isGroup true. Labels are shared by the whole workspace and are applied to transcript words with apply_label. A label can sit in one group (parentId); groups cannot be nested, and a group has no color. Names are unique among active labels under the same parent, ignoring case and extra spaces: 409 means the name is taken. Requires the labels create permission (owners and admins by default).",
+    {
+      name: labelName.describe(`Label or group name (1 to ${LABEL_NAME_MAX} characters)`),
+      isGroup: import_zod12.z.boolean().optional().describe("true to create a group that holds labels"),
+      description: labelDescription.optional().describe(`What the label means (up to ${LABEL_DESCRIPTION_MAX} characters)`),
+      color: labelColor.optional().describe("Label color as #rrggbb (default #6366f1). Not allowed on a group."),
+      parentId: publicId("parentId").optional().describe("labelId of an active group to put the label in. Not allowed on a group."),
+      sortOrder: sortOrder.optional().describe(`Position among its siblings (0 to ${SORT_ORDER_MAX})`)
+    },
+    { title: "Create Label", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async (body) => {
+      if (body.isGroup && (body.color !== void 0 || body.parentId !== void 0)) {
+        return err(new Error("A group cannot have a color or a parentId."));
+      }
+      try {
+        const result = await api.post("/v1/labels", body);
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_label",
+    "Rename, recolor, describe, move or reorder a label or group. Send only the fields to change. parentId null moves a label to the top level. An archived label cannot be edited (restore_label first), and a group cannot take a color or a parent. 409 means another active label under the same parent already has the name. Requires the labels update permission (owners and admins by default).",
+    {
+      labelId: publicId("labelId").describe("labelId from list_labels"),
+      name: labelName.optional().describe(`New name (1 to ${LABEL_NAME_MAX} characters)`),
+      description: labelDescription.optional().describe(`New description (up to ${LABEL_DESCRIPTION_MAX} characters, empty clears it)`),
+      color: labelColor.optional().describe("New color as #rrggbb"),
+      parentId: publicId("parentId").nullable().optional().describe("labelId of a group to move into, or null for the top level"),
+      sortOrder: sortOrder.optional().describe(`New position among its siblings (0 to ${SORT_ORDER_MAX})`)
+    },
+    { title: "Update Label", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ labelId, ...body }) => {
+      if (Object.values(body).every((value) => value === void 0)) {
+        return err(new Error("Send at least one of name, description, color, parentId or sortOrder."));
+      }
+      try {
+        const result = await api.put(`/v1/labels/${labelId}`, body);
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "archive_label",
+    "Archive a label so it can no longer be applied; archiving a group archives its labels too. Labels already applied to transcripts stay where they are, and restore_label undoes this. Safe to repeat. Returns archivedCount. Requires the labels delete permission (owners and admins by default).",
+    { labelId: publicId("labelId").describe("labelId from list_labels") },
+    { title: "Archive Label", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ labelId }) => {
+      try {
+        const result = await api.post(`/v1/labels/${labelId}/archive`);
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "restore_label",
+    "Restore an archived label; restoring a group also restores its archived labels. A label whose name is now used by an active label stays archived and is counted in skippedCount. 409 means the label's own name is taken (rename the active one first); a merged label cannot be restored, and a label cannot be restored while its group is archived. Requires the labels delete permission (owners and admins by default).",
+    { labelId: publicId("labelId").describe("labelId of an archived label, from list_labels with status archived") },
+    { title: "Restore Label", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ labelId }) => {
+      try {
+        const result = await api.post(`/v1/labels/${labelId}/restore`);
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "merge_labels",
+    "Merge one label into another: every place the source label is applied moves onto the target (a span that had both keeps one), then the source is archived with mergedInto set. This cannot be undone by restore_label. Both must be active, non-group labels and different. Returns movedCount. Requires both the labels update and labels delete permissions (owners and admins by default).",
+    {
+      labelId: publicId("labelId").describe("The label to merge away (it is archived)"),
+      targetLabelId: publicId("targetLabelId").describe("The label that receives every use of labelId")
+    },
+    { title: "Merge Labels", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ labelId, targetLabelId }) => {
+      if (labelId === targetLabelId) {
+        return err(new Error("labelId and targetLabelId must be different labels."));
+      }
+      try {
+        const result = await api.post(`/v1/labels/${labelId}/merge`, { targetLabelId });
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "add_speak_label_sets",
+    "Add ready-made label groups from Speak: sales_qa (Unprofessional, Slang, Objection, Great moment, Compliance risk), research (Pain point, Motivation, Quote for report, Surprise, Follow-up), meetings (Decision, Action item, Risk, Open question) and transcript_feedback (Wrong split, Misheard word, Wrong speaker, Bad translation). Safe to repeat: a group or label that already exists with the same name is reused, and a set whose group name is taken by a plain label is skipped (listed in skippedSets). Requires the labels create permission (owners and admins by default).",
+    {
+      sets: import_zod12.z.array(import_zod12.z.enum(SPEAK_LABEL_SETS)).min(1).refine((sets) => new Set(sets).size === sets.length, "sets must not repeat").describe("Which sets to add")
+    },
+    { title: "Add Speak Label Sets", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/labels/speak-sets", body);
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_media_labels",
+    "List the labels applied to a media file's transcript, in transcript order, with the file's current transcriptRevision. Each item has mediaLabelId, labelIds and an anchor: startWord and endWord (inclusive word indices), exact (the labelled words), startInSec, endInSec, speakerIds and status. Status active means the same words; shifted means the transcript was edited and most of the words survived; needs_review means the words changed too much, so anchor holds a suggested range and lastResolved the last confirmed one (confirm or move it with update_media_label). Anyone who can open the file can read its labels.",
+    {
+      mediaId: publicId("mediaId").describe("Media id"),
+      status: import_zod12.z.enum(ANCHOR_STATUSES).optional().describe("Only labels with this anchor status")
+    },
+    { title: "List Media Labels", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ mediaId, status }) => {
+      try {
+        const result = await api.get(`/v1/media/${mediaId}/labels`, { params: status ? { status } : void 0 });
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "apply_label",
+    "Apply one or more labels to a span of words in a media file's transcript. Give the span as quote (words copied from get_transcript; this tool finds their position and the current transcriptRevision for you) or as range plus expectedTranscriptRevision. If the same span already has labels, the new ones are added to it. Check the returned anchor.exact to confirm the right words were labelled. " + STALE_TRANSCRIPT_NOTE + " A 400 means the range is outside the transcript or a label is archived, a group, or not in this workspace. Requires the labels assign permission (every member by default).",
+    {
+      mediaId: publicId("mediaId").describe("Media id"),
+      labelIds,
+      ...rangeInputSchema
+    },
+    { title: "Apply Label", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ mediaId, labelIds: ids, ...rangeInput }) => {
+      try {
+        const resolved = await resolveRange(api, mediaId, rangeInput);
+        if (!resolved) throw new Error("Give the words to label as quote, or as range with expectedTranscriptRevision.");
+        const result = await api.post(`/v1/media/${mediaId}/labels`, { ...resolved, labelIds: ids });
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_media_label",
+    "Change a labelled span on a transcript. Do exactly one of: labelIds to replace its labels; action keep to confirm its current anchor (after the transcript was edited and its status is shifted or needs_review); or action replace with a new quote or range to move it. " + STALE_TRANSCRIPT_NOTE + " Keep also answers 409 when the anchor was built on an older revision: list_media_labels again first. Requires the labels assign permission (every member by default).",
+    {
+      mediaId: publicId("mediaId").describe("Media id"),
+      mediaLabelId: publicId("mediaLabelId").describe("mediaLabelId from list_media_labels"),
+      labelIds: labelIds.optional(),
+      action: import_zod12.z.enum(["keep", "replace"]).optional().describe("keep confirms the current anchor; replace moves the span to quote or range"),
+      ...rangeInputSchema
+    },
+    { title: "Update Media Label", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ mediaId, mediaLabelId, labelIds: ids, action, ...rangeInput }) => {
+      try {
+        const hasSpan = rangeInput.range !== void 0 || rangeInput.quote !== void 0;
+        let body;
+        if (ids === void 0 === (action === void 0)) {
+          throw new Error("Send exactly one of labelIds or action.");
+        } else if (action === "replace") {
+          const resolved = await resolveRange(api, mediaId, rangeInput);
+          if (!resolved) throw new Error("action replace needs the new span as quote, or as range with expectedTranscriptRevision.");
+          body = { action, ...resolved };
+        } else if (hasSpan || rangeInput.expectedTranscriptRevision !== void 0) {
+          throw new Error("quote, range and expectedTranscriptRevision are only used with action replace.");
+        } else {
+          body = ids !== void 0 ? { labelIds: ids } : { action };
+        }
+        const result = await api.patch(`/v1/media/${mediaId}/labels/${mediaLabelId}`, body);
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "remove_media_label",
+    "Remove a labelled span from a transcript. The label itself stays in the workspace, and comments linked to the span stay without the link. Requires the labels assign permission (every member by default).",
+    {
+      mediaId: publicId("mediaId").describe("Media id"),
+      mediaLabelId: publicId("mediaLabelId").describe("mediaLabelId from list_media_labels")
+    },
+    { title: "Remove Media Label", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ mediaId, mediaLabelId }) => {
+      try {
+        const result = await api.delete(`/v1/media/${mediaId}/labels/${mediaLabelId}`);
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+}
+var import_zod12, LABEL_NAME_MAX, LABEL_DESCRIPTION_MAX, MAX_LABELS_PER_SPAN, SORT_ORDER_MAX, SPEAK_LABEL_SETS, ANCHOR_STATUSES, labelName, labelDescription, labelColor, sortOrder, labelIds;
+var init_labels = __esm({
+  "src/tools/labels.ts"() {
+    "use strict";
+    import_zod12 = require("zod");
+    init_helpers();
+    init_client();
+    init_transcript_range();
+    LABEL_NAME_MAX = 80;
+    LABEL_DESCRIPTION_MAX = 500;
+    MAX_LABELS_PER_SPAN = 20;
+    SORT_ORDER_MAX = 1e6;
+    SPEAK_LABEL_SETS = ["sales_qa", "research", "meetings", "transcript_feedback"];
+    ANCHOR_STATUSES = ["active", "shifted", "needs_review"];
+    labelName = import_zod12.z.string().trim().min(1).max(LABEL_NAME_MAX);
+    labelDescription = import_zod12.z.string().trim().max(LABEL_DESCRIPTION_MAX);
+    labelColor = import_zod12.z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "color must be #rrggbb");
+    sortOrder = import_zod12.z.number().int().min(0).max(SORT_ORDER_MAX);
+    labelIds = import_zod12.z.array(publicId("labelId")).min(1).max(MAX_LABELS_PER_SPAN).refine((ids) => new Set(ids).size === ids.length, "labelIds must not repeat").describe(`1 to ${MAX_LABELS_PER_SPAN} distinct ids of active labels (not groups), from list_labels`);
+  }
+});
+
+// src/tools/comments.ts
+var comments_exports = {};
+__export(comments_exports, {
+  register: () => register11
+});
+function register11(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_media_comments",
+    "List the comment threads on a media file, with the file's current transcriptRevision. Each thread is its first comment with `replies` (oldest first). A comment on words carries an anchor (startWord, endWord, exact, times, status as in list_media_labels); a whole-file comment has none. A deleted first comment that has replies stays with an empty body and isDeleted true. Anyone who can open the file can read its comments.",
+    {
+      mediaId: publicId("mediaId").describe("Media id"),
+      filter: import_zod13.z.enum(["all", "open", "resolved", "file"]).optional().describe("all (default), open or resolved threads, or file for whole-file comments only")
+    },
+    { title: "List Media Comments", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ mediaId, filter }) => {
+      try {
+        const result = await api.get(`/v1/media/${mediaId}/comments`, { params: filter ? { filter } : void 0 });
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "add_comment",
+    "Add a comment to a media file. Three kinds: on the whole file (no quote or range), on words in the transcript (quote, or range plus expectedTranscriptRevision, exactly as in apply_label), or a reply to a thread (parentId, with no span of its own). Replies go one level deep, so parentId must be a thread's first comment. A reply gives the thread's author an in-app notification in Speak. mediaLabelId links the comment to a labelled span on this file. " + STALE_TRANSCRIPT_NOTE + " Requires the comments create permission (every member by default).",
+    {
+      mediaId: publicId("mediaId").describe("Media id"),
+      body: import_zod13.z.string().trim().min(1).max(COMMENT_BODY_MAX).describe(`Comment text (1 to ${COMMENT_BODY_MAX} characters)`),
+      parentId: publicId("parentId").optional().describe("commentId of the thread's first comment, to reply to it"),
+      mediaLabelId: publicId("mediaLabelId").optional().describe("mediaLabelId from list_media_labels to link the comment to"),
+      ...rangeInputSchema
+    },
+    { title: "Add Comment", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ mediaId, body, parentId, mediaLabelId, ...rangeInput }) => {
+      try {
+        const hasSpan = rangeInput.range !== void 0 || rangeInput.quote !== void 0;
+        if (parentId !== void 0 && (hasSpan || mediaLabelId !== void 0)) {
+          throw new Error("A reply (parentId) belongs to its thread's span, so it cannot take quote, range or mediaLabelId.");
+        }
+        const resolved = await resolveRange(api, mediaId, rangeInput);
+        const result = await api.post(`/v1/media/${mediaId}/comments`, {
+          body,
+          ...resolved ?? {},
+          ...parentId !== void 0 ? { parentId } : {},
+          ...mediaLabelId !== void 0 ? { mediaLabelId } : {}
+        });
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "resolve_comment",
+    "Resolve a comment thread, or reopen it with resolved false. Only a thread's first comment can be resolved (400 on a reply). Requires the comments update permission (every member by default).",
+    {
+      mediaId: publicId("mediaId").describe("Media id"),
+      commentId: publicId("commentId").describe("commentId of the thread's first comment, from list_media_comments"),
+      resolved: import_zod13.z.boolean().optional().describe("true to resolve (default), false to reopen")
+    },
+    { title: "Resolve Comment", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ mediaId, commentId, resolved }) => {
+      try {
+        const result = await api.patch(`/v1/media/${mediaId}/comments/${commentId}`, {
+          isResolved: resolved ?? true
+        });
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_comment",
+    "Delete a comment. Deleting a thread's first comment keeps its replies visible under an empty placeholder. You can always delete your own comments; deleting someone else's needs the comments delete permission (owners and admins by default), otherwise 403.",
+    {
+      mediaId: publicId("mediaId").describe("Media id"),
+      commentId: publicId("commentId").describe("commentId from list_media_comments")
+    },
+    { title: "Delete Comment", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ mediaId, commentId }) => {
+      try {
+        const result = await api.delete(`/v1/media/${mediaId}/comments/${commentId}`);
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+}
+var import_zod13, COMMENT_BODY_MAX;
+var init_comments = __esm({
+  "src/tools/comments.ts"() {
+    "use strict";
+    import_zod13 = require("zod");
+    init_helpers();
+    init_client();
+    init_transcript_range();
+    COMMENT_BODY_MAX = 5e3;
   }
 });
 
@@ -4651,7 +5145,7 @@ var init_automation_graph = __esm({
 // src/tools/automations.ts
 var automations_exports = {};
 __export(automations_exports, {
-  register: () => register10
+  register: () => register12
 });
 function stepsRequestMediaAnalysis(steps) {
   if (!Array.isArray(steps)) return false;
@@ -4731,20 +5225,20 @@ async function withInboundWebhookInfo(api, responseData, automationId) {
     return responseData;
   }
 }
-function register10(server, client) {
+function register12(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
     "list_automations",
     "List automation rules in the workspace, with paging and filters.",
     {
-      page: import_zod11.z.number().int().min(0).optional().describe("0-based page index"),
-      pageSize: import_zod11.z.number().int().min(1).max(100).optional().describe("Results per page"),
-      sortBy: import_zod11.z.string().optional().describe('Sort expression, e.g. "createdAt:desc"'),
-      query: import_zod11.z.string().optional().describe("Free-text search over automation names"),
-      folderIds: import_zod11.z.string().optional().describe("Comma-separated folder ids to filter by"),
-      isActive: import_zod11.z.boolean().optional().describe("Filter by active state"),
-      runType: import_zod11.z.enum(["instant", "schedule"]).optional().describe("Filter by run type")
+      page: import_zod14.z.number().int().min(0).optional().describe("0-based page index"),
+      pageSize: import_zod14.z.number().int().min(1).max(100).optional().describe("Results per page"),
+      sortBy: import_zod14.z.string().optional().describe('Sort expression, e.g. "createdAt:desc"'),
+      query: import_zod14.z.string().optional().describe("Free-text search over automation names"),
+      folderIds: import_zod14.z.string().optional().describe("Comma-separated folder ids to filter by"),
+      isActive: import_zod14.z.boolean().optional().describe("Filter by active state"),
+      runType: import_zod14.z.enum(["instant", "schedule"]).optional().describe("Filter by run type")
     },
     {
       title: "List Automations",
@@ -4759,9 +5253,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -4785,9 +5279,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -4798,7 +5292,7 @@ function register10(server, client) {
     "get_automation",
     "Get detailed information about a specific automation rule, including its trigger and step graph.",
     {
-      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation")
+      automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation")
     },
     {
       title: "Get Automation Details",
@@ -4813,9 +5307,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -4826,10 +5320,10 @@ function register10(server, client) {
     "get_automation_runs",
     "Get the run history (executions) for an automation, with paging and optional status filter.",
     {
-      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
-      page: import_zod11.z.number().int().min(0).optional().describe("0-based page index"),
-      pageSize: import_zod11.z.number().int().min(1).max(100).optional().describe("Results per page"),
-      status: import_zod11.z.enum(["pending", "running", "completed", "failed", "killed"]).optional().describe("Filter runs by status")
+      automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation"),
+      page: import_zod14.z.number().int().min(0).optional().describe("0-based page index"),
+      pageSize: import_zod14.z.number().int().min(1).max(100).optional().describe("Results per page"),
+      status: import_zod14.z.enum(["pending", "running", "completed", "failed", "killed"]).optional().describe("Filter runs by status")
     },
     {
       title: "Get Automation Runs",
@@ -4844,9 +5338,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -4883,9 +5377,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -4896,7 +5390,7 @@ function register10(server, client) {
     "update_automation",
     "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes. The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. Changing a Composio app-event trigger updates the subscription on that third-party account.",
     {
-      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
+      automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation"),
       ...writeSchema
     },
     {
@@ -4924,9 +5418,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -4937,7 +5431,7 @@ function register10(server, client) {
     "toggle_automation_status",
     "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation first if you need to know which way it will flip. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected third-party account.",
     {
-      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation")
+      automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation")
     },
     {
       title: "Toggle Automation Status",
@@ -4952,9 +5446,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -4965,8 +5459,8 @@ function register10(server, client) {
     "bulk_update_automation_status",
     "Activate or deactivate multiple automations at once. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the connected third-party account.",
     {
-      automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
-      isActive: import_zod11.z.boolean().describe("true to activate, false to deactivate, for all listed automations")
+      automationIds: import_zod14.z.array(import_zod14.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
+      isActive: import_zod14.z.boolean().describe("true to activate, false to deactivate, for all listed automations")
     },
     {
       title: "Bulk Update Automation Status",
@@ -4981,9 +5475,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -4994,8 +5488,8 @@ function register10(server, client) {
     "bulk_assign_automation_folders",
     "Set the folder scope for multiple automations at once. Pass an empty folderIds array to remove the folder restriction (run on all folders).",
     {
-      automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
-      folderIds: import_zod11.z.array(import_zod11.z.string().min(1)).max(50).describe("Folder ids to scope the automations to. Empty array = all folders.")
+      automationIds: import_zod14.z.array(import_zod14.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
+      folderIds: import_zod14.z.array(import_zod14.z.string().min(1)).max(50).describe("Folder ids to scope the automations to. Empty array = all folders.")
     },
     {
       title: "Bulk Assign Automation Folders",
@@ -5010,9 +5504,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5023,8 +5517,8 @@ function register10(server, client) {
     "run_automations",
     "Manually run one or more automations against one or more media items now (outside the normal trigger). Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without an error. The runs happen in the background and this returns only an acknowledgement, so check results with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook URLs, run actions in connected third-party apps, and use AI credits.",
     {
-      mediaIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).describe("Media ids to run the automations against"),
-      automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).describe("Automation ids to run")
+      mediaIds: import_zod14.z.array(import_zod14.z.string().min(1)).min(1).describe("Media ids to run the automations against"),
+      automationIds: import_zod14.z.array(import_zod14.z.string().min(1)).min(1).describe("Automation ids to run")
     },
     {
       title: "Run Automations",
@@ -5039,9 +5533,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5052,7 +5546,7 @@ function register10(server, client) {
     "delete_automation",
     "Permanently delete an automation rule. If it has an inbound webhook URL, that URL stops accepting payloads, and any event subscription it holds on a connected third-party account through Composio is removed.",
     {
-      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation to delete")
+      automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation to delete")
     },
     {
       title: "Delete Automation",
@@ -5067,9 +5561,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5080,8 +5574,8 @@ function register10(server, client) {
     "get_automation_run",
     `Get one automation run in full: every step, in dependency order, with what it produced and why it stopped. Use this after test_automation or to explain a run that went the wrong way. On a branched automation the run's overall status is not the whole story \u2014 a filter that stops one leg marks the entire run "killed" even when the other leg finished its work \u2014 so read the per-step summary this returns, not just the status.`,
     {
-      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
-      runId: import_zod11.z.string().min(1).describe("Run id, from get_automation_runs or test_automation")
+      automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation"),
+      runId: import_zod14.z.string().min(1).describe("Run id, from get_automation_runs or test_automation")
     },
     {
       title: "Get Automation Run",
@@ -5099,9 +5593,9 @@ function register10(server, client) {
             { type: "text", text: JSON.stringify({ ...data, branchSummary: summariseBranching(data) }, null, 2) }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5112,8 +5606,8 @@ function register10(server, client) {
     "get_automation_run_stats",
     "Aggregate run counts for an automation over a period \u2014 how many completed, failed, or were stopped.",
     {
-      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
-      days: import_zod11.z.number().int().min(1).max(90).optional().describe(
+      automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation"),
+      days: import_zod14.z.number().int().min(1).max(90).optional().describe(
         "How many days back to count, 1-90. The run ledger is kept for 90 days, so that is the whole window."
       )
     },
@@ -5130,9 +5624,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5143,8 +5637,8 @@ function register10(server, client) {
     "test_automation",
     "Run one automation once against one media item to see which way it branches. This is a real run, not a dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks still fire, Composio actions still run against the connected third-party account, and AI steps use credits. Confirm with the user before testing an automation that sends anything outside Speak. It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens resolve to empty. Returns a runId; read the result with get_automation_run.",
     {
-      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation to test"),
-      mediaId: import_zod11.z.string().min(1).describe("Media item to run the automation against")
+      automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation to test"),
+      mediaId: import_zod14.z.string().min(1).describe("Media item to run the automation against")
     },
     {
       title: "Test Automation",
@@ -5161,9 +5655,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5174,9 +5668,9 @@ function register10(server, client) {
     "validate_automation_graph",
     "Check a step graph without saving anything. Reports the same problems create_automation and update_automation would refuse \u2014 branch wiring, rules a condition cannot actually read, shapes the Speak web editor could not reopen \u2014 plus non-blocking warnings. Use it to iterate on a branched automation instead of discovering the problems one failed save at a time.",
     {
-      steps: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).min(1).describe(STEPS_DESCRIPTION),
-      trigger: import_zod11.z.record(import_zod11.z.unknown()).optional().describe(TRIGGER_DESCRIPTION),
-      runType: import_zod11.z.enum(["instant", "schedule"]).optional().describe("Run type the graph would be saved with. A schedule refuses any branch.")
+      steps: import_zod14.z.array(import_zod14.z.record(import_zod14.z.unknown())).min(1).describe(STEPS_DESCRIPTION),
+      trigger: import_zod14.z.record(import_zod14.z.unknown()).optional().describe(TRIGGER_DESCRIPTION),
+      runType: import_zod14.z.enum(["instant", "schedule"]).optional().describe("Run type the graph would be saved with. A schedule refuses any branch.")
     },
     {
       title: "Validate Automation Graph",
@@ -5215,7 +5709,7 @@ function register10(server, client) {
     "describe_automation_graph",
     "Show a saved automation's steps as an indented branch tree instead of a flat list. Worth calling before update_automation, which replaces the whole automation: editing one leg means re-sending every step with its dependsOn intact, and this shows what the shape currently is.",
     {
-      automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation")
+      automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation")
     },
     {
       title: "Describe Automation Graph",
@@ -5270,9 +5764,9 @@ function register10(server, client) {
             }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5296,9 +5790,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5309,7 +5803,7 @@ function register10(server, client) {
     "list_automation_triggers",
     "List the trigger types available in the automation catalog. Optionally filter by app.",
     {
-      app: import_zod11.z.string().min(1).max(100).optional().describe("Filter triggers to a specific app slug")
+      app: import_zod14.z.string().min(1).max(100).optional().describe("Filter triggers to a specific app slug")
     },
     {
       title: "List Automation Triggers",
@@ -5324,9 +5818,9 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5337,7 +5831,7 @@ function register10(server, client) {
     "list_automation_actions",
     "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the fields each filter or condition step can test. Read-only: served from Speak's own catalog and the user's saved connections, with no third-party calls. Listing an action does not run it.",
     {
-      app: import_zod11.z.string().min(1).max(100).optional().describe("Filter actions to a specific app slug")
+      app: import_zod14.z.string().min(1).max(100).optional().describe("Filter actions to a specific app slug")
     },
     {
       title: "List Automation Actions",
@@ -5352,20 +5846,20 @@ function register10(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
     }
   );
 }
-var import_zod11, TOKEN_SYNTAX_NOTE, STEPS_DESCRIPTION, TRIGGER_DESCRIPTION, OR_TRIGGERS_DESCRIPTION, writeSchema;
+var import_zod14, TOKEN_SYNTAX_NOTE, STEPS_DESCRIPTION, TRIGGER_DESCRIPTION, OR_TRIGGERS_DESCRIPTION, writeSchema;
 var init_automations = __esm({
   "src/tools/automations.ts"() {
     "use strict";
-    import_zod11 = require("zod");
+    import_zod14 = require("zod");
     init_helpers();
     init_client();
     init_inbound_webhook_utils();
@@ -5399,14 +5893,14 @@ Filter/condition rule fields depend on what flows into the step: MEDIA -> name|d
 Notes: "tags"/"keywords" trigger types are rejected for graph automations. The server stores inbound-webhook triggers with type "webhook" internally \u2014 send type "folders" plus the slug as shown above.`;
     OR_TRIGGERS_DESCRIPTION = 'Optional additional "Or" triggers (max 10): the automation runs when ANY of them fires, sharing the same steps. Each entry mirrors the trigger shapes above but cannot be an inbound webhook and carries no webhookId/childKey. Example: [{ type: "folders", triggerSlug: "field_updated", values: ["<fieldId>"] }]';
     writeSchema = {
-      name: import_zod11.z.string().min(1).max(150).describe("Display name for the automation"),
-      trigger: import_zod11.z.record(import_zod11.z.unknown()).describe(TRIGGER_DESCRIPTION),
-      triggers: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).max(10).optional().describe(OR_TRIGGERS_DESCRIPTION),
-      steps: import_zod11.z.array(import_zod11.z.record(import_zod11.z.unknown())).min(1).max(20).describe(STEPS_DESCRIPTION),
-      description: import_zod11.z.string().max(1e3).optional().describe("Optional description"),
-      isActive: import_zod11.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
-      runType: import_zod11.z.enum(["instant", "schedule"]).optional().describe('Run type: "instant" (default, runs on trigger) or "schedule" (cron)'),
-      schedule: import_zod11.z.record(import_zod11.z.unknown()).optional().describe(
+      name: import_zod14.z.string().min(1).max(150).describe("Display name for the automation"),
+      trigger: import_zod14.z.record(import_zod14.z.unknown()).describe(TRIGGER_DESCRIPTION),
+      triggers: import_zod14.z.array(import_zod14.z.record(import_zod14.z.unknown())).max(10).optional().describe(OR_TRIGGERS_DESCRIPTION),
+      steps: import_zod14.z.array(import_zod14.z.record(import_zod14.z.unknown())).min(1).max(20).describe(STEPS_DESCRIPTION),
+      description: import_zod14.z.string().max(1e3).optional().describe("Optional description"),
+      isActive: import_zod14.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
+      runType: import_zod14.z.enum(["instant", "schedule"]).optional().describe('Run type: "instant" (default, runs on trigger) or "schedule" (cron)'),
+      schedule: import_zod14.z.record(import_zod14.z.unknown()).optional().describe(
         'Required when runType="schedule": { timePeriod: "today"|"yesterday"|"last7days"|"last14days"|"thisWeek", repeatAt: string }'
       )
     };
@@ -5416,18 +5910,18 @@ Notes: "tags"/"keywords" trigger types are rejected for graph automations. The s
 // src/tools/webhooks.ts
 var webhooks_exports = {};
 __export(webhooks_exports, {
-  register: () => register11
+  register: () => register13
 });
-function register11(server, client) {
+function register13(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
     "create_webhook",
     "Create an outbound webhook. From then on, Speak automatically POSTs a JSON payload to callbackUrl, an external endpoint, for each subscribed event (event type, ids such as mediaId or folderId, state, and for chat events the prompt and answer text).",
     {
-      callbackUrl: import_zod12.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
-      events: import_zod12.z.array(import_zod12.z.string()).optional().describe("Array of event types to subscribe to"),
-      description: import_zod12.z.string().optional().describe("Optional description for the webhook")
+      callbackUrl: import_zod15.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
+      events: import_zod15.z.array(import_zod15.z.string()).optional().describe("Array of event types to subscribe to"),
+      description: import_zod15.z.string().optional().describe("Optional description for the webhook")
     },
     {
       title: "Create Webhook",
@@ -5442,9 +5936,9 @@ function register11(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5468,9 +5962,9 @@ function register11(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5481,10 +5975,10 @@ function register11(server, client) {
     "update_webhook",
     "Update an existing webhook. This is a partial update \u2014 only the fields you supply are changed; `callbackUrl` is always required, the rest are left untouched if omitted.",
     {
-      webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the webhook"),
-      callbackUrl: import_zod12.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
-      events: import_zod12.z.array(import_zod12.z.string()).optional().describe("Updated array of event types"),
-      description: import_zod12.z.string().optional().describe("Optional description for the webhook")
+      webhookId: import_zod15.z.string().min(1).describe("Unique identifier of the webhook"),
+      callbackUrl: import_zod15.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
+      events: import_zod15.z.array(import_zod15.z.string()).optional().describe("Updated array of event types"),
+      description: import_zod15.z.string().optional().describe("Optional description for the webhook")
     },
     {
       title: "Update Webhook",
@@ -5499,9 +5993,9 @@ function register11(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5535,9 +6029,9 @@ function register11(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5548,9 +6042,9 @@ function register11(server, client) {
     "get_inbound_webhook",
     "Get an inbound webhook's public receive URL, captured sample payload, and the ready-to-paste {{trigger.payload.*}} tokens for mapping payload values into automation steps (speak-upload name/sourceUrl, fieldsMap custom-field values, notify/outbound-webhook templates). Pass either the webhookId or the automationId of an inbound-webhook automation. If no sample has been captured yet, send a test payload to the inboundUrl first (append ?test=1 to capture without running the automation).",
     {
-      webhookId: import_zod12.z.string().min(1).optional().describe("Inbound webhook id (from provision_inbound_webhook or an automation's trigger.webhookId)"),
-      automationId: import_zod12.z.string().min(1).optional().describe("Automation id \u2014 resolves the bound webhookId and childKey automatically"),
-      childKey: import_zod12.z.string().optional().describe("Override the dot-path used to narrow mappable payload paths (defaults to the automation's trigger.childKey)")
+      webhookId: import_zod15.z.string().min(1).optional().describe("Inbound webhook id (from provision_inbound_webhook or an automation's trigger.webhookId)"),
+      automationId: import_zod15.z.string().min(1).optional().describe("Automation id \u2014 resolves the bound webhookId and childKey automatically"),
+      childKey: import_zod15.z.string().optional().describe("Override the dot-path used to narrow mappable payload paths (defaults to the automation's trigger.childKey)")
     },
     {
       title: "Get Inbound Webhook",
@@ -5589,9 +6083,9 @@ function register11(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(info, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5602,9 +6096,9 @@ function register11(server, client) {
     "get_webhook_attempts",
     "Get the delivery log for an inbound webhook: each received request with its HTTP acknowledgement status (200 = sample captured, 202 = accepted and run started, 401/403 = rejected) and the automation run it started. Use get_automation_runs for the run outcomes themselves.",
     {
-      webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the inbound webhook"),
-      page: import_zod12.z.number().int().min(0).optional().describe("0-based page index"),
-      pageSize: import_zod12.z.number().int().min(1).max(100).optional().describe("Results per page")
+      webhookId: import_zod15.z.string().min(1).describe("Unique identifier of the inbound webhook"),
+      page: import_zod15.z.number().int().min(0).optional().describe("0-based page index"),
+      pageSize: import_zod15.z.number().int().min(1).max(100).optional().describe("Results per page")
     },
     {
       title: "Get Webhook Attempts",
@@ -5619,9 +6113,9 @@ function register11(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5632,7 +6126,7 @@ function register11(server, client) {
     "delete_webhook",
     "Permanently delete an outbound webhook and its delivery attempt history; its endpoint stops receiving notifications. Cannot be undone.",
     {
-      webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the webhook to delete")
+      webhookId: import_zod15.z.string().min(1).describe("Unique identifier of the webhook to delete")
     },
     {
       title: "Delete Webhook",
@@ -5647,20 +6141,20 @@ function register11(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
     }
   );
 }
-var import_zod12;
+var import_zod15;
 var init_webhooks = __esm({
   "src/tools/webhooks.ts"() {
     "use strict";
-    import_zod12 = require("zod");
+    import_zod15 = require("zod");
     init_helpers();
     init_client();
     init_inbound_webhook_utils();
@@ -5670,7 +6164,7 @@ var init_webhooks = __esm({
 // src/tools/analytics.ts
 var analytics_exports = {};
 __export(analytics_exports, {
-  register: () => register12
+  register: () => register14
 });
 function withDefaultSearchDateRange(params) {
   const now = /* @__PURE__ */ new Date();
@@ -5680,7 +6174,7 @@ function withDefaultSearchDateRange(params) {
     endDate: params.endDate ?? now.toISOString()
   };
 }
-function register12(server, client) {
+function register14(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -5693,15 +6187,15 @@ function register12(server, client) {
       "Results are scoped by date range \u2014 defaults to current year if not specified."
     ].join(" "),
     {
-      query: import_zod13.z.string().min(1).describe("Search query \u2014 searches across transcripts, insights, and metadata"),
-      startDate: import_zod13.z.string().optional().describe("Start date for search range (ISO 8601). Defaults to start of current year."),
-      endDate: import_zod13.z.string().optional().describe("End date for search range (ISO 8601). Defaults to now."),
-      filterList: import_zod13.z.array(
-        import_zod13.z.object({
-          fieldName: import_zod13.z.enum(Object.values(FilterFieldName)).describe("Field to filter on"),
-          fieldOperator: import_zod13.z.enum(Object.values(FilterOperator)).describe("Filter operator"),
-          fieldValue: import_zod13.z.array(import_zod13.z.string()).describe("Values to filter by"),
-          fieldCondition: import_zod13.z.enum(Object.values(FilterCondition)).describe("Condition linking multiple filters")
+      query: import_zod16.z.string().min(1).describe("Search query \u2014 searches across transcripts, insights, and metadata"),
+      startDate: import_zod16.z.string().optional().describe("Start date for search range (ISO 8601). Defaults to start of current year."),
+      endDate: import_zod16.z.string().optional().describe("End date for search range (ISO 8601). Defaults to now."),
+      filterList: import_zod16.z.array(
+        import_zod16.z.object({
+          fieldName: import_zod16.z.enum(Object.values(FilterFieldName)).describe("Field to filter on"),
+          fieldOperator: import_zod16.z.enum(Object.values(FilterOperator)).describe("Filter operator"),
+          fieldValue: import_zod16.z.array(import_zod16.z.string()).describe("Values to filter by"),
+          fieldCondition: import_zod16.z.enum(Object.values(FilterCondition)).describe("Condition linking multiple filters")
         })
       ).optional().describe("Advanced filters for narrowing search results by tags, speakers, media type, sentiment, folder, etc.")
     },
@@ -5718,20 +6212,20 @@ function register12(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
     }
   );
 }
-var import_zod13;
+var import_zod16;
 var init_analytics = __esm({
   "src/tools/analytics.ts"() {
     "use strict";
-    import_zod13 = require("zod");
+    import_zod16 = require("zod");
     init_helpers();
     init_client();
     init_dist();
@@ -5741,9 +6235,9 @@ var init_analytics = __esm({
 // src/tools/clips.ts
 var clips_exports = {};
 __export(clips_exports, {
-  register: () => register13
+  register: () => register15
 });
-function register13(server, client) {
+function register15(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -5756,18 +6250,18 @@ function register13(server, client) {
       "When the clip finishes processing it fires your clip_created automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions."
     ].join(" "),
     {
-      title: import_zod14.z.string().min(1).describe("Title for the clip"),
-      mediaType: import_zod14.z.enum([MediaType.AUDIO, MediaType.VIDEO]).describe("Output media type"),
-      timeRanges: import_zod14.z.array(
-        import_zod14.z.object({
-          mediaId: import_zod14.z.string().min(1).describe("Source media file ID"),
-          startTime: import_zod14.z.number().min(0).describe("Start time in seconds"),
-          endTime: import_zod14.z.number().min(0).describe("End time in seconds (must be > startTime)")
+      title: import_zod17.z.string().min(1).describe("Title for the clip"),
+      mediaType: import_zod17.z.enum([MediaType.AUDIO, MediaType.VIDEO]).describe("Output media type"),
+      timeRanges: import_zod17.z.array(
+        import_zod17.z.object({
+          mediaId: import_zod17.z.string().min(1).describe("Source media file ID"),
+          startTime: import_zod17.z.number().min(0).describe("Start time in seconds"),
+          endTime: import_zod17.z.number().min(0).describe("End time in seconds (must be > startTime)")
         })
       ).min(1).describe("Array of time ranges to include in the clip. Each specifies a source media and start/end times."),
-      description: import_zod14.z.string().optional().describe("Description of the clip"),
-      tags: import_zod14.z.array(import_zod14.z.string()).optional().describe("Tags for the clip"),
-      mergeStrategy: import_zod14.z.enum(["CONCATENATE"]).optional().describe("How to merge multiple segments (default: CONCATENATE)")
+      description: import_zod17.z.string().optional().describe("Description of the clip"),
+      tags: import_zod17.z.array(import_zod17.z.string()).optional().describe("Tags for the clip"),
+      mergeStrategy: import_zod17.z.enum(["CONCATENATE"]).optional().describe("How to merge multiple segments (default: CONCATENATE)")
     },
     {
       title: "Create Highlight Clip",
@@ -5782,9 +6276,9 @@ function register13(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5795,9 +6289,9 @@ function register13(server, client) {
     "get_clips",
     "List clips, optionally filtered by folder or media files. If clipId is provided, returns a single clip with its download URL (when processed).",
     {
-      clipId: import_zod14.z.string().optional().describe("Get a specific clip by ID"),
-      folderId: import_zod14.z.string().optional().describe("Filter clips by folder ID"),
-      mediaIds: import_zod14.z.array(import_zod14.z.string()).optional().describe("Filter clips by source media file IDs")
+      clipId: import_zod17.z.string().optional().describe("Get a specific clip by ID"),
+      folderId: import_zod17.z.string().optional().describe("Filter clips by folder ID"),
+      mediaIds: import_zod17.z.array(import_zod17.z.string()).optional().describe("Filter clips by source media file IDs")
     },
     {
       title: "List Clips",
@@ -5813,9 +6307,9 @@ function register13(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5826,10 +6320,10 @@ function register13(server, client) {
     "update_clip",
     "Update a clip's title, description, or tags.",
     {
-      clipId: import_zod14.z.string().min(1).describe("ID of the clip to update"),
-      title: import_zod14.z.string().optional().describe("New title"),
-      description: import_zod14.z.string().optional().describe("New description"),
-      tags: import_zod14.z.array(import_zod14.z.string()).optional().describe("New tags")
+      clipId: import_zod17.z.string().min(1).describe("ID of the clip to update"),
+      title: import_zod17.z.string().optional().describe("New title"),
+      description: import_zod17.z.string().optional().describe("New description"),
+      tags: import_zod17.z.array(import_zod17.z.string()).optional().describe("New tags")
     },
     {
       title: "Update Clip",
@@ -5844,9 +6338,9 @@ function register13(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -5857,7 +6351,7 @@ function register13(server, client) {
     "delete_clip",
     "Permanently delete a clip and its associated media file.",
     {
-      clipId: import_zod14.z.string().min(1).describe("ID of the clip to delete")
+      clipId: import_zod17.z.string().min(1).describe("ID of the clip to delete")
     },
     {
       title: "Delete Clip",
@@ -5872,20 +6366,20 @@ function register13(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
     }
   );
 }
-var import_zod14;
+var import_zod17;
 var init_clips = __esm({
   "src/tools/clips.ts"() {
     "use strict";
-    import_zod14 = require("zod");
+    import_zod17 = require("zod");
     init_helpers();
     init_client();
     init_dist();
@@ -5895,7 +6389,7 @@ var init_clips = __esm({
 // src/tools/workflows.ts
 var workflows_exports = {};
 __export(workflows_exports, {
-  register: () => register14
+  register: () => register16
 });
 function tokenize(value) {
   if (typeof value !== "string") return value;
@@ -5943,7 +6437,7 @@ function resolveField(ref, fields) {
   const available = fields.map((f) => f.name).slice(0, 25).join(", ");
   throw new Error(`Unknown custom field "${ref}". Available fields: ${available || "(none \u2014 create one with create_field)"}`);
 }
-function register14(server, client, options = {}) {
+function register16(server, client, options = {}) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -6260,8 +6754,8 @@ function register14(server, client, options = {}) {
         return {
           content: [{ type: "text", text: JSON.stringify(response, null, 2) }]
         };
-      } catch (err) {
-        let message = formatAxiosError(err);
+      } catch (err2) {
+        let message = formatAxiosError(err2);
         if (dataFlowFilterFields.length && message.includes("fieldIds do not belong")) {
           message += `
 
@@ -6281,12 +6775,12 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
     {
       // A plain literal, not a template: the docs generator drops a tool's whole parameter
       // table when a description interpolates a value it cannot resolve statically.
-      url: import_zod15.z.string().describe("Direct/public media file URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
-      name: import_zod15.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
-      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
-      sourceLanguage: import_zod15.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
-      folderId: import_zod15.z.string().optional().describe("Folder ID to place the media in"),
-      tags: import_zod15.z.string().optional().describe("Comma-separated tags")
+      url: import_zod18.z.string().describe("Direct/public media file URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
+      name: import_zod18.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
+      mediaType: import_zod18.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
+      sourceLanguage: import_zod18.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
+      folderId: import_zod18.z.string().optional().describe("Folder ID to place the media in"),
+      tags: import_zod18.z.string().optional().describe("Comma-separated tags")
     },
     {
       title: "Upload and Analyze Media",
@@ -6328,9 +6822,9 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
         return {
           content: [{ type: "text", text: JSON.stringify(result, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -6341,12 +6835,12 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     "upload_and_analyze_batch",
     `Import up to ${MAX_BATCH_URLS} audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most ${MAX_BATCH_CONCURRENCY} uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.`,
     {
-      urls: import_zod15.z.array(import_zod15.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Exact duplicate URLs are sent once."),
-      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Applies to every URL in the batch. Send it only when the user has said which they want for all of them \u2014 "audio" if they asked for audio only, "video" if they called them videos. Otherwise omit it and the server decides per URL. Mixed batches: leave it off, or split into two calls.'),
-      folderId: import_zod15.z.string().optional().describe("Folder ID for every upload in the batch"),
-      sourceLanguage: import_zod15.z.string().optional().describe('BCP-47 language code applied to every upload, e.g. "en-US"'),
-      tags: import_zod15.z.string().optional().describe("Comma-separated tags applied to every upload"),
-      concurrency: import_zod15.z.number().int().min(1).max(MAX_BATCH_CONCURRENCY).optional().describe("How many uploads to start at once, 1 to 5. Defaults to 5. Drop it to 1 to import strictly in order.")
+      urls: import_zod18.z.array(import_zod18.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Exact duplicate URLs are sent once."),
+      mediaType: import_zod18.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Applies to every URL in the batch. Send it only when the user has said which they want for all of them \u2014 "audio" if they asked for audio only, "video" if they called them videos. Otherwise omit it and the server decides per URL. Mixed batches: leave it off, or split into two calls.'),
+      folderId: import_zod18.z.string().optional().describe("Folder ID for every upload in the batch"),
+      sourceLanguage: import_zod18.z.string().optional().describe('BCP-47 language code applied to every upload, e.g. "en-US"'),
+      tags: import_zod18.z.string().optional().describe("Comma-separated tags applied to every upload"),
+      concurrency: import_zod18.z.number().int().min(1).max(MAX_BATCH_CONCURRENCY).optional().describe("How many uploads to start at once, 1 to 5. Defaults to 5. Drop it to 1 to import strictly in order.")
     },
     {
       title: "Upload and Analyze Several URLs",
@@ -6381,17 +6875,17 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
             let res;
             try {
               res = await send(url);
-            } catch (err) {
-              const message = formatAxiosError(err);
-              if (!isRateLimited(message)) throw err;
+            } catch (err2) {
+              const message = formatAxiosError(err2);
+              if (!isRateLimited(message)) throw err2;
               await new Promise((r) => setTimeout(r, RATE_LIMIT_RETRY_DELAY_MS));
               res = await send(url);
             }
             const mediaId = res.data?.data?.mediaId;
             if (mediaId) uploaded.push({ url, mediaId, state: res.data?.data?.state ?? "pending" });
             else failed.push({ url, error: "Upload accepted but no mediaId was returned." });
-          } catch (err) {
-            failed.push({ url, error: formatAxiosError(err) });
+          } catch (err2) {
+            failed.push({ url, error: formatAxiosError(err2) });
           }
         }
       };
@@ -6425,12 +6919,12 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       "After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights."
     ].join(" "),
     {
-      filePath: import_zod15.z.string().describe("Absolute path to the local audio or video file"),
-      name: import_zod15.z.string().optional().describe("Display name (defaults to filename)"),
-      mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (auto-detected from extension if omitted)"),
-      sourceLanguage: import_zod15.z.string().optional().describe("BCP-47 language code (e.g., 'en-US')"),
-      folderId: import_zod15.z.string().optional().describe("Folder ID to place the media in"),
-      tags: import_zod15.z.string().optional().describe("Comma-separated tags")
+      filePath: import_zod18.z.string().describe("Absolute path to the local audio or video file"),
+      name: import_zod18.z.string().optional().describe("Display name (defaults to filename)"),
+      mediaType: import_zod18.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe("Media type (auto-detected from extension if omitted)"),
+      sourceLanguage: import_zod18.z.string().optional().describe("BCP-47 language code (e.g., 'en-US')"),
+      folderId: import_zod18.z.string().optional().describe("Folder ID to place the media in"),
+      tags: import_zod18.z.string().optional().describe("Comma-separated tags")
     },
     {
       title: "Upload Local File",
@@ -6499,20 +6993,20 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
             }
           ]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
     }
   );
 }
-var import_zod15, fs, path2, MAX_BATCH_URLS, MAX_BATCH_CONCURRENCY, RATE_LIMIT_RETRY_DELAY_MS, isRateLimited, CANONICAL_FILTER_FIELDS, ID_PATTERN, TRIGGER_SPEC_DESCRIPTION, STEP_SPEC_DESCRIPTION, buildAutomationSchema;
+var import_zod18, fs, path2, MAX_BATCH_URLS, MAX_BATCH_CONCURRENCY, RATE_LIMIT_RETRY_DELAY_MS, isRateLimited, CANONICAL_FILTER_FIELDS, ID_PATTERN, TRIGGER_SPEC_DESCRIPTION, STEP_SPEC_DESCRIPTION, buildAutomationSchema;
 var init_workflows = __esm({
   "src/tools/workflows.ts"() {
     "use strict";
-    import_zod15 = require("zod");
+    import_zod18 = require("zod");
     init_helpers();
     init_client();
     init_dist();
@@ -6543,13 +7037,13 @@ var init_workflows = __esm({
     TRIGGER_SPEC_DESCRIPTION = 'What starts the automation. Object with:\n- on (required): "media_analyzed" | "inbound_webhook" | "field_updated"\n- folders: array of folder names or ids (required for media_analyzed; missing folders are created)\n- childKey: dot-path narrowing the webhook payload root, e.g. "data" (inbound_webhook only)\n- webhookId: reuse a webhook from provision_inbound_webhook (inbound_webhook only; omit to auto-provision)\n- watchFields: array of { field: name-or-id, values?: string[] } (required for field_updated \u2014 fires when the field changes; values restricts to specific new values)\n- matchLogic: "AND"|"OR" for combining multiple watchFields value matches (default OR)';
     STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match, otherwise the run stops here. Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic?, then: [steps], otherwise: [steps], thenEnds?, otherwiseEnds? } \u2014 routes instead of stopping. `then` runs when the rules match, `otherwise` when they do not, and whatever follows the branch runs on both paths. Set thenEnds/otherwiseEnds to true to finish the run on that side instead of carrying on. One side may be empty ("if it matches do this, otherwise just carry on"), but not both. Branches may nest three deep, and a nested branch must be the LAST step of the side it sits on.\n  Rule fields for BOTH filter and branch depend on what reaches the step: while media is flowing use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; straight after an ai_chat step only "answer" is available, so put the branch BEFORE the ai_chat step if you need a media field. A filter and a branch CANNOT read the webhook payload \u2014 they only see the media and earlier answers. To branch on payload data, upload first with mapFields to write the value into a custom field, then branch on that field.\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default), analyse?: "transcript" (default) | "audio" | "video" \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see the screen; on a video file "audio" extracts the audio track first. Premium: requires the account\'s audio/video analysis opt-in and costs credits per hour of media }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nLegacy: a flat list where steps after a branch carry runWhen: "true"|"false" is still accepted and folded into then/otherwise, but it cannot express nesting or an ending side \u2014 prefer then/otherwise. Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
     buildAutomationSchema = {
-      name: import_zod15.z.string().min(1).max(150).describe("Display name for the automation"),
-      trigger: import_zod15.z.record(import_zod15.z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
-      steps: import_zod15.z.array(import_zod15.z.record(import_zod15.z.unknown())).min(1).max(20).describe(STEP_SPEC_DESCRIPTION),
-      automationId: import_zod15.z.string().optional().describe("Update this existing automation instead of creating a new one (full replace)"),
-      description: import_zod15.z.string().max(1e3).optional().describe("Optional description"),
-      isActive: import_zod15.z.boolean().optional().describe("Whether the automation is active (default true)"),
-      orTriggers: import_zod15.z.array(import_zod15.z.record(import_zod15.z.unknown())).max(10).optional().describe(
+      name: import_zod18.z.string().min(1).max(150).describe("Display name for the automation"),
+      trigger: import_zod18.z.record(import_zod18.z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
+      steps: import_zod18.z.array(import_zod18.z.record(import_zod18.z.unknown())).min(1).max(20).describe(STEP_SPEC_DESCRIPTION),
+      automationId: import_zod18.z.string().optional().describe("Update this existing automation instead of creating a new one (full replace)"),
+      description: import_zod18.z.string().max(1e3).optional().describe("Optional description"),
+      isActive: import_zod18.z.boolean().optional().describe("Whether the automation is active (default true)"),
+      orTriggers: import_zod18.z.array(import_zod18.z.record(import_zod18.z.unknown())).max(10).optional().describe(
         'Additional "Or" triggers (same shape as trigger, but inbound_webhook is not allowed here). The automation runs when ANY trigger fires.'
       )
     };
@@ -6559,21 +7053,21 @@ var init_workflows = __esm({
 // src/tools/users.ts
 var users_exports = {};
 __export(users_exports, {
-  register: () => register15
+  register: () => register17
 });
-function register15(server, client) {
+function register17(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
     "list_users",
     "List the users (members) in the workspace/company, with their ids, names, emails, and permissions. Use the returned _id values when assigning members to user groups.",
     {
-      filterName: import_zod16.z.string().optional().describe(
+      filterName: import_zod19.z.string().optional().describe(
         'Search text. Plain text matches first/last name or email; prefix with "email:" or "name:" to scope, e.g. "email:jane@acme.com".'
       ),
-      sortBy: import_zod16.z.string().optional().describe('Sort expression "field:asc" or "field:desc", e.g. "createdAt:desc", "email:asc"'),
-      page: import_zod16.z.number().int().min(0).optional().describe("0-based page index (default 0)"),
-      pageSize: import_zod16.z.number().int().min(1).max(200).optional().describe("Results per page (default 50)")
+      sortBy: import_zod19.z.string().optional().describe('Sort expression "field:asc" or "field:desc", e.g. "createdAt:desc", "email:asc"'),
+      page: import_zod19.z.number().int().min(0).optional().describe("0-based page index (default 0)"),
+      pageSize: import_zod19.z.number().int().min(1).max(200).optional().describe("Results per page (default 50)")
     },
     {
       title: "List Users",
@@ -6588,9 +7082,9 @@ function register15(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -6614,9 +7108,9 @@ function register15(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -6627,8 +7121,8 @@ function register15(server, client) {
     "create_user_group",
     "Create a new user group and assign members. Member ids come from list_users. Fails with a 409 if a group with the same name already exists in the company.",
     {
-      description: import_zod16.z.string().min(1).describe("Group name"),
-      users: import_zod16.z.array(import_zod16.z.string().min(1)).default([]).describe("User _id strings to add as members (fetch via list_users)")
+      description: import_zod19.z.string().min(1).describe("Group name"),
+      users: import_zod19.z.array(import_zod19.z.string().min(1)).default([]).describe("User _id strings to add as members (fetch via list_users)")
     },
     {
       title: "Create User Group",
@@ -6643,9 +7137,9 @@ function register15(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -6656,9 +7150,9 @@ function register15(server, client) {
     "update_user_group",
     "Update a user group's name and member list. NOTE: the users array is a FULL REPLACEMENT, not a delta \u2014 any member id you omit is removed from the group. Fetch the current members with list_user_groups first and send the complete list.",
     {
-      _id: import_zod16.z.string().min(1).describe("Group _id to update (from list_user_groups)"),
-      description: import_zod16.z.string().min(1).describe("New group name"),
-      users: import_zod16.z.array(import_zod16.z.string().min(1)).describe("Full replacement list of member _id strings (omitted users are removed)")
+      _id: import_zod19.z.string().min(1).describe("Group _id to update (from list_user_groups)"),
+      description: import_zod19.z.string().min(1).describe("New group name"),
+      users: import_zod19.z.array(import_zod19.z.string().min(1)).describe("Full replacement list of member _id strings (omitted users are removed)")
     },
     {
       title: "Update User Group",
@@ -6673,9 +7167,9 @@ function register15(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -6686,7 +7180,7 @@ function register15(server, client) {
     "delete_user_group",
     "Permanently delete a user group. The users themselves are not deleted, but members lose any access that was shared with the group (for example dashboards assigned to it).",
     {
-      id: import_zod16.z.string().min(1).describe("Group _id to delete (from list_user_groups)")
+      id: import_zod19.z.string().min(1).describe("Group _id to delete (from list_user_groups)")
     },
     {
       title: "Delete User Group",
@@ -6701,20 +7195,20 @@ function register15(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
     }
   );
 }
-var import_zod16;
+var import_zod19;
 var init_users = __esm({
   "src/tools/users.ts"() {
     "use strict";
-    import_zod16 = require("zod");
+    import_zod19 = require("zod");
     init_helpers();
     init_client();
   }
@@ -7082,7 +7576,7 @@ var init_dashboard_widgets = __esm({
 // src/tools/dashboards.ts
 var dashboards_exports = {};
 __export(dashboards_exports, {
-  register: () => register16
+  register: () => register18
 });
 function buildSource(source) {
   if (source.type === "folders") {
@@ -7114,7 +7608,7 @@ function pickMetadata(body) {
   if (body.settings !== void 0) out.settings = body.settings;
   return out;
 }
-function register16(server, client) {
+function register18(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -7134,9 +7628,9 @@ function register16(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7147,7 +7641,7 @@ function register16(server, client) {
     "get_dashboard",
     "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, and the current `revision` (pass that revision back to update_dashboard).",
     {
-      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id (the dashboardId field from list_dashboards, not the Mongo _id)")
+      dashboardId: import_zod20.z.string().min(1).describe("Dashboard business id (the dashboardId field from list_dashboards, not the Mongo _id)")
     },
     {
       title: "Get Dashboard",
@@ -7162,9 +7656,9 @@ function register16(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7209,7 +7703,7 @@ function register16(server, client) {
     "create_dashboard",
     `Create an analytics dashboard. Only \`title\` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad \u2014 every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): ` + SETTINGS_RULES,
     {
-      title: import_zod17.z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
+      title: import_zod20.z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
       ...specFields,
       ...metadataFields
     },
@@ -7237,9 +7731,9 @@ function register16(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7250,9 +7744,9 @@ function register16(server, client) {
     "update_dashboard",
     "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): " + SETTINGS_RULES,
     {
-      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id"),
-      title: import_zod17.z.string().min(1).max(60).optional().describe("Dashboard name \u2014 required (with revision) when updating the spec"),
-      revision: import_zod17.z.number().int().nonnegative().optional().describe(
+      dashboardId: import_zod20.z.string().min(1).describe("Dashboard business id"),
+      title: import_zod20.z.string().min(1).max(60).optional().describe("Dashboard name \u2014 required (with revision) when updating the spec"),
+      revision: import_zod20.z.number().int().nonnegative().optional().describe(
         "The revision loaded from get_dashboard. Required for spec updates; mismatch returns a 409 conflict."
       ),
       ...specFields,
@@ -7294,9 +7788,9 @@ function register16(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7307,7 +7801,7 @@ function register16(server, client) {
     "delete_dashboard",
     "Soft-delete a dashboard. This also deactivates its public share link.",
     {
-      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id to delete")
+      dashboardId: import_zod20.z.string().min(1).describe("Dashboard business id to delete")
     },
     {
       title: "Delete Dashboard",
@@ -7322,9 +7816,9 @@ function register16(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7335,7 +7829,7 @@ function register16(server, client) {
     "duplicate_dashboard",
     `Clone an existing dashboard into a new dashboard owned by the caller. The copy keeps the source's widgets (same widget ids), sections, filters, and viewer settings, gets a "<name> (copy)" title, has no shared users and no public link, and starts at revision 0. Edit it afterwards with update_dashboard.`,
     {
-      dashboardId: import_zod17.z.string().min(1).describe("Source dashboard business id to clone")
+      dashboardId: import_zod20.z.string().min(1).describe("Source dashboard business id to clone")
     },
     {
       title: "Duplicate Dashboard",
@@ -7350,9 +7844,9 @@ function register16(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7363,7 +7857,7 @@ function register16(server, client) {
     "share_dashboard",
     "Enable public sharing for a dashboard and return its share token + embed id. WARNING: by default the public link resolves with no passphrase, so anyone with the token can view the dashboard data until an owner sets one.",
     {
-      dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id to share")
+      dashboardId: import_zod20.z.string().min(1).describe("Dashboard business id to share")
     },
     {
       title: "Share Dashboard",
@@ -7378,9 +7872,9 @@ function register16(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7404,75 +7898,75 @@ function register16(server, client) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
     }
   );
 }
-var import_zod17, FILTER_LIST_DESCRIPTION, widgetInputSchema, sectionInputSchema, sourceInputSchema, dateRangeInputSchema, settingsFieldIds, SETTINGS_RULES, dashboardSettingsSchema, metadataFields, specFields, SPEAKERS_FILTER_SCHEMA;
+var import_zod20, FILTER_LIST_DESCRIPTION, widgetInputSchema, sectionInputSchema, sourceInputSchema, dateRangeInputSchema, settingsFieldIds, SETTINGS_RULES, dashboardSettingsSchema, metadataFields, specFields, SPEAKERS_FILTER_SCHEMA;
 var init_dashboards = __esm({
   "src/tools/dashboards.ts"() {
     "use strict";
-    import_zod17 = require("zod");
+    import_zod20 = require("zod");
     init_helpers();
     init_client();
     init_dashboard_widgets();
     FILTER_LIST_DESCRIPTION = "Field filters. filters.filterList is an array of { fieldName, fieldOperator?, fieldValue?: string[], fieldCondition? }. Other keys pass through but only filterList is enforced.";
-    widgetInputSchema = import_zod17.z.object({
-      type: import_zod17.z.enum(WIDGET_TYPES).describe(
+    widgetInputSchema = import_zod20.z.object({
+      type: import_zod20.z.enum(WIDGET_TYPES).describe(
         "Widget type: narrative | stat-cards | metric-chart | table | comparison | field-distribution | sentiment-trend | themes | people | team-activity | notes | chat-history"
       ),
-      id: import_zod17.z.string().max(64).optional().describe(
+      id: import_zod20.z.string().max(64).optional().describe(
         "Optional explicit widget id (kebab-case). Required if you reference the widget from sections[].widgetIds; auto-generated otherwise."
       ),
-      title: import_zod17.z.string().min(1).max(40).optional().describe("Widget title, max 40 chars (defaults to a per-type label)"),
-      config: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
+      title: import_zod20.z.string().min(1).max(40).optional().describe("Widget title, max 40 chars (defaults to a per-type label)"),
+      config: import_zod20.z.record(import_zod20.z.unknown()).optional().describe(
         "Per-type config (STRICT \u2014 unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content; chat-history: limit (optional, past conversations to list, 1-100, default 25). Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. Omit for a sensible valid default (except field-distribution, which needs fieldName)."
       ),
-      binding: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(
+      binding: import_zod20.z.record(import_zod20.z.unknown()).optional().describe(
         "Per-widget scope override: { source?, dateRange?: {preset}, filter? }. Omit any key to inherit the dashboard's value."
       ),
-      layout: import_zod17.z.object({
-        x: import_zod17.z.number().int().min(0).max(11),
-        y: import_zod17.z.number().int().min(0).max(200),
-        w: import_zod17.z.number().int().min(1).max(12),
-        h: import_zod17.z.number().int().min(1).max(40)
+      layout: import_zod20.z.object({
+        x: import_zod20.z.number().int().min(0).max(11),
+        y: import_zod20.z.number().int().min(0).max(200),
+        w: import_zod20.z.number().int().min(1).max(12),
+        h: import_zod20.z.number().int().min(1).max(40)
       }).optional().describe(
         "Explicit 12-column grid position. Omit to auto-place two-per-row like the UI. Widgets must not overlap within a section group."
       )
     });
-    sectionInputSchema = import_zod17.z.object({
-      id: import_zod17.z.string().min(1).max(64).describe("Section id (kebab-case)"),
-      title: import_zod17.z.string().min(1).max(24).describe("Section title, max 24 chars"),
-      icon: import_zod17.z.string().min(1).max(40).describe('Kebab-case lucide icon name, e.g. "dollar-sign"'),
-      widgetIds: import_zod17.z.array(import_zod17.z.string().max(64)).max(24).describe("Widget ids in this section \u2014 must match explicit `id`s set on widgets[]")
+    sectionInputSchema = import_zod20.z.object({
+      id: import_zod20.z.string().min(1).max(64).describe("Section id (kebab-case)"),
+      title: import_zod20.z.string().min(1).max(24).describe("Section title, max 24 chars"),
+      icon: import_zod20.z.string().min(1).max(40).describe('Kebab-case lucide icon name, e.g. "dollar-sign"'),
+      widgetIds: import_zod20.z.array(import_zod20.z.string().max(64)).max(24).describe("Widget ids in this section \u2014 must match explicit `id`s set on widgets[]")
     });
-    sourceInputSchema = import_zod17.z.object({
-      type: import_zod17.z.enum(["folders", "team", "workspace"]).describe(
+    sourceInputSchema = import_zod20.z.object({
+      type: import_zod20.z.enum(["folders", "team", "workspace"]).describe(
         "folders = specific folder ids; team = the caller's team scope; workspace = everything accessible"
       ),
-      folderIds: import_zod17.z.array(import_zod17.z.string().min(1).max(64)).min(1).max(50).optional().describe('Folder ids \u2014 required when type is "folders", forbidden otherwise')
+      folderIds: import_zod20.z.array(import_zod20.z.string().min(1).max(64)).min(1).max(50).optional().describe('Folder ids \u2014 required when type is "folders", forbidden otherwise')
     }).describe(
       'Data source: {type:"folders", folderIds:[...]} | {type:"team"} | {type:"workspace"}'
     );
-    dateRangeInputSchema = import_zod17.z.object({
-      preset: import_zod17.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
+    dateRangeInputSchema = import_zod20.z.object({
+      preset: import_zod20.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
     }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
-    settingsFieldIds = import_zod17.z.array(import_zod17.z.string());
+    settingsFieldIds = import_zod20.z.array(import_zod20.z.string());
     SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.";
-    dashboardSettingsSchema = import_zod17.z.object({
-      fields: import_zod17.z.object({
+    dashboardSettingsSchema = import_zod20.z.object({
+      fields: import_zod20.z.object({
         includeIds: settingsFieldIds.describe(
           "Field ids a viewer sees on each media page opened from this shared dashboard, in this order. Private fields are shown when listed. Empty shows only the company's public fields."
         ),
-        groups: import_zod17.z.array(
-          import_zod17.z.object({
-            key: import_zod17.z.string().min(1),
-            label: import_zod17.z.string().min(1),
+        groups: import_zod20.z.array(
+          import_zod20.z.object({
+            key: import_zod20.z.string().min(1),
+            label: import_zod20.z.string().min(1),
             fieldIds: settingsFieldIds.min(1)
           })
         ).describe("Pills on the media page Fields tab, each listing the field ids it shows. Empty means no pills."),
@@ -7480,37 +7974,37 @@ var init_dashboards = __esm({
           "Used only when includeIds is empty: these fields show first, in this order, then every other public field. Does not change which fields are visible."
         )
       }).optional(),
-      feedback: import_zod17.z.object({
-        isEnabled: import_zod17.z.boolean().describe("Show the Feedback button on media pages opened from this shared dashboard"),
+      feedback: import_zod20.z.object({
+        isEnabled: import_zod20.z.boolean().describe("Show the Feedback button on media pages opened from this shared dashboard"),
         fieldIds: settingsFieldIds.describe(
           "Fields a reviewer gives feedback on. Empty means every field the media page shows."
         ),
-        submitters: import_zod17.z.array(import_zod17.z.string().min(1)).describe("Names a reviewer picks from. Empty lets them type their own name."),
-        removeReasons: import_zod17.z.array(import_zod17.z.string().min(1)).describe("Reasons for removing a call from scoring. Empty hides that option."),
-        reviewScope: import_zod17.z.enum(["dashboard", "company"]).optional().describe(
+        submitters: import_zod20.z.array(import_zod20.z.string().min(1)).describe("Names a reviewer picks from. Empty lets them type their own name."),
+        removeReasons: import_zod20.z.array(import_zod20.z.string().min(1)).describe("Reasons for removing a call from scoring. Empty hides that option."),
+        reviewScope: import_zod20.z.enum(["dashboard", "company"]).optional().describe(
           "'dashboard' (default) lists and reviews only this dashboard's feedback; 'company' lists every dashboard's feedback in the company. Use 'company' only on a manager dashboard, never on a personal one."
         ),
-        allowOtherSubmitter: import_zod17.z.boolean().optional().describe("Lets a reviewer type a name that is not in submitters."),
-        groups: import_zod17.z.array(
-          import_zod17.z.object({
-            key: import_zod17.z.string().min(1),
-            label: import_zod17.z.string().min(1),
+        allowOtherSubmitter: import_zod20.z.boolean().optional().describe("Lets a reviewer type a name that is not in submitters."),
+        groups: import_zod20.z.array(
+          import_zod20.z.object({
+            key: import_zod20.z.string().min(1),
+            label: import_zod20.z.string().min(1),
             fieldIds: settingsFieldIds.min(1)
           })
         ).optional().describe(
           "Pills in the Feedback dialog, each listing feedback field ids in order. Leave out to reuse fields.groups."
         ),
-        fieldRules: import_zod17.z.record(
-          import_zod17.z.string(),
-          import_zod17.z.object({
-            label: import_zod17.z.string().optional(),
-            min: import_zod17.z.number().optional(),
-            max: import_zod17.z.number().optional()
+        fieldRules: import_zod20.z.record(
+          import_zod20.z.string(),
+          import_zod20.z.object({
+            label: import_zod20.z.string().optional(),
+            min: import_zod20.z.number().optional(),
+            max: import_zod20.z.number().optional()
           })
         ).optional().describe(
           "Per feedback field: a short row label and the allowed score range, used for both the reviewer's score and the approver's score."
         ),
-        sheetWebhookUrl: import_zod17.z.string().optional().describe(
+        sheetWebhookUrl: import_zod20.z.string().optional().describe(
           "External Google Apps Script web app URL. Speak posts one row per Feedback submission (call date, media link, scores, submitter name, notes) to it. Only https://script.google.com/macros/s/<id>/exec addresses are called; other values are saved but never called. Never shown to viewers."
         )
       }).optional()
@@ -7518,33 +8012,33 @@ var init_dashboards = __esm({
       "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, and the Feedback button. " + SETTINGS_RULES
     );
     metadataFields = {
-      icon: import_zod17.z.string().max(200).optional().describe("Icon identifier"),
-      assignTo: import_zod17.z.array(import_zod17.z.string()).max(100).optional().describe('User ids, or group ids in the "<groupId> (G)" convention, to share view access with'),
-      filters: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
-      isDefault: import_zod17.z.boolean().optional().describe("Make this the owner's default dashboard. Setting true clears the default flag on the owner's other dashboards"),
+      icon: import_zod20.z.string().max(200).optional().describe("Icon identifier"),
+      assignTo: import_zod20.z.array(import_zod20.z.string()).max(100).optional().describe('User ids, or group ids in the "<groupId> (G)" convention, to share view access with'),
+      filters: import_zod20.z.record(import_zod20.z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
+      isDefault: import_zod20.z.boolean().optional().describe("Make this the owner's default dashboard. Setting true clears the default flag on the owner's other dashboards"),
       settings: dashboardSettingsSchema.optional()
     };
     specFields = {
-      description: import_zod17.z.string().max(280).optional().describe("Dashboard description, max 280 chars"),
+      description: import_zod20.z.string().max(280).optional().describe("Dashboard description, max 280 chars"),
       source: sourceInputSchema.optional(),
       dateRange: dateRangeInputSchema.optional(),
-      sections: import_zod17.z.array(sectionInputSchema).max(12).optional().describe(
+      sections: import_zod20.z.array(sectionInputSchema).max(12).optional().describe(
         "Optional named widget groups (tabs). Each references widgets by their explicit ids; widgets in no section form the implicit Overview group."
       ),
-      widgets: import_zod17.z.array(widgetInputSchema).max(24).optional().describe(
+      widgets: import_zod20.z.array(widgetInputSchema).max(24).optional().describe(
         "Widgets to place on the dashboard, in order (max 24). The MCP assigns ids and computes a tidy two-per-row grid layout matching the Speak UI unless you pass explicit id/layout."
       )
     };
     SPEAKERS_FILTER_SCHEMA = {
-      folderScope: import_zod17.z.array(import_zod17.z.string().max(100)).max(100).optional().describe("Folder ids to scope to"),
-      startDate: import_zod17.z.string().optional().describe("ISO start date"),
-      endDate: import_zod17.z.string().optional().describe("ISO end date"),
-      filterList: import_zod17.z.array(
-        import_zod17.z.object({
-          fieldName: import_zod17.z.string().max(100),
-          fieldOperator: import_zod17.z.string().max(50).optional(),
-          fieldValue: import_zod17.z.array(import_zod17.z.string().max(500)).optional(),
-          fieldCondition: import_zod17.z.string().max(50).optional()
+      folderScope: import_zod20.z.array(import_zod20.z.string().max(100)).max(100).optional().describe("Folder ids to scope to"),
+      startDate: import_zod20.z.string().optional().describe("ISO start date"),
+      endDate: import_zod20.z.string().optional().describe("ISO end date"),
+      filterList: import_zod20.z.array(
+        import_zod20.z.object({
+          fieldName: import_zod20.z.string().max(100),
+          fieldOperator: import_zod20.z.string().max(50).optional(),
+          fieldValue: import_zod20.z.array(import_zod20.z.string().max(500)).optional(),
+          fieldCondition: import_zod20.z.string().max(50).optional()
         })
       ).max(20).optional().describe("Field filter rules")
     };
@@ -7554,9 +8048,9 @@ var init_dashboards = __esm({
 // src/tools/voice.ts
 var voice_exports = {};
 __export(voice_exports, {
-  register: () => register17
+  register: () => register19
 });
-function register17(server, client, options = {}) {
+function register19(server, client, options = {}) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -7576,9 +8070,9 @@ function register17(server, client, options = {}) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7589,7 +8083,7 @@ function register17(server, client, options = {}) {
     "get_voice_agent",
     "Fetch a single voice agent by its agentId. Returns the full agent configuration. A cross-company agentId returns 404.",
     {
-      agentId: import_zod18.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)")
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)")
     },
     {
       title: "Get Voice Agent",
@@ -7604,9 +8098,9 @@ function register17(server, client, options = {}) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7617,9 +8111,9 @@ function register17(server, client, options = {}) {
     "list_voice_conversations",
     "List the company's voice conversations (newest first). Optionally filter to a single agent. Each conversation includes its conversationId, agentId, status, duration, transcript summary, and usage/costs. Use conversationId with get_voice_conversation for the full record.",
     {
-      agentId: import_zod18.z.string().optional().describe("Filter conversations to a single agent (from list_voice_agents)"),
-      page: import_zod18.z.number().int().min(1).optional().describe("1-based page index (default 1)"),
-      limit: import_zod18.z.number().int().min(1).max(200).optional().describe("Results per page (default 50, max 200)")
+      agentId: import_zod21.z.string().optional().describe("Filter conversations to a single agent (from list_voice_agents)"),
+      page: import_zod21.z.number().int().min(1).optional().describe("1-based page index (default 1)"),
+      limit: import_zod21.z.number().int().min(1).max(200).optional().describe("Results per page (default 50, max 200)")
     },
     {
       title: "List Voice Conversations",
@@ -7634,9 +8128,9 @@ function register17(server, client, options = {}) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7647,7 +8141,7 @@ function register17(server, client, options = {}) {
     "get_voice_conversation",
     "Fetch a single voice conversation by its conversationId, including transcript, usage, costs, and analysis. A cross-company conversationId returns 404.",
     {
-      conversationId: import_zod18.z.string().min(1).describe("ID of the conversation (from list_voice_conversations)")
+      conversationId: import_zod21.z.string().min(1).describe("ID of the conversation (from list_voice_conversations)")
     },
     {
       title: "Get Voice Conversation",
@@ -7662,9 +8156,9 @@ function register17(server, client, options = {}) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7688,9 +8182,9 @@ function register17(server, client, options = {}) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7701,7 +8195,7 @@ function register17(server, client, options = {}) {
     "update_voice_agent",
     "Update a voice agent. Requires the OWNER or ADMIN role. Send only the fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent.",
     {
-      agentId: import_zod18.z.string().min(1).describe("ID of the voice agent to update (from list_voice_agents)"),
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent to update (from list_voice_agents)"),
       ...Object.fromEntries(
         Object.entries(voiceInputSchema).map(([key, schema]) => [key, schema.optional()])
       )
@@ -7719,9 +8213,9 @@ function register17(server, client, options = {}) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7745,9 +8239,9 @@ function register17(server, client, options = {}) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7771,9 +8265,9 @@ function register17(server, client, options = {}) {
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
-      } catch (err) {
+      } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
           isError: true
         };
       }
@@ -7783,14 +8277,14 @@ function register17(server, client, options = {}) {
     server,
     "delete_voice_agent",
     "Delete a voice agent. Requires the OWNER or ADMIN role. The agent is marked deleted and no tool can restore it: it stops appearing in list_voice_agents, and its share link, embedded widget, questions, and test suite stop working. Its stored data is not erased, past conversations stay in list_voice_conversations, and phone numbers assigned to it are not released.",
-    { agentId: import_zod18.z.string().min(1).describe("ID of the voice agent to delete (from list_voice_agents)") },
+    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent to delete (from list_voice_agents)") },
     { title: "Delete Voice Agent", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     async ({ agentId }) => {
       try {
         const result = await api.delete(`/v1/voice/agents/${agentId}`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -7799,17 +8293,17 @@ function register17(server, client, options = {}) {
     "create_voice_agent_from_prompt",
     "Create a new voice agent from a plain-English description, via an LLM call. Requires the OWNER or ADMIN role. Saves a draft agent, then generates and saves its name, personality, instructions, chat settings, and default voice, speech-to-text, and LLM settings. Does not assign a phone number. The response includes the new agentId plus either the generated agent, or needsFollowUp: true with a followUpQuestion when the prompt is too vague. In that case the draft agent still exists with placeholder settings; call generate_voice_agent_config on that agentId with more detail.",
     {
-      prompt: import_zod18.z.string().min(1).describe('Plain-English description of the agent to build, e.g. "a friendly dental clinic receptionist that books appointments and answers insurance questions".'),
-      name: import_zod18.z.string().optional().describe("Initial name for the draft agent. Replaced by the generated name when generation succeeds; kept only if the response asks a follow-up question."),
-      manualInstructions: import_zod18.z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague.")
+      prompt: import_zod21.z.string().min(1).describe('Plain-English description of the agent to build, e.g. "a friendly dental clinic receptionist that books appointments and answers insurance questions".'),
+      name: import_zod21.z.string().optional().describe("Initial name for the draft agent. Replaced by the generated name when generation succeeds; kept only if the response asks a follow-up question."),
+      manualInstructions: import_zod21.z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague.")
     },
     { title: "Create Voice Agent From Prompt", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/agents/generation", body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -7818,17 +8312,17 @@ function register17(server, client, options = {}) {
     "generate_voice_agent_config",
     "Run the same prompt-to-config generation as create_voice_agent_from_prompt, but against an existing agent instead of creating a new one. Requires the OWNER or ADMIN role. On success the generated config is saved onto the agent immediately, overwriting its current name, personality, instructions, chat settings, and voice, speech-to-text, and LLM settings. If the prompt is too thin and manualInstructions was not sent, the response has needsFollowUp: true with a follow-up question instead \u2014 call this again with more detail.",
     {
-      agentId: import_zod18.z.string().min(1).describe("ID of the existing voice agent to generate config for (from list_voice_agents)"),
-      prompt: import_zod18.z.string().min(1).describe("Plain-English description of what the agent should do."),
-      manualInstructions: import_zod18.z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague.")
+      agentId: import_zod21.z.string().min(1).describe("ID of the existing voice agent to generate config for (from list_voice_agents)"),
+      prompt: import_zod21.z.string().min(1).describe("Plain-English description of what the agent should do."),
+      manualInstructions: import_zod21.z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague.")
     },
     { title: "Generate Voice Agent Config", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/agents/${agentId}/generation/generate`, body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -7910,32 +8404,32 @@ function register17(server, client, options = {}) {
     }
   );
 }
-var import_zod18, voiceInputSchema;
+var import_zod21, voiceInputSchema;
 var init_voice = __esm({
   "src/tools/voice.ts"() {
     "use strict";
-    import_zod18 = require("zod");
+    import_zod21 = require("zod");
     init_helpers();
     init_client();
     voiceInputSchema = {
-      name: import_zod18.z.string().min(1).describe("Required on create. Trimmed, non-empty."),
-      personality: import_zod18.z.string().describe("Required on create. Free text describing the agent's tone."),
-      instructions: import_zod18.z.string().describe("Required on create. The agent's system instructions."),
-      voice: import_zod18.z.object({
-        provider: import_zod18.z.string().describe("TTS provider, e.g. elevenlabs or openai."),
-        voiceId: import_zod18.z.string(),
-        model: import_zod18.z.string().optional()
+      name: import_zod21.z.string().min(1).describe("Required on create. Trimmed, non-empty."),
+      personality: import_zod21.z.string().describe("Required on create. Free text describing the agent's tone."),
+      instructions: import_zod21.z.string().describe("Required on create. The agent's system instructions."),
+      voice: import_zod21.z.object({
+        provider: import_zod21.z.string().describe("TTS provider, e.g. elevenlabs or openai."),
+        voiceId: import_zod21.z.string(),
+        model: import_zod21.z.string().optional()
       }).describe("Required on create."),
-      llm: import_zod18.z.object({
-        provider: import_zod18.z.string().optional().describe("Must be one of the voice-agent LLM providers if sent."),
-        model: import_zod18.z.string().optional().describe("Must be one of the voice-agent model ids if sent.")
+      llm: import_zod21.z.object({
+        provider: import_zod21.z.string().optional().describe("Must be one of the voice-agent LLM providers if sent."),
+        model: import_zod21.z.string().optional().describe("Must be one of the voice-agent model ids if sent.")
       }).optional(),
-      avatar: import_zod18.z.object({
-        avatarId: import_zod18.z.string().describe("Must match a row in your company's avatar catalog (list_voice_avatars) or the shared system catalog.")
+      avatar: import_zod21.z.object({
+        avatarId: import_zod21.z.string().describe("Must match a row in your company's avatar catalog (list_voice_avatars) or the shared system catalog.")
       }).optional().describe("Set to attach a video avatar; avatarUrl/provider are derived server-side from the catalog row."),
-      conversationMode: import_zod18.z.enum(["voice_only", "video_avatar"]).optional(),
-      folderId: import_zod18.z.string().optional().describe("Folder to file this agent's conversations under."),
-      enableWebSearch: import_zod18.z.boolean().optional().describe("Let the agent search the web mid-call, separate from any attached knowledge base.")
+      conversationMode: import_zod21.z.enum(["voice_only", "video_avatar"]).optional(),
+      folderId: import_zod21.z.string().optional().describe("Folder to file this agent's conversations under."),
+      enableWebSearch: import_zod21.z.boolean().optional().describe("Let the agent search the web mid-call, separate from any attached knowledge base.")
     };
   }
 });
@@ -7943,22 +8437,22 @@ var init_voice = __esm({
 // src/tools/voice-testing.ts
 var voice_testing_exports = {};
 __export(voice_testing_exports, {
-  register: () => register18
+  register: () => register20
 });
-function register18(server, client, options = {}) {
+function register20(server, client, options = {}) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
     "get_voice_test_suite",
     "Get a voice agent's test suite (its scenarios and run settings). Returns null in data.suite if none has been created yet \u2014 not a 404.",
-    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Get Voice Test Suite", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.get(`/v1/voice/testing/${agentId}/suite`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -7967,20 +8461,20 @@ function register18(server, client, options = {}) {
     "update_voice_test_suite",
     "Create or update a voice agent's test suite. Requires the OWNER or ADMIN role. Upserts. Send the full scenarios array you want to keep \u2014 it replaces the stored one, it is not merged.",
     {
-      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      scenarios: import_zod19.z.array(scenarioSchema).optional(),
-      maxCostPerRun: import_zod19.z.number().min(0).optional(),
-      autoRunOnKbUpdate: import_zod19.z.boolean().optional(),
-      autoRunOnInstructionSave: import_zod19.z.boolean().optional(),
-      scheduledCron: import_zod19.z.string().optional().nullable()
+      agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      scenarios: import_zod22.z.array(scenarioSchema).optional(),
+      maxCostPerRun: import_zod22.z.number().min(0).optional(),
+      autoRunOnKbUpdate: import_zod22.z.boolean().optional(),
+      autoRunOnInstructionSave: import_zod22.z.boolean().optional(),
+      scheduledCron: import_zod22.z.string().optional().nullable()
     },
     { title: "Update Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/testing/${agentId}/suite`, body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -7988,14 +8482,14 @@ function register18(server, client, options = {}) {
     server,
     "generate_voice_test_suite",
     "Auto-generate a default test suite for a voice agent from its configuration (name, personality, instructions, welcome message, topics to avoid), via an LLM call. Requires the OWNER or ADMIN role. Overwrites the suite's existing scenarios.",
-    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Generate Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/suite/generate`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8004,14 +8498,14 @@ function register18(server, client, options = {}) {
     server,
     "start_voice_test_run",
     "Queue a test run of a voice agent's scripted test suite. Creates a run record in queued status and returns it; it does not place phone calls, start a conversation, or use credits. Requires the OWNER or ADMIN role. Returns 404 if the agent or its test suite does not exist, and 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run." + NOT_WIRED_NOTE,
-    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Queue Voice Agent Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8019,14 +8513,14 @@ function register18(server, client, options = {}) {
     server,
     "get_active_voice_test_run",
     "Get a voice agent's currently active test run (queued, running, or paused). Returns null in data.run if none is active \u2014 not a 404.",
-    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Get Active Voice Test Run", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.get(`/v1/voice/testing/${agentId}/run/active`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8035,16 +8529,16 @@ function register18(server, client, options = {}) {
     "pause_voice_test_run",
     "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running." + NOT_WIRED_NOTE,
     {
-      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
+      agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod22.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
     },
     { title: "Pause Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/pause`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8053,16 +8547,16 @@ function register18(server, client, options = {}) {
     "resume_voice_test_run",
     "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused. Only the run's status changes. The live execution engine is not wired up yet, so no scenarios execute.",
     {
-      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
+      agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod22.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
     },
     { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/resume`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8071,16 +8565,16 @@ function register18(server, client, options = {}) {
     "cancel_voice_test_run",
     "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. Terminal \u2014 a cancelled run can never be resumed.",
     {
-      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
+      agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod22.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
     },
     { title: "Cancel Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/cancel`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8089,16 +8583,16 @@ function register18(server, client, options = {}) {
     "list_voice_test_runs",
     "List a voice agent's test runs, most recent first. Capped at 100 regardless of limit.",
     {
-      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      limit: import_zod19.z.number().int().min(1).optional()
+      agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      limit: import_zod22.z.number().int().min(1).optional()
     },
     { title: "List Voice Test Runs", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ agentId, ...params }) => {
       try {
         const result = await api.get(`/v1/voice/testing/${agentId}/runs`, { params });
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8107,16 +8601,16 @@ function register18(server, client, options = {}) {
     "get_voice_test_run",
     "Get a test run's full detail, including scenarioResults and recommendations. Scoped to your company; agentId is not used to filter this lookup, only runId.",
     {
-      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      runId: import_zod19.z.string().min(1).describe("ID of the run (from list_voice_test_runs)")
+      agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod22.z.string().min(1).describe("ID of the run (from list_voice_test_runs)")
     },
     { title: "Get Voice Test Run", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ agentId, runId }) => {
       try {
         const result = await api.get(`/v1/voice/testing/${agentId}/runs/${runId}`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8125,17 +8619,17 @@ function register18(server, client, options = {}) {
     "apply_voice_test_recommendation",
     "Apply a test run recommendation's quick action to the agent (e.g. patch_instructions appends the suggested fix to the agent's instructions). Requires the OWNER or ADMIN role.",
     {
-      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_voice_test_run)"),
-      recId: import_zod19.z.string().min(1).describe("ID of the recommendation within that run's recommendations list")
+      agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod22.z.string().min(1).describe("ID of the run (from get_voice_test_run)"),
+      recId: import_zod22.z.string().min(1).describe("ID of the recommendation within that run's recommendations list")
     },
     { title: "Apply Voice Test Recommendation", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId, recId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/runs/${runId}/recommendations/${recId}/apply`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8143,14 +8637,14 @@ function register18(server, client, options = {}) {
     server,
     "get_voice_test_baseline",
     "Get a voice agent's best-scoring completed test run, used to detect regressions on later runs. Returns null in data.baseline if no run has completed yet.",
-    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Get Voice Test Baseline", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.get(`/v1/voice/testing/${agentId}/baseline`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8159,48 +8653,48 @@ function register18(server, client, options = {}) {
     "get_voice_test_score_history",
     "Get completed-run score points for a voice agent, most recent first, for charting. Capped at 100 regardless of limit. Only status=completed runs are included.",
     {
-      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      limit: import_zod19.z.number().int().min(1).optional()
+      agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      limit: import_zod22.z.number().int().min(1).optional()
     },
     { title: "Get Voice Test Score History", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ agentId, ...params }) => {
       try {
         const result = await api.get(`/v1/voice/testing/${agentId}/score-history`, { params });
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
 }
-var import_zod19, NOT_WIRED_NOTE, criterionSchema, scenarioSchema;
+var import_zod22, NOT_WIRED_NOTE, criterionSchema, scenarioSchema;
 var init_voice_testing = __esm({
   "src/tools/voice-testing.ts"() {
     "use strict";
-    import_zod19 = require("zod");
+    import_zod22 = require("zod");
     init_helpers();
     init_client();
     NOT_WIRED_NOTE = " The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.";
-    criterionSchema = import_zod19.z.object({
-      criterionId: import_zod19.z.string().optional(),
-      name: import_zod19.z.string(),
-      evaluationPrompt: import_zod19.z.string().describe("What the LLM judge is asked to evaluate."),
-      weight: import_zod19.z.number().min(1).max(10).optional(),
-      isCritical: import_zod19.z.boolean().optional(),
-      type: import_zod19.z.enum(["llm_judged", "response_length", "regex_match", "tool_called"]).optional().describe("Defaults to llm_judged. The other three route through a deterministic code check before the LLM judge runs."),
-      maxWords: import_zod19.z.number().int().optional().describe("For type=response_length: fails if any agent response exceeds this word count."),
-      regexPattern: import_zod19.z.string().optional().describe("For type=regex_match: JS regex source, no slashes."),
-      mustMatch: import_zod19.z.boolean().optional().describe("For type=regex_match: true (default) requires a match, false requires none."),
-      expectedToolName: import_zod19.z.string().optional().describe("For type=tool_called: the tool name to look for in the transcript's tool calls.")
+    criterionSchema = import_zod22.z.object({
+      criterionId: import_zod22.z.string().optional(),
+      name: import_zod22.z.string(),
+      evaluationPrompt: import_zod22.z.string().describe("What the LLM judge is asked to evaluate."),
+      weight: import_zod22.z.number().min(1).max(10).optional(),
+      isCritical: import_zod22.z.boolean().optional(),
+      type: import_zod22.z.enum(["llm_judged", "response_length", "regex_match", "tool_called"]).optional().describe("Defaults to llm_judged. The other three route through a deterministic code check before the LLM judge runs."),
+      maxWords: import_zod22.z.number().int().optional().describe("For type=response_length: fails if any agent response exceeds this word count."),
+      regexPattern: import_zod22.z.string().optional().describe("For type=regex_match: JS regex source, no slashes."),
+      mustMatch: import_zod22.z.boolean().optional().describe("For type=regex_match: true (default) requires a match, false requires none."),
+      expectedToolName: import_zod22.z.string().optional().describe("For type=tool_called: the tool name to look for in the transcript's tool calls.")
     });
-    scenarioSchema = import_zod19.z.object({
-      scenarioId: import_zod19.z.string().optional(),
-      name: import_zod19.z.string(),
-      description: import_zod19.z.string().optional(),
-      userMessages: import_zod19.z.array(import_zod19.z.string()).min(1).describe("The scripted turns sent to the agent."),
-      criteria: import_zod19.z.array(criterionSchema).optional().describe("Defaults to an empty array."),
-      category: import_zod19.z.enum(["greeting", "kb_retrieval", "off_topic", "edge_case", "custom"]).optional(),
-      isEnabled: import_zod19.z.boolean().optional()
+    scenarioSchema = import_zod22.z.object({
+      scenarioId: import_zod22.z.string().optional(),
+      name: import_zod22.z.string(),
+      description: import_zod22.z.string().optional(),
+      userMessages: import_zod22.z.array(import_zod22.z.string()).min(1).describe("The scripted turns sent to the agent."),
+      criteria: import_zod22.z.array(criterionSchema).optional().describe("Defaults to an empty array."),
+      category: import_zod22.z.enum(["greeting", "kb_retrieval", "off_topic", "edge_case", "custom"]).optional(),
+      isEnabled: import_zod22.z.boolean().optional()
     });
   }
 });
@@ -8208,25 +8702,25 @@ var init_voice_testing = __esm({
 // src/tools/voice-questions.ts
 var voice_questions_exports = {};
 __export(voice_questions_exports, {
-  register: () => register19
+  register: () => register21
 });
-function register19(server, client) {
+function register21(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
     "list_voice_questions",
     "List the questions configured on a voice agent, in the order it asks them. Each is an agent-level instance of a question template with its own required/attempts/no-response settings and optional field mapping.",
     {
-      agentId: import_zod20.z.string().min(1).describe("Required. Returns 404 if the agent does not exist or does not belong to your company."),
-      enabledOnly: import_zod20.z.boolean().optional()
+      agentId: import_zod23.z.string().min(1).describe("Required. Returns 404 if the agent does not exist or does not belong to your company."),
+      enabledOnly: import_zod23.z.boolean().optional()
     },
     { title: "List Voice Questions", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async (params) => {
       try {
         const result = await api.get("/v1/voice/questions", { params });
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8234,14 +8728,14 @@ function register19(server, client) {
     server,
     "get_voice_question",
     "Fetch a single voice agent question by its fieldId, scoped to your company.",
-    { fieldId: import_zod20.z.string().min(1).describe("ID of the question (from list_voice_questions)") },
+    { fieldId: import_zod23.z.string().min(1).describe("ID of the question (from list_voice_questions)") },
     { title: "Get Voice Question", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ fieldId }) => {
       try {
         const result = await api.get(`/v1/voice/questions/${fieldId}`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8250,24 +8744,24 @@ function register19(server, client) {
     "create_voice_question",
     "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) \u2014 404 if either isn't found.",
     {
-      agentId: import_zod20.z.string().min(1),
-      templateId: import_zod20.z.string().min(1).describe("From list_voice_question_templates."),
+      agentId: import_zod23.z.string().min(1),
+      templateId: import_zod23.z.string().min(1).describe("From list_voice_question_templates."),
       customConfig: customConfigSchema.optional().describe("Agent-level override of the template's defaultConfig; only the keys you send are overridden."),
-      required: import_zod20.z.boolean().optional(),
-      maxPromptAttempts: import_zod20.z.number().min(1).max(3).optional(),
-      noResponseBehavior: import_zod20.z.enum(["move_to_next_question", "end_conversation"]).optional(),
-      triggerCondition: import_zod20.z.string().optional(),
-      order: import_zod20.z.number().optional(),
-      enabled: import_zod20.z.boolean().optional(),
-      mappedFieldId: import_zod20.z.string().optional().nullable().describe("ID of an existing company Field to write this question's collected answer onto after each call.")
+      required: import_zod23.z.boolean().optional(),
+      maxPromptAttempts: import_zod23.z.number().min(1).max(3).optional(),
+      noResponseBehavior: import_zod23.z.enum(["move_to_next_question", "end_conversation"]).optional(),
+      triggerCondition: import_zod23.z.string().optional(),
+      order: import_zod23.z.number().optional(),
+      enabled: import_zod23.z.boolean().optional(),
+      mappedFieldId: import_zod23.z.string().optional().nullable().describe("ID of an existing company Field to write this question's collected answer onto after each call.")
     },
     { title: "Create Voice Question", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/questions", body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8276,23 +8770,23 @@ function register19(server, client) {
     "update_voice_question",
     "Partially update a voice agent question \u2014 only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped.",
     {
-      fieldId: import_zod20.z.string().min(1).describe("ID of the question to update (from list_voice_questions)"),
+      fieldId: import_zod23.z.string().min(1).describe("ID of the question to update (from list_voice_questions)"),
       customConfig: customConfigSchema.optional(),
-      required: import_zod20.z.boolean().optional(),
-      maxPromptAttempts: import_zod20.z.number().min(1).max(3).optional(),
-      noResponseBehavior: import_zod20.z.enum(["move_to_next_question", "end_conversation"]).optional(),
-      triggerCondition: import_zod20.z.string().optional(),
-      order: import_zod20.z.number().optional(),
-      enabled: import_zod20.z.boolean().optional(),
-      mappedFieldId: import_zod20.z.string().optional().nullable()
+      required: import_zod23.z.boolean().optional(),
+      maxPromptAttempts: import_zod23.z.number().min(1).max(3).optional(),
+      noResponseBehavior: import_zod23.z.enum(["move_to_next_question", "end_conversation"]).optional(),
+      triggerCondition: import_zod23.z.string().optional(),
+      order: import_zod23.z.number().optional(),
+      enabled: import_zod23.z.boolean().optional(),
+      mappedFieldId: import_zod23.z.string().optional().nullable()
     },
     { title: "Update Voice Question", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ fieldId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/questions/${fieldId}`, body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8300,14 +8794,14 @@ function register19(server, client) {
     server,
     "delete_voice_question",
     "Permanently remove a question from a voice agent and decrement the underlying template's usageCount. Requires the OWNER or ADMIN role. The template itself is not deleted and can be attached to another agent later.",
-    { fieldId: import_zod20.z.string().min(1).describe("ID of the question to remove (from list_voice_questions)") },
+    { fieldId: import_zod23.z.string().min(1).describe("ID of the question to remove (from list_voice_questions)") },
     { title: "Delete Voice Question", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ fieldId }) => {
       try {
         const result = await api.delete(`/v1/voice/questions/${fieldId}`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8316,16 +8810,16 @@ function register19(server, client) {
     "reorder_voice_questions",
     "Set the order a voice agent asks its questions in. Requires the OWNER or ADMIN role. Bulk-writes the order value on each listed question (written directly, not resequenced), then returns the agent's full question list in its new order. Entries whose fieldId doesn't belong to agentId are silently skipped.",
     {
-      agentId: import_zod20.z.string().min(1),
-      fieldOrders: import_zod20.z.array(import_zod20.z.object({ fieldId: import_zod20.z.string().min(1), order: import_zod20.z.number() })).min(1).describe("The new order for some or all of the agent's questions.")
+      agentId: import_zod23.z.string().min(1),
+      fieldOrders: import_zod23.z.array(import_zod23.z.object({ fieldId: import_zod23.z.string().min(1), order: import_zod23.z.number() })).min(1).describe("The new order for some or all of the agent's questions.")
     },
     { title: "Reorder Voice Questions", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.put("/v1/voice/questions/reorder", body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8333,14 +8827,14 @@ function register19(server, client) {
     server,
     "list_voice_question_templates",
     "List the question templates visible to your company: Speak's shared system templates, plus your own company's templates. Use the returned templateId with create_voice_question.",
-    { category: import_zod20.z.enum(QUESTION_CATEGORIES).optional() },
+    { category: import_zod23.z.enum(QUESTION_CATEGORIES).optional() },
     { title: "List Voice Question Templates", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async (params) => {
       try {
         const result = await api.get("/v1/voice/question-templates", { params });
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8349,52 +8843,52 @@ function register19(server, client) {
     "create_voice_question_template",
     `Create a company-scoped question template \u2014 the "custom question" a user names themselves rather than picking from Speak's shared library. Requires the OWNER or ADMIN role. The server stamps companyId and forces isSystemTemplate to false, so this template is only ever visible to your company.`,
     {
-      name: import_zod20.z.string().min(1),
-      description: import_zod20.z.string().min(1),
-      category: import_zod20.z.enum(QUESTION_CATEGORIES),
-      fieldType: import_zod20.z.enum(["email", "phone", "date", "time", "datetime", "text", "number", "boolean", "choice", "url"]),
-      defaultConfig: import_zod20.z.object({
-        displayLabel: import_zod20.z.string(),
-        question: import_zod20.z.string().describe("The prompt text the agent speaks to ask this."),
-        confirmationText: import_zod20.z.string().optional(),
-        validationPrompt: import_zod20.z.string().optional(),
+      name: import_zod23.z.string().min(1),
+      description: import_zod23.z.string().min(1),
+      category: import_zod23.z.enum(QUESTION_CATEGORIES),
+      fieldType: import_zod23.z.enum(["email", "phone", "date", "time", "datetime", "text", "number", "boolean", "choice", "url"]),
+      defaultConfig: import_zod23.z.object({
+        displayLabel: import_zod23.z.string(),
+        question: import_zod23.z.string().describe("The prompt text the agent speaks to ask this."),
+        confirmationText: import_zod23.z.string().optional(),
+        validationPrompt: import_zod23.z.string().optional(),
         validation: validationSchema.optional()
       }).describe("displayLabel and question are both required within this object."),
-      isPublic: import_zod20.z.boolean().optional(),
-      tags: import_zod20.z.array(import_zod20.z.string()).optional()
+      isPublic: import_zod23.z.boolean().optional(),
+      tags: import_zod23.z.array(import_zod23.z.string()).optional()
     },
     { title: "Create Voice Question Template", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/question-templates", body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
 }
-var import_zod20, QUESTION_CATEGORIES, validationSchema, customConfigSchema;
+var import_zod23, QUESTION_CATEGORIES, validationSchema, customConfigSchema;
 var init_voice_questions = __esm({
   "src/tools/voice-questions.ts"() {
     "use strict";
-    import_zod20 = require("zod");
+    import_zod23 = require("zod");
     init_helpers();
     init_client();
     QUESTION_CATEGORIES = ["contact", "booking", "qualification", "custom"];
-    validationSchema = import_zod20.z.object({
-      pattern: import_zod20.z.string().optional(),
-      minLength: import_zod20.z.number().optional(),
-      maxLength: import_zod20.z.number().optional(),
-      min: import_zod20.z.number().optional(),
-      max: import_zod20.z.number().optional(),
-      allowedValues: import_zod20.z.array(import_zod20.z.string()).optional()
+    validationSchema = import_zod23.z.object({
+      pattern: import_zod23.z.string().optional(),
+      minLength: import_zod23.z.number().optional(),
+      maxLength: import_zod23.z.number().optional(),
+      min: import_zod23.z.number().optional(),
+      max: import_zod23.z.number().optional(),
+      allowedValues: import_zod23.z.array(import_zod23.z.string()).optional()
     });
-    customConfigSchema = import_zod20.z.object({
-      displayLabel: import_zod20.z.string().optional(),
-      question: import_zod20.z.string().optional().describe("The prompt text the agent speaks to ask this question."),
-      confirmationText: import_zod20.z.string().optional(),
-      validationPrompt: import_zod20.z.string().optional(),
+    customConfigSchema = import_zod23.z.object({
+      displayLabel: import_zod23.z.string().optional(),
+      question: import_zod23.z.string().optional().describe("The prompt text the agent speaks to ask this question."),
+      confirmationText: import_zod23.z.string().optional(),
+      validationPrompt: import_zod23.z.string().optional(),
       validation: validationSchema.optional()
     });
   }
@@ -8403,22 +8897,22 @@ var init_voice_questions = __esm({
 // src/tools/voice-intelligence.ts
 var voice_intelligence_exports = {};
 __export(voice_intelligence_exports, {
-  register: () => register20
+  register: () => register22
 });
-function register20(server, client) {
+function register22(server, client) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
     "list_voice_kb_gaps",
     `List a voice agent's pending knowledge-base gaps \u2014 questions callers asked that the agent answered with low confidence or an explicit "I don't know," surfaced automatically after calls. Up to the 50 most recent pending gaps, newest first.`,
-    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "List Voice KB Gaps", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.get(`/v1/voice/knowledge-base/${agentId}/gaps`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8426,14 +8920,14 @@ function register20(server, client) {
     server,
     "analyze_voice_kb_gaps",
     "Trigger knowledge-base gap analysis over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately \u2014 new gaps appear in list_voice_kb_gaps once analysis finishes, not synchronously with this response.",
-    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Analyze Voice KB Gaps", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/gaps/analyze`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8442,18 +8936,18 @@ function register20(server, client) {
     "add_voice_kb_gap",
     "Write a knowledge-base gap's answer into the voice agent's attached knowledge base as a new document, and mark the gap added. Requires the OWNER or ADMIN role. Fails with 409 if the gap was already added or dismissed, or if the agent has no knowledge base collection to write into.",
     {
-      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      gapId: import_zod21.z.string().min(1).describe("ID of the gap (from list_voice_kb_gaps)"),
-      answer: import_zod21.z.string().optional().describe("Overrides the gap's suggested answer."),
-      title: import_zod21.z.string().optional().describe("Overrides the gap's suggested title.")
+      agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      gapId: import_zod24.z.string().min(1).describe("ID of the gap (from list_voice_kb_gaps)"),
+      answer: import_zod24.z.string().optional().describe("Overrides the gap's suggested answer."),
+      title: import_zod24.z.string().optional().describe("Overrides the gap's suggested title.")
     },
     { title: "Add Voice KB Gap", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId, gapId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/gaps/${gapId}/add`, body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8462,16 +8956,16 @@ function register20(server, client) {
     "dismiss_voice_kb_gap",
     "Mark a voice agent's knowledge-base gap dismissed without writing anything to the knowledge base. Requires the OWNER or ADMIN role.",
     {
-      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      gapId: import_zod21.z.string().min(1).describe("ID of the gap (from list_voice_kb_gaps)")
+      agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      gapId: import_zod24.z.string().min(1).describe("ID of the gap (from list_voice_kb_gaps)")
     },
     { title: "Dismiss Voice KB Gap", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, gapId }) => {
       try {
         const result = await api.delete(`/v1/voice/knowledge-base/${agentId}/gaps/${gapId}`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8479,14 +8973,14 @@ function register20(server, client) {
     server,
     "list_voice_faq_suggestions",
     "List a voice agent's pending FAQ suggestions \u2014 questions multiple callers asked in similar form, clustered and drafted into a reusable question/answer pair. Up to the 20 largest clusters, largest first.",
-    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "List Voice FAQ Suggestions", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.get(`/v1/voice/knowledge-base/${agentId}/faqs`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8494,14 +8988,14 @@ function register20(server, client) {
     server,
     "generate_voice_faq_suggestions",
     "Trigger FAQ clustering over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately \u2014 new suggestions appear in list_voice_faq_suggestions once generation finishes, not synchronously with this response.",
-    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Generate Voice FAQ Suggestions", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/faqs/generate`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8510,18 +9004,18 @@ function register20(server, client) {
     "add_voice_faq_suggestion",
     "Write an FAQ suggestion's question/answer into the voice agent's attached knowledge base as a new document, and mark the suggestion added. Requires the OWNER or ADMIN role. Fails with 409 if the suggestion was already added or dismissed, or if the agent has no knowledge base collection to write into.",
     {
-      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      suggestionId: import_zod21.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)"),
-      question: import_zod21.z.string().optional().describe("Overrides the suggested question."),
-      answer: import_zod21.z.string().optional().describe("Overrides the suggested answer.")
+      agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestionId: import_zod24.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)"),
+      question: import_zod24.z.string().optional().describe("Overrides the suggested question."),
+      answer: import_zod24.z.string().optional().describe("Overrides the suggested answer.")
     },
     { title: "Add Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId, suggestionId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}/add`, body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8530,18 +9024,18 @@ function register20(server, client) {
     "update_voice_faq_suggestion",
     "Edit a still-pending FAQ suggestion's question and/or answer before adding it. Requires the OWNER or ADMIN role. Fails with 400 if the suggestion was already added or dismissed.",
     {
-      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      suggestionId: import_zod21.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)"),
-      question: import_zod21.z.string().optional(),
-      answer: import_zod21.z.string().optional()
+      agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestionId: import_zod24.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)"),
+      question: import_zod24.z.string().optional(),
+      answer: import_zod24.z.string().optional()
     },
     { title: "Update Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, suggestionId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}`, body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8550,16 +9044,16 @@ function register20(server, client) {
     "dismiss_voice_faq_suggestion",
     "Mark a voice agent's FAQ suggestion dismissed without writing anything to the knowledge base. Requires the OWNER or ADMIN role.",
     {
-      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      suggestionId: import_zod21.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)")
+      agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestionId: import_zod24.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)")
     },
     { title: "Dismiss Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, suggestionId }) => {
       try {
         const result = await api.delete(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8568,18 +9062,18 @@ function register20(server, client) {
     "list_voice_agent_resources",
     "List the knowledge documents/links a voice agent searches during calls \u2014 separate from KB gaps and FAQ suggestions, which are the self-improvement layer that surfaces what an agent is missing, not the content itself.",
     {
-      agentId: import_zod21.z.string().optional(),
-      page: import_zod21.z.number().int().min(1).optional(),
-      limit: import_zod21.z.number().int().min(1).optional(),
-      search: import_zod21.z.string().optional().describe("Search by title/description.")
+      agentId: import_zod24.z.string().optional(),
+      page: import_zod24.z.number().int().min(1).optional(),
+      limit: import_zod24.z.number().int().min(1).optional(),
+      search: import_zod24.z.string().optional().describe("Search by title/description.")
     },
     { title: "List Voice Agent Resources", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async (params) => {
       try {
         const result = await api.get("/v1/voice/agent-resources", { params });
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8587,14 +9081,14 @@ function register20(server, client) {
     server,
     "create_voice_agent_resource",
     "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server does not fetch the URL; it embeds the title, description, and URL slug so the agent can retrieve the link during live calls.",
-    { agentId: import_zod21.z.string().min(1), ...resourceBodySchema },
+    { agentId: import_zod24.z.string().min(1), ...resourceBodySchema },
     { title: "Create Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/agent-resources", body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8603,16 +9097,16 @@ function register20(server, client) {
     "bulk_create_voice_agent_resources",
     "Add up to 100 documents/links to a voice agent's knowledge base in one call. Requires the OWNER or ADMIN role. The URLs are not fetched; each entry's title, description, and URL slug is embedded independently. Use this instead of calling create_voice_agent_resource in a loop.",
     {
-      agentId: import_zod21.z.string().min(1),
-      resources: import_zod21.z.array(import_zod21.z.object(resourceBodySchema)).min(1).max(100).describe("1 to 100 entries, each shaped like create_voice_agent_resource's body minus agentId.")
+      agentId: import_zod24.z.string().min(1),
+      resources: import_zod24.z.array(import_zod24.z.object(resourceBodySchema)).min(1).max(100).describe("1 to 100 entries, each shaped like create_voice_agent_resource's body minus agentId.")
     },
     { title: "Bulk Create Voice Agent Resources", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     async (body) => {
       try {
         const result = await api.post("/v1/voice/agent-resources/bulk", body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8621,20 +9115,20 @@ function register20(server, client) {
     "update_voice_agent_resource",
     "Partially update a voice agent resource \u2014 send at least one field. Requires the OWNER or ADMIN role. agentId cannot be changed. Changing url, title, or description re-triggers embedding.",
     {
-      resourceId: import_zod21.z.string().min(1).describe("ID of the resource to update (from list_voice_agent_resources)"),
-      url: import_zod21.z.string().url().optional(),
-      title: import_zod21.z.string().max(200).optional(),
-      description: import_zod21.z.string().max(1e3).optional(),
-      action: import_zod21.z.enum(["link", "presentation"]).optional(),
-      contentType: import_zod21.z.enum(["video", "pdf", "image"]).optional()
+      resourceId: import_zod24.z.string().min(1).describe("ID of the resource to update (from list_voice_agent_resources)"),
+      url: import_zod24.z.string().url().optional(),
+      title: import_zod24.z.string().max(200).optional(),
+      description: import_zod24.z.string().max(1e3).optional(),
+      action: import_zod24.z.enum(["link", "presentation"]).optional(),
+      contentType: import_zod24.z.enum(["video", "pdf", "image"]).optional()
     },
     { title: "Update Voice Agent Resource", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     async ({ resourceId, ...body }) => {
       try {
         const result = await api.put(`/v1/voice/agent-resources/${resourceId}`, body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8642,14 +9136,14 @@ function register20(server, client) {
     server,
     "delete_voice_agent_resource",
     "Soft-delete a voice agent resource \u2014 it stops appearing in lists and the agent stops searching it, but the document is not physically removed. Requires the OWNER or ADMIN role.",
-    { resourceId: import_zod21.z.string().min(1).describe("ID of the resource to delete (from list_voice_agent_resources)") },
+    { resourceId: import_zod24.z.string().min(1).describe("ID of the resource to delete (from list_voice_agent_resources)") },
     { title: "Delete Voice Agent Resource", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ resourceId }) => {
       try {
         const result = await api.delete(`/v1/voice/agent-resources/${resourceId}`);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8658,18 +9152,18 @@ function register20(server, client) {
     "analyze_voice_instruction_gaps",
     "Advisory only \u2014 compares a voice agent's current instructions against anchors/original intent/recent call summaries you supply and suggests up to 3 patches. Requires the OWNER or ADMIN role. Nothing is written; pass a suggestion's suggestedPatch to apply_voice_instruction_gap to actually apply it.",
     {
-      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      anchors: import_zod21.z.array(import_zod21.z.string()).optional().describe("Specific requirements the instructions must cover. Defaults to empty."),
-      originalPrompt: import_zod21.z.string().optional().describe("The original generation prompt, for context."),
-      conversationSummaries: import_zod21.z.array(import_zod21.z.string()).optional().describe("Recent call summaries, to ground suggestions in what actually came up. Defaults to empty.")
+      agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      anchors: import_zod24.z.array(import_zod24.z.string()).optional().describe("Specific requirements the instructions must cover. Defaults to empty."),
+      originalPrompt: import_zod24.z.string().optional().describe("The original generation prompt, for context."),
+      conversationSummaries: import_zod24.z.array(import_zod24.z.string()).optional().describe("Recent call summaries, to ground suggestions in what actually came up. Defaults to empty.")
     },
     { title: "Analyze Voice Instruction Gaps", readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/agents/${agentId}/generation/gaps/analyze`, body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
@@ -8678,34 +9172,34 @@ function register20(server, client) {
     "apply_voice_instruction_gap",
     "Insert a suggested instruction patch into a voice agent's instructions and persist the result. Requires the OWNER or ADMIN role. suggestedPatch is typically taken directly from analyze_voice_instruction_gaps.",
     {
-      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      suggestedPatch: import_zod21.z.string().min(1),
-      insertAfterSection: import_zod21.z.string().optional().nullable().describe("Insert after this named section heading; omit or null to append at the end.")
+      agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestedPatch: import_zod24.z.string().min(1),
+      insertAfterSection: import_zod24.z.string().optional().nullable().describe("Insert after this named section heading; omit or null to append at the end.")
     },
     { title: "Apply Voice Instruction Gap", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId, ...body }) => {
       try {
         const result = await api.post(`/v1/voice/agents/${agentId}/generation/gaps/apply`, body);
         return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      } catch (err2) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }], isError: true };
       }
     }
   );
 }
-var import_zod21, resourceBodySchema;
+var import_zod24, resourceBodySchema;
 var init_voice_intelligence = __esm({
   "src/tools/voice-intelligence.ts"() {
     "use strict";
-    import_zod21 = require("zod");
+    import_zod24 = require("zod");
     init_helpers();
     init_client();
     resourceBodySchema = {
-      url: import_zod21.z.string().url(),
-      title: import_zod21.z.string().max(200),
-      description: import_zod21.z.string().max(1e3),
-      action: import_zod21.z.enum(["link", "presentation"]),
-      contentType: import_zod21.z.enum(["video", "pdf", "image"]).optional()
+      url: import_zod24.z.string().url(),
+      title: import_zod24.z.string().max(200),
+      description: import_zod24.z.string().max(1e3),
+      action: import_zod24.z.enum(["link", "presentation"]),
+      contentType: import_zod24.z.enum(["video", "pdf", "image"]).optional()
     };
   }
 });
@@ -8733,6 +9227,8 @@ var init_tools = __esm({
     init_prompt3();
     init_meeting3();
     init_fields2();
+    init_labels();
+    init_comments();
     init_automations();
     init_webhooks();
     init_analytics();
@@ -8754,6 +9250,8 @@ var init_tools = __esm({
       prompt_exports,
       meeting_exports,
       fields_exports,
+      labels_exports,
+      comments_exports,
       automations_exports,
       webhooks_exports,
       analytics_exports,
@@ -8785,8 +9283,8 @@ function asJsonContent(uri, data) {
     ]
   };
 }
-function reportError(label, err) {
-  const detail = formatAxiosError(err);
+function reportError(label, err2) {
+  const detail = formatAxiosError(err2);
   throw new Error(`Speak AI resource '${label}' failed: ${detail}`);
 }
 function registerResources(server, client) {
@@ -8801,8 +9299,8 @@ function registerResources(server, client) {
           params: { page: 0, pageSize: 50, sortBy: "createdAt:desc", filterMedia: 2 }
         });
         return asJsonContent("speakai://media", result.data?.data);
-      } catch (err) {
-        reportError("media-library", err);
+      } catch (err2) {
+        reportError("media-library", err2);
       }
     }
   );
@@ -8816,8 +9314,8 @@ function registerResources(server, client) {
           params: { page: 0, pageSize: 100, sortBy: "createdAt:desc" }
         });
         return asJsonContent("speakai://folders", result.data?.data);
-      } catch (err) {
-        reportError("folders", err);
+      } catch (err2) {
+        reportError("folders", err2);
       }
     }
   );
@@ -8829,8 +9327,8 @@ function registerResources(server, client) {
       try {
         const result = await api.get("/v1/media/supportedLanguages");
         return asJsonContent("speakai://languages", result.data?.data);
-      } catch (err) {
-        reportError("supported-languages", err);
+      } catch (err2) {
+        reportError("supported-languages", err2);
       }
     }
   );
@@ -8842,8 +9340,8 @@ function registerResources(server, client) {
       try {
         const result = await api.get(`/v1/media/transcript/${mediaId}`);
         return asJsonContent(uri.href, result.data?.data);
-      } catch (err) {
-        reportError(`transcript(${mediaId})`, err);
+      } catch (err2) {
+        reportError(`transcript(${mediaId})`, err2);
       }
     }
   );
@@ -8855,8 +9353,8 @@ function registerResources(server, client) {
       try {
         const result = await api.get(`/v1/media/insight/${mediaId}`);
         return asJsonContent(uri.href, result.data?.data);
-      } catch (err) {
-        reportError(`insights(${mediaId})`, err);
+      } catch (err2) {
+        reportError(`insights(${mediaId})`, err2);
       }
     }
   );
@@ -8881,8 +9379,8 @@ function registerPrompts(server) {
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
     {
-      url: import_zod22.z.string().describe(`URL of the meeting recording \u2014 a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
-      name: import_zod22.z.string().optional().describe("Meeting name (optional)")
+      url: import_zod25.z.string().describe(`URL of the meeting recording \u2014 a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
+      name: import_zod25.z.string().optional().describe("Meeting name (optional)")
     },
     async ({ url, name }) => ({
       messages: [
@@ -8917,8 +9415,8 @@ function registerPrompts(server) {
     "research-across-media",
     "Search for themes, patterns, or topics across multiple recordings or your entire media library.",
     {
-      topic: import_zod22.z.string().describe("The topic, theme, or question to research"),
-      folder: import_zod22.z.string().optional().describe("Folder ID to scope the research (optional)")
+      topic: import_zod25.z.string().describe("The topic, theme, or question to research"),
+      folder: import_zod25.z.string().optional().describe("Folder ID to scope the research (optional)")
     },
     async ({ topic, folder }) => ({
       messages: [
@@ -8951,8 +9449,8 @@ function registerPrompts(server) {
     "meeting-brief",
     "Prepare a brief from recent meetings \u2014 pull transcripts, extract decisions, and summarize open items.",
     {
-      days: import_zod22.z.string().optional().describe("Number of days to look back (default: 7)"),
-      folder: import_zod22.z.string().optional().describe("Folder ID to scope to (optional)")
+      days: import_zod25.z.string().optional().describe("Number of days to look back (default: 7)"),
+      folder: import_zod25.z.string().optional().describe("Folder ID to scope to (optional)")
     },
     async ({ days, folder }) => {
       const lookback = parseInt(days ?? "7");
@@ -8989,11 +9487,11 @@ function registerPrompts(server) {
     }
   );
 }
-var import_zod22;
+var import_zod25;
 var init_prompts = __esm({
   "src/prompts.ts"() {
     "use strict";
-    import_zod22 = require("zod");
+    import_zod25 = require("zod");
     init_media_utils();
   }
 });
@@ -9048,6 +9546,23 @@ var init_tool_names = __esm({
       "create_field",
       "update_field",
       "update_multiple_fields",
+      // labels
+      "list_labels",
+      "create_label",
+      "update_label",
+      "archive_label",
+      "restore_label",
+      "merge_labels",
+      "add_speak_label_sets",
+      "list_media_labels",
+      "apply_label",
+      "update_media_label",
+      "remove_media_label",
+      // comments
+      "list_media_comments",
+      "add_comment",
+      "resolve_comment",
+      "delete_comment",
       // folders
       "list_folders",
       "create_folder",
@@ -9389,8 +9904,8 @@ function createCli() {
         printError("Unexpected response \u2014 key may be invalid.");
         process.exit(1);
       }
-    } catch (err) {
-      printError(`Authentication failed: ${err.response?.data?.message ?? err.message}`);
+    } catch (err2) {
+      printError(`Authentication failed: ${err2.response?.data?.message ?? err2.message}`);
       process.exit(1);
     }
   });
@@ -9496,8 +10011,8 @@ function createCli() {
             if (!fs3.existsSync(dir)) fs3.mkdirSync(dir, { recursive: true });
             fs3.writeFileSync(c.configPath, JSON.stringify(config2, null, 2) + "\n");
             printSuccess(`Configured ${c.name}: ${c.configPath}`);
-          } catch (err) {
-            printError(`Failed to configure ${c.name}: ${err.message}`);
+          } catch (err2) {
+            printError(`Failed to configure ${c.name}: ${err2.message}`);
           }
         }
       }
@@ -9540,8 +10055,8 @@ function createCli() {
         { key: "state", label: "Status", width: 12 },
         { key: "createdAt", label: "Created", width: 20 }
       ]);
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9576,8 +10091,8 @@ function createCli() {
         process.stdout.write(text + " ");
       }
       console.log();
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9620,8 +10135,8 @@ function createCli() {
         printJson(data.sentiment);
         console.log();
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9709,8 +10224,8 @@ function createCli() {
           process.exit(1);
         }
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9735,8 +10250,8 @@ function createCli() {
       } else {
         printJson(res.data?.data ?? res.data);
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9757,8 +10272,8 @@ function createCli() {
       const durStr = dur?.inSecond ? `${Math.round(dur.inSecond)}s` : typeof dur === "number" ? `${Math.round(dur)}s` : "\u2014";
       console.log(`Duration: ${durStr}`);
       console.log(`Created:  ${data?.createdAt ?? "\u2014"}`);
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9788,8 +10303,8 @@ function createCli() {
       } else {
         printSuccess(`Created text note: ${data?.mediaId ?? data?._id}`);
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9811,8 +10326,8 @@ function createCli() {
         { key: "name", label: "Name", width: 34 },
         { key: "createdAt", label: "Created", width: 20 }
       ]);
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9844,8 +10359,8 @@ function createCli() {
 (conversation: ${data.promptId} \u2014 use --continue to follow up)`);
         }
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9865,8 +10380,8 @@ function createCli() {
         { key: "title", label: "Title", width: 40 },
         { key: "createdAt", label: "Created", width: 20 }
       ]);
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9896,8 +10411,8 @@ function createCli() {
       } else {
         printJson(data);
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9922,8 +10437,8 @@ function createCli() {
         { key: "duration", label: "Duration", width: 10 },
         { key: "createdAt", label: "Created", width: 20 }
       ]);
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9951,8 +10466,8 @@ function createCli() {
       } else {
         printSuccess(`Clip created: ${data?.clipId ?? data?._id ?? "OK"} (processing...)`);
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9962,8 +10477,8 @@ function createCli() {
     try {
       await client.delete(`/v1/media/${mediaId}`);
       printSuccess(`Deleted: ${mediaId}`);
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -9987,8 +10502,8 @@ function createCli() {
       } else {
         printSuccess(`Updated: ${mediaId}`);
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10003,8 +10518,8 @@ function createCli() {
       } else {
         printSuccess(`Moved ${mediaIds.length} item(s) to folder ${folderId}`);
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10019,8 +10534,8 @@ function createCli() {
       } else {
         printSuccess(`Folder created: ${data?.folderId ?? data?._id ?? "OK"} \u2014 ${name}`);
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10037,8 +10552,8 @@ function createCli() {
       printSuccess(
         data?.message ?? `${isFavorite ? "Favorited" : "Unfavorited"} ${mediaId}`
       );
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10070,8 +10585,8 @@ function createCli() {
         const gb = Math.round(data.fileSize / (1024 * 1024 * 1024) * 100) / 100;
         console.log(`Storage:         ${gb} GB`);
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10090,8 +10605,8 @@ function createCli() {
           console.log(`  ${name}`);
         }
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10109,8 +10624,8 @@ function createCli() {
           console.log(cap.text ?? cap);
         }
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10120,8 +10635,8 @@ function createCli() {
     try {
       await client.get(`/v1/media/reanalyze/${mediaId}`);
       printSuccess(`Re-analysis started for ${mediaId}`);
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10152,8 +10667,8 @@ function createCli() {
         { key: "currentStatus", label: "Status", width: 18 },
         { key: "startTime", label: "Start", width: 20 }
       ]);
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10178,8 +10693,8 @@ function createCli() {
         printSuccess(`Meeting scheduled: ${data?._id ?? "OK"}`);
         if (!opts.date) console.log("Assistant will join immediately.");
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10238,8 +10753,8 @@ function createCli() {
           console.log(`  [${s.speakerId ?? "?"}] ${s.text ?? ""}`);
         }
       }
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10294,8 +10809,8 @@ function createCli() {
       }
       const data = result?.structuredContent?.data ?? (text ? safeParse(text) : result);
       printJson(data);
-    } catch (err) {
-      printError(err.response?.data?.message ?? err.message);
+    } catch (err2) {
+      printError(err2.response?.data?.message ?? err2.message);
       process.exit(1);
     }
   });
@@ -10514,6 +11029,27 @@ var SPEAK_MCP_TOOL_CATEGORIES = [
     ]
   },
   {
+    id: "labels-comments",
+    name: "Labels & comments",
+    tools: [
+      "list_labels",
+      "create_label",
+      "update_label",
+      "archive_label",
+      "restore_label",
+      "merge_labels",
+      "add_speak_label_sets",
+      "list_media_labels",
+      "apply_label",
+      "update_media_label",
+      "remove_media_label",
+      "list_media_comments",
+      "add_comment",
+      "resolve_comment",
+      "delete_comment"
+    ]
+  },
+  {
     id: "embed-other",
     name: "Embed players",
     tools: [
@@ -10657,8 +11193,8 @@ if (isCliMode) {
     resolveBaseUrl2();
     Promise.resolve().then(() => (init_cli(), cli_exports)).then(({ createCli: createCli2 }) => {
       const program = createCli2();
-      program.parseAsync(process.argv).catch((err) => {
-        console.error(`Error: ${err.message}`);
+      program.parseAsync(process.argv).catch((err2) => {
+        console.error(`Error: ${err2.message}`);
         process.exit(1);
       });
     });

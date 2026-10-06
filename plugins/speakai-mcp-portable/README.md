@@ -5,9 +5,9 @@ A portable plugin that connects an AI agent to Speak AI. It follows the open
 client can load it. It is also the package for Codex and for the OpenAI plugin directory
 (ChatGPT). Claude uses the Claude-only package in `../speakai-mcp/`.
 
-The plugin gives an agent 168 Speak AI tools, 5 resources, and 3 prompts, plus eight skills
+The plugin gives an agent 183 Speak AI tools, 5 resources, and 3 prompts, plus eight skills
 that teach it how to use them. Access alone is not much use: the skills are what turn "this
-agent can call 168 tools" into "this agent knows which three to call, in what order, and
+agent can call 183 tools" into "this agent knows which three to call, in what order, and
 what to do when a recording is still processing".
 
 Full documentation: <https://docs.speakai.co/mcp/plugin>
