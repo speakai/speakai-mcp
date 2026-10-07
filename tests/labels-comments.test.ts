@@ -218,6 +218,10 @@ describe("Labels and comments tools", () => {
     await tool(server, "resolve_comment").call({ mediaId: "m1", commentId: "c1", resolved: false });
     expect(mockPatch).toHaveBeenLastCalledWith("/v1/media/m1/comments/c1", { isResolved: false });
 
+    await tool(server, "update_comment").call({ mediaId: "m1", commentId: "c1", body: "Edited" });
+    expect(mockPatch).toHaveBeenLastCalledWith("/v1/media/m1/comments/c1", { body: "Edited" });
+    expect(tool(server, "update_comment").schema.safeParse({ mediaId: "m1", commentId: "c1", body: "b".repeat(5001) }).success).toBe(false);
+
     await tool(server, "delete_comment").call({ mediaId: "m1", commentId: "c1" });
     expect(mockDelete).toHaveBeenCalledWith("/v1/media/m1/comments/c1");
   });

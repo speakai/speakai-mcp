@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 183,
+  "totalTools": 184,
   "categories": [
     {
       "id": "media",
@@ -1129,6 +1129,15 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_comment",
+          "title": "Update Comment",
+          "description": "Edit the text of a comment. Only the comment's author can edit its text (403 otherwise). To resolve or reopen a thread, use resolve_comment.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
           "openWorldHint": false
         },
         {

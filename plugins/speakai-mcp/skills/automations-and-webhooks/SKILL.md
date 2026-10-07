@@ -11,7 +11,7 @@ metadata:
 
 The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
 
-The Speak AI MCP server exposes 183 tools in 15 categories. This skill covers two of
+The Speak AI MCP server exposes 184 tools in 15 categories. This skill covers two of
 them: automations (20 tools) and webhooks (7 tools). Automations run work inside Speak.
 Webhooks move data across the boundary, either into Speak or out to your own server.
 

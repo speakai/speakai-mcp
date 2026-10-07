@@ -7,6 +7,7 @@ import { publicId, rangeInputSchema, resolveRange, STALE_TRANSCRIPT_NOTE } from 
 
 // Matches MEDIA_COMMENT_BODY_MAX in speak-server.
 const COMMENT_BODY_MAX = 5000;
+const commentBody = z.string().trim().min(1).max(COMMENT_BODY_MAX);
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
@@ -39,12 +40,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       " Requires the comments create permission (every member by default).",
     {
       mediaId: publicId("mediaId").describe("Media id"),
-      body: z
-        .string()
-        .trim()
-        .min(1)
-        .max(COMMENT_BODY_MAX)
-        .describe(`Comment text (1 to ${COMMENT_BODY_MAX} characters)`),
+      body: commentBody.describe(`Comment text (1 to ${COMMENT_BODY_MAX} characters)`),
       parentId: publicId("parentId").optional().describe("commentId of the thread's first comment, to reply to it"),
       mediaLabelId: publicId("mediaLabelId").optional().describe("mediaLabelId from list_media_labels to link the comment to"),
       ...rangeInputSchema,
@@ -63,6 +59,25 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           ...(parentId !== undefined ? { parentId } : {}),
           ...(mediaLabelId !== undefined ? { mediaLabelId } : {}),
         });
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "update_comment",
+    "Edit the text of a comment. Only the comment's author can edit its text (403 otherwise). To resolve or reopen a thread, use resolve_comment.",
+    {
+      mediaId: publicId("mediaId").describe("Media id"),
+      commentId: publicId("commentId").describe("commentId from list_media_comments"),
+      body: commentBody.describe(`New comment text (1 to ${COMMENT_BODY_MAX} characters)`),
+    },
+    { title: "Update Comment", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ mediaId, commentId, body }) => {
+      try {
+        const result = await api.patch(`/v1/media/${mediaId}/comments/${commentId}`, { body });
         return ok(result.data);
       } catch (error) {
         return err(error);

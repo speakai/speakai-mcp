@@ -4493,7 +4493,7 @@ function register11(server, client) {
     "Add a comment to a media file. Three kinds: on the whole file (no quote or range), on words in the transcript (quote, or range plus expectedTranscriptRevision, exactly as in apply_label), or a reply to a thread (parentId, with no span of its own). Replies go one level deep, so parentId must be a thread's first comment. A reply gives the thread's author an in-app notification in Speak. mediaLabelId links the comment to a labelled span on this file. " + STALE_TRANSCRIPT_NOTE + " Requires the comments create permission (every member by default).",
     {
       mediaId: publicId("mediaId").describe("Media id"),
-      body: import_zod13.z.string().trim().min(1).max(COMMENT_BODY_MAX).describe(`Comment text (1 to ${COMMENT_BODY_MAX} characters)`),
+      body: commentBody.describe(`Comment text (1 to ${COMMENT_BODY_MAX} characters)`),
       parentId: publicId("parentId").optional().describe("commentId of the thread's first comment, to reply to it"),
       mediaLabelId: publicId("mediaLabelId").optional().describe("mediaLabelId from list_media_labels to link the comment to"),
       ...rangeInputSchema
@@ -4512,6 +4512,25 @@ function register11(server, client) {
           ...parentId !== void 0 ? { parentId } : {},
           ...mediaLabelId !== void 0 ? { mediaLabelId } : {}
         });
+        return ok(result.data);
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_comment",
+    "Edit the text of a comment. Only the comment's author can edit its text (403 otherwise). To resolve or reopen a thread, use resolve_comment.",
+    {
+      mediaId: publicId("mediaId").describe("Media id"),
+      commentId: publicId("commentId").describe("commentId from list_media_comments"),
+      body: commentBody.describe(`New comment text (1 to ${COMMENT_BODY_MAX} characters)`)
+    },
+    { title: "Update Comment", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ mediaId, commentId, body }) => {
+      try {
+        const result = await api.patch(`/v1/media/${mediaId}/comments/${commentId}`, { body });
         return ok(result.data);
       } catch (error) {
         return err(error);
@@ -4558,7 +4577,7 @@ function register11(server, client) {
     }
   );
 }
-var import_zod13, COMMENT_BODY_MAX;
+var import_zod13, COMMENT_BODY_MAX, commentBody;
 var init_comments = __esm({
   "src/tools/comments.ts"() {
     "use strict";
@@ -4567,6 +4586,7 @@ var init_comments = __esm({
     init_client();
     init_transcript_range();
     COMMENT_BODY_MAX = 5e3;
+    commentBody = import_zod13.z.string().trim().min(1).max(COMMENT_BODY_MAX);
   }
 });
 
@@ -9561,6 +9581,7 @@ var init_tool_names = __esm({
       // comments
       "list_media_comments",
       "add_comment",
+      "update_comment",
       "resolve_comment",
       "delete_comment",
       // folders
@@ -11045,6 +11066,7 @@ var SPEAK_MCP_TOOL_CATEGORIES = [
       "remove_media_label",
       "list_media_comments",
       "add_comment",
+      "update_comment",
       "resolve_comment",
       "delete_comment"
     ]

@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 183 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 184 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,7 +394,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (183)
+### MCP Tools (184)
 
 <details>
 <summary>Media (18 tools)</summary>
@@ -594,7 +594,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Labels & comments (15 tools)</summary>
+<summary>Labels & comments (16 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -611,6 +611,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `remove_media_label` | Remove a labelled span |
 | `list_media_comments` | List a file's comment threads |
 | `add_comment` | Comment on the file or on words, or reply to a thread |
+| `update_comment` | Edit the text of your own comment |
 | `resolve_comment` | Resolve or reopen a thread |
 | `delete_comment` | Delete a comment |
 

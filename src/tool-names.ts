@@ -76,6 +76,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   // comments
   "list_media_comments",
   "add_comment",
+  "update_comment",
   "resolve_comment",
   "delete_comment",
 
