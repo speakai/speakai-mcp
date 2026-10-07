@@ -275,10 +275,8 @@ describe("Embed tools", () => {
 
   it("update_embed calls PUT /v1/embed/:id", async () => {
     const cb = getToolCallback(server, "update_embed");
-    await cb({ embedId: "e1", meta: { primaryColor: "#000", isLabels: true, isComments: true } });
-    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", {
-      meta: { primaryColor: "#000", isLabels: true, isComments: true },
-    });
+    await cb({ embedId: "e1", meta: { primaryColor: "#000" } });
+    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", { meta: { primaryColor: "#000" } });
   });
 
   it("check_embed calls GET /v1/embed with mediaId query param", async () => {
