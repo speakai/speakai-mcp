@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { DashboardCommentsMode, DashboardLabelsMode } from "@speakai/shared";
 import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import {
@@ -110,17 +111,30 @@ const dateRangeInputSchema = z
 // Fields shared by create and update writes (metadata that lives OUTSIDE the spec).
 const settingsFieldIds = z.array(z.string());
 
+// Limits mirror the server validator (@speak-dashboards/util/validations).
+const MAX_DASHBOARD_REVIEWERS = 200;
+const MAX_DASHBOARD_LABEL_GROUPS = 100;
+const USER_ID_PATTERN = /^[0-9a-fA-F]{24}$/;
+const LABEL_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+
 // Rules an agent must follow when writing dashboard viewer settings. Shared by the
 // settings field description and the create/update tool descriptions.
 const SETTINGS_RULES =
   "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. " +
-  "Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use " +
+  "Saving fields or feedback moves that dashboard onto the settings flow immediately: its media pages use " +
   "these groups and this Feedback setup from then on. " +
-  "Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and " +
+  "Each section (fields, feedback, reviewerUserIds, labels, comments) replaces that whole section when sent; " +
+  "a section left out keeps its stored value. Call get_dashboard first and " +
   "resend every key of the section you change; a key left out resets to its default. " +
   "Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. " +
   "When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. " +
-  "Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.";
+  "Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. " +
+  "Labels and comments on the shared link are off until the user asks to turn them on. " +
+  "Mode 'apply' (labels) or 'reply' (comments) lets anyone holding the share link write as any listed reviewer, " +
+  "because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so " +
+  "confirm the reviewerUserIds with the user before saving a write mode. " +
+  "Reviewers that are not active workspace members, or label groups that are not active, refuse the whole save " +
+  "with a 400 rather than being dropped.";
 
 // Mirrors the server validator. Each section is optional and replaces only itself when sent.
 const dashboardSettingsSchema = z
@@ -207,10 +221,41 @@ const dashboardSettingsSchema = z
           ),
       })
       .optional(),
+    reviewerUserIds: z
+      .array(z.string().regex(USER_ID_PATTERN, "Expected a 24-character user id"))
+      .max(MAX_DASHBOARD_REVIEWERS)
+      .optional()
+      .describe(
+        "Team members a dashboard viewer may write labels and comments as (unique, at most 200). " +
+          "Get ids from list_users. Must be active members of this workspace.",
+      ),
+    labels: z
+      .object({
+        isEnabled: z.boolean().describe("Show labels on media pages opened from this shared dashboard"),
+        mode: z
+          .nativeEnum(DashboardLabelsMode)
+          .describe("'view' shows labels read-only; 'apply' also lets a listed reviewer add and remove labels"),
+        labelGroupIds: z
+          .array(z.string().regex(LABEL_ID_PATTERN, "Expected a label id"))
+          .max(MAX_DASHBOARD_LABEL_GROUPS)
+          .describe(
+            "Label groups the link shows and offers (unique, at most 100). Empty means every active label. " +
+              "Get group ids from list_labels (items with isGroup true).",
+          ),
+      })
+      .optional(),
+    comments: z
+      .object({
+        isEnabled: z.boolean().describe("Show comments on media pages opened from this shared dashboard"),
+        mode: z
+          .nativeEnum(DashboardCommentsMode)
+          .describe("'view' shows comments read-only; 'reply' also lets a listed reviewer comment and reply"),
+      })
+      .optional(),
   })
   .describe(
     "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the " +
-      "Fields tab groups them, and the Feedback button. " +
+      "Fields tab groups them, the Feedback button, and labels and comments with the reviewers who may write them. " +
       SETTINGS_RULES,
   );
 

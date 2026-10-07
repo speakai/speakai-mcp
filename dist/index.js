@@ -5482,7 +5482,7 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "create_embed",
-    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password.",
+    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password, or to show labels and comments (meta isLabels, isComments; off by default).",
     {
       mediaId: import_zod7.z.string().optional().describe("Media file to embed (for a single-media embed)"),
       folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs to embed (for a folder/library embed)")
@@ -5520,7 +5520,7 @@ function register6(server, client) {
       ),
       password: import_zod7.z.string().optional().describe("Password to protect the embed with when privacyMode is private. Only applied when privacyMode is also sent."),
       meta: import_zod7.z.record(import_zod7.z.unknown()).optional().describe(
-        "Embed appearance & feature toggles: { backgroundImg, logo, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }"
+        "Embed appearance & feature toggles: { backgroundImg, logo, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, isLabels, isComments, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }. isLabels and isComments show the media's labels and comments read-only on media and folder embeds; both are off by default and embed viewers can never write them."
       )
     },
     {
@@ -10355,11 +10355,12 @@ function register18(server, client) {
     }
   );
 }
-var import_zod20, FILTER_LIST_DESCRIPTION, widgetInputSchema, sectionInputSchema, sourceInputSchema, dateRangeInputSchema, settingsFieldIds, SETTINGS_RULES, dashboardSettingsSchema, metadataFields, specFields, SPEAKERS_FILTER_SCHEMA;
+var import_zod20, FILTER_LIST_DESCRIPTION, widgetInputSchema, sectionInputSchema, sourceInputSchema, dateRangeInputSchema, settingsFieldIds, MAX_DASHBOARD_REVIEWERS, MAX_DASHBOARD_LABEL_GROUPS, USER_ID_PATTERN, LABEL_ID_PATTERN, SETTINGS_RULES, dashboardSettingsSchema, metadataFields, specFields, SPEAKERS_FILTER_SCHEMA;
 var init_dashboards = __esm({
   "src/tools/dashboards.ts"() {
     "use strict";
     import_zod20 = require("zod");
+    init_dist();
     init_helpers();
     init_client();
     init_dashboard_widgets();
@@ -10405,7 +10406,11 @@ var init_dashboards = __esm({
       preset: import_zod20.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
     }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
     settingsFieldIds = import_zod20.z.array(import_zod20.z.string());
-    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.";
+    MAX_DASHBOARD_REVIEWERS = 200;
+    MAX_DASHBOARD_LABEL_GROUPS = 100;
+    USER_ID_PATTERN = /^[0-9a-fA-F]{24}$/;
+    LABEL_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields or feedback moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, reviewerUserIds, labels, comments) replaces that whole section when sent; a section left out keeps its stored value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets anyone holding the share link write as any listed reviewer, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the reviewerUserIds with the user before saving a write mode. Reviewers that are not active workspace members, or label groups that are not active, refuse the whole save with a 400 rather than being dropped.";
     dashboardSettingsSchema = import_zod20.z.object({
       fields: import_zod20.z.object({
         includeIds: settingsFieldIds.describe(
@@ -10455,9 +10460,23 @@ var init_dashboards = __esm({
         sheetWebhookUrl: import_zod20.z.string().optional().describe(
           "External Google Apps Script web app URL. Speak posts one row per Feedback submission (call date, media link, scores, submitter name, notes) to it. Only https://script.google.com/macros/s/<id>/exec addresses are called; other values are saved but never called. Never shown to viewers."
         )
+      }).optional(),
+      reviewerUserIds: import_zod20.z.array(import_zod20.z.string().regex(USER_ID_PATTERN, "Expected a 24-character user id")).max(MAX_DASHBOARD_REVIEWERS).optional().describe(
+        "Team members a dashboard viewer may write labels and comments as (unique, at most 200). Get ids from list_users. Must be active members of this workspace."
+      ),
+      labels: import_zod20.z.object({
+        isEnabled: import_zod20.z.boolean().describe("Show labels on media pages opened from this shared dashboard"),
+        mode: import_zod20.z.nativeEnum(DashboardLabelsMode).describe("'view' shows labels read-only; 'apply' also lets a listed reviewer add and remove labels"),
+        labelGroupIds: import_zod20.z.array(import_zod20.z.string().regex(LABEL_ID_PATTERN, "Expected a label id")).max(MAX_DASHBOARD_LABEL_GROUPS).describe(
+          "Label groups the link shows and offers (unique, at most 100). Empty means every active label. Get group ids from list_labels (items with isGroup true)."
+        )
+      }).optional(),
+      comments: import_zod20.z.object({
+        isEnabled: import_zod20.z.boolean().describe("Show comments on media pages opened from this shared dashboard"),
+        mode: import_zod20.z.nativeEnum(DashboardCommentsMode).describe("'view' shows comments read-only; 'reply' also lets a listed reviewer comment and reply")
       }).optional()
     }).describe(
-      "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, and the Feedback button. " + SETTINGS_RULES
+      "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, the Feedback button, and labels and comments with the reviewers who may write them. " + SETTINGS_RULES
     );
     metadataFields = {
       icon: import_zod20.z.string().max(200).optional().describe("Icon identifier"),
