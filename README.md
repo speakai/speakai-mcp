@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 168 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 184 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,7 +394,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (168)
+### MCP Tools (184)
 
 <details>
 <summary>Media (18 tools)</summary>
@@ -590,6 +590,30 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `create_field` | Create a custom field |
 | `update_field` | Update a custom field |
 | `update_multiple_fields` | Batch update multiple fields |
+
+</details>
+
+<details>
+<summary>Labels & comments (16 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `list_labels` | List workspace labels and groups as a tree |
+| `create_label` | Create a label or a label group |
+| `update_label` | Rename, recolor, describe, move or reorder a label |
+| `archive_label` | Archive a label (a group takes its labels along) |
+| `restore_label` | Restore an archived label or group |
+| `merge_labels` | Move every use of one label onto another |
+| `add_speak_label_sets` | Add ready-made Speak label groups |
+| `list_media_labels` | List the labels applied to a transcript |
+| `apply_label` | Label transcript words, found by quote or word range |
+| `update_media_label` | Change a span's labels, confirm it, or move it |
+| `remove_media_label` | Remove a labelled span |
+| `list_media_comments` | List a file's comment threads |
+| `add_comment` | Comment on the file or on words, or reply to a thread |
+| `update_comment` | Edit the text of your own comment |
+| `resolve_comment` | Resolve or reopen a thread |
+| `delete_comment` | Delete a comment |
 
 </details>
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 168,
+  "totalTools": 184,
   "categories": [
     {
       "id": "media",
@@ -1009,6 +1009,158 @@
       ]
     },
     {
+      "id": "labels-comments",
+      "name": "Labels & comments",
+      "iconKey": "text-fields",
+      "shortDescription": "Manage workspace labels, apply them to transcript words, and discuss a file in comment threads.",
+      "tools": [
+        {
+          "name": "list_labels",
+          "title": "List Labels",
+          "description": "List the workspace's labels as a tree: groups (isGroup true) carry their labels in `labels`, and ungrouped labels sit at the top level. Each item has labelId, name, description, color, parentId, source (`speak` for Speak label sets), usageCount and isActive. Use the labelIds of non-group labels with apply_label. Anyone in the workspace can read labels.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_label",
+          "title": "Create Label",
+          "description": "Create a label, or a label group with isGroup true. Labels are shared by the whole workspace and are applied to transcript words with apply_label. A label can sit in one group (parentId); groups cannot be nested, and a group has no color. Names are unique among active labels under the same parent, ignoring case and extra spaces: 409 means the name is taken. Requires the labels create permission (owners and admins by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_label",
+          "title": "Update Label",
+          "description": "Rename, recolor, describe, move or reorder a label or group. Send only the fields to change. parentId null moves a label to the top level. An archived label cannot be edited (restore_label first), and a group cannot take a color or a parent. 409 means another active label under the same parent already has the name. Requires the labels update permission (owners and admins by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "archive_label",
+          "title": "Archive Label",
+          "description": "Archive a label so it can no longer be applied; archiving a group archives its labels too. Labels already applied to transcripts stay where they are, and restore_label undoes this. Safe to repeat. Returns archivedCount. Requires the labels delete permission (owners and admins by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "restore_label",
+          "title": "Restore Label",
+          "description": "Restore an archived label; restoring a group also restores its archived labels. A label whose name is now used by an active label stays archived and is counted in skippedCount. 409 means the label's own name is taken (rename the active one first); a merged label cannot be restored, and a label cannot be restored while its group is archived. Requires the labels delete permission (owners and admins by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "merge_labels",
+          "title": "Merge Labels",
+          "description": "Merge one label into another: every place the source label is applied moves onto the target (a span that had both keeps one), then the source is archived with mergedInto set. This cannot be undone by restore_label. Both must be active, non-group labels and different. Returns movedCount. Requires both the labels update and labels delete permissions (owners and admins by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "add_speak_label_sets",
+          "title": "Add Speak Label Sets",
+          "description": "Add ready-made label groups from Speak: sales_qa (Unprofessional, Slang, Objection, Great moment, Compliance risk), research (Pain point, Motivation, Quote for report, Surprise, Follow-up), meetings (Decision, Action item, Risk, Open question) and transcript_feedback (Wrong split, Misheard word, Wrong speaker, Bad translation). Safe to repeat: a group or label that already exists with the same name is reused, and a set whose group name is taken by a plain label is skipped (listed in skippedSets). Requires the labels create permission (owners and admins by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_media_labels",
+          "title": "List Media Labels",
+          "description": "List the labels applied to a media file's transcript, in transcript order, with the file's current transcriptRevision. Each item has mediaLabelId, labelIds and an anchor: startWord and endWord (inclusive word indices), exact (the labelled words), startInSec, endInSec, speakerIds and status. Status active means the same words; shifted means the transcript was edited and most of the words survived; needs_review means the words changed too much, so anchor holds a suggested range and lastResolved the last confirmed one (confirm or move it with update_media_label). Anyone who can open the file can read its labels.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "apply_label",
+          "title": "Apply Label",
+          "description": "Apply one or more labels to a span of words in a media file's transcript. Give the span as quote (words copied from get_transcript; this tool finds their position and the current transcriptRevision for you) or as range plus expectedTranscriptRevision. If the same span already has labels, the new ones are added to it. Check the returned anchor.exact to confirm the right words were labelled. A 409 that says the transcript changed means someone edited it after your revision was read: read the transcript again (get_transcript) and retry with the new range or quote. Nothing was saved. A 400 means the range is outside the transcript or a label is archived, a group, or not in this workspace. Requires the labels assign permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_media_label",
+          "title": "Update Media Label",
+          "description": "Change a labelled span on a transcript. Do exactly one of: labelIds to replace its labels; action keep to confirm its current anchor (after the transcript was edited and its status is shifted or needs_review); or action replace with a new quote or range to move it. A 409 that says the transcript changed means someone edited it after your revision was read: read the transcript again (get_transcript) and retry with the new range or quote. Nothing was saved. Keep also answers 409 when the anchor was built on an older revision: list_media_labels again first. Requires the labels assign permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "remove_media_label",
+          "title": "Remove Media Label",
+          "description": "Remove a labelled span from a transcript. The label itself stays in the workspace, and comments linked to the span stay without the link. Requires the labels assign permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_media_comments",
+          "title": "List Media Comments",
+          "description": "List the comment threads on a media file, with the file's current transcriptRevision. Each thread is its first comment with `replies` (oldest first). A comment on words carries an anchor (startWord, endWord, exact, times, status as in list_media_labels); a whole-file comment has none. A deleted first comment that has replies stays with an empty body and isDeleted true. Anyone who can open the file can read its comments.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "add_comment",
+          "title": "Add Comment",
+          "description": "Add a comment to a media file. Three kinds: on the whole file (no quote or range), on words in the transcript (quote, or range plus expectedTranscriptRevision, exactly as in apply_label), or a reply to a thread (parentId, with no span of its own). Replies go one level deep, so parentId must be a thread's first comment. A reply notifies the thread's starter in Speak, unless the starter wrote the reply. mediaLabelId links the comment to a labelled span on this file. A 409 that says the transcript changed means someone edited it after your revision was read: read the transcript again (get_transcript) and retry with the new range or quote. Nothing was saved. Requires the comments create permission (every member by default). The change is recorded in your Speak Notifications under Comment (type comment).",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_comment",
+          "title": "Update Comment",
+          "description": "Edit the text of a comment. Only the comment's author can edit its text (403 otherwise). To resolve or reopen a thread, use resolve_comment. The change is recorded in your Speak Notifications under Comment (type comment).",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "resolve_comment",
+          "title": "Resolve Comment",
+          "description": "Resolve a comment thread, or reopen it with resolved false. Only a thread's first comment can be resolved (400 on a reply). Resolving or reopening someone else's thread notifies its starter in Speak. Requires the comments update permission (every member by default). The change is recorded in your Speak Notifications under Comment (type comment).",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "delete_comment",
+          "title": "Delete Comment",
+          "description": "Delete a comment. Deleting a thread's first comment keeps its replies visible under an empty placeholder. You can always delete your own comments; deleting someone else's needs the comments delete permission (owners and admins by default), otherwise 403. The change is recorded in your Speak Notifications under Comment (type comment).",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
       "id": "embed-other",
       "name": "Embed players",
       "iconKey": "embed-other",
@@ -1017,7 +1169,7 @@
         {
           "name": "create_embed",
           "title": "Create Embed Widget",
-          "description": "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password.",
+          "description": "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password, or to show labels and comments (meta isLabels, isComments; off by default).",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1141,7 +1293,7 @@
         {
           "name": "create_dashboard",
           "title": "Create Dashboard",
-          "description": "Create an analytics dashboard. Only `title` is required — source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off.",
+          "description": "Create an analytics dashboard. Only `title` is required — source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, reviewerUserIds, labels, comments) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets anyone holding the share link write as any listed reviewer, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the reviewerUserIds with the user before saving a write mode. Reviewers that are not active workspace members, or label groups that are not active, refuse the whole save with a 400 rather than being dropped.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1150,7 +1302,7 @@
         {
           "name": "update_dashboard",
           "title": "Update Dashboard",
-          "description": "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec — title, source, dateRange, sections, widgets — plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first — re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off.",
+          "description": "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec — title, source, dateRange, sections, widgets — plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first — re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, reviewerUserIds, labels, comments) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets anyone holding the share link write as any listed reviewer, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the reviewerUserIds with the user before saving a write mode. Reviewers that are not active workspace members, or label groups that are not active, refuse the whole save with a 400 rather than being dropped.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,

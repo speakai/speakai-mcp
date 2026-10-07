@@ -175,6 +175,28 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
     ],
   },
   {
+    id: "labels-comments",
+    name: "Labels & comments",
+    tools: [
+      "list_labels",
+      "create_label",
+      "update_label",
+      "archive_label",
+      "restore_label",
+      "merge_labels",
+      "add_speak_label_sets",
+      "list_media_labels",
+      "apply_label",
+      "update_media_label",
+      "remove_media_label",
+      "list_media_comments",
+      "add_comment",
+      "update_comment",
+      "resolve_comment",
+      "delete_comment",
+    ],
+  },
+  {
     id: "embed-other",
     name: "Embed players",
     tools: [

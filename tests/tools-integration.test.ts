@@ -380,6 +380,25 @@ describe("Tools Integration Tests", () => {
       expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { isDefault: true });
     });
 
+    it("update_dashboard validates and sends reviewer, labels and comments settings", async () => {
+      await reg();
+      const settings = {
+        reviewerUserIds: ["64b7f0c2a1b2c3d4e5f60718"],
+        labels: { isEnabled: true, mode: "apply", labelGroupIds: ["grp_1"] },
+        comments: { isEnabled: true, mode: "reply" },
+      };
+      const schema = (server as any)._registeredTools.update_dashboard.inputSchema;
+      expect(schema.safeParse({ dashboardId: "d1", settings }).success).toBe(true);
+      expect(
+        schema.safeParse({ dashboardId: "d1", settings: { ...settings, comments: { isEnabled: true, mode: "edit" } } })
+          .success,
+      ).toBe(false);
+      expect(schema.safeParse({ dashboardId: "d1", settings: { reviewerUserIds: ["not-a-user"] } }).success).toBe(false);
+
+      await getToolCallback(server, "update_dashboard")({ dashboardId: "d1", settings });
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
+    });
+
     it("update_dashboard keeps settings.fieldEdits through schema parsing and sends it", async () => {
       await reg();
       const settings = { fieldEdits: { fieldIds: ["f1", "f2"] } };
