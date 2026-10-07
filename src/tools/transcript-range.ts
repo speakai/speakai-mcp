@@ -1,11 +1,9 @@
+import { flattenWords, normalizeWord, type IFlatWord } from "@speakai/shared";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { unwrapData } from "./inbound-webhook-utils.js";
 
-// Mirrors the word order of flattenWords() in @speakai/shared; import it instead once that version is published.
 const WHITESPACE = /\s+/;
-const EDGE_PUNCTUATION = /^\p{P}+|\p{P}+$/gu;
-const CURLY_APOSTROPHE = /[‘’ʼ]/g;
 const MATCH_CONTEXT_WORDS = 6;
 const MAX_LISTED_MATCHES = 10;
 
@@ -76,43 +74,9 @@ export interface ResolvedRange {
   expectedTranscriptRevision: number;
 }
 
-interface TranscriptSegment {
-  text?: string;
-  entities?: { text?: string }[];
-}
-
-interface Word {
-  text: string;
-  norm: string;
-}
-
-function normalizeWord(word: string): string {
-  return word.normalize("NFC").toLowerCase().replace(CURLY_APOSTROPHE, "'").replace(EDGE_PUNCTUATION, "");
-}
-
-function tokens(text: string | undefined): Word[] {
-  return (text ?? "")
-    .split(WHITESPACE)
-    .map((token) => ({ text: token, norm: normalizeWord(token) }))
-    .filter((token) => token.norm !== "");
-}
-
-function transcriptWords(transcript: TranscriptSegment[] | undefined): Word[] {
-  const words: Word[] = [];
-  for (const segment of transcript ?? []) {
-    const entities = segment.entities ?? [];
-    if (entities.length === 0) {
-      words.push(...tokens(segment.text));
-    } else {
-      for (const entity of entities) words.push(...tokens(entity.text));
-    }
-  }
-  return words;
-}
-
 /** Word range of quote; throws an Error the agent can act on when it is missing or ambiguous. */
-function findQuoteRange(words: Word[], quote: string, occurrence?: number): WordRange {
-  const needle = tokens(quote).map((t) => t.norm);
+function findQuoteRange(words: IFlatWord[], quote: string, occurrence?: number): WordRange {
+  const needle = quote.split(WHITESPACE).map(normalizeWord).filter((norm) => norm !== "");
   if (needle.length === 0) {
     throw new Error("quote has no words once punctuation is removed.");
   }
@@ -188,7 +152,7 @@ export async function resolveRange(
   if (!Number.isInteger(revision)) {
     throw new Error("The server did not return transcriptRevision for this media, so the quote cannot be anchored.");
   }
-  const words = transcriptWords(media.insight?.transcript);
+  const words = flattenWords(media.insight?.transcript ?? []);
   // A revision the agent read earlier is still sent, so the server answers 409 if the transcript moved on since.
   return {
     range: findQuoteRange(words, quote, occurrence),
