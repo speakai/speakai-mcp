@@ -20,7 +20,6 @@ vi.mock("axios", () => ({
   default: { create: () => mockClient, isAxiosError: () => false },
 }));
 
-// flattenWords order: entity words when a sentence has entities, else its text; bare punctuation is skipped.
 const TRANSCRIPT = {
   status: "success",
   data: {
@@ -75,7 +74,6 @@ describe("Labels and comments tools", () => {
     expect(mockPost).toHaveBeenCalledWith("/v1/labels/l1/merge", { targetLabelId: "l2" });
     expect(mockPost).toHaveBeenCalledWith("/v1/labels/speak-sets", { sets: ["sales_qa"] });
 
-    // Requests the server would reject are refused before any call.
     mockPost.mockClear();
     mockPut.mockClear();
     const refused = await Promise.all([
@@ -137,7 +135,6 @@ describe("Labels and comments tools", () => {
     const missing = await apply.call({ mediaId: "m1", labelIds: ["l1"], quote: "not said" });
     expect(missing.content[0].text).toContain("not found");
 
-    // An explicit range is sent as given and needs the revision it was read at.
     mockGet.mockClear();
     await apply.call({ mediaId: "m1", labelIds: ["l1"], range: { start: 0, end: 1 }, expectedTranscriptRevision: 4 });
     expect(mockGet).not.toHaveBeenCalled();

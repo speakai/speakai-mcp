@@ -74,7 +74,6 @@ export interface ResolvedRange {
   expectedTranscriptRevision: number;
 }
 
-/** Word range of quote; throws an Error the agent can act on when it is missing or ambiguous. */
 function findQuoteRange(words: IFlatWord[], quote: string, occurrence?: number): WordRange {
   const needle = quote.split(WHITESPACE).map(normalizeWord).filter((norm) => norm !== "");
   if (needle.length === 0) {
@@ -114,7 +113,7 @@ function findQuoteRange(words: IFlatWord[], quote: string, occurrence?: number):
   );
 }
 
-/** Range and revision for the API from range or quote input; null when neither is given (whole file). */
+// Null when neither range nor quote is given, meaning the whole file.
 export async function resolveRange(
   api: AxiosInstance,
   mediaId: string,
