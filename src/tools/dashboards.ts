@@ -1,7 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { DashboardCommentsMode, DashboardLabelsMode } from "@speakai/shared";
+import {
+  DashboardCommentsMode,
+  DashboardLabelsMode,
+  MAX_DASHBOARD_LABEL_GROUPS,
+  MAX_DASHBOARD_REVIEWERS,
+  PUBLIC_ID_PATTERN,
+  USER_ID_PATTERN,
+} from "@speakai/shared";
 import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import {
@@ -110,12 +117,6 @@ const dateRangeInputSchema = z
 
 // Fields shared by create and update writes (metadata that lives OUTSIDE the spec).
 const settingsFieldIds = z.array(z.string());
-
-// Limits mirror the server validator (@speak-dashboards/util/validations).
-const MAX_DASHBOARD_REVIEWERS = 200;
-const MAX_DASHBOARD_LABEL_GROUPS = 100;
-const USER_ID_PATTERN = /^[0-9a-fA-F]{24}$/;
-const LABEL_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 
 // Rules an agent must follow when writing dashboard viewer settings. Shared by the
 // settings field description and the create/update tool descriptions.
@@ -236,7 +237,7 @@ const dashboardSettingsSchema = z
           .nativeEnum(DashboardLabelsMode)
           .describe("'view' shows labels read-only; 'apply' also lets a listed reviewer add and remove labels"),
         labelGroupIds: z
-          .array(z.string().regex(LABEL_ID_PATTERN, "Expected a label id"))
+          .array(z.string().regex(PUBLIC_ID_PATTERN, "Expected a label id"))
           .max(MAX_DASHBOARD_LABEL_GROUPS)
           .describe(
             "Label groups the link shows and offers (unique, at most 100). Empty means every active label. " +

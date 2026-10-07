@@ -3,20 +3,24 @@ import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool, ok, err } from "./_helpers.js";
 import { speakClient } from "../client.js";
+import {
+  AnchorStatus,
+  DEFAULT_LABEL_COLOR,
+  LABEL_COLOR_PATTERN,
+  LABEL_DESCRIPTION_MAX,
+  LABEL_NAME_MAX,
+  LABEL_SORT_ORDER_MAX,
+  LabelListStatus,
+  MAX_LABELS_PER_SPAN,
+  MediaLabelAction,
+  SpeakLabelSet,
+} from "@speakai/shared";
 import { publicId, rangeInputSchema, resolveRange, STALE_TRANSCRIPT_NOTE } from "./transcript-range.js";
-
-// Limits match the server's Joi schemas in speak-server src/@speak-labels/util/validations.
-const LABEL_NAME_MAX = 80;
-const LABEL_DESCRIPTION_MAX = 500;
-const MAX_LABELS_PER_SPAN = 20;
-const SORT_ORDER_MAX = 1_000_000;
-const SPEAK_LABEL_SETS = ["sales_qa", "research", "meetings", "transcript_feedback"] as const;
-const ANCHOR_STATUSES = ["active", "shifted", "needs_review"] as const;
 
 const labelName = z.string().trim().min(1).max(LABEL_NAME_MAX);
 const labelDescription = z.string().trim().max(LABEL_DESCRIPTION_MAX);
-const labelColor = z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "color must be #rrggbb");
-const sortOrder = z.number().int().min(0).max(SORT_ORDER_MAX);
+const labelColor = z.string().trim().regex(LABEL_COLOR_PATTERN, "color must be #rrggbb");
+const sortOrder = z.number().int().min(0).max(LABEL_SORT_ORDER_MAX);
 const labelIds = z
   .array(publicId("labelId"))
   .min(1)
@@ -32,7 +36,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "List the workspace's labels as a tree: groups (isGroup true) carry their labels in `labels`, and ungrouped labels sit at the top level. Each item has labelId, name, description, color, parentId, source (`speak` for Speak label sets), usageCount and isActive. Use the labelIds of non-group labels with apply_label. Anyone in the workspace can read labels.",
     {
       status: z
-        .enum(["active", "archived", "all"])
+        .nativeEnum(LabelListStatus)
         .optional()
         .describe("Which labels to list (default active)"),
       search: z
@@ -60,9 +64,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       name: labelName.describe(`Label or group name (1 to ${LABEL_NAME_MAX} characters)`),
       isGroup: z.boolean().optional().describe("true to create a group that holds labels"),
       description: labelDescription.optional().describe(`What the label means (up to ${LABEL_DESCRIPTION_MAX} characters)`),
-      color: labelColor.optional().describe("Label color as #rrggbb (default #6366f1). Not allowed on a group."),
+      color: labelColor.optional().describe(`Label color as #rrggbb (default ${DEFAULT_LABEL_COLOR}). Not allowed on a group.`),
       parentId: publicId("parentId").optional().describe("labelId of an active group to put the label in. Not allowed on a group."),
-      sortOrder: sortOrder.optional().describe(`Position among its siblings (0 to ${SORT_ORDER_MAX})`),
+      sortOrder: sortOrder.optional().describe(`Position among its siblings (0 to ${LABEL_SORT_ORDER_MAX})`),
     },
     { title: "Create Label", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async (body) => {
@@ -87,7 +91,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       description: labelDescription.optional().describe(`New description (up to ${LABEL_DESCRIPTION_MAX} characters, empty clears it)`),
       color: labelColor.optional().describe("New color as #rrggbb"),
       parentId: publicId("parentId").nullable().optional().describe("labelId of a group to move into, or null for the top level"),
-      sortOrder: sortOrder.optional().describe(`New position among its siblings (0 to ${SORT_ORDER_MAX})`),
+      sortOrder: sortOrder.optional().describe(`New position among its siblings (0 to ${LABEL_SORT_ORDER_MAX})`),
     },
     { title: "Update Label", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ labelId, ...body }) => {
@@ -159,7 +163,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Add ready-made label groups from Speak: sales_qa (Unprofessional, Slang, Objection, Great moment, Compliance risk), research (Pain point, Motivation, Quote for report, Surprise, Follow-up), meetings (Decision, Action item, Risk, Open question) and transcript_feedback (Wrong split, Misheard word, Wrong speaker, Bad translation). Safe to repeat: a group or label that already exists with the same name is reused, and a set whose group name is taken by a plain label is skipped (listed in skippedSets). Requires the labels create permission (owners and admins by default).",
     {
       sets: z
-        .array(z.enum(SPEAK_LABEL_SETS))
+        .array(z.nativeEnum(SpeakLabelSet))
         .min(1)
         .refine((sets) => new Set(sets).size === sets.length, "sets must not repeat")
         .describe("Which sets to add"),
@@ -180,7 +184,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "List the labels applied to a media file's transcript, in transcript order, with the file's current transcriptRevision. Each item has mediaLabelId, labelIds and an anchor: startWord and endWord (inclusive word indices), exact (the labelled words), startInSec, endInSec, speakerIds and status. Status active means the same words; shifted means the transcript was edited and most of the words survived; needs_review means the words changed too much, so anchor holds a suggested range and lastResolved the last confirmed one (confirm or move it with update_media_label). Anyone who can open the file can read its labels.",
     {
       mediaId: publicId("mediaId").describe("Media id"),
-      status: z.enum(ANCHOR_STATUSES).optional().describe("Only labels with this anchor status"),
+      status: z.nativeEnum(AnchorStatus).optional().describe("Only labels with this anchor status"),
     },
     { title: "List Media Labels", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ mediaId, status }) => {
@@ -226,7 +230,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       mediaLabelId: publicId("mediaLabelId").describe("mediaLabelId from list_media_labels"),
       labelIds: labelIds.optional(),
       action: z
-        .enum(["keep", "replace"])
+        .nativeEnum(MediaLabelAction)
         .optional()
         .describe("keep confirms the current anchor; replace moves the span to quote or range"),
       ...rangeInputSchema,

@@ -1,9 +1,15 @@
-import { flattenWords, normalizeWord, type IFlatWord } from "@speakai/shared";
+import {
+  flattenWords,
+  PUBLIC_ID_PATTERN,
+  tokenizeWords,
+  type ICreateMediaLabelBody,
+  type IFlatWord,
+  type IWordRange,
+} from "@speakai/shared";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { unwrapData } from "./inbound-webhook-utils.js";
 
-const WHITESPACE = /\s+/;
 const MATCH_CONTEXT_WORDS = 6;
 const MAX_LISTED_MATCHES = 10;
 
@@ -55,27 +61,17 @@ export const publicId = (what: string) =>
   z
     .string()
     .trim()
-    .regex(/^[A-Za-z0-9_-]{1,64}$/, `${what} must be a Speak id (letters, digits, _ or -)`);
+    .regex(PUBLIC_ID_PATTERN, `${what} must be a Speak id (letters, digits, _ or -)`);
 
-export interface WordRange {
-  start: number;
-  end: number;
-}
+export type ResolvedRange = Pick<ICreateMediaLabelBody, "range" | "expectedTranscriptRevision">;
 
-export interface RangeInput {
-  range?: WordRange;
-  expectedTranscriptRevision?: number;
+export interface RangeInput extends Partial<ResolvedRange> {
   quote?: string;
   occurrence?: number;
 }
 
-export interface ResolvedRange {
-  range: WordRange;
-  expectedTranscriptRevision: number;
-}
-
-function findQuoteRange(words: IFlatWord[], quote: string, occurrence?: number): WordRange {
-  const needle = quote.split(WHITESPACE).map(normalizeWord).filter((norm) => norm !== "");
+function findQuoteRange(words: IFlatWord[], quote: string, occurrence?: number): IWordRange {
+  const needle = tokenizeWords(quote).map((token) => token.norm);
   if (needle.length === 0) {
     throw new Error("quote has no words once punctuation is removed.");
   }
@@ -92,7 +88,7 @@ function findQuoteRange(words: IFlatWord[], quote: string, occurrence?: number):
     );
   }
 
-  const toRange = (start: number): WordRange => ({ start, end: start + needle.length - 1 });
+  const toRange = (start: number): IWordRange => ({ start, end: start + needle.length - 1 });
 
   if (occurrence !== undefined) {
     if (occurrence > starts.length) {

@@ -3,11 +3,10 @@ import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool, ok, err } from "./_helpers.js";
 import { speakClient } from "../client.js";
+import { CommentListFilter, MEDIA_COMMENT_BODY_MAX } from "@speakai/shared";
 import { publicId, rangeInputSchema, resolveRange, STALE_TRANSCRIPT_NOTE } from "./transcript-range.js";
 
-// Matches MEDIA_COMMENT_BODY_MAX in speak-server.
-const COMMENT_BODY_MAX = 5000;
-const commentBody = z.string().trim().min(1).max(COMMENT_BODY_MAX);
+const commentBody = z.string().trim().min(1).max(MEDIA_COMMENT_BODY_MAX);
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
@@ -18,7 +17,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       mediaId: publicId("mediaId").describe("Media id"),
       filter: z
-        .enum(["all", "open", "resolved", "file"])
+        .nativeEnum(CommentListFilter)
         .optional()
         .describe("all (default), open or resolved threads, or file for whole-file comments only"),
     },
@@ -40,7 +39,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       " Requires the comments create permission (every member by default).",
     {
       mediaId: publicId("mediaId").describe("Media id"),
-      body: commentBody.describe(`Comment text (1 to ${COMMENT_BODY_MAX} characters)`),
+      body: commentBody.describe(`Comment text (1 to ${MEDIA_COMMENT_BODY_MAX} characters)`),
       parentId: publicId("parentId").optional().describe("commentId of the thread's first comment, to reply to it"),
       mediaLabelId: publicId("mediaLabelId").optional().describe("mediaLabelId from list_media_labels to link the comment to"),
       ...rangeInputSchema,
@@ -72,7 +71,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       mediaId: publicId("mediaId").describe("Media id"),
       commentId: publicId("commentId").describe("commentId from list_media_comments"),
-      body: commentBody.describe(`New comment text (1 to ${COMMENT_BODY_MAX} characters)`),
+      body: commentBody.describe(`New comment text (1 to ${MEDIA_COMMENT_BODY_MAX} characters)`),
     },
     { title: "Update Comment", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ mediaId, commentId, body }) => {
