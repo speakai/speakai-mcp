@@ -245,10 +245,10 @@ var init_helpers = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/activities.js
+// node_modules/@speakai/shared/dist/enums/activities.js
 var ActivityType;
 var init_activities = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/activities.js"() {
+  "node_modules/@speakai/shared/dist/enums/activities.js"() {
     "use strict";
     (function(ActivityType2) {
       ActivityType2["MEDIA_ANALYSIS"] = "mediaAnalysis";
@@ -261,10 +261,10 @@ var init_activities = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/auth.js
+// node_modules/@speakai/shared/dist/enums/auth.js
 var SSOType, DevicePlatform;
 var init_auth = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/auth.js"() {
+  "node_modules/@speakai/shared/dist/enums/auth.js"() {
     "use strict";
     (function(SSOType2) {
       SSOType2["GOOGLE"] = "google";
@@ -282,10 +282,10 @@ var init_auth = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/automation.js
+// node_modules/@speakai/shared/dist/enums/automation.js
 var AutomationTrigger, AutomationAction, AutomationStepType, AutomationRunStatus, AutomationIOType, AutomationRunType, AutomationScheduleTimePeriod, AssistantType;
 var init_automation = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/automation.js"() {
+  "node_modules/@speakai/shared/dist/enums/automation.js"() {
     "use strict";
     (function(AutomationTrigger2) {
       AutomationTrigger2["FOLDERS"] = "folders";
@@ -345,10 +345,10 @@ var init_automation = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/calendar.js
+// node_modules/@speakai/shared/dist/enums/calendar.js
 var CalendarType, EventStatus, AutoJoinStatus;
 var init_calendar = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/calendar.js"() {
+  "node_modules/@speakai/shared/dist/enums/calendar.js"() {
     "use strict";
     (function(CalendarType2) {
       CalendarType2["GOOGLE"] = "google";
@@ -368,10 +368,10 @@ var init_calendar = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/clip.js
+// node_modules/@speakai/shared/dist/enums/clip.js
 var ClipState, ClipGenerationSource;
 var init_clip = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/clip.js"() {
+  "node_modules/@speakai/shared/dist/enums/clip.js"() {
     "use strict";
     (function(ClipState2) {
       ClipState2["QUEUED"] = "queued";
@@ -387,10 +387,10 @@ var init_clip = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/domain.js
+// node_modules/@speakai/shared/dist/enums/domain.js
 var ServiceType, VerificationStatus;
 var init_domain = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/domain.js"() {
+  "node_modules/@speakai/shared/dist/enums/domain.js"() {
     "use strict";
     (function(ServiceType2) {
       ServiceType2["RECORDER"] = "recorder";
@@ -406,10 +406,10 @@ var init_domain = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/embed.js
+// node_modules/@speakai/shared/dist/enums/embed.js
 var EmbedType, ImageSelectionType;
 var init_embed = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/embed.js"() {
+  "node_modules/@speakai/shared/dist/enums/embed.js"() {
     "use strict";
     (function(EmbedType2) {
       EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
@@ -424,10 +424,10 @@ var init_embed = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/export.js
+// node_modules/@speakai/shared/dist/enums/export.js
 var ExportFormatType;
 var init_export = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/export.js"() {
+  "node_modules/@speakai/shared/dist/enums/export.js"() {
     "use strict";
     (function(ExportFormatType2) {
       ExportFormatType2["CSV"] = "csv";
@@ -450,10 +450,10 @@ var init_export = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/fields.js
+// node_modules/@speakai/shared/dist/enums/fields.js
 var FieldType, AllowedValuesMode, DefaultViewColumn;
 var init_fields = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/fields.js"() {
+  "node_modules/@speakai/shared/dist/enums/fields.js"() {
     "use strict";
     (function(FieldType2) {
       FieldType2["TEXT"] = "text";
@@ -482,10 +482,10 @@ var init_fields = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/filter.js
+// node_modules/@speakai/shared/dist/enums/filter.js
 var FilterFieldName, FilterOperator, FilterCondition;
 var init_filter = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/filter.js"() {
+  "node_modules/@speakai/shared/dist/enums/filter.js"() {
     "use strict";
     (function(FilterFieldName2) {
       FilterFieldName2["CATEGORY"] = "category";
@@ -514,10 +514,10 @@ var init_filter = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/integration.js
+// node_modules/@speakai/shared/dist/enums/integration.js
 var IntegrationAuthType;
 var init_integration = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/integration.js"() {
+  "node_modules/@speakai/shared/dist/enums/integration.js"() {
     "use strict";
     (function(IntegrationAuthType2) {
       IntegrationAuthType2["OAUTH"] = "oauth";
@@ -526,10 +526,10 @@ var init_integration = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/media.js
+// node_modules/@speakai/shared/dist/enums/media.js
 var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType;
 var init_media = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/media.js"() {
+  "node_modules/@speakai/shared/dist/enums/media.js"() {
     "use strict";
     (function(MediaType2) {
       MediaType2["AUDIO"] = "audio";
@@ -596,10 +596,10 @@ var init_media = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/meeting.js
+// node_modules/@speakai/shared/dist/enums/meeting.js
 var MeetingPlatform, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource;
 var init_meeting = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/meeting.js"() {
+  "node_modules/@speakai/shared/dist/enums/meeting.js"() {
     "use strict";
     (function(MeetingPlatform2) {
       MeetingPlatform2["GOOGLE_MEET"] = "googleMeet";
@@ -665,10 +665,10 @@ var init_meeting = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/notification.js
+// node_modules/@speakai/shared/dist/enums/notification.js
 var NotificationType, NotificationAction;
 var init_notification = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/notification.js"() {
+  "node_modules/@speakai/shared/dist/enums/notification.js"() {
     "use strict";
     (function(NotificationType2) {
       NotificationType2["CLIP"] = "clip";
@@ -715,10 +715,10 @@ var init_notification = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/prompt.js
+// node_modules/@speakai/shared/dist/enums/prompt.js
 var PromptState, MessageRole, PromptSource, ToolName, FileType;
 var init_prompt = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/prompt.js"() {
+  "node_modules/@speakai/shared/dist/enums/prompt.js"() {
     "use strict";
     (function(PromptState2) {
       PromptState2["INITIATED"] = "initiated";
@@ -765,10 +765,10 @@ var init_prompt = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/recorder.js
+// node_modules/@speakai/shared/dist/enums/recorder.js
 var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating;
 var init_recorder = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/recorder.js"() {
+  "node_modules/@speakai/shared/dist/enums/recorder.js"() {
     "use strict";
     (function(RecorderAnswerType2) {
       RecorderAnswerType2["Single"] = "single";
@@ -793,10 +793,10 @@ var init_recorder = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/subscription.js
+// node_modules/@speakai/shared/dist/enums/subscription.js
 var SubscriptionStatus, SubscriptionDuration, TrialTier;
 var init_subscription = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/subscription.js"() {
+  "node_modules/@speakai/shared/dist/enums/subscription.js"() {
     "use strict";
     (function(SubscriptionStatus2) {
       SubscriptionStatus2["Active"] = "active";
@@ -822,10 +822,10 @@ var init_subscription = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/team.js
+// node_modules/@speakai/shared/dist/enums/team.js
 var TeamInviteStatus;
 var init_team = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/team.js"() {
+  "node_modules/@speakai/shared/dist/enums/team.js"() {
     "use strict";
     (function(TeamInviteStatus2) {
       TeamInviteStatus2["ACTIVE"] = "active";
@@ -836,10 +836,10 @@ var init_team = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/transcription.js
+// node_modules/@speakai/shared/dist/enums/transcription.js
 var TranscriptionEngine, TranscriptionJobState, TranscriptionJobRevisionState;
 var init_transcription = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/transcription.js"() {
+  "node_modules/@speakai/shared/dist/enums/transcription.js"() {
     "use strict";
     (function(TranscriptionEngine2) {
       TranscriptionEngine2["AZURE"] = "azure";
@@ -868,10 +868,10 @@ var init_transcription = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/transaction.js
+// node_modules/@speakai/shared/dist/enums/transaction.js
 var TransactionSource, TransactionType, TransactionStatus;
 var init_transaction = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/transaction.js"() {
+  "node_modules/@speakai/shared/dist/enums/transaction.js"() {
     "use strict";
     (function(TransactionSource2) {
       TransactionSource2["STRIPE"] = "stripe";
@@ -901,10 +901,10 @@ var init_transaction = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/translation.js
+// node_modules/@speakai/shared/dist/enums/translation.js
 var TranslationState, DubbingState;
 var init_translation = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/translation.js"() {
+  "node_modules/@speakai/shared/dist/enums/translation.js"() {
     "use strict";
     (function(TranslationState2) {
       TranslationState2["NOTFOUND"] = "notFound";
@@ -925,10 +925,10 @@ var init_translation = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/user.js
+// node_modules/@speakai/shared/dist/enums/user.js
 var UserRole, UserType, UserPermissionType, UserActionType;
 var init_user = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/user.js"() {
+  "node_modules/@speakai/shared/dist/enums/user.js"() {
     "use strict";
     (function(UserRole2) {
       UserRole2["ADMIN"] = "admin";
@@ -975,10 +975,10 @@ var init_user = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/webhook.js
+// node_modules/@speakai/shared/dist/enums/webhook.js
 var WebhookEvent, WebhookEventSource;
 var init_webhook = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/webhook.js"() {
+  "node_modules/@speakai/shared/dist/enums/webhook.js"() {
     "use strict";
     (function(WebhookEvent2) {
       WebhookEvent2["embed_recorder.created"] = "embed_recorder.created";
@@ -1010,10 +1010,10 @@ var init_webhook = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/llm.js
+// node_modules/@speakai/shared/dist/enums/llm.js
 var LLMProvider, LLMModels;
 var init_llm = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/llm.js"() {
+  "node_modules/@speakai/shared/dist/enums/llm.js"() {
     "use strict";
     (function(LLMProvider2) {
       LLMProvider2["OPENAI"] = "openai";
@@ -1069,9 +1069,9 @@ var init_llm = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/enums/index.js
+// node_modules/@speakai/shared/dist/enums/index.js
 var init_enums = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/enums/index.js"() {
+  "node_modules/@speakai/shared/dist/enums/index.js"() {
     "use strict";
     init_activities();
     init_auth();
@@ -1100,157 +1100,157 @@ var init_enums = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/api.js
+// node_modules/@speakai/shared/dist/interfaces/api.js
 var init_api = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/api.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/api.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/media.js
+// node_modules/@speakai/shared/dist/interfaces/media.js
 var init_media2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/media.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/media.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/transcript.js
+// node_modules/@speakai/shared/dist/interfaces/transcript.js
 var init_transcript = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/text.js
+// node_modules/@speakai/shared/dist/interfaces/text.js
 var init_text = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/text.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/text.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/folder.js
+// node_modules/@speakai/shared/dist/interfaces/folder.js
 var init_folder = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/folder.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/integration.js
+// node_modules/@speakai/shared/dist/interfaces/integration.js
 var init_integration2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/integration.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/integration.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/recorder.js
+// node_modules/@speakai/shared/dist/interfaces/recorder.js
 var init_recorder2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/embed.js
+// node_modules/@speakai/shared/dist/interfaces/embed.js
 var init_embed2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/embed.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/embed.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/automation.js
+// node_modules/@speakai/shared/dist/interfaces/automation.js
 var init_automation2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/automation.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/automation.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/webhook.js
+// node_modules/@speakai/shared/dist/interfaces/webhook.js
 var init_webhook2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/field.js
+// node_modules/@speakai/shared/dist/interfaces/field.js
 var init_field = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/field.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/field.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/meeting.js
+// node_modules/@speakai/shared/dist/interfaces/meeting.js
 var init_meeting2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/export.js
+// node_modules/@speakai/shared/dist/interfaces/export.js
 var init_export2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/export.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/export.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/prompt.js
+// node_modules/@speakai/shared/dist/interfaces/prompt.js
 var init_prompt2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/user.js
+// node_modules/@speakai/shared/dist/interfaces/user.js
 var init_user2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/user.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/user.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/subscription.js
+// node_modules/@speakai/shared/dist/interfaces/subscription.js
 var init_subscription2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/calendar.js
+// node_modules/@speakai/shared/dist/interfaces/calendar.js
 var init_calendar2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/category.js
+// node_modules/@speakai/shared/dist/interfaces/category.js
 var init_category = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/category.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/category.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/clip.js
+// node_modules/@speakai/shared/dist/interfaces/clip.js
 var init_clip2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/clip.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/clip.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/utils/dashboard-spec.js
+// node_modules/@speakai/shared/dist/utils/dashboard-spec.js
 var init_dashboard_spec = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
+  "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/dashboard.js
+// node_modules/@speakai/shared/dist/interfaces/dashboard.js
 var init_dashboard = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
     "use strict";
     init_dashboard_spec();
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/index.js
+// node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/interfaces/index.js"() {
+  "node_modules/@speakai/shared/dist/interfaces/index.js"() {
     "use strict";
     init_api();
     init_media2();
@@ -1275,17 +1275,17 @@ var init_interfaces = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/utils/transcript.js
+// node_modules/@speakai/shared/dist/utils/transcript.js
 var init_transcript2 = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/utils/transcript.js"() {
+  "node_modules/@speakai/shared/dist/utils/transcript.js"() {
     "use strict";
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/pricing/modelPricing.js
+// node_modules/@speakai/shared/dist/pricing/modelPricing.js
 var MODEL_PRICING;
 var init_modelPricing = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
+  "node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
     "use strict";
     init_llm();
     MODEL_PRICING = {
@@ -1346,9 +1346,9 @@ var init_modelPricing = __esm({
   }
 });
 
-// ../../speak-mcp/node_modules/@speakai/shared/dist/index.js
+// node_modules/@speakai/shared/dist/index.js
 var init_dist = __esm({
-  "../../speak-mcp/node_modules/@speakai/shared/dist/index.js"() {
+  "node_modules/@speakai/shared/dist/index.js"() {
     "use strict";
     init_enums();
     init_interfaces();
@@ -1442,27 +1442,27 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "upload_media",
-    `Upload media from a URL \u2014 a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Processing is asynchronous \u2014 after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.`,
+    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and sends the media.created event to the workspace's webhooks and Slack channels if any are configured. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
       name: import_zod2.z.string().min(1).describe("Display name for the media file"),
-      url: import_zod2.z.string().describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
+      url: import_zod2.z.string().describe("Direct public media file URL, a URL returned by get_signed_upload_url, or a page link from a platform listed in this tool's description. Page links are resolved server-side, so pass the URL the user gave you as-is."),
       mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       description: import_zod2.z.string().optional().describe("Description of the media file"),
-      sourceLanguage: import_zod2.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
+      sourceLanguage: import_zod2.z.string().optional().describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL". Omit to use the default language on the user profile. An unsupported code falls back to automatic detection instead of failing.'),
       tags: import_zod2.z.string().optional().describe("Comma-separated tags for the media"),
-      folderId: import_zod2.z.string().optional().describe("ID of the folder to place the media in"),
-      callbackUrl: import_zod2.z.string().optional().describe("Webhook callback URL for this specific upload"),
+      folderId: import_zod2.z.string().optional().describe("ID of the folder to place the media in. If the folder is not found, the media goes to the workspace's first folder."),
+      callbackUrl: import_zod2.z.string().optional().describe("URL that replaces the workspace webhook's destination for this media's webhook events. It takes effect only when the workspace already has an active webhook for the event; on its own it does not create a webhook or send anything."),
       fields: import_zod2.z.array(
         import_zod2.z.object({
           id: import_zod2.z.string().min(1).describe("Custom field ID"),
           value: import_zod2.z.string().min(1).describe("Custom field value")
         })
-      ).optional().describe("Custom field values to attach to the media")
+      ).optional().describe("Custom field values to attach to the media. Field IDs that do not belong to the workspace are ignored without an error.")
     },
     {
       title: "Upload Media from URL",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -1607,7 +1607,7 @@ function register(server, client) {
       speakers: import_zod2.z.array(
         import_zod2.z.object({
           id: import_zod2.z.string().min(1).describe(
-            `Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. "Speaker 0", "Vatsal Shah"), or its numeric id from insight.speakers[].id (e.g. "0"). Not a fixed identifier \u2014 it changes when the speaker is renamed.`
+            `Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. "Speaker 0", "Jane Doe"), or its numeric id from insight.speakers[].id (e.g. "0"). Not a fixed identifier \u2014 it changes when the speaker is renamed.`
           ),
           name: import_zod2.z.string().min(1).describe("New display name to assign to the speaker")
         })
@@ -1710,7 +1710,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "update_media_metadata",
-    "Update metadata fields (name, description, tags, status) for an existing media file.",
+    "Update metadata fields (name, description, tags, status) for an existing media file. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file"),
       name: import_zod2.z.string().describe("Display name for the media (required \u2014 the server replaces the metadata)"),
@@ -1726,7 +1726,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ mediaId, ...body }) => {
       try {
@@ -1747,7 +1747,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "delete_media",
-    "Permanently delete a media file and all associated transcripts and insights.",
+    "Permanently delete a media file and all associated transcripts and insights. Sends the media.deleted event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file to delete")
     },
@@ -1756,7 +1756,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ mediaId }) => {
       try {
@@ -1871,7 +1871,7 @@ function register(server, client) {
     {
       title: "Toggle Media Favorite",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -1894,7 +1894,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "reanalyze_media",
-    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
+    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts. Sends the media.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
       isInsights: import_zod2.z.boolean().optional().describe("Re-run insights analysis"),
@@ -1905,9 +1905,9 @@ function register(server, client) {
     {
       title: "Re-analyze Media",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ mediaId, ...params }) => {
       try {
@@ -1934,7 +1934,7 @@ function register(server, client) {
       speakers: import_zod2.z.array(
         import_zod2.z.object({
           id: import_zod2.z.string().min(1).describe(
-            `Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. "Vatsal Shah"). Only safe when that label already identifies the same person in every file listed \u2014 a default label like "Speaker 1", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed.`
+            `Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. "Jane Doe"). Only safe when that label already identifies the same person in every file listed \u2014 a default label like "Speaker 1", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed.`
           ),
           name: import_zod2.z.string().min(1).describe("New display name to assign to the speaker")
         })
@@ -1979,7 +1979,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "bulk_move_media",
-    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
+    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       folderId: import_zod2.z.string().min(1).describe("Target folder ID to move media into"),
       mediaIds: import_zod2.z.array(import_zod2.z.string().min(1)).min(1).describe("Array of media IDs to move")
@@ -1989,7 +1989,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2032,14 +2032,14 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "create_text_note",
-    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
+    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, and once the allowance is used up charges credits, the account balance, or the card on file; the request is refused only when none of these can cover it. Sends the text.created and text.analyzed events to the workspace's webhooks and Slack channels if any are configured.",
     {
       name: import_zod3.z.string().min(1).describe("Title/name for the text note"),
       text: import_zod3.z.string().optional().describe("Full text content to analyze"),
       description: import_zod3.z.string().optional().describe("Description for the text note"),
       folderId: import_zod3.z.string().optional().describe("ID of the folder to place the note in"),
       tags: import_zod3.z.string().optional().describe("Comma-separated tags or array of tag strings"),
-      callbackUrl: import_zod3.z.string().optional().describe("Webhook callback URL for completion notification"),
+      callbackUrl: import_zod3.z.string().optional().describe("URL that replaces the workspace webhook's destination for this note's webhook events. It takes effect only when the workspace already has an active webhook for the event; on its own it does not create a webhook or send anything."),
       fields: import_zod3.z.array(
         import_zod3.z.object({
           id: import_zod3.z.string().min(1).describe("Custom field ID"),
@@ -2050,13 +2050,14 @@ function register2(server, client) {
     {
       title: "Create Text Note",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
-        const result = await api.post("/v1/text/create", body);
+        const payload = body.text !== void 0 ? { ...body, rawText: body.text } : body;
+        const result = await api.post("/v1/text/create", payload);
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -2103,20 +2104,22 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "reanalyze_text",
-    "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models.",
+    "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment. Sends the text.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: import_zod3.z.string().describe("Unique identifier of the text note to reanalyze")
     },
     {
       title: "Re-analyze Text Note",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ mediaId }) => {
       try {
-        const result = await api.get(`/v1/media/reanalyze/${mediaId}`);
+        const result = await api.get(`/v1/media/reanalyze/${mediaId}`, {
+          params: { isInsights: true, isSentiment: true, isFillerWords: true, isEmbeddings: true }
+        });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -2133,13 +2136,12 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "update_text_note",
-    "Update an existing text note's name, content, or metadata. Updating text content will trigger re-analysis.",
+    "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: import_zod3.z.string().min(1).describe("Unique identifier of the text note"),
       name: import_zod3.z.string().optional().describe("New name for the text note"),
-      text: import_zod3.z.string().optional().describe("New text content (will trigger re-analysis)"),
+      text: import_zod3.z.string().optional().describe("New text content. Replaces the existing text of the note."),
       description: import_zod3.z.string().optional().describe("Updated description"),
-      folderId: import_zod3.z.string().optional().describe("Move to a different folder"),
       tags: import_zod3.z.string().optional().describe("Updated comma-separated tags")
     },
     {
@@ -2147,7 +2149,7 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ mediaId, ...body }) => {
       try {
@@ -2190,7 +2192,7 @@ function register3(server, client) {
   registerSpeakTool(
     server,
     "export_media",
-    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
+    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv). Generates the file and returns it without saving or sharing anything.",
     {
       mediaId: import_zod4.z.string().min(1).describe("Unique identifier of the media file"),
       fileType: import_zod4.z.nativeEnum(ExportFormatType).describe("Desired export format"),
@@ -2203,7 +2205,7 @@ function register3(server, client) {
     },
     {
       title: "Export Media Transcript",
-      readOnlyHint: false,
+      readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
@@ -2240,7 +2242,7 @@ function register3(server, client) {
       isInsightVisualized: import_zod4.z.boolean().optional().describe("Include insight visualizations"),
       isRedacted: import_zod4.z.boolean().optional().describe("Apply PII redaction to export"),
       isMerged: import_zod4.z.boolean().optional().describe("Merge all exports into a single file"),
-      folderId: import_zod4.z.string().optional().describe("Folder ID for the merged export")
+      folderId: import_zod4.z.string().optional().describe("Export every media file in this folder instead. Used only when mediaIds is an empty array.")
     },
     {
       title: "Export Multiple Media Files",
@@ -2352,7 +2354,7 @@ function register4(server, client) {
     {
       folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder"),
       name: import_zod5.z.string().describe("Display name for the view"),
-      isDefault: import_zod5.z.boolean().optional().describe("Whether this view is the folder's default view"),
+      isDefault: import_zod5.z.boolean().optional().describe("Whether this view is the folder's default view. Setting true clears the default flag on the folder's other views"),
       columns: import_zod5.z.array(
         import_zod5.z.object({
           fieldId: import_zod5.z.string().optional().describe("Field ID this column maps to (omit for built-in columns)"),
@@ -2366,7 +2368,7 @@ function register4(server, client) {
     {
       title: "Create Folder View",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2443,12 +2445,12 @@ function register4(server, client) {
       targetFolderId: import_zod5.z.string().min(1).describe("Folder to copy the view into (must differ from sourceFolderId)"),
       viewId: import_zod5.z.string().min(1).describe("Unique identifier of the view to clone"),
       name: import_zod5.z.string().describe("Display name for the cloned view"),
-      isDefault: import_zod5.z.boolean().optional().describe("Whether the cloned view becomes the target folder's default")
+      isDefault: import_zod5.z.boolean().optional().describe("Whether the cloned view becomes the target folder's default. Setting true clears the default flag on the target folder's other views")
     },
     {
       title: "Clone Folder View",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -2564,7 +2566,7 @@ function register4(server, client) {
   registerSpeakTool(
     server,
     "clone_folder",
-    "Duplicate an existing folder and all of its contents.",
+    "Create a new folder copied from an existing folder's name and description. Media in the source folder is not copied. Set isSaveDefaultView to also copy the source folder's default view.",
     {
       folderId: import_zod5.z.string().min(1).describe("ID of the folder to clone"),
       name: import_zod5.z.string().optional().describe("Name for the cloned folder"),
@@ -2630,7 +2632,7 @@ function register4(server, client) {
   registerSpeakTool(
     server,
     "delete_folder",
-    "Permanently delete a folder. Media within the folder will be moved, not deleted.",
+    "Permanently delete a folder. The folder must be empty: the request is refused if it still holds any media or if it is the workspace's last folder, so move or delete its media first.",
     {
       folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder to delete")
     },
@@ -2706,7 +2708,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "create_recorder",
-    "Create a new recorder or survey for collecting audio/video submissions.",
+    "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
     {
       name: import_zod6.z.string().describe("Display name for the recorder"),
       ...recorderConfigShape,
@@ -2717,9 +2719,9 @@ function register5(server, client) {
     {
       title: "Create Recorder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2768,7 +2770,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "clone_recorder",
-    "Duplicate an existing recorder including all its settings and questions.",
+    "Duplicate an existing recorder including all its settings and questions. The copy gets its own public link, accepts submissions right away and sends the same submission emails, webhooks and automations as any recorder. Fires the workspace's embed_recorder.created webhook if one is registered.",
     {
       recorderId: import_zod6.z.string().min(1).describe("ID of the recorder to clone"),
       name: import_zod6.z.string().optional().describe("Name for the cloned recorder"),
@@ -2778,9 +2780,9 @@ function register5(server, client) {
     {
       title: "Clone Recorder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -2883,7 +2885,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "update_recorder_settings",
-    "Update configuration settings for a recorder (branding, capture options, etc.). `name` must always be supplied.",
+    "Update configuration settings for a recorder (branding, capture options, etc.). Only the supplied settings change, and they apply to the recorder's live public page right away. `name` must always be supplied.",
     {
       recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder"),
       name: import_zod6.z.string().describe("Display name for the recorder"),
@@ -2892,9 +2894,9 @@ function register5(server, client) {
     {
       title: "Update Recorder Settings",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ recorderId, ...body }) => {
       try {
@@ -2913,7 +2915,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "update_recorder_questions",
-    "Update the survey questions and respondent-info settings for a recorder.",
+    "Update the survey questions and respondent-info settings for a recorder. The `questions` array replaces the recorder's existing questions, and changes apply to the recorder's live public page right away.",
     {
       recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder"),
       name: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's name"),
@@ -2930,7 +2932,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ recorderId, ...body }) => {
       try {
@@ -2949,7 +2951,7 @@ function register5(server, client) {
   registerSpeakTool(
     server,
     "delete_recorder",
-    "Permanently delete a recorder/survey. Existing recordings are preserved.",
+    "Permanently delete a recorder/survey. Its public link stops accepting submissions. Existing recordings are preserved. Fires the workspace's embed_recorder.deleted webhook if one is registered.",
     {
       recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder to delete")
     },
@@ -2958,7 +2960,7 @@ function register5(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ recorderId }) => {
       try {
@@ -3003,7 +3005,7 @@ var init_recorder3 = __esm({
       options: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
         "Capture options: { audio, video, screenShare, liveTranscription, upload:{ file, text, multiple, url } } \u2014 all booleans"
       ),
-      notification: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client } \u2014 booleans"),
+      notification: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client }, both booleans. upload emails the recorder owner (if they opted in to submission emails) and any users in notifyUsers about each new submission; client emails a confirmation to each respondent who gives an email."),
       meta: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
         "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }"
       )
@@ -3021,7 +3023,7 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "create_embed",
-    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed.",
+    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password.",
     {
       mediaId: import_zod7.z.string().optional().describe("Media file to embed (for a single-media embed)"),
       folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs to embed (for a folder/library embed)")
@@ -3029,9 +3031,9 @@ function register6(server, client) {
     {
       title: "Create Embed Widget",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -3050,10 +3052,10 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "update_embed",
-    "Update an existing embed widget \u2014 appearance/feature toggles via `meta`, plus scope and privacy. Setting `privacyMode` clears any existing password unless a new one is supplied in the same call.",
+    "Update an existing embed widget: appearance/feature toggles via `meta`, and privacy. Passing `mediaId` with `privacyMode` sets that privacy mode on the media file itself; a public mode makes the media viewable by anyone with the embed link. Setting `privacyMode` clears any existing password unless a new one is supplied in the same call.",
     {
       embedId: import_zod7.z.string().min(1).describe("Unique identifier of the embed"),
-      mediaId: import_zod7.z.string().optional().describe("Media file the embed points to"),
+      mediaId: import_zod7.z.string().optional().describe("Media file whose privacy mode is set to privacyMode. Does not change which media the embed points to."),
       privacyMode: import_zod7.z.string().optional().describe(
         "Privacy mode for the embed. Changing this clears the existing password unless `password` is also supplied in the same call."
       ),
@@ -3067,7 +3069,7 @@ function register6(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ embedId, ...body }) => {
       try {
@@ -3168,7 +3170,9 @@ function register7(server, client) {
     "Returns a promptId \u2014 save it to continue the conversation with follow-up questions.",
     "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
     "reading the transcript alone. That is a premium feature and costs credits per hour of media \u2014",
-    "call get_analysis_quote first to check eligibility and price."
+    "call get_analysis_quote first to check eligibility and price.",
+    "Each question is charged to the account's chat usage.",
+    "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat."
   ].join(" ");
   const askAiChatInputSchema = {
     prompt: import_zod8.z.string().min(1).describe("The question or prompt to ask about the media"),
@@ -3176,7 +3180,7 @@ function register7(server, client) {
     folderIds: import_zod8.z.array(import_zod8.z.string()).optional().describe("Array of folder IDs to scope the query to. Omit along with mediaIds to search across all media."),
     folderId: import_zod8.z.string().optional().describe("Single folder ID to scope the query to. Use folderIds for multiple folders."),
     assistantType: import_zod8.z.enum(Object.values(AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
-    assistantTemplateId: import_zod8.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
+    assistantTemplateId: import_zod8.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template."),
     promptId: import_zod8.z.string().optional().describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
     speakers: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter to specific speaker IDs from the transcript"),
     tags: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter media by tags"),
@@ -3192,9 +3196,9 @@ function register7(server, client) {
   const askAiChatAnnotations = {
     title: "Ask AI Chat",
     readOnlyHint: false,
-    destructiveHint: false,
+    destructiveHint: true,
     idempotentHint: false,
-    openWorldHint: false
+    openWorldHint: true
   };
   const ANALYSIS_TIMEOUT_MS = 6 * 60 * 1e3;
   const refuse = (message) => ({
@@ -3264,21 +3268,10 @@ function register7(server, client) {
     "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason \u2014 an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
     {
       mediaId: import_zod8.z.string().min(1).describe("Media file to price"),
-      modelId: import_zod8.z.string().optional().describe("Optional model id to price against. Omit for the workspace default."),
-      assistantType: import_zod8.z.enum(Object.values(AssistantType)).optional().describe("Assistant persona: 'general' (default), 'researcher' (academic), 'marketer' (content), 'sales' (deals), 'recruiter' (hiring). Use 'custom' with assistantTemplateId."),
-      assistantTemplateId: import_zod8.z.string().optional().describe("Required when assistantType is 'custom'. ID of a custom assistant template from list_prompts."),
-      promptId: import_zod8.z.string().optional().describe("ID of an existing conversation to continue. Pass this to maintain chat context across multiple questions."),
-      speakers: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter to specific speaker IDs from the transcript"),
-      tags: import_zod8.z.array(import_zod8.z.string()).optional().describe("Filter media by tags"),
-      startDate: import_zod8.z.string().optional().describe("Start date for date range filter (ISO 8601, e.g., '2025-01-01')"),
-      endDate: import_zod8.z.string().optional().describe("End date for date range filter (ISO 8601, e.g., '2025-03-31')"),
-      isIndividualPrompt: import_zod8.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
-      analysisInput: import_zod8.z.enum(["audio", "video"]).optional().describe(
-        "Send the media itself to a multimodal model, not just its transcript. 'audio' analyses tone, pacing, and delivery; 'video' analyses on-screen visuals, gestures, and slides. Requires analysisMediaId. The workspace must have multimodal analysis enabled and the file must be a supported container within the duration limit, otherwise the turn runs transcript-only."
+      analysisInput: import_zod8.z.enum(["audio", "video"]).describe(
+        "Which pass to price: 'audio' (tone, pacing, delivery) or 'video' (also on-screen visuals, gestures, slides). Required."
       ),
-      analysisMediaId: import_zod8.z.string().optional().describe(
-        "The mediaId to analyse multimodally this turn. Required together with analysisInput, and it must be one of the ids in mediaIds; either field alone is rejected."
-      )
+      modelId: import_zod8.z.string().optional().describe("Optional model id to price against. Omit for the workspace default.")
     },
     {
       title: "Get Analysis Quote",
@@ -3304,7 +3297,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "retry_ai_chat",
-    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
+    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: import_zod8.z.string().min(1).describe("ID of the specific message to retry")
@@ -3312,9 +3305,9 @@ function register7(server, client) {
     {
       title: "Retry AI Chat",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -3395,13 +3388,13 @@ function register7(server, client) {
   );
   registerSpeakTool(
     server,
-    "delete_chat_message",
-    "Delete a specific chat message from conversation history.",
+    "delete_chat_conversation",
+    "Delete an entire chat conversation from conversation history, so it and its messages no longer appear. No tool can restore it.",
     {
-      promptId: import_zod8.z.string().min(1).describe("ID of the message to delete")
+      promptId: import_zod8.z.string().min(1).describe("ID of the conversation (promptId) to delete")
     },
     {
-      title: "Delete Chat Message",
+      title: "Delete Chat Conversation",
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
@@ -3424,10 +3417,10 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "list_prompts",
-    "List all available AI Chat templates. Use template IDs with ask_ai_chat's assistantTemplateId parameter when using assistantType 'custom'.",
+    "List recent AI Chat messages across the workspace, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns messages from the 25 most recently updated conversations in the workspace, filtered to those the caller can access, so a member may see fewer.",
     {},
     {
-      title: "List Prompt Templates",
+      title: "List Recent Chat Messages",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -3485,7 +3478,7 @@ function register7(server, client) {
     {
       title: "Toggle Prompt Favorite",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -3514,7 +3507,7 @@ function register7(server, client) {
     {
       title: "Rename Chat",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -3535,7 +3528,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "submit_chat_feedback",
-    "Submit feedback on a chat response (thumbs up/down). Helps improve AI answer quality.",
+    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are posted to Speak AI's internal Slack channel for the Speak AI team to review.",
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation"),
       messageId: import_zod8.z.string().min(1).describe("ID of the message to rate"),
@@ -3545,9 +3538,9 @@ function register7(server, client) {
     {
       title: "Submit Chat Feedback",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -3677,7 +3670,7 @@ function register8(server, client) {
   registerSpeakTool(
     server,
     "schedule_meeting_event",
-    "Schedule the Speak AI meeting assistant to join and record an upcoming meeting.",
+    "Schedule the Speak AI meeting assistant to join and record an online meeting (Zoom, Google Meet, Microsoft Teams, or Webex). The assistant joins as a participant other attendees can see, at meetingDate or right away when meetingDate is omitted. Recorded minutes are charged to the account, and on trial plans each scheduled meeting uses one meeting from the allowance.",
     {
       title: import_zod9.z.string().min(1).describe("Display title for the event"),
       meetingURL: import_zod9.z.string().min(1).describe("URL of the meeting to join"),
@@ -3688,7 +3681,7 @@ function register8(server, client) {
     {
       title: "Schedule AI Meeting Assistant",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -3719,7 +3712,7 @@ function register8(server, client) {
     {
       title: "Remove Assistant from Meeting",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: true
     },
@@ -3785,7 +3778,7 @@ function register8(server, client) {
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ meetingAssistantEventId, mediaId, sinceEndInSec }) => {
       if (!meetingAssistantEventId && !mediaId) {
@@ -3938,7 +3931,7 @@ function register9(server, client) {
   registerSpeakTool(
     server,
     "update_multiple_fields",
-    "Set custom field values across media in a single batch operation. Scope the update with `folderId` (all media in a folder) and/or `mediaIds`.",
+    "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. Each value that changes fires your field_updated automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions.",
     {
       folderId: import_zod10.z.string().optional().describe("Apply the field values to all media in this folder"),
       mediaIds: import_zod10.z.array(import_zod10.z.string()).optional().describe("Apply the field values to these specific media files"),
@@ -3954,7 +3947,7 @@ function register9(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -4777,7 +4770,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "list_automation_names",
-    "List automations as lightweight { name, id } pairs \u2014 useful for pickers without fetching full configs.",
+    "List the names and ids of active automations that contain an AI chat (magic prompt) step. Inactive automations and automations without an AI chat step are not included; use list_automations for the full list.",
     {},
     {
       title: "List Automation Names",
@@ -4862,14 +4855,14 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "create_automation",
-    "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) \u2014 recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
+    "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio, and use AI credits. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
     writeSchema,
     {
       title: "Create Automation",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -4901,7 +4894,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "update_automation",
-    "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes.",
+    "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes. The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. Changing a Composio app-event trigger updates the subscription on that third-party account.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation"),
       ...writeSchema
@@ -4911,7 +4904,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ automationId, ...body }) => {
       try {
@@ -4942,16 +4935,16 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "toggle_automation_status",
-    "Toggle an automation rule between active and inactive. This flips the current state \u2014 call get_automation first if you need to know which way it will flip.",
+    "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation first if you need to know which way it will flip. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected third-party account.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation")
     },
     {
       title: "Toggle Automation Status",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ automationId }) => {
       try {
@@ -4970,7 +4963,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "bulk_update_automation_status",
-    "Activate or deactivate multiple automations at once.",
+    "Activate or deactivate multiple automations at once. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the connected third-party account.",
     {
       automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
       isActive: import_zod11.z.boolean().describe("true to activate, false to deactivate, for all listed automations")
@@ -4978,9 +4971,9 @@ function register10(server, client) {
     {
       title: "Bulk Update Automation Status",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -5028,7 +5021,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "run_automations",
-    "Manually run one or more automations against one or more media items now (outside the normal trigger).",
+    "Manually run one or more automations against one or more media items now (outside the normal trigger). Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without an error. The runs happen in the background and this returns only an acknowledgement, so check results with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook URLs, run actions in connected third-party apps, and use AI credits.",
     {
       mediaIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).describe("Media ids to run the automations against"),
       automationIds: import_zod11.z.array(import_zod11.z.string().min(1)).min(1).describe("Automation ids to run")
@@ -5036,7 +5029,7 @@ function register10(server, client) {
     {
       title: "Run Automations",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -5057,7 +5050,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "delete_automation",
-    "Permanently delete an automation rule.",
+    "Permanently delete an automation rule. If it has an inbound webhook URL, that URL stops accepting payloads, and any event subscription it holds on a connected third-party account through Composio is removed.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation to delete")
     },
@@ -5066,7 +5059,7 @@ function register10(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ automationId }) => {
       try {
@@ -5148,7 +5141,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "test_automation",
-    "Run an automation once against one media item to see which way it branches. THIS HAS REAL SIDE EFFECTS: only Speak's own run notifications are suppressed \u2014 outbound webhooks fire, Composio actions run against the connected third party, and AI steps are billed. Ask the user before calling it on an automation that posts anywhere outside Speak. It also needs a mediaId and sends no webhook payload, so an inbound-webhook automation cannot be meaningfully tested this way \u2014 its payload tokens will resolve to empty. Returns a runId; read the result with get_automation_run.",
+    "Run one automation once against one media item to see which way it branches. This is a real run, not a dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks still fire, Composio actions still run against the connected third-party account, and AI steps use credits. Confirm with the user before testing an automation that sends anything outside Speak. It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens resolve to empty. Returns a runId; read the result with get_automation_run.",
     {
       automationId: import_zod11.z.string().min(1).describe("Unique identifier of the automation to test"),
       mediaId: import_zod11.z.string().min(1).describe("Media item to run the automation against")
@@ -5288,7 +5281,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "list_automation_apps",
-    "List the apps available in the automation catalog (e.g. Speak native + connected integrations). Use to discover what triggers/actions exist before building an automation.",
+    "List the apps in Speak's automation catalog: Speak's built-in apps plus, when enabled, third-party apps available through Composio, each marked connected or not_connected for this user. Read-only: the list comes from Speak's own catalog and the user's saved connections, and no third-party service is called. Use the app slugs with list_automation_triggers and list_automation_actions.",
     {},
     {
       title: "List Automation Apps",
@@ -5342,7 +5335,7 @@ function register10(server, client) {
   registerSpeakTool(
     server,
     "list_automation_actions",
-    "List the action/step types available in the automation catalog. Optionally filter by app.",
+    "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the fields each filter or condition step can test. Read-only: served from Speak's own catalog and the user's saved connections, with no third-party calls. Listing an action does not run it.",
     {
       app: import_zod11.z.string().min(1).max(100).optional().describe("Filter actions to a specific app slug")
     },
@@ -5430,7 +5423,7 @@ function register11(server, client) {
   registerSpeakTool(
     server,
     "create_webhook",
-    "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
+    "Create an outbound webhook. From then on, Speak automatically POSTs a JSON payload to callbackUrl, an external endpoint, for each subscribed event (event type, ids such as mediaId or folderId, state, and for chat events the prompt and answer text).",
     {
       callbackUrl: import_zod12.z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
       events: import_zod12.z.array(import_zod12.z.string()).optional().describe("Array of event types to subscribe to"),
@@ -5439,7 +5432,7 @@ function register11(server, client) {
     {
       title: "Create Webhook",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -5496,7 +5489,7 @@ function register11(server, client) {
     {
       title: "Update Webhook",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: true
     },
@@ -5637,7 +5630,7 @@ function register11(server, client) {
   registerSpeakTool(
     server,
     "delete_webhook",
-    "Delete a webhook and stop receiving notifications at its endpoint.",
+    "Permanently delete an outbound webhook and its delivery attempt history; its endpoint stops receiving notifications. Cannot be undone.",
     {
       webhookId: import_zod12.z.string().min(1).describe("Unique identifier of the webhook to delete")
     },
@@ -5759,7 +5752,8 @@ function register13(server, client) {
       "Create a highlight clip from one or more media files by specifying time ranges.",
       `Clips are processed asynchronously (states: ${Object.values(ClipState).join(", ")}) \u2014 use get_clips to check status.`,
       "Maximum total clip duration is 30 minutes.",
-      "Use multiple timeRanges to stitch segments from different media files together."
+      "Use multiple timeRanges to stitch segments from different media files together.",
+      "When the clip finishes processing it fires your clip_created automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions."
     ].join(" "),
     {
       title: import_zod14.z.string().min(1).describe("Title for the clip"),
@@ -5778,9 +5772,9 @@ function register13(server, client) {
     {
       title: "Create Highlight Clip",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -5840,7 +5834,7 @@ function register13(server, client) {
     {
       title: "Update Clip",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false
     },
@@ -5949,19 +5943,19 @@ function resolveField(ref, fields) {
   const available = fields.map((f) => f.name).slice(0, 25).join(", ");
   throw new Error(`Unknown custom field "${ref}". Available fields: ${available || "(none \u2014 create one with create_field)"}`);
 }
-function register14(server, client) {
+function register14(server, client, options = {}) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
     "build_automation",
-    "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. Prefer this over create_automation unless you need raw control.",
+    "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL and bill its duration, ai_chat steps use AI credits, slack notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
     buildAutomationSchema,
     {
       title: "Build Automation",
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (args2) => {
       const { name, trigger, steps, automationId, description, isActive, orTriggers } = args2;
@@ -6283,7 +6277,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
   registerSpeakTool(
     server,
     "upload_and_analyze",
-    `Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.`,
+    `Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.`,
     {
       // A plain literal, not a template: the docs generator drops a tool's whole parameter
       // table when a description interpolates a value it cannot resolve statically.
@@ -6297,7 +6291,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
     {
       title: "Upload and Analyze Media",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6345,9 +6339,9 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
   registerSpeakTool(
     server,
     "upload_and_analyze_batch",
-    `Upload several URLs in one call \u2014 the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to ${MAX_BATCH_URLS} URLs and starts at most ${MAX_BATCH_CONCURRENCY} at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.`,
+    `Import up to ${MAX_BATCH_URLS} audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most ${MAX_BATCH_CONCURRENCY} uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.`,
     {
-      urls: import_zod15.z.array(import_zod15.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Duplicates are uploaded once."),
+      urls: import_zod15.z.array(import_zod15.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Exact duplicate URLs are sent once."),
       mediaType: import_zod15.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Applies to every URL in the batch. Send it only when the user has said which they want for all of them \u2014 "audio" if they asked for audio only, "video" if they called them videos. Otherwise omit it and the server decides per URL. Mixed batches: leave it off, or split into two calls.'),
       folderId: import_zod15.z.string().optional().describe("Folder ID for every upload in the batch"),
       sourceLanguage: import_zod15.z.string().optional().describe('BCP-47 language code applied to every upload, e.g. "en-US"'),
@@ -6357,7 +6351,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     {
       title: "Upload and Analyze Several URLs",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6420,13 +6414,14 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       };
     }
   );
-  registerSpeakTool(
+  if (options.localFileAccess) registerSpeakTool(
     server,
     "upload_local_file",
     [
       "Upload a local file to Speak AI for transcription and analysis.",
       "Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry.",
       "Works with any audio or video file on the local filesystem.",
+      "Each upload creates a media item and bills its duration against the workspace's minutes or credits.",
       "After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights."
     ].join(" "),
     {
@@ -6440,7 +6435,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     {
       title: "Upload Local File",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6689,7 +6684,7 @@ function register15(server, client) {
   registerSpeakTool(
     server,
     "delete_user_group",
-    "Delete a user group. This removes the group only; it does not delete the users themselves.",
+    "Permanently delete a user group. The users themselves are not deleted, but members lose any access that was shared with the group (for example dashboards assigned to it).",
     {
       id: import_zod16.z.string().min(1).describe("Group _id to delete (from list_user_groups)")
     },
@@ -7212,7 +7207,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "create_dashboard",
-    `Create an analytics dashboard. Only \`title\` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad \u2014 every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Viewer settings (the settings input): ` + SETTINGS_RULES,
+    `Create an analytics dashboard. Only \`title\` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad \u2014 every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): ` + SETTINGS_RULES,
     {
       title: import_zod17.z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
       ...specFields,
@@ -7221,9 +7216,9 @@ function register16(server, client) {
     {
       title: "Create Dashboard",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ title, description, source, dateRange, sections, widgets, ...metadata }) => {
       try {
@@ -7253,7 +7248,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "update_dashboard",
-    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. Viewer settings (the settings input): " + SETTINGS_RULES,
+    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): " + SETTINGS_RULES,
     {
       dashboardId: import_zod17.z.string().min(1).describe("Dashboard business id"),
       title: import_zod17.z.string().min(1).max(60).optional().describe("Dashboard name \u2014 required (with revision) when updating the spec"),
@@ -7268,7 +7263,7 @@ function register16(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ dashboardId, title, revision, description, source, dateRange, sections, widgets, ...metadata }) => {
       try {
@@ -7319,7 +7314,7 @@ function register16(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ dashboardId }) => {
       try {
@@ -7338,7 +7333,7 @@ function register16(server, client) {
   registerSpeakTool(
     server,
     "duplicate_dashboard",
-    'Clone an existing dashboard. The copy gets fresh widget ids, a "<name> (copy)" title, cleared sharing, and its revision reset to 0. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.',
+    `Clone an existing dashboard into a new dashboard owned by the caller. The copy keeps the source's widgets (same widget ids), sections, filters, and viewer settings, gets a "<name> (copy)" title, has no shared users and no public link, and starts at revision 0. Edit it afterwards with update_dashboard.`,
     {
       dashboardId: import_zod17.z.string().min(1).describe("Source dashboard business id to clone")
     },
@@ -7373,9 +7368,9 @@ function register16(server, client) {
     {
       title: "Share Dashboard",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false
+      openWorldHint: true
     },
     async ({ dashboardId }) => {
       try {
@@ -7467,8 +7462,8 @@ var init_dashboards = __esm({
     dateRangeInputSchema = import_zod17.z.object({
       preset: import_zod17.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
     }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
-    settingsFieldIds = import_zod17.z.array(import_zod17.z.string().regex(/^[0-9a-f]{12}$/, "a 12-character field id")).max(200);
-    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Never pass settings for a Foxtons dashboard unless explicitly asked; Foxtons moves by a server script. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Field ids must belong to the dashboard's company. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty.";
+    settingsFieldIds = import_zod17.z.array(import_zod17.z.string());
+    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.";
     dashboardSettingsSchema = import_zod17.z.object({
       fields: import_zod17.z.object({
         includeIds: settingsFieldIds.describe(
@@ -7476,11 +7471,11 @@ var init_dashboards = __esm({
         ),
         groups: import_zod17.z.array(
           import_zod17.z.object({
-            key: import_zod17.z.string().min(1).max(50),
-            label: import_zod17.z.string().min(1).max(60),
+            key: import_zod17.z.string().min(1),
+            label: import_zod17.z.string().min(1),
             fieldIds: settingsFieldIds.min(1)
           })
-        ).max(20).describe("Pills on the media page Fields tab, each listing the field ids it shows. Empty means no pills."),
+        ).describe("Pills on the media page Fields tab, each listing the field ids it shows. Empty means no pills."),
         orderIds: settingsFieldIds.optional().describe(
           "Used only when includeIds is empty: these fields show first, in this order, then every other public field. Does not change which fields are visible."
         )
@@ -7490,12 +7485,34 @@ var init_dashboards = __esm({
         fieldIds: settingsFieldIds.describe(
           "Fields a reviewer gives feedback on. Empty means every field the media page shows."
         ),
-        submitters: import_zod17.z.array(import_zod17.z.string().min(1).max(200)).max(300).describe("Names a reviewer picks from. Empty lets them type their own name."),
-        removeReasons: import_zod17.z.array(import_zod17.z.string().min(1).max(100)).max(20).describe("Reasons for removing a call from scoring. Empty hides that option."),
+        submitters: import_zod17.z.array(import_zod17.z.string().min(1)).describe("Names a reviewer picks from. Empty lets them type their own name."),
+        removeReasons: import_zod17.z.array(import_zod17.z.string().min(1)).describe("Reasons for removing a call from scoring. Empty hides that option."),
         reviewScope: import_zod17.z.enum(["dashboard", "company"]).optional().describe(
           "'dashboard' (default) lists and reviews only this dashboard's feedback; 'company' lists every dashboard's feedback in the company. Use 'company' only on a manager dashboard, never on a personal one."
         ),
-        allowOtherSubmitter: import_zod17.z.boolean().optional().describe("Lets a reviewer type a name that is not in submitters.")
+        allowOtherSubmitter: import_zod17.z.boolean().optional().describe("Lets a reviewer type a name that is not in submitters."),
+        groups: import_zod17.z.array(
+          import_zod17.z.object({
+            key: import_zod17.z.string().min(1),
+            label: import_zod17.z.string().min(1),
+            fieldIds: settingsFieldIds.min(1)
+          })
+        ).optional().describe(
+          "Pills in the Feedback dialog, each listing feedback field ids in order. Leave out to reuse fields.groups."
+        ),
+        fieldRules: import_zod17.z.record(
+          import_zod17.z.string(),
+          import_zod17.z.object({
+            label: import_zod17.z.string().optional(),
+            min: import_zod17.z.number().optional(),
+            max: import_zod17.z.number().optional()
+          })
+        ).optional().describe(
+          "Per feedback field: a short row label and the allowed score range, used for both the reviewer's score and the approver's score."
+        ),
+        sheetWebhookUrl: import_zod17.z.string().optional().describe(
+          "External Google Apps Script web app URL. Speak posts one row per Feedback submission (call date, media link, scores, submitter name, notes) to it. Only https://script.google.com/macros/s/<id>/exec addresses are called; other values are saved but never called. Never shown to viewers."
+        )
       }).optional()
     }).describe(
       "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, and the Feedback button. " + SETTINGS_RULES
@@ -7504,7 +7521,7 @@ var init_dashboards = __esm({
       icon: import_zod17.z.string().max(200).optional().describe("Icon identifier"),
       assignTo: import_zod17.z.array(import_zod17.z.string()).max(100).optional().describe('User ids, or group ids in the "<groupId> (G)" convention, to share view access with'),
       filters: import_zod17.z.record(import_zod17.z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
-      isDefault: import_zod17.z.boolean().optional().describe("Make this the company default dashboard"),
+      isDefault: import_zod17.z.boolean().optional().describe("Make this the owner's default dashboard. Setting true clears the default flag on the owner's other dashboards"),
       settings: dashboardSettingsSchema.optional()
     };
     specFields = {
@@ -7534,14 +7551,1173 @@ var init_dashboards = __esm({
   }
 });
 
+// src/tools/voice.ts
+var voice_exports = {};
+__export(voice_exports, {
+  register: () => register17
+});
+function register17(server, client, options = {}) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_voice_agents",
+    "List the voice agents in the company (newest first). Each agent includes its agentId, name, personality/instructions, and voice/stt/llm/avatar configuration. Use the returned agentId with get_voice_agent or to filter list_voice_conversations.",
+    {},
+    {
+      title: "List Voice Agents",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/voice/agents");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_agent",
+    "Fetch a single voice agent by its agentId. Returns the full agent configuration. A cross-company agentId returns 404.",
+    {
+      agentId: import_zod18.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)")
+    },
+    {
+      title: "Get Voice Agent",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/agents/${agentId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_conversations",
+    "List the company's voice conversations (newest first). Optionally filter to a single agent. Each conversation includes its conversationId, agentId, status, duration, transcript summary, and usage/costs. Use conversationId with get_voice_conversation for the full record.",
+    {
+      agentId: import_zod18.z.string().optional().describe("Filter conversations to a single agent (from list_voice_agents)"),
+      page: import_zod18.z.number().int().min(1).optional().describe("1-based page index (default 1)"),
+      limit: import_zod18.z.number().int().min(1).max(200).optional().describe("Results per page (default 50, max 200)")
+    },
+    {
+      title: "List Voice Conversations",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/voice/conversations", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_conversation",
+    "Fetch a single voice conversation by its conversationId, including transcript, usage, costs, and analysis. A cross-company conversationId returns 404.",
+    {
+      conversationId: import_zod18.z.string().min(1).describe("ID of the conversation (from list_voice_conversations)")
+    },
+    {
+      title: "Get Voice Conversation",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ conversationId }) => {
+      try {
+        const result = await api.get(`/v1/voice/conversations/${conversationId}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_voice_agent",
+    "Create a voice agent. Requires the OWNER or ADMIN role. name, personality, instructions, and voice (provider + voiceId) are required; everything else can be set now or later with update_voice_agent. Call list_voice_avatars or list_voices first to get valid ids.",
+    voiceInputSchema,
+    {
+      title: "Create Voice Agent",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/agents", body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_voice_agent",
+    "Update a voice agent. Requires the OWNER or ADMIN role. Send only the fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent.",
+    {
+      agentId: import_zod18.z.string().min(1).describe("ID of the voice agent to update (from list_voice_agents)"),
+      ...Object.fromEntries(
+        Object.entries(voiceInputSchema).map(([key, schema]) => [key, schema.optional()])
+      )
+    },
+    {
+      title: "Update Voice Agent",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/voice/agents/${agentId}`, body);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_avatars",
+    "List the video avatars available to attach to a voice agent (your company's own uploads plus the shared system catalog). Use the returned avatarId with create_voice_agent or update_voice_agent.",
+    {},
+    {
+      title: "List Voice Avatars",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/voice/avatars");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voices",
+    "List the text-to-speech voices available to a voice agent. Use the returned provider/voiceId with create_voice_agent or update_voice_agent's voice field. When an agent's llm.model is a Live (speech-to-speech) model, its usable voices are a fixed, smaller set scoped to that model instead of this full catalog.",
+    {},
+    {
+      title: "List Voices",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/voice/voices");
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_voice_agent",
+    "Delete a voice agent. Requires the OWNER or ADMIN role. The agent is marked deleted and no tool can restore it: it stops appearing in list_voice_agents, and its share link, embedded widget, questions, and test suite stop working. Its stored data is not erased, past conversations stay in list_voice_conversations, and phone numbers assigned to it are not released.",
+    { agentId: import_zod18.z.string().min(1).describe("ID of the voice agent to delete (from list_voice_agents)") },
+    { title: "Delete Voice Agent", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
+    async ({ agentId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/agents/${agentId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_voice_agent_from_prompt",
+    "Create a new voice agent from a plain-English description, via an LLM call. Requires the OWNER or ADMIN role. Saves a draft agent, then generates and saves its name, personality, instructions, chat settings, and default voice, speech-to-text, and LLM settings. Does not assign a phone number. The response includes the new agentId plus either the generated agent, or needsFollowUp: true with a followUpQuestion when the prompt is too vague. In that case the draft agent still exists with placeholder settings; call generate_voice_agent_config on that agentId with more detail.",
+    {
+      prompt: import_zod18.z.string().min(1).describe('Plain-English description of the agent to build, e.g. "a friendly dental clinic receptionist that books appointments and answers insurance questions".'),
+      name: import_zod18.z.string().optional().describe("Initial name for the draft agent. Replaced by the generated name when generation succeeds; kept only if the response asks a follow-up question."),
+      manualInstructions: import_zod18.z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague.")
+    },
+    { title: "Create Voice Agent From Prompt", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/agents/generation", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "generate_voice_agent_config",
+    "Run the same prompt-to-config generation as create_voice_agent_from_prompt, but against an existing agent instead of creating a new one. Requires the OWNER or ADMIN role. On success the generated config is saved onto the agent immediately, overwriting its current name, personality, instructions, chat settings, and voice, speech-to-text, and LLM settings. If the prompt is too thin and manualInstructions was not sent, the response has needsFollowUp: true with a follow-up question instead \u2014 call this again with more detail.",
+    {
+      agentId: import_zod18.z.string().min(1).describe("ID of the existing voice agent to generate config for (from list_voice_agents)"),
+      prompt: import_zod18.z.string().min(1).describe("Plain-English description of what the agent should do."),
+      manualInstructions: import_zod18.z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague.")
+    },
+    { title: "Generate Voice Agent Config", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/agents/${agentId}/generation/generate`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_agent_setup_guide",
+    "Discovery + how-to helper for building and operating a Speak AI voice agent end to end. Returns the four configuration pieces every agent is built from, which tool covers each one, the recommended build order, and how testing/questions/knowledge-base/intelligence tools chain together after the agent exists. Call this before create_voice_agent or create_voice_agent_from_prompt if you are not already familiar with this tool surface.",
+    {},
+    { title: "Get Voice Agent Setup Guide", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async () => {
+      const data = {
+        overview: "A voice agent is a standalone resource: create it once, then it holds live spoken conversations, asking configured questions and answering from a knowledge base. It is built from four independent pieces, plus optional testing, sharing, and self-improvement layers.",
+        buildOrder: [
+          {
+            step: 1,
+            piece: "The agent record itself",
+            tools: ["create_voice_agent", "create_voice_agent_from_prompt"],
+            notes: "name, personality, instructions, and voice (provider+voiceId) are the only required fields. Call list_voices and list_voice_avatars first to get valid ids."
+          },
+          {
+            step: 2,
+            piece: "Voice & avatar",
+            tools: ["list_voices", "list_voice_avatars", "update_voice_agent"],
+            notes: "Every agent needs a voice. It only needs an avatar if conversationMode is video_avatar."
+          },
+          {
+            step: 3,
+            piece: "Instructions & behavior",
+            tools: ["update_voice_agent", "generate_voice_agent_config"],
+            notes: "personality/instructions are plain fields on the agent record; generate_voice_agent_config can (re)write them from a prompt instead of hand-authoring."
+          },
+          {
+            step: 4,
+            piece: "Questions",
+            tools: ["list_voice_question_templates", "create_voice_question", "reorder_voice_questions"],
+            notes: "Optional. Attaches a question template to the agent so it collects structured data mid-call. See the Questions tool group."
+          },
+          {
+            step: 5,
+            piece: "Knowledge base",
+            tools: ["Knowledge Base tool group (separate from voice agents)"],
+            notes: "Optional. A knowledge base collection is attached to the agent from the Knowledge Base API, not a voice-agent tool -- an agent has no documents of its own until one is attached."
+          }
+        ],
+        afterTheAgentExists: [
+          {
+            area: "Testing",
+            tools: [
+              "get_voice_test_suite",
+              "update_voice_test_suite",
+              "generate_voice_test_suite",
+              ...options.voiceTestRuns ? ["start_voice_test_run"] : []
+            ],
+            notes: options.voiceTestRuns ? "Scripted scenarios and a run history. The run lifecycle is live; the engine that drives a simulated conversation is not wired up yet, so a run stays queued." : "Scripted test scenarios for the agent. Running them is not available yet, because the engine that drives a simulated conversation is not live."
+          },
+          {
+            area: "Feedback / self-improvement (Intelligence)",
+            tools: [
+              "list_voice_kb_gaps",
+              "list_voice_faq_suggestions",
+              "analyze_voice_instruction_gaps",
+              "list_voice_agent_resources"
+            ],
+            notes: "What the agent surfaces from real calls: knowledge it lacked, questions callers repeat, and gaps in its own instructions. Nothing is written automatically -- every suggestion needs an explicit add/apply/dismiss call."
+          },
+          {
+            area: "Conversations & analytics",
+            tools: ["list_voice_conversations", "get_voice_conversation"],
+            notes: "Read call history and transcripts once the agent has taken calls."
+          }
+        ],
+        commonMistakes: [
+          "Calling create_voice_agent with a made-up voiceId instead of one from list_voices -- the create call fails validation.",
+          ...options.voiceTestRuns ? ["Expecting start_voice_test_run to return real scores -- the execution engine isn't wired up yet, see the Testing tools' own descriptions."] : [],
+          "Looking for a knowledge-base tool in this group -- collections are managed by the separate Knowledge Base tool group and only attached here."
+        ]
+      };
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+}
+var import_zod18, voiceInputSchema;
+var init_voice = __esm({
+  "src/tools/voice.ts"() {
+    "use strict";
+    import_zod18 = require("zod");
+    init_helpers();
+    init_client();
+    voiceInputSchema = {
+      name: import_zod18.z.string().min(1).describe("Required on create. Trimmed, non-empty."),
+      personality: import_zod18.z.string().describe("Required on create. Free text describing the agent's tone."),
+      instructions: import_zod18.z.string().describe("Required on create. The agent's system instructions."),
+      voice: import_zod18.z.object({
+        provider: import_zod18.z.string().describe("TTS provider, e.g. elevenlabs or openai."),
+        voiceId: import_zod18.z.string(),
+        model: import_zod18.z.string().optional()
+      }).describe("Required on create."),
+      llm: import_zod18.z.object({
+        provider: import_zod18.z.string().optional().describe("Must be one of the voice-agent LLM providers if sent."),
+        model: import_zod18.z.string().optional().describe("Must be one of the voice-agent model ids if sent.")
+      }).optional(),
+      avatar: import_zod18.z.object({
+        avatarId: import_zod18.z.string().describe("Must match a row in your company's avatar catalog (list_voice_avatars) or the shared system catalog.")
+      }).optional().describe("Set to attach a video avatar; avatarUrl/provider are derived server-side from the catalog row."),
+      conversationMode: import_zod18.z.enum(["voice_only", "video_avatar"]).optional(),
+      folderId: import_zod18.z.string().optional().describe("Folder to file this agent's conversations under."),
+      enableWebSearch: import_zod18.z.boolean().optional().describe("Let the agent search the web mid-call, separate from any attached knowledge base.")
+    };
+  }
+});
+
+// src/tools/voice-testing.ts
+var voice_testing_exports = {};
+__export(voice_testing_exports, {
+  register: () => register18
+});
+function register18(server, client, options = {}) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "get_voice_test_suite",
+    "Get a voice agent's test suite (its scenarios and run settings). Returns null in data.suite if none has been created yet \u2014 not a 404.",
+    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Get Voice Test Suite", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/suite`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_voice_test_suite",
+    "Create or update a voice agent's test suite. Requires the OWNER or ADMIN role. Upserts. Send the full scenarios array you want to keep \u2014 it replaces the stored one, it is not merged.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      scenarios: import_zod19.z.array(scenarioSchema).optional(),
+      maxCostPerRun: import_zod19.z.number().min(0).optional(),
+      autoRunOnKbUpdate: import_zod19.z.boolean().optional(),
+      autoRunOnInstructionSave: import_zod19.z.boolean().optional(),
+      scheduledCron: import_zod19.z.string().optional().nullable()
+    },
+    { title: "Update Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/voice/testing/${agentId}/suite`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "generate_voice_test_suite",
+    "Auto-generate a default test suite for a voice agent from its configuration (name, personality, instructions, welcome message, topics to avoid), via an LLM call. Requires the OWNER or ADMIN role. Overwrites the suite's existing scenarios.",
+    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Generate Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/suite/generate`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  if (!options.voiceTestRuns) return;
+  registerSpeakTool(
+    server,
+    "start_voice_test_run",
+    "Queue a test run of a voice agent's scripted test suite. Creates a run record in queued status and returns it; it does not place phone calls, start a conversation, or use credits. Requires the OWNER or ADMIN role. Returns 404 if the agent or its test suite does not exist, and 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run." + NOT_WIRED_NOTE,
+    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Queue Voice Agent Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/run`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_active_voice_test_run",
+    "Get a voice agent's currently active test run (queued, running, or paused). Returns null in data.run if none is active \u2014 not a 404.",
+    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Get Active Voice Test Run", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/run/active`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "pause_voice_test_run",
+    "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running." + NOT_WIRED_NOTE,
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
+    },
+    { title: "Pause Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, runId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/pause`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "resume_voice_test_run",
+    "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused. Only the run's status changes. The live execution engine is not wired up yet, so no scenarios execute.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
+    },
+    { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, runId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/resume`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "cancel_voice_test_run",
+    "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. Terminal \u2014 a cancelled run can never be resumed.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
+    },
+    { title: "Cancel Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, runId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/cancel`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_test_runs",
+    "List a voice agent's test runs, most recent first. Capped at 100 regardless of limit.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      limit: import_zod19.z.number().int().min(1).optional()
+    },
+    { title: "List Voice Test Runs", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/runs`, { params });
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_test_run",
+    "Get a test run's full detail, including scenarioResults and recommendations. Scoped to your company; agentId is not used to filter this lookup, only runId.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod19.z.string().min(1).describe("ID of the run (from list_voice_test_runs)")
+    },
+    { title: "Get Voice Test Run", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, runId }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/runs/${runId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "apply_voice_test_recommendation",
+    "Apply a test run recommendation's quick action to the agent (e.g. patch_instructions appends the suggested fix to the agent's instructions). Requires the OWNER or ADMIN role.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      runId: import_zod19.z.string().min(1).describe("ID of the run (from get_voice_test_run)"),
+      recId: import_zod19.z.string().min(1).describe("ID of the recommendation within that run's recommendations list")
+    },
+    { title: "Apply Voice Test Recommendation", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, runId, recId }) => {
+      try {
+        const result = await api.post(`/v1/voice/testing/${agentId}/runs/${runId}/recommendations/${recId}/apply`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_test_baseline",
+    "Get a voice agent's best-scoring completed test run, used to detect regressions on later runs. Returns null in data.baseline if no run has completed yet.",
+    { agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Get Voice Test Baseline", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/baseline`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_test_score_history",
+    "Get completed-run score points for a voice agent, most recent first, for charting. Capped at 100 regardless of limit. Only status=completed runs are included.",
+    {
+      agentId: import_zod19.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      limit: import_zod19.z.number().int().min(1).optional()
+    },
+    { title: "Get Voice Test Score History", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/voice/testing/${agentId}/score-history`, { params });
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+}
+var import_zod19, NOT_WIRED_NOTE, criterionSchema, scenarioSchema;
+var init_voice_testing = __esm({
+  "src/tools/voice-testing.ts"() {
+    "use strict";
+    import_zod19 = require("zod");
+    init_helpers();
+    init_client();
+    NOT_WIRED_NOTE = " The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.";
+    criterionSchema = import_zod19.z.object({
+      criterionId: import_zod19.z.string().optional(),
+      name: import_zod19.z.string(),
+      evaluationPrompt: import_zod19.z.string().describe("What the LLM judge is asked to evaluate."),
+      weight: import_zod19.z.number().min(1).max(10).optional(),
+      isCritical: import_zod19.z.boolean().optional(),
+      type: import_zod19.z.enum(["llm_judged", "response_length", "regex_match", "tool_called"]).optional().describe("Defaults to llm_judged. The other three route through a deterministic code check before the LLM judge runs."),
+      maxWords: import_zod19.z.number().int().optional().describe("For type=response_length: fails if any agent response exceeds this word count."),
+      regexPattern: import_zod19.z.string().optional().describe("For type=regex_match: JS regex source, no slashes."),
+      mustMatch: import_zod19.z.boolean().optional().describe("For type=regex_match: true (default) requires a match, false requires none."),
+      expectedToolName: import_zod19.z.string().optional().describe("For type=tool_called: the tool name to look for in the transcript's tool calls.")
+    });
+    scenarioSchema = import_zod19.z.object({
+      scenarioId: import_zod19.z.string().optional(),
+      name: import_zod19.z.string(),
+      description: import_zod19.z.string().optional(),
+      userMessages: import_zod19.z.array(import_zod19.z.string()).min(1).describe("The scripted turns sent to the agent."),
+      criteria: import_zod19.z.array(criterionSchema).optional().describe("Defaults to an empty array."),
+      category: import_zod19.z.enum(["greeting", "kb_retrieval", "off_topic", "edge_case", "custom"]).optional(),
+      isEnabled: import_zod19.z.boolean().optional()
+    });
+  }
+});
+
+// src/tools/voice-questions.ts
+var voice_questions_exports = {};
+__export(voice_questions_exports, {
+  register: () => register19
+});
+function register19(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_voice_questions",
+    "List the questions configured on a voice agent, in the order it asks them. Each is an agent-level instance of a question template with its own required/attempts/no-response settings and optional field mapping.",
+    {
+      agentId: import_zod20.z.string().min(1).describe("Required. Returns 404 if the agent does not exist or does not belong to your company."),
+      enabledOnly: import_zod20.z.boolean().optional()
+    },
+    { title: "List Voice Questions", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/voice/questions", { params });
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_voice_question",
+    "Fetch a single voice agent question by its fieldId, scoped to your company.",
+    { fieldId: import_zod20.z.string().min(1).describe("ID of the question (from list_voice_questions)") },
+    { title: "Get Voice Question", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ fieldId }) => {
+      try {
+        const result = await api.get(`/v1/voice/questions/${fieldId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_voice_question",
+    "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) \u2014 404 if either isn't found.",
+    {
+      agentId: import_zod20.z.string().min(1),
+      templateId: import_zod20.z.string().min(1).describe("From list_voice_question_templates."),
+      customConfig: customConfigSchema.optional().describe("Agent-level override of the template's defaultConfig; only the keys you send are overridden."),
+      required: import_zod20.z.boolean().optional(),
+      maxPromptAttempts: import_zod20.z.number().min(1).max(3).optional(),
+      noResponseBehavior: import_zod20.z.enum(["move_to_next_question", "end_conversation"]).optional(),
+      triggerCondition: import_zod20.z.string().optional(),
+      order: import_zod20.z.number().optional(),
+      enabled: import_zod20.z.boolean().optional(),
+      mappedFieldId: import_zod20.z.string().optional().nullable().describe("ID of an existing company Field to write this question's collected answer onto after each call.")
+    },
+    { title: "Create Voice Question", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/questions", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_voice_question",
+    "Partially update a voice agent question \u2014 only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped.",
+    {
+      fieldId: import_zod20.z.string().min(1).describe("ID of the question to update (from list_voice_questions)"),
+      customConfig: customConfigSchema.optional(),
+      required: import_zod20.z.boolean().optional(),
+      maxPromptAttempts: import_zod20.z.number().min(1).max(3).optional(),
+      noResponseBehavior: import_zod20.z.enum(["move_to_next_question", "end_conversation"]).optional(),
+      triggerCondition: import_zod20.z.string().optional(),
+      order: import_zod20.z.number().optional(),
+      enabled: import_zod20.z.boolean().optional(),
+      mappedFieldId: import_zod20.z.string().optional().nullable()
+    },
+    { title: "Update Voice Question", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ fieldId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/voice/questions/${fieldId}`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_voice_question",
+    "Permanently remove a question from a voice agent and decrement the underlying template's usageCount. Requires the OWNER or ADMIN role. The template itself is not deleted and can be attached to another agent later.",
+    { fieldId: import_zod20.z.string().min(1).describe("ID of the question to remove (from list_voice_questions)") },
+    { title: "Delete Voice Question", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ fieldId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/questions/${fieldId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "reorder_voice_questions",
+    "Set the order a voice agent asks its questions in. Requires the OWNER or ADMIN role. Bulk-writes the order value on each listed question (written directly, not resequenced), then returns the agent's full question list in its new order. Entries whose fieldId doesn't belong to agentId are silently skipped.",
+    {
+      agentId: import_zod20.z.string().min(1),
+      fieldOrders: import_zod20.z.array(import_zod20.z.object({ fieldId: import_zod20.z.string().min(1), order: import_zod20.z.number() })).min(1).describe("The new order for some or all of the agent's questions.")
+    },
+    { title: "Reorder Voice Questions", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async (body) => {
+      try {
+        const result = await api.put("/v1/voice/questions/reorder", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_question_templates",
+    "List the question templates visible to your company: Speak's shared system templates, plus your own company's templates. Use the returned templateId with create_voice_question.",
+    { category: import_zod20.z.enum(QUESTION_CATEGORIES).optional() },
+    { title: "List Voice Question Templates", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/voice/question-templates", { params });
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_voice_question_template",
+    `Create a company-scoped question template \u2014 the "custom question" a user names themselves rather than picking from Speak's shared library. Requires the OWNER or ADMIN role. The server stamps companyId and forces isSystemTemplate to false, so this template is only ever visible to your company.`,
+    {
+      name: import_zod20.z.string().min(1),
+      description: import_zod20.z.string().min(1),
+      category: import_zod20.z.enum(QUESTION_CATEGORIES),
+      fieldType: import_zod20.z.enum(["email", "phone", "date", "time", "datetime", "text", "number", "boolean", "choice", "url"]),
+      defaultConfig: import_zod20.z.object({
+        displayLabel: import_zod20.z.string(),
+        question: import_zod20.z.string().describe("The prompt text the agent speaks to ask this."),
+        confirmationText: import_zod20.z.string().optional(),
+        validationPrompt: import_zod20.z.string().optional(),
+        validation: validationSchema.optional()
+      }).describe("displayLabel and question are both required within this object."),
+      isPublic: import_zod20.z.boolean().optional(),
+      tags: import_zod20.z.array(import_zod20.z.string()).optional()
+    },
+    { title: "Create Voice Question Template", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/question-templates", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+}
+var import_zod20, QUESTION_CATEGORIES, validationSchema, customConfigSchema;
+var init_voice_questions = __esm({
+  "src/tools/voice-questions.ts"() {
+    "use strict";
+    import_zod20 = require("zod");
+    init_helpers();
+    init_client();
+    QUESTION_CATEGORIES = ["contact", "booking", "qualification", "custom"];
+    validationSchema = import_zod20.z.object({
+      pattern: import_zod20.z.string().optional(),
+      minLength: import_zod20.z.number().optional(),
+      maxLength: import_zod20.z.number().optional(),
+      min: import_zod20.z.number().optional(),
+      max: import_zod20.z.number().optional(),
+      allowedValues: import_zod20.z.array(import_zod20.z.string()).optional()
+    });
+    customConfigSchema = import_zod20.z.object({
+      displayLabel: import_zod20.z.string().optional(),
+      question: import_zod20.z.string().optional().describe("The prompt text the agent speaks to ask this question."),
+      confirmationText: import_zod20.z.string().optional(),
+      validationPrompt: import_zod20.z.string().optional(),
+      validation: validationSchema.optional()
+    });
+  }
+});
+
+// src/tools/voice-intelligence.ts
+var voice_intelligence_exports = {};
+__export(voice_intelligence_exports, {
+  register: () => register20
+});
+function register20(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "list_voice_kb_gaps",
+    `List a voice agent's pending knowledge-base gaps \u2014 questions callers asked that the agent answered with low confidence or an explicit "I don't know," surfaced automatically after calls. Up to the 50 most recent pending gaps, newest first.`,
+    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "List Voice KB Gaps", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/knowledge-base/${agentId}/gaps`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "analyze_voice_kb_gaps",
+    "Trigger knowledge-base gap analysis over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately \u2014 new gaps appear in list_voice_kb_gaps once analysis finishes, not synchronously with this response.",
+    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Analyze Voice KB Gaps", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.post(`/v1/voice/knowledge-base/${agentId}/gaps/analyze`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "add_voice_kb_gap",
+    "Write a knowledge-base gap's answer into the voice agent's attached knowledge base as a new document, and mark the gap added. Requires the OWNER or ADMIN role. Fails with 409 if the gap was already added or dismissed, or if the agent has no knowledge base collection to write into.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      gapId: import_zod21.z.string().min(1).describe("ID of the gap (from list_voice_kb_gaps)"),
+      answer: import_zod21.z.string().optional().describe("Overrides the gap's suggested answer."),
+      title: import_zod21.z.string().optional().describe("Overrides the gap's suggested title.")
+    },
+    { title: "Add Voice KB Gap", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, gapId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/knowledge-base/${agentId}/gaps/${gapId}/add`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "dismiss_voice_kb_gap",
+    "Mark a voice agent's knowledge-base gap dismissed without writing anything to the knowledge base. Requires the OWNER or ADMIN role.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      gapId: import_zod21.z.string().min(1).describe("ID of the gap (from list_voice_kb_gaps)")
+    },
+    { title: "Dismiss Voice KB Gap", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, gapId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/knowledge-base/${agentId}/gaps/${gapId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_faq_suggestions",
+    "List a voice agent's pending FAQ suggestions \u2014 questions multiple callers asked in similar form, clustered and drafted into a reusable question/answer pair. Up to the 20 largest clusters, largest first.",
+    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "List Voice FAQ Suggestions", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.get(`/v1/voice/knowledge-base/${agentId}/faqs`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "generate_voice_faq_suggestions",
+    "Trigger FAQ clustering over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately \u2014 new suggestions appear in list_voice_faq_suggestions once generation finishes, not synchronously with this response.",
+    { agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
+    { title: "Generate Voice FAQ Suggestions", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId }) => {
+      try {
+        const result = await api.post(`/v1/voice/knowledge-base/${agentId}/faqs/generate`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "add_voice_faq_suggestion",
+    "Write an FAQ suggestion's question/answer into the voice agent's attached knowledge base as a new document, and mark the suggestion added. Requires the OWNER or ADMIN role. Fails with 409 if the suggestion was already added or dismissed, or if the agent has no knowledge base collection to write into.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestionId: import_zod21.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)"),
+      question: import_zod21.z.string().optional().describe("Overrides the suggested question."),
+      answer: import_zod21.z.string().optional().describe("Overrides the suggested answer.")
+    },
+    { title: "Add Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, suggestionId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}/add`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_voice_faq_suggestion",
+    "Edit a still-pending FAQ suggestion's question and/or answer before adding it. Requires the OWNER or ADMIN role. Fails with 400 if the suggestion was already added or dismissed.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestionId: import_zod21.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)"),
+      question: import_zod21.z.string().optional(),
+      answer: import_zod21.z.string().optional()
+    },
+    { title: "Update Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, suggestionId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "dismiss_voice_faq_suggestion",
+    "Mark a voice agent's FAQ suggestion dismissed without writing anything to the knowledge base. Requires the OWNER or ADMIN role.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestionId: import_zod21.z.string().min(1).describe("ID of the suggestion (from list_voice_faq_suggestions)")
+    },
+    { title: "Dismiss Voice FAQ Suggestion", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ agentId, suggestionId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/knowledge-base/${agentId}/faqs/${suggestionId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "list_voice_agent_resources",
+    "List the knowledge documents/links a voice agent searches during calls \u2014 separate from KB gaps and FAQ suggestions, which are the self-improvement layer that surfaces what an agent is missing, not the content itself.",
+    {
+      agentId: import_zod21.z.string().optional(),
+      page: import_zod21.z.number().int().min(1).optional(),
+      limit: import_zod21.z.number().int().min(1).optional(),
+      search: import_zod21.z.string().optional().describe("Search by title/description.")
+    },
+    { title: "List Voice Agent Resources", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/voice/agent-resources", { params });
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "create_voice_agent_resource",
+    "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server does not fetch the URL; it embeds the title, description, and URL slug so the agent can retrieve the link during live calls.",
+    { agentId: import_zod21.z.string().min(1), ...resourceBodySchema },
+    { title: "Create Voice Agent Resource", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/agent-resources", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "bulk_create_voice_agent_resources",
+    "Add up to 100 documents/links to a voice agent's knowledge base in one call. Requires the OWNER or ADMIN role. The URLs are not fetched; each entry's title, description, and URL slug is embedded independently. Use this instead of calling create_voice_agent_resource in a loop.",
+    {
+      agentId: import_zod21.z.string().min(1),
+      resources: import_zod21.z.array(import_zod21.z.object(resourceBodySchema)).min(1).max(100).describe("1 to 100 entries, each shaped like create_voice_agent_resource's body minus agentId.")
+    },
+    { title: "Bulk Create Voice Agent Resources", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+    async (body) => {
+      try {
+        const result = await api.post("/v1/voice/agent-resources/bulk", body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "update_voice_agent_resource",
+    "Partially update a voice agent resource \u2014 send at least one field. Requires the OWNER or ADMIN role. agentId cannot be changed. Changing url, title, or description re-triggers embedding.",
+    {
+      resourceId: import_zod21.z.string().min(1).describe("ID of the resource to update (from list_voice_agent_resources)"),
+      url: import_zod21.z.string().url().optional(),
+      title: import_zod21.z.string().max(200).optional(),
+      description: import_zod21.z.string().max(1e3).optional(),
+      action: import_zod21.z.enum(["link", "presentation"]).optional(),
+      contentType: import_zod21.z.enum(["video", "pdf", "image"]).optional()
+    },
+    { title: "Update Voice Agent Resource", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
+    async ({ resourceId, ...body }) => {
+      try {
+        const result = await api.put(`/v1/voice/agent-resources/${resourceId}`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "delete_voice_agent_resource",
+    "Soft-delete a voice agent resource \u2014 it stops appearing in lists and the agent stops searching it, but the document is not physically removed. Requires the OWNER or ADMIN role.",
+    { resourceId: import_zod21.z.string().min(1).describe("ID of the resource to delete (from list_voice_agent_resources)") },
+    { title: "Delete Voice Agent Resource", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    async ({ resourceId }) => {
+      try {
+        const result = await api.delete(`/v1/voice/agent-resources/${resourceId}`);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "analyze_voice_instruction_gaps",
+    "Advisory only \u2014 compares a voice agent's current instructions against anchors/original intent/recent call summaries you supply and suggests up to 3 patches. Requires the OWNER or ADMIN role. Nothing is written; pass a suggestion's suggestedPatch to apply_voice_instruction_gap to actually apply it.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      anchors: import_zod21.z.array(import_zod21.z.string()).optional().describe("Specific requirements the instructions must cover. Defaults to empty."),
+      originalPrompt: import_zod21.z.string().optional().describe("The original generation prompt, for context."),
+      conversationSummaries: import_zod21.z.array(import_zod21.z.string()).optional().describe("Recent call summaries, to ground suggestions in what actually came up. Defaults to empty.")
+    },
+    { title: "Analyze Voice Instruction Gaps", readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/agents/${agentId}/generation/gaps/analyze`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "apply_voice_instruction_gap",
+    "Insert a suggested instruction patch into a voice agent's instructions and persist the result. Requires the OWNER or ADMIN role. suggestedPatch is typically taken directly from analyze_voice_instruction_gaps.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      suggestedPatch: import_zod21.z.string().min(1),
+      insertAfterSection: import_zod21.z.string().optional().nullable().describe("Insert after this named section heading; omit or null to append at the end.")
+    },
+    { title: "Apply Voice Instruction Gap", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    async ({ agentId, ...body }) => {
+      try {
+        const result = await api.post(`/v1/voice/agents/${agentId}/generation/gaps/apply`, body);
+        return { content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }], isError: true };
+      }
+    }
+  );
+}
+var import_zod21, resourceBodySchema;
+var init_voice_intelligence = __esm({
+  "src/tools/voice-intelligence.ts"() {
+    "use strict";
+    import_zod21 = require("zod");
+    init_helpers();
+    init_client();
+    resourceBodySchema = {
+      url: import_zod21.z.string().url(),
+      title: import_zod21.z.string().max(200),
+      description: import_zod21.z.string().max(1e3),
+      action: import_zod21.z.enum(["link", "presentation"]),
+      contentType: import_zod21.z.enum(["video", "pdf", "image"]).optional()
+    };
+  }
+});
+
 // src/tools/index.ts
 var tools_exports = {};
 __export(tools_exports, {
   registerAllTools: () => registerAllTools
 });
-function registerAllTools(server, client) {
+function registerAllTools(server, client, options = {}) {
   for (const mod of modules) {
-    mod.register(server, client);
+    mod.register(server, client, options);
   }
 }
 var modules;
@@ -7564,6 +8740,10 @@ var init_tools = __esm({
     init_workflows();
     init_users();
     init_dashboards();
+    init_voice();
+    init_voice_testing();
+    init_voice_questions();
+    init_voice_intelligence();
     modules = [
       media_exports,
       text_exports,
@@ -7580,7 +8760,11 @@ var init_tools = __esm({
       clips_exports,
       workflows_exports,
       users_exports,
-      dashboards_exports
+      dashboards_exports,
+      voice_exports,
+      voice_testing_exports,
+      voice_questions_exports,
+      voice_intelligence_exports
     ];
   }
 });
@@ -7697,8 +8881,8 @@ function registerPrompts(server) {
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
     {
-      url: import_zod18.z.string().describe(`URL of the meeting recording \u2014 a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
-      name: import_zod18.z.string().optional().describe("Meeting name (optional)")
+      url: import_zod22.z.string().describe(`URL of the meeting recording \u2014 a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
+      name: import_zod22.z.string().optional().describe("Meeting name (optional)")
     },
     async ({ url, name }) => ({
       messages: [
@@ -7733,8 +8917,8 @@ function registerPrompts(server) {
     "research-across-media",
     "Search for themes, patterns, or topics across multiple recordings or your entire media library.",
     {
-      topic: import_zod18.z.string().describe("The topic, theme, or question to research"),
-      folder: import_zod18.z.string().optional().describe("Folder ID to scope the research (optional)")
+      topic: import_zod22.z.string().describe("The topic, theme, or question to research"),
+      folder: import_zod22.z.string().optional().describe("Folder ID to scope the research (optional)")
     },
     async ({ topic, folder }) => ({
       messages: [
@@ -7767,8 +8951,8 @@ function registerPrompts(server) {
     "meeting-brief",
     "Prepare a brief from recent meetings \u2014 pull transcripts, extract decisions, and summarize open items.",
     {
-      days: import_zod18.z.string().optional().describe("Number of days to look back (default: 7)"),
-      folder: import_zod18.z.string().optional().describe("Folder ID to scope to (optional)")
+      days: import_zod22.z.string().optional().describe("Number of days to look back (default: 7)"),
+      folder: import_zod22.z.string().optional().describe("Folder ID to scope to (optional)")
     },
     async ({ days, folder }) => {
       const lookback = parseInt(days ?? "7");
@@ -7805,11 +8989,11 @@ function registerPrompts(server) {
     }
   );
 }
-var import_zod18;
+var import_zod22;
 var init_prompts = __esm({
   "src/prompts.ts"() {
     "use strict";
-    import_zod18 = require("zod");
+    import_zod22 = require("zod");
     init_media_utils();
   }
 });
@@ -7909,7 +9093,7 @@ var init_tool_names = __esm({
       "get_chat_history",
       "get_chat_messages",
       "update_chat_title",
-      "delete_chat_message",
+      "delete_chat_conversation",
       "submit_chat_feedback",
       "retry_ai_chat",
       "export_chat_answer",
@@ -7958,7 +9142,61 @@ var init_tool_names = __esm({
       "delete_dashboard",
       "duplicate_dashboard",
       "share_dashboard",
-      "get_dashboard_speakers_insight"
+      "get_dashboard_speakers_insight",
+      // voice: agents + conversations
+      "list_voice_agents",
+      "get_voice_agent",
+      "create_voice_agent",
+      "update_voice_agent",
+      "list_voice_avatars",
+      "list_voices",
+      "list_voice_conversations",
+      "get_voice_conversation",
+      // voice: testing
+      "get_voice_test_suite",
+      "update_voice_test_suite",
+      "generate_voice_test_suite",
+      "start_voice_test_run",
+      "get_active_voice_test_run",
+      "pause_voice_test_run",
+      "resume_voice_test_run",
+      "cancel_voice_test_run",
+      "list_voice_test_runs",
+      "get_voice_test_run",
+      "apply_voice_test_recommendation",
+      "get_voice_test_baseline",
+      "get_voice_test_score_history",
+      // voice: agents round-out + discovery
+      "delete_voice_agent",
+      "create_voice_agent_from_prompt",
+      "generate_voice_agent_config",
+      "get_voice_agent_setup_guide",
+      // voice: questions
+      "list_voice_questions",
+      "get_voice_question",
+      "create_voice_question",
+      "update_voice_question",
+      "delete_voice_question",
+      "reorder_voice_questions",
+      "list_voice_question_templates",
+      "create_voice_question_template",
+      // voice: intelligence (kb gaps, faq suggestions, agent resources, instruction gaps)
+      "list_voice_kb_gaps",
+      "analyze_voice_kb_gaps",
+      "add_voice_kb_gap",
+      "dismiss_voice_kb_gap",
+      "list_voice_faq_suggestions",
+      "generate_voice_faq_suggestions",
+      "add_voice_faq_suggestion",
+      "update_voice_faq_suggestion",
+      "dismiss_voice_faq_suggestion",
+      "list_voice_agent_resources",
+      "create_voice_agent_resource",
+      "bulk_create_voice_agent_resources",
+      "update_voice_agent_resource",
+      "delete_voice_agent_resource",
+      "analyze_voice_instruction_gaps",
+      "apply_voice_instruction_gap"
     ];
   }
 });
@@ -9015,7 +10253,7 @@ function createCli() {
       }
     };
     const { registerAllTools: registerAllTools2 } = await Promise.resolve().then(() => (init_tools(), tools_exports));
-    registerAllTools2(stub, client);
+    registerAllTools2(stub, client, { localFileAccess: true });
     return handlers;
   }
   program.command("tools").description("List every MCP tool callable via `call`").option("--json", "Output raw JSON").action(async (opts) => {
@@ -9085,6 +10323,7 @@ var init_cli = __esm({
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
+  SPEAK_MCP_TOOL_CATEGORIES: () => SPEAK_MCP_TOOL_CATEGORIES,
   SPEAK_MCP_TOOL_NAMES: () => SPEAK_MCP_TOOL_NAMES,
   createSpeakClient: () => createSpeakClient,
   formatAxiosError: () => formatAxiosError,
@@ -9098,6 +10337,282 @@ init_resources();
 init_prompts();
 init_client();
 init_tool_names();
+
+// src/tool-categories.ts
+var SPEAK_MCP_TOOL_CATEGORIES = [
+  {
+    id: "media",
+    name: "Media",
+    tools: [
+      "update_transcription",
+      "get_signed_upload_url",
+      "upload_media",
+      "upload_local_file",
+      "upload_and_analyze",
+      "list_media",
+      "get_media_insights",
+      "get_transcript",
+      "get_captions",
+      "update_transcript_speakers",
+      "bulk_update_transcript_speakers",
+      "get_media_status",
+      "update_media_metadata",
+      "delete_media",
+      "toggle_media_favorite",
+      "reanalyze_media",
+      "bulk_move_media",
+      "upload_and_analyze_batch"
+    ]
+  },
+  {
+    id: "magic-prompt",
+    name: "AI Chat",
+    tools: [
+      "ask_ai_chat",
+      "retry_ai_chat",
+      "get_chat_history",
+      "get_chat_messages",
+      "delete_chat_conversation",
+      "list_prompts",
+      "get_favorite_prompts",
+      "toggle_prompt_favorite",
+      "update_chat_title",
+      "submit_chat_feedback",
+      "get_chat_statistics",
+      "export_chat_answer",
+      "get_analysis_quote"
+    ]
+  },
+  {
+    id: "search-analytics",
+    name: "Search & analytics",
+    tools: [
+      "search_media",
+      "get_media_statistics",
+      "list_supported_languages"
+    ]
+  },
+  {
+    id: "folders-views",
+    name: "Folders & views",
+    tools: [
+      "list_folders",
+      "get_folder_info",
+      "create_folder",
+      "clone_folder",
+      "update_folder",
+      "delete_folder",
+      "get_all_folder_views",
+      "get_folder_views",
+      "create_folder_view",
+      "update_folder_view",
+      "clone_folder_view"
+    ]
+  },
+  {
+    id: "recorders-surveys",
+    name: "Recorders & surveys",
+    tools: [
+      "create_recorder",
+      "list_recorders",
+      "get_recorder_info",
+      "clone_recorder",
+      "get_recorder_recordings",
+      "generate_recorder_url",
+      "update_recorder_settings",
+      "update_recorder_questions",
+      "check_recorder_status",
+      "delete_recorder"
+    ]
+  },
+  {
+    id: "clips",
+    name: "Clips",
+    tools: [
+      "create_clip",
+      "get_clips",
+      "update_clip",
+      "delete_clip"
+    ]
+  },
+  {
+    id: "exports",
+    name: "Exports",
+    tools: [
+      "export_media",
+      "export_multiple_media"
+    ]
+  },
+  {
+    id: "meeting-bot",
+    name: "Meeting assistant",
+    tools: [
+      "list_meeting_events",
+      "schedule_meeting_event",
+      "remove_assistant_from_meeting",
+      "delete_scheduled_assistant",
+      "get_live_meeting_transcript"
+    ]
+  },
+  {
+    id: "automations",
+    name: "Automations",
+    tools: [
+      "list_automations",
+      "get_automation",
+      "create_automation",
+      "update_automation",
+      "toggle_automation_status",
+      "list_automation_names",
+      "get_automation_runs",
+      "bulk_update_automation_status",
+      "bulk_assign_automation_folders",
+      "run_automations",
+      "delete_automation",
+      "list_automation_apps",
+      "list_automation_triggers",
+      "list_automation_actions",
+      "build_automation",
+      "get_automation_run",
+      "get_automation_run_stats",
+      "test_automation",
+      "validate_automation_graph",
+      "describe_automation_graph"
+    ]
+  },
+  {
+    id: "webhooks",
+    name: "Webhooks",
+    tools: [
+      "create_webhook",
+      "list_webhooks",
+      "update_webhook",
+      "delete_webhook",
+      "provision_inbound_webhook",
+      "get_inbound_webhook",
+      "get_webhook_attempts"
+    ]
+  },
+  {
+    id: "text-notes",
+    name: "Text notes",
+    tools: [
+      "create_text_note",
+      "get_text_insight",
+      "reanalyze_text",
+      "update_text_note"
+    ]
+  },
+  {
+    id: "custom-fields",
+    name: "Fields",
+    tools: [
+      "list_fields",
+      "create_field",
+      "update_field",
+      "update_multiple_fields"
+    ]
+  },
+  {
+    id: "embed-other",
+    name: "Embed players",
+    tools: [
+      "create_embed",
+      "update_embed",
+      "check_embed",
+      "get_embed_iframe_url"
+    ]
+  },
+  {
+    id: "users-team",
+    name: "Users & teams",
+    tools: [
+      "list_users",
+      "list_user_groups",
+      "create_user_group",
+      "update_user_group",
+      "delete_user_group"
+    ]
+  },
+  {
+    id: "dashboards",
+    name: "Dashboards",
+    tools: [
+      "list_dashboard_widgets",
+      "list_dashboards",
+      "get_dashboard",
+      "create_dashboard",
+      "update_dashboard",
+      "delete_dashboard",
+      "duplicate_dashboard",
+      "share_dashboard",
+      "get_dashboard_speakers_insight"
+    ]
+  },
+  {
+    id: "voice-agents",
+    name: "Voice agents",
+    tools: [
+      "list_voice_agents",
+      "get_voice_agent",
+      "create_voice_agent",
+      "update_voice_agent",
+      "delete_voice_agent",
+      "create_voice_agent_from_prompt",
+      "generate_voice_agent_config",
+      "get_voice_agent_setup_guide",
+      "list_voice_avatars",
+      "list_voices",
+      "list_voice_conversations",
+      "get_voice_conversation",
+      "list_voice_questions",
+      "get_voice_question",
+      "create_voice_question",
+      "update_voice_question",
+      "delete_voice_question",
+      "reorder_voice_questions",
+      "list_voice_question_templates",
+      "create_voice_question_template",
+      "get_voice_test_suite",
+      "update_voice_test_suite",
+      "generate_voice_test_suite",
+      "start_voice_test_run",
+      "get_active_voice_test_run",
+      "pause_voice_test_run",
+      "resume_voice_test_run",
+      "cancel_voice_test_run",
+      "list_voice_test_runs",
+      "get_voice_test_run",
+      "apply_voice_test_recommendation",
+      "get_voice_test_baseline",
+      "get_voice_test_score_history"
+    ]
+  },
+  {
+    id: "voice-agent-intelligence",
+    name: "Voice agent insights",
+    tools: [
+      "list_voice_kb_gaps",
+      "analyze_voice_kb_gaps",
+      "add_voice_kb_gap",
+      "dismiss_voice_kb_gap",
+      "list_voice_faq_suggestions",
+      "generate_voice_faq_suggestions",
+      "add_voice_faq_suggestion",
+      "update_voice_faq_suggestion",
+      "dismiss_voice_faq_suggestion",
+      "list_voice_agent_resources",
+      "create_voice_agent_resource",
+      "bulk_create_voice_agent_resources",
+      "update_voice_agent_resource",
+      "delete_voice_agent_resource",
+      "analyze_voice_instruction_gaps",
+      "apply_voice_instruction_gap"
+    ]
+  }
+];
+
+// src/index.ts
 var args = process.argv.slice(2);
 var cliCommands = [
   "config",
@@ -9161,7 +10676,7 @@ if (isCliMode) {
             name: "speak-ai",
             version: "1.0.0"
           });
-          registerAllTools2(server);
+          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true });
           registerResources2(server);
           registerPrompts2(server);
           const transport = new StdioServerTransport();
@@ -9177,6 +10692,7 @@ if (isCliMode) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  SPEAK_MCP_TOOL_CATEGORIES,
   SPEAK_MCP_TOOL_NAMES,
   createSpeakClient,
   formatAxiosError,

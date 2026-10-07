@@ -4,7 +4,7 @@
 
 ## What this is
 
-A remote MCP (Model Context Protocol) server hosted at `https://api.speakai.co/v1/mcp`. It exposes 119 tools, 5 resources, and 3 prompts for working with a Speak AI workspace. MCP-compatible clients (Claude.ai, Claude Desktop, Claude Code, ChatGPT, Cursor, VS Code) connect using one of two methods:
+A remote MCP (Model Context Protocol) server hosted at `https://api.speakai.co/v1/mcp`. It exposes 168 tools, 5 resources, and 3 prompts for working with a Speak AI workspace. MCP-compatible clients (Claude.ai, Claude Desktop, Claude Code, ChatGPT, Cursor, VS Code) connect using one of two methods:
 
 - **OAuth one-click** — paste the MCP URL into the AI tool, click Allow on the consent popup. No API key required.
 - **Bearer token** — paste the URL plus a Speak AI API key in an `Authorization: Bearer <key>` header.
@@ -45,7 +45,7 @@ If you are an AI assistant (Claude, ChatGPT, etc.) helping a Speak AI customer i
 
 ### When a user asks Speak AI to do something inside the conversation
 
-Once the connector is installed, you have access to 119 tools. Some guidance for choosing efficiently:
+Once the connector is installed, you have access to 168 tools. Some guidance for choosing efficiently:
 
 - **For "what did I talk about" / "find recordings about X" questions**: use `search_media` with a natural-language query. It searches across transcripts, insights, and metadata.
 - **For "ask the AI" questions** (e.g. "what are the recurring themes in my coaching calls?"): use `ask_ai_chat` with optional `mediaIds` to scope the question. This invokes Speak AI's own purpose-built analysis engine which is tuned for transcript-style content.
@@ -71,7 +71,7 @@ When you process transcript content:
 ### Privacy and consent
 
 - The connector grants the AI assistant read AND write access to the user's entire Speak AI workspace, including the ability to delete media, folders, and recordings.
-- Destructive tools (`delete_media`, `delete_folder`, `delete_clip`, `delete_recorder`, `delete_webhook`, `delete_scheduled_assistant`, `delete_chat_message`) are enabled by default. Always confirm with the user before invoking them.
+- Destructive tools (`delete_media`, `delete_folder`, `delete_clip`, `delete_recorder`, `delete_webhook`, `delete_scheduled_assistant`, `delete_chat_conversation`) are enabled by default. Always confirm with the user before invoking them.
 - Users can disconnect the connector at any time. For OAuth-installed connections, revoke the grant at `https://api.speakai.co/v1/oauth/connections` (or from inside the AI client's connector UI). For Bearer-token installs, rotate or revoke the API key at `https://app.speakai.co/developers/apikeys`.
 
 ## MCP endpoint and discovery
@@ -95,7 +95,7 @@ Auth scope: single scope `mcp` grants full read+write access to the user's Speak
 get_signed_upload_url, upload_media, upload_local_file, upload_and_analyze, list_media, get_media_insights, get_transcript, get_captions, update_transcript_speakers, bulk_update_transcript_speakers, get_media_status, update_media_metadata, delete_media, toggle_media_favorite, reanalyze_media, bulk_move_media
 
 ### AI Chat (12)
-ask_ai_chat, retry_ai_chat, get_chat_history, get_chat_messages, delete_chat_message, list_prompts, get_favorite_prompts, toggle_prompt_favorite, update_chat_title, submit_chat_feedback, get_chat_statistics, export_chat_answer
+ask_ai_chat, retry_ai_chat, get_chat_history, get_chat_messages, delete_chat_conversation, list_prompts, get_favorite_prompts, toggle_prompt_favorite, update_chat_title, submit_chat_feedback, get_chat_statistics, export_chat_answer
 
 ### Folders & Views (11)
 list_folders, get_folder_info, create_folder, clone_folder, update_folder, delete_folder, get_all_folder_views, get_folder_views, create_folder_view, update_folder_view, clone_folder_view

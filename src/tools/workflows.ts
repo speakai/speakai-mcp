@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
+import type { RegisterOptions } from "./index.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType } from "@speakai/shared";
 import * as fs from "fs";
@@ -206,7 +207,7 @@ const buildAutomationSchema: z.ZodRawShape = {
     ),
 };
 
-export function register(server: McpServer, client?: AxiosInstance): void {
+export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
 
   registerSpeakTool(server,
@@ -215,14 +216,18 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), " +
       "payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, " +
       "translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and " +
-      "mappable payload tokens. Prefer this over create_automation unless you need raw control.",
+      "mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces " +
+      "that whole automation. The automation is active by default and then runs on its own every time its trigger " +
+      "fires: upload steps fetch a file from any URL and bill its duration, ai_chat steps use AI credits, slack " +
+      "notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An " +
+      "inbound_webhook trigger creates a public URL that accepts payloads.",
     buildAutomationSchema,
     {
       title: "Build Automation",
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (args: unknown) => {
       const { name, trigger, steps, automationId, description, isActive, orTriggers } =
@@ -631,7 +636,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "upload_and_analyze",
-    `Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.`,
+    `Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.`,
     {
       // A plain literal, not a template: the docs generator drops a tool's whole parameter
       // table when a description interpolates a value it cannot resolve statically.
@@ -645,7 +650,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Upload and Analyze Media",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -704,13 +709,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "upload_and_analyze_batch",
-    `Upload several URLs in one call — the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to ${MAX_BATCH_URLS} URLs and starts at most ${MAX_BATCH_CONCURRENCY} at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.`,
+    `Import up to ${MAX_BATCH_URLS} audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most ${MAX_BATCH_CONCURRENCY} uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.`,
     {
       urls: z
         .array(z.string().min(1))
         .min(1)
         .max(MAX_BATCH_URLS)
-        .describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Duplicates are uploaded once."),
+        .describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Exact duplicate URLs are sent once."),
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
@@ -729,7 +734,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Upload and Analyze Several URLs",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -808,12 +813,14 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  registerSpeakTool(server,
+  // Reads filePath from local disk, so a hosted server must never expose it.
+  if (options.localFileAccess) registerSpeakTool(server,
     "upload_local_file",
     [
       "Upload a local file to Speak AI for transcription and analysis.",
       "Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry.",
       "Works with any audio or video file on the local filesystem.",
+      "Each upload creates a media item and bills its duration against the workspace's minutes or credits.",
       "After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights.",
     ].join(" "),
     {
@@ -827,7 +834,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Upload Local File",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },

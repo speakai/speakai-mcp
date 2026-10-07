@@ -567,12 +567,13 @@ describe("Text tools", () => {
     register(server, mockClient);
   });
 
-  it("create_text_note calls POST /v1/text/create", async () => {
+  it("create_text_note calls POST /v1/text/create and mirrors text into rawText", async () => {
     const cb = getToolCallback(server, "create_text_note");
     await cb({ name: "My Note", text: "Hello world", folderId: "f1" });
     expect(mockPost).toHaveBeenCalledWith("/v1/text/create", {
       name: "My Note",
       text: "Hello world",
+      rawText: "Hello world",
       folderId: "f1",
     });
   });
@@ -583,10 +584,12 @@ describe("Text tools", () => {
     expect(mockGet).toHaveBeenCalledWith("/v1/text/insight/t1");
   });
 
-  it("reanalyze_text calls GET /v1/media/reanalyze/:id", async () => {
+  it("reanalyze_text calls GET /v1/media/reanalyze/:id with every analysis flag", async () => {
     const cb = getToolCallback(server, "reanalyze_text");
     await cb({ mediaId: "t1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/media/reanalyze/t1");
+    expect(mockGet).toHaveBeenCalledWith("/v1/media/reanalyze/t1", {
+      params: { isInsights: true, isSentiment: true, isFillerWords: true, isEmbeddings: true },
+    });
   });
 
   it("update_text_note calls PUT /v1/text/update/:id and mirrors text into rawText", async () => {
@@ -759,7 +762,7 @@ describe("Workflows tools (upload_and_analyze)", () => {
     mockPost.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/workflows.js");
-    register(server, mockClient);
+    register(server, mockClient, { localFileAccess: true, voiceTestRuns: true });
   });
 
   it("upload_and_analyze returns media_id immediately without polling", async () => {
@@ -1076,8 +1079,8 @@ describe("Prompt tools — remaining untested endpoints", () => {
     });
   });
 
-  it("delete_chat_message calls DELETE /v1/prompt/message/:id", async () => {
-    const cb = getToolCallback(server, "delete_chat_message");
+  it("delete_chat_conversation calls DELETE /v1/prompt/message/:id", async () => {
+    const cb = getToolCallback(server, "delete_chat_conversation");
     await cb({ promptId: "p1" });
     expect(mockDelete).toHaveBeenCalledWith("/v1/prompt/message/p1");
   });

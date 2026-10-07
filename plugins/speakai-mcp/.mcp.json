@@ -1,15 +1,8 @@
 {
   "mcpServers": {
     "speakai": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@speakai/mcp-server@1.25.0"
-      ],
-      "env": {
-        "SPEAK_API_KEY": "${user_config.speak_api_key}",
-        "SPEAK_BASE_URL": "${user_config.speak_base_url}"
-      }
+      "type": "http",
+      "url": "https://api.speakai.co/v1/mcp"
     }
   }
 }

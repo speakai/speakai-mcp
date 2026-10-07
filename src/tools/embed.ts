@@ -8,7 +8,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   registerSpeakTool(server, 
     "create_embed",
-    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed.",
+    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password.",
     {
       mediaId: z
         .string()
@@ -22,9 +22,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Embed Widget",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -43,11 +43,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_embed",
-    "Update an existing embed widget — appearance/feature toggles via `meta`, plus scope and privacy. " +
+    "Update an existing embed widget: appearance/feature toggles via `meta`, and privacy. " +
+      "Passing `mediaId` with `privacyMode` sets that privacy mode on the media file itself; a public mode makes " +
+      "the media viewable by anyone with the embed link. " +
       "Setting `privacyMode` clears any existing password unless a new one is supplied in the same call.",
     {
       embedId: z.string().min(1).describe("Unique identifier of the embed"),
-      mediaId: z.string().optional().describe("Media file the embed points to"),
+      mediaId: z.string().optional().describe("Media file whose privacy mode is set to privacyMode. Does not change which media the embed points to."),
       privacyMode: z
         .string()
         .optional()
@@ -70,7 +72,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ embedId, ...body }) => {
       try {

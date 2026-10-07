@@ -1,11 +1,11 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 119,
+  "totalTools": 168,
   "categories": [
     {
       "id": "media",
-      "name": "Media library",
+      "name": "Media",
       "iconKey": "media",
       "shortDescription": "Upload audio or video, fetch transcripts, get AI insights, organize, favorite, export.",
       "tools": [
@@ -30,27 +30,27 @@
         {
           "name": "upload_media",
           "title": "Upload Media from URL",
-          "description": "Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.",
+          "description": "Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and sends the media.created event to the workspace's webhooks and Slack channels if any are configured. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
         {
           "name": "upload_local_file",
           "title": "Upload Local File",
-          "description": "Upload a local file to Speak AI for transcription and analysis. Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry. Works with any audio or video file on the local filesystem. After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights.",
+          "description": "Upload a local file to Speak AI for transcription and analysis. Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry. Works with any audio or video file on the local filesystem. Each upload creates a media item and bills its duration against the workspace's minutes or credits. After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
         {
           "name": "upload_and_analyze",
           "title": "Upload and Analyze Media",
-          "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
+          "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -120,54 +120,54 @@
         {
           "name": "update_media_metadata",
           "title": "Update Media Metadata",
-          "description": "Update metadata fields (name, description, tags, status) for an existing media file.",
+          "description": "Update metadata fields (name, description, tags, status) for an existing media file. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "delete_media",
           "title": "Delete Media File",
-          "description": "Permanently delete a media file and all associated transcripts and insights.",
+          "description": "Permanently delete a media file and all associated transcripts and insights. Sends the media.deleted event to the workspace's webhooks and Slack channels if any are configured.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "toggle_media_favorite",
           "title": "Toggle Media Favorite",
           "description": "Mark or unmark media files as favorites for quick access.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
         {
           "name": "reanalyze_media",
           "title": "Re-analyze Media",
-          "description": "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
+          "description": "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts. Sends the media.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "bulk_move_media",
           "title": "Bulk Move Media Files",
-          "description": "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
+          "description": "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "upload_and_analyze_batch",
           "title": "Upload and Analyze Several URLs",
-          "description": "Upload several URLs in one call — the batch form of upload_and_analyze, for when someone hands you a list of links. Takes up to 25 URLs and starts at most 5 at a time so a long list does not hammer the API. Each URL may be a direct/public file URL or a shareable social/video page link. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. One URL failing does not stop the rest: every URL is reported individually as uploaded or failed, with its reason. Returns as soon as the uploads are accepted, so poll get_media_status per mediaId, or list_media on the folder, to follow processing. Prefer this over calling upload_and_analyze in a loop.",
+          "description": "Import up to 25 audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most 5 uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         }
@@ -175,27 +175,27 @@
     },
     {
       "id": "magic-prompt",
-      "name": "Ask AI Chat",
+      "name": "AI Chat",
       "iconKey": "magic-prompt",
       "shortDescription": "Run AI prompts across one file, a folder, or your whole workspace. Save favorites.",
       "tools": [
         {
           "name": "ask_ai_chat",
           "title": "Ask AI Chat",
-          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone. That is a premium feature and costs credits per hour of media — call get_analysis_quote first to check eligibility and price.",
+          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone. That is a premium feature and costs credits per hour of media — call get_analysis_quote first to check eligibility and price. Each question is charged to the account's chat usage. The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "retry_ai_chat",
           "title": "Retry AI Chat",
-          "description": "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer.",
+          "description": "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_chat_history",
@@ -216,9 +216,9 @@
           "openWorldHint": false
         },
         {
-          "name": "delete_chat_message",
-          "title": "Delete Chat Message",
-          "description": "Delete a specific chat message from conversation history.",
+          "name": "delete_chat_conversation",
+          "title": "Delete Chat Conversation",
+          "description": "Delete an entire chat conversation from conversation history, so it and its messages no longer appear. No tool can restore it.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -226,8 +226,8 @@
         },
         {
           "name": "list_prompts",
-          "title": "List Prompt Templates",
-          "description": "List all available AI Chat templates. Use template IDs with ask_ai_chat's assistantTemplateId parameter when using assistantType 'custom'.",
+          "title": "List Recent Chat Messages",
+          "description": "List recent AI Chat messages across the workspace, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns messages from the 25 most recently updated conversations in the workspace, filtered to those the caller can access, so a member may see fewer.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -247,7 +247,7 @@
           "title": "Toggle Prompt Favorite",
           "description": "Mark or unmark a chat message as a favorite for easy retrieval later.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -256,18 +256,18 @@
           "title": "Rename Chat",
           "description": "Update the title of a chat conversation for easier identification in history.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
         {
           "name": "submit_chat_feedback",
           "title": "Submit Chat Feedback",
-          "description": "Submit feedback on a chat response (thumbs up/down). Helps improve AI answer quality.",
+          "description": "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are posted to Speak AI's internal Slack channel for the Speak AI team to review.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_chat_statistics",
@@ -369,7 +369,7 @@
         {
           "name": "clone_folder",
           "title": "Clone Folder",
-          "description": "Duplicate an existing folder and all of its contents.",
+          "description": "Create a new folder copied from an existing folder's name and description. Media in the source folder is not copied. Set isSaveDefaultView to also copy the source folder's default view.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -387,7 +387,7 @@
         {
           "name": "delete_folder",
           "title": "Delete Folder",
-          "description": "Permanently delete a folder. Media within the folder will be moved, not deleted.",
+          "description": "Permanently delete a folder. The folder must be empty: the request is refused if it still holds any media or if it is the workspace's last folder, so move or delete its media first.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -416,7 +416,7 @@
           "title": "Create Folder View",
           "description": "Create a new saved view for a folder with a custom set of display columns.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -434,7 +434,7 @@
           "title": "Clone Folder View",
           "description": "Duplicate an existing folder view into a target folder.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         }
@@ -449,11 +449,11 @@
         {
           "name": "create_recorder",
           "title": "Create Recorder",
-          "description": "Create a new recorder or survey for collecting audio/video submissions.",
+          "description": "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "list_recorders",
@@ -476,11 +476,11 @@
         {
           "name": "clone_recorder",
           "title": "Clone Recorder",
-          "description": "Duplicate an existing recorder including all its settings and questions.",
+          "description": "Duplicate an existing recorder including all its settings and questions. The copy gets its own public link, accepts submissions right away and sends the same submission emails, webhooks and automations as any recorder. Fires the workspace's embed_recorder.created webhook if one is registered.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_recorder_recordings",
@@ -503,20 +503,20 @@
         {
           "name": "update_recorder_settings",
           "title": "Update Recorder Settings",
-          "description": "Update configuration settings for a recorder (branding, capture options, etc.). `name` must always be supplied.",
+          "description": "Update configuration settings for a recorder (branding, capture options, etc.). Only the supplied settings change, and they apply to the recorder's live public page right away. `name` must always be supplied.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_recorder_questions",
           "title": "Update Recorder Questions",
-          "description": "Update the survey questions and respondent-info settings for a recorder.",
+          "description": "Update the survey questions and respondent-info settings for a recorder. The `questions` array replaces the recorder's existing questions, and changes apply to the recorder's live public page right away.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "check_recorder_status",
@@ -530,11 +530,11 @@
         {
           "name": "delete_recorder",
           "title": "Delete Recorder",
-          "description": "Permanently delete a recorder/survey. Existing recordings are preserved.",
+          "description": "Permanently delete a recorder/survey. Its public link stops accepting submissions. Existing recordings are preserved. Fires the workspace's embed_recorder.deleted webhook if one is registered.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         }
       ]
     },
@@ -547,11 +547,11 @@
         {
           "name": "create_clip",
           "title": "Create Highlight Clip",
-          "description": "Create a highlight clip from one or more media files by specifying time ranges. Clips are processed asynchronously (states: queued, processing, completed, failed) — use get_clips to check status. Maximum total clip duration is 30 minutes. Use multiple timeRanges to stitch segments from different media files together.",
+          "description": "Create a highlight clip from one or more media files by specifying time ranges. Clips are processed asynchronously (states: queued, processing, completed, failed) — use get_clips to check status. Maximum total clip duration is 30 minutes. Use multiple timeRanges to stitch segments from different media files together. When the clip finishes processing it fires your clip_created automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_clips",
@@ -567,7 +567,7 @@
           "title": "Update Clip",
           "description": "Update a clip's title, description, or tags.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": false
         },
@@ -591,8 +591,8 @@
         {
           "name": "export_media",
           "title": "Export Media Transcript",
-          "description": "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv).",
-          "readOnlyHint": false,
+          "description": "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv). Generates the file and returns it without saving or sharing anything.",
+          "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": false
@@ -610,7 +610,7 @@
     },
     {
       "id": "meeting-bot",
-      "name": "Meeting bot",
+      "name": "Meeting assistant",
       "iconKey": "meeting-bot",
       "shortDescription": "Schedule Speak AI to join a Zoom / Google Meet / Teams call and transcribe automatically.",
       "tools": [
@@ -626,9 +626,9 @@
         {
           "name": "schedule_meeting_event",
           "title": "Schedule AI Meeting Assistant",
-          "description": "Schedule the Speak AI meeting assistant to join and record an upcoming meeting.",
+          "description": "Schedule the Speak AI meeting assistant to join and record an online meeting (Zoom, Google Meet, Microsoft Teams, or Webex). The assistant joins as a participant other attendees can see, at meetingDate or right away when meetingDate is omitted. Recorded minutes are charged to the account, and on trial plans each scheduled meeting uses one meeting from the allowance.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -637,7 +637,7 @@
           "title": "Remove Assistant from Meeting",
           "description": "Remove the Speak AI assistant from an active or scheduled meeting.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": true
         },
@@ -657,7 +657,7 @@
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         }
       ]
     },
@@ -688,34 +688,34 @@
         {
           "name": "create_automation",
           "title": "Create Automation",
-          "description": "Create a new automation rule using the V2 graph model (trigger + ordered steps). Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) — recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
+          "description": "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio, and use AI credits. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_automation",
           "title": "Update Automation",
-          "description": "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes.",
+          "description": "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes. The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. Changing a Composio app-event trigger updates the subscription on that third-party account.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "toggle_automation_status",
           "title": "Toggle Automation Status",
-          "description": "Toggle an automation rule between active and inactive. This flips the current state — call get_automation first if you need to know which way it will flip.",
+          "description": "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation first if you need to know which way it will flip. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected third-party account.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "list_automation_names",
           "title": "List Automation Names",
-          "description": "List automations as lightweight { name, id } pairs — useful for pickers without fetching full configs.",
+          "description": "List the names and ids of active automations that contain an AI chat (magic prompt) step. Inactive automations and automations without an AI chat step are not included; use list_automations for the full list.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -733,11 +733,11 @@
         {
           "name": "bulk_update_automation_status",
           "title": "Bulk Update Automation Status",
-          "description": "Activate or deactivate multiple automations at once.",
+          "description": "Activate or deactivate multiple automations at once. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the connected third-party account.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "bulk_assign_automation_folders",
@@ -751,25 +751,25 @@
         {
           "name": "run_automations",
           "title": "Run Automations",
-          "description": "Manually run one or more automations against one or more media items now (outside the normal trigger).",
+          "description": "Manually run one or more automations against one or more media items now (outside the normal trigger). Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without an error. The runs happen in the background and this returns only an acknowledgement, so check results with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook URLs, run actions in connected third-party apps, and use AI credits.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
         {
           "name": "delete_automation",
           "title": "Delete Automation",
-          "description": "Permanently delete an automation rule.",
+          "description": "Permanently delete an automation rule. If it has an inbound webhook URL, that URL stops accepting payloads, and any event subscription it holds on a connected third-party account through Composio is removed.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "list_automation_apps",
           "title": "List Automation Apps",
-          "description": "List the apps available in the automation catalog (e.g. Speak native + connected integrations). Use to discover what triggers/actions exist before building an automation.",
+          "description": "List the apps in Speak's automation catalog: Speak's built-in apps plus, when enabled, third-party apps available through Composio, each marked connected or not_connected for this user. Read-only: the list comes from Speak's own catalog and the user's saved connections, and no third-party service is called. Use the app slugs with list_automation_triggers and list_automation_actions.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -787,7 +787,7 @@
         {
           "name": "list_automation_actions",
           "title": "List Automation Actions",
-          "description": "List the action/step types available in the automation catalog. Optionally filter by app.",
+          "description": "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the fields each filter or condition step can test. Read-only: served from Speak's own catalog and the user's saved connections, with no third-party calls. Listing an action does not run it.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -796,11 +796,11 @@
         {
           "name": "build_automation",
           "title": "Build Automation",
-          "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. Prefer this over create_automation unless you need raw control.",
+          "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL and bill its duration, ai_chat steps use AI credits, slack notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_automation_run",
@@ -823,7 +823,7 @@
         {
           "name": "test_automation",
           "title": "Test Automation",
-          "description": "Run an automation once against one media item to see which way it branches. THIS HAS REAL SIDE EFFECTS: only Speak's own run notifications are suppressed — outbound webhooks fire, Composio actions run against the connected third party, and AI steps are billed. Ask the user before calling it on an automation that posts anywhere outside Speak. It also needs a mediaId and sends no webhook payload, so an inbound-webhook automation cannot be meaningfully tested this way — its payload tokens will resolve to empty. Returns a runId; read the result with get_automation_run.",
+          "description": "Run one automation once against one media item to see which way it branches. This is a real run, not a dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks still fire, Composio actions still run against the connected third-party account, and AI steps use credits. Confirm with the user before testing an automation that sends anything outside Speak. It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens resolve to empty. Returns a runId; read the result with get_automation_run.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -858,9 +858,9 @@
         {
           "name": "create_webhook",
           "title": "Create Webhook",
-          "description": "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
+          "description": "Create an outbound webhook. From then on, Speak automatically POSTs a JSON payload to callbackUrl, an external endpoint, for each subscribed event (event type, ids such as mediaId or folderId, state, and for chat events the prompt and answer text).",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -878,14 +878,14 @@
           "title": "Update Webhook",
           "description": "Update an existing webhook. This is a partial update — only the fields you supply are changed; `callbackUrl` is always required, the rest are left untouched if omitted.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
           "openWorldHint": true
         },
         {
           "name": "delete_webhook",
           "title": "Delete Webhook",
-          "description": "Delete a webhook and stop receiving notifications at its endpoint.",
+          "description": "Permanently delete an outbound webhook and its delivery attempt history; its endpoint stops receiving notifications. Cannot be undone.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -929,11 +929,11 @@
         {
           "name": "create_text_note",
           "title": "Create Text Note",
-          "description": "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
+          "description": "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, and once the allowance is used up charges credits, the account balance, or the card on file; the request is refused only when none of these can cover it. Sends the text.created and text.analyzed events to the workspace's webhooks and Slack channels if any are configured.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_text_insight",
@@ -947,28 +947,28 @@
         {
           "name": "reanalyze_text",
           "title": "Re-analyze Text Note",
-          "description": "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models.",
+          "description": "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment. Sends the text.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_text_note",
           "title": "Update Text Note",
-          "description": "Update an existing text note's name, content, or metadata. Updating text content will trigger re-analysis.",
+          "description": "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         }
       ]
     },
     {
       "id": "custom-fields",
-      "name": "Custom fields",
+      "name": "Fields",
       "iconKey": "text-fields",
-      "shortDescription": "Standalone AI-analyzed text notes plus custom fields you can tag any media file with.",
+      "shortDescription": "Define the fields you tag media files with, and set their values.",
       "tools": [
         {
           "name": "list_fields",
@@ -1000,11 +1000,11 @@
         {
           "name": "update_multiple_fields",
           "title": "Bulk Update Custom Field Values",
-          "description": "Set custom field values across media in a single batch operation. Scope the update with `folderId` (all media in a folder) and/or `mediaIds`.",
+          "description": "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. Each value that changes fires your field_updated automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         }
       ]
     },
@@ -1017,20 +1017,20 @@
         {
           "name": "create_embed",
           "title": "Create Embed Widget",
-          "description": "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed.",
+          "description": "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_embed",
           "title": "Update Embed Widget",
-          "description": "Update an existing embed widget — appearance/feature toggles via `meta`, plus scope and privacy. Setting `privacyMode` clears any existing password unless a new one is supplied in the same call.",
+          "description": "Update an existing embed widget: appearance/feature toggles via `meta`, and privacy. Passing `mediaId` with `privacyMode` sets that privacy mode on the media file itself; a public mode makes the media viewable by anyone with the embed link. Setting `privacyMode` clears any existing password unless a new one is supplied in the same call.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "check_embed",
@@ -1097,7 +1097,7 @@
         {
           "name": "delete_user_group",
           "title": "Delete User Group",
-          "description": "Delete a user group. This removes the group only; it does not delete the users themselves.",
+          "description": "Permanently delete a user group. The users themselves are not deleted, but members lose any access that was shared with the group (for example dashboards assigned to it).",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -1141,20 +1141,20 @@
         {
           "name": "create_dashboard",
           "title": "Create Dashboard",
-          "description": "Create an analytics dashboard. Only `title` is required — source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Never pass settings for a Foxtons dashboard unless explicitly asked; Foxtons moves by a server script. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Field ids must belong to the dashboard's company. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty.",
+          "description": "Create an analytics dashboard. Only `title` is required — source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "update_dashboard",
           "title": "Update Dashboard",
-          "description": "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec — title, source, dateRange, sections, widgets — plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first — re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Never pass settings for a Foxtons dashboard unless explicitly asked; Foxtons moves by a server script. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Field ids must belong to the dashboard's company. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty.",
+          "description": "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec — title, source, dateRange, sections, widgets — plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first — re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving any settings section moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback) replaces that whole section when sent. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "delete_dashboard",
@@ -1163,12 +1163,12 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "duplicate_dashboard",
           "title": "Duplicate Dashboard",
-          "description": "Clone an existing dashboard. The copy gets fresh widget ids, a \"<name> (copy)\" title, cleared sharing, and its revision reset to 0. Ideal for cloning a fully-configured dashboard, then tweaking it via update_dashboard.",
+          "description": "Clone an existing dashboard into a new dashboard owned by the caller. The copy keeps the source's widgets (same widget ids), sections, filters, and viewer settings, gets a \"<name> (copy)\" title, has no shared users and no public link, and starts at revision 0. Edit it afterwards with update_dashboard.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -1179,9 +1179,9 @@
           "title": "Share Dashboard",
           "description": "Enable public sharing for a dashboard and return its share token + embed id. WARNING: by default the public link resolves with no passphrase, so anyone with the token can view the dashboard data until an owner sets one.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_dashboard_speakers_insight",
@@ -1190,6 +1190,463 @@
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "voice-agents",
+      "name": "Voice agents",
+      "iconKey": "voice-agents",
+      "shortDescription": "Create and configure voice agents, the questions they ask callers and their test suites, and review their conversations.",
+      "tools": [
+        {
+          "name": "list_voice_agents",
+          "title": "List Voice Agents",
+          "description": "List the voice agents in the company (newest first). Each agent includes its agentId, name, personality/instructions, and voice/stt/llm/avatar configuration. Use the returned agentId with get_voice_agent or to filter list_voice_conversations.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_agent",
+          "title": "Get Voice Agent",
+          "description": "Fetch a single voice agent by its agentId. Returns the full agent configuration. A cross-company agentId returns 404.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_voice_agent",
+          "title": "Create Voice Agent",
+          "description": "Create a voice agent. Requires the OWNER or ADMIN role. name, personality, instructions, and voice (provider + voiceId) are required; everything else can be set now or later with update_voice_agent. Call list_voice_avatars or list_voices first to get valid ids.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_voice_agent",
+          "title": "Update Voice Agent",
+          "description": "Update a voice agent. Requires the OWNER or ADMIN role. Send only the fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "delete_voice_agent",
+          "title": "Delete Voice Agent",
+          "description": "Delete a voice agent. Requires the OWNER or ADMIN role. The agent is marked deleted and no tool can restore it: it stops appearing in list_voice_agents, and its share link, embedded widget, questions, and test suite stop working. Its stored data is not erased, past conversations stay in list_voice_conversations, and phone numbers assigned to it are not released.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        {
+          "name": "create_voice_agent_from_prompt",
+          "title": "Create Voice Agent From Prompt",
+          "description": "Create a new voice agent from a plain-English description, via an LLM call. Requires the OWNER or ADMIN role. Saves a draft agent, then generates and saves its name, personality, instructions, chat settings, and default voice, speech-to-text, and LLM settings. Does not assign a phone number. The response includes the new agentId plus either the generated agent, or needsFollowUp: true with a followUpQuestion when the prompt is too vague. In that case the draft agent still exists with placeholder settings; call generate_voice_agent_config on that agentId with more detail.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "generate_voice_agent_config",
+          "title": "Generate Voice Agent Config",
+          "description": "Run the same prompt-to-config generation as create_voice_agent_from_prompt, but against an existing agent instead of creating a new one. Requires the OWNER or ADMIN role. On success the generated config is saved onto the agent immediately, overwriting its current name, personality, instructions, chat settings, and voice, speech-to-text, and LLM settings. If the prompt is too thin and manualInstructions was not sent, the response has needsFollowUp: true with a follow-up question instead — call this again with more detail.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_agent_setup_guide",
+          "title": "Get Voice Agent Setup Guide",
+          "description": "Discovery + how-to helper for building and operating a Speak AI voice agent end to end. Returns the four configuration pieces every agent is built from, which tool covers each one, the recommended build order, and how testing/questions/knowledge-base/intelligence tools chain together after the agent exists. Call this before create_voice_agent or create_voice_agent_from_prompt if you are not already familiar with this tool surface.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_avatars",
+          "title": "List Voice Avatars",
+          "description": "List the video avatars available to attach to a voice agent (your company's own uploads plus the shared system catalog). Use the returned avatarId with create_voice_agent or update_voice_agent.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voices",
+          "title": "List Voices",
+          "description": "List the text-to-speech voices available to a voice agent. Use the returned provider/voiceId with create_voice_agent or update_voice_agent's voice field. When an agent's llm.model is a Live (speech-to-speech) model, its usable voices are a fixed, smaller set scoped to that model instead of this full catalog.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_conversations",
+          "title": "List Voice Conversations",
+          "description": "List the company's voice conversations (newest first). Optionally filter to a single agent. Each conversation includes its conversationId, agentId, status, duration, transcript summary, and usage/costs. Use conversationId with get_voice_conversation for the full record.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_conversation",
+          "title": "Get Voice Conversation",
+          "description": "Fetch a single voice conversation by its conversationId, including transcript, usage, costs, and analysis. A cross-company conversationId returns 404.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_questions",
+          "title": "List Voice Questions",
+          "description": "List the questions configured on a voice agent, in the order it asks them. Each is an agent-level instance of a question template with its own required/attempts/no-response settings and optional field mapping.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_question",
+          "title": "Get Voice Question",
+          "description": "Fetch a single voice agent question by its fieldId, scoped to your company.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_voice_question",
+          "title": "Create Voice Question",
+          "description": "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) — 404 if either isn't found.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_voice_question",
+          "title": "Update Voice Question",
+          "description": "Partially update a voice agent question — only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "delete_voice_question",
+          "title": "Delete Voice Question",
+          "description": "Permanently remove a question from a voice agent and decrement the underlying template's usageCount. Requires the OWNER or ADMIN role. The template itself is not deleted and can be attached to another agent later.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "reorder_voice_questions",
+          "title": "Reorder Voice Questions",
+          "description": "Set the order a voice agent asks its questions in. Requires the OWNER or ADMIN role. Bulk-writes the order value on each listed question (written directly, not resequenced), then returns the agent's full question list in its new order. Entries whose fieldId doesn't belong to agentId are silently skipped.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_question_templates",
+          "title": "List Voice Question Templates",
+          "description": "List the question templates visible to your company: Speak's shared system templates, plus your own company's templates. Use the returned templateId with create_voice_question.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_voice_question_template",
+          "title": "Create Voice Question Template",
+          "description": "Create a company-scoped question template — the \"custom question\" a user names themselves rather than picking from Speak's shared library. Requires the OWNER or ADMIN role. The server stamps companyId and forces isSystemTemplate to false, so this template is only ever visible to your company.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_test_suite",
+          "title": "Get Voice Test Suite",
+          "description": "Get a voice agent's test suite (its scenarios and run settings). Returns null in data.suite if none has been created yet — not a 404.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_voice_test_suite",
+          "title": "Update Voice Test Suite",
+          "description": "Create or update a voice agent's test suite. Requires the OWNER or ADMIN role. Upserts. Send the full scenarios array you want to keep — it replaces the stored one, it is not merged.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "generate_voice_test_suite",
+          "title": "Generate Voice Test Suite",
+          "description": "Auto-generate a default test suite for a voice agent from its configuration (name, personality, instructions, welcome message, topics to avoid), via an LLM call. Requires the OWNER or ADMIN role. Overwrites the suite's existing scenarios.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "start_voice_test_run",
+          "title": "Queue Voice Agent Test Run",
+          "description": "Queue a test run of a voice agent's scripted test suite. Creates a run record in queued status and returns it; it does not place phone calls, start a conversation, or use credits. Requires the OWNER or ADMIN role. Returns 404 if the agent or its test suite does not exist, and 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_active_voice_test_run",
+          "title": "Get Active Voice Test Run",
+          "description": "Get a voice agent's currently active test run (queued, running, or paused). Returns null in data.run if none is active — not a 404.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "pause_voice_test_run",
+          "title": "Pause Voice Test Run",
+          "description": "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "resume_voice_test_run",
+          "title": "Resume Voice Test Run",
+          "description": "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused. Only the run's status changes. The live execution engine is not wired up yet, so no scenarios execute.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "cancel_voice_test_run",
+          "title": "Cancel Voice Test Run",
+          "description": "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. Terminal — a cancelled run can never be resumed.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_test_runs",
+          "title": "List Voice Test Runs",
+          "description": "List a voice agent's test runs, most recent first. Capped at 100 regardless of limit.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_test_run",
+          "title": "Get Voice Test Run",
+          "description": "Get a test run's full detail, including scenarioResults and recommendations. Scoped to your company; agentId is not used to filter this lookup, only runId.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "apply_voice_test_recommendation",
+          "title": "Apply Voice Test Recommendation",
+          "description": "Apply a test run recommendation's quick action to the agent (e.g. patch_instructions appends the suggested fix to the agent's instructions). Requires the OWNER or ADMIN role.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_test_baseline",
+          "title": "Get Voice Test Baseline",
+          "description": "Get a voice agent's best-scoring completed test run, used to detect regressions on later runs. Returns null in data.baseline if no run has completed yet.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_voice_test_score_history",
+          "title": "Get Voice Test Score History",
+          "description": "Get completed-run score points for a voice agent, most recent first, for charting. Capped at 100 regardless of limit. Only status=completed runs are included.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "voice-agent-intelligence",
+      "name": "Voice agent insights",
+      "iconKey": "voice-agent-intelligence",
+      "shortDescription": "Review and act on a voice agent's self-improvement surface: knowledge gaps, FAQ suggestions, instruction gaps, and its knowledge-base resources.",
+      "tools": [
+        {
+          "name": "list_voice_kb_gaps",
+          "title": "List Voice KB Gaps",
+          "description": "List a voice agent's pending knowledge-base gaps — questions callers asked that the agent answered with low confidence or an explicit \"I don't know,\" surfaced automatically after calls. Up to the 50 most recent pending gaps, newest first.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "analyze_voice_kb_gaps",
+          "title": "Analyze Voice KB Gaps",
+          "description": "Trigger knowledge-base gap analysis over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately — new gaps appear in list_voice_kb_gaps once analysis finishes, not synchronously with this response.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "add_voice_kb_gap",
+          "title": "Add Voice KB Gap",
+          "description": "Write a knowledge-base gap's answer into the voice agent's attached knowledge base as a new document, and mark the gap added. Requires the OWNER or ADMIN role. Fails with 409 if the gap was already added or dismissed, or if the agent has no knowledge base collection to write into.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "dismiss_voice_kb_gap",
+          "title": "Dismiss Voice KB Gap",
+          "description": "Mark a voice agent's knowledge-base gap dismissed without writing anything to the knowledge base. Requires the OWNER or ADMIN role.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_faq_suggestions",
+          "title": "List Voice FAQ Suggestions",
+          "description": "List a voice agent's pending FAQ suggestions — questions multiple callers asked in similar form, clustered and drafted into a reusable question/answer pair. Up to the 20 largest clusters, largest first.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "generate_voice_faq_suggestions",
+          "title": "Generate Voice FAQ Suggestions",
+          "description": "Trigger FAQ clustering over a voice agent's recent calls. Requires the OWNER or ADMIN role. Runs in the background and returns immediately — new suggestions appear in list_voice_faq_suggestions once generation finishes, not synchronously with this response.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "add_voice_faq_suggestion",
+          "title": "Add Voice FAQ Suggestion",
+          "description": "Write an FAQ suggestion's question/answer into the voice agent's attached knowledge base as a new document, and mark the suggestion added. Requires the OWNER or ADMIN role. Fails with 409 if the suggestion was already added or dismissed, or if the agent has no knowledge base collection to write into.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "update_voice_faq_suggestion",
+          "title": "Update Voice FAQ Suggestion",
+          "description": "Edit a still-pending FAQ suggestion's question and/or answer before adding it. Requires the OWNER or ADMIN role. Fails with 400 if the suggestion was already added or dismissed.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "dismiss_voice_faq_suggestion",
+          "title": "Dismiss Voice FAQ Suggestion",
+          "description": "Mark a voice agent's FAQ suggestion dismissed without writing anything to the knowledge base. Requires the OWNER or ADMIN role.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "list_voice_agent_resources",
+          "title": "List Voice Agent Resources",
+          "description": "List the knowledge documents/links a voice agent searches during calls — separate from KB gaps and FAQ suggestions, which are the self-improvement layer that surfaces what an agent is missing, not the content itself.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "create_voice_agent_resource",
+          "title": "Create Voice Agent Resource",
+          "description": "Add one document/link to a voice agent's knowledge base. Requires the OWNER or ADMIN role. The server does not fetch the URL; it embeds the title, description, and URL slug so the agent can retrieve the link during live calls.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "bulk_create_voice_agent_resources",
+          "title": "Bulk Create Voice Agent Resources",
+          "description": "Add up to 100 documents/links to a voice agent's knowledge base in one call. Requires the OWNER or ADMIN role. The URLs are not fetched; each entry's title, description, and URL slug is embedded independently. Use this instead of calling create_voice_agent_resource in a loop.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "update_voice_agent_resource",
+          "title": "Update Voice Agent Resource",
+          "description": "Partially update a voice agent resource — send at least one field. Requires the OWNER or ADMIN role. agentId cannot be changed. Changing url, title, or description re-triggers embedding.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": true
+        },
+        {
+          "name": "delete_voice_agent_resource",
+          "title": "Delete Voice Agent Resource",
+          "description": "Soft-delete a voice agent resource — it stops appearing in lists and the agent stops searching it, but the document is not physically removed. Requires the OWNER or ADMIN role.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "analyze_voice_instruction_gaps",
+          "title": "Analyze Voice Instruction Gaps",
+          "description": "Advisory only — compares a voice agent's current instructions against anchors/original intent/recent call summaries you supply and suggests up to 3 patches. Requires the OWNER or ADMIN role. Nothing is written; pass a suggestion's suggestedPatch to apply_voice_instruction_gap to actually apply it.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        {
+          "name": "apply_voice_instruction_gap",
+          "title": "Apply Voice Instruction Gap",
+          "description": "Insert a suggested instruction patch into a voice agent's instructions and persist the result. Requires the OWNER or ADMIN role. suggestedPatch is typically taken directly from analyze_voice_instruction_gaps.",
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": false,
           "openWorldHint": false
         }
       ]

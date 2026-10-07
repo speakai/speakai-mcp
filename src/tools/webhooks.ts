@@ -13,7 +13,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   registerSpeakTool(server, 
     "create_webhook",
-    "Create a new webhook to receive real-time notifications when events occur in Speak AI.",
+    "Create an outbound webhook. From then on, Speak automatically POSTs a JSON payload to callbackUrl, an external endpoint, for each subscribed event (event type, ids such as mediaId or folderId, state, and for chat events the prompt and answer text).",
     {
       callbackUrl: z.string().url().describe("HTTPS endpoint URL to receive webhook payloads"),
       events: z
@@ -25,7 +25,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Webhook",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -85,7 +85,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Webhook",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: true,
     },
@@ -245,7 +245,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "delete_webhook",
-    "Delete a webhook and stop receiving notifications at its endpoint.",
+    "Permanently delete an outbound webhook and its delivery attempt history; its endpoint stops receiving notifications. Cannot be undone.",
     {
       webhookId: z.string().min(1).describe("Unique identifier of the webhook to delete"),
     },

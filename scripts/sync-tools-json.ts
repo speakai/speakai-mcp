@@ -43,7 +43,7 @@ const stub = {
     return {} as any;
   },
 } as any;
-registerAllTools(stub, {} as any);
+registerAllTools(stub, {} as any, { localFileAccess: true, voiceTestRuns: true });
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const toolsPath = path.join(root, "tools.json");
@@ -92,6 +92,71 @@ const additions: Record<string, string[]> = {
 
 // Brand-new categories.
 const newCategories = [
+  {
+    id: "voice-agents",
+    name: "Voice agents",
+    iconKey: "voice-agents",
+    shortDescription: "Create and configure voice agents, the questions they ask callers and their test suites, and review their conversations.",
+    tools: [
+      "list_voice_agents",
+      "get_voice_agent",
+      "create_voice_agent",
+      "update_voice_agent",
+      "delete_voice_agent",
+      "create_voice_agent_from_prompt",
+      "generate_voice_agent_config",
+      "get_voice_agent_setup_guide",
+      "list_voice_avatars",
+      "list_voices",
+      "list_voice_conversations",
+      "get_voice_conversation",
+      "list_voice_questions",
+      "get_voice_question",
+      "create_voice_question",
+      "update_voice_question",
+      "delete_voice_question",
+      "reorder_voice_questions",
+      "list_voice_question_templates",
+      "create_voice_question_template",
+      "get_voice_test_suite",
+      "update_voice_test_suite",
+      "generate_voice_test_suite",
+      "start_voice_test_run",
+      "get_active_voice_test_run",
+      "pause_voice_test_run",
+      "resume_voice_test_run",
+      "cancel_voice_test_run",
+      "list_voice_test_runs",
+      "get_voice_test_run",
+      "apply_voice_test_recommendation",
+      "get_voice_test_baseline",
+      "get_voice_test_score_history",
+    ],
+  },
+  {
+    id: "voice-agent-intelligence",
+    name: "Voice agent insights",
+    iconKey: "voice-agent-intelligence",
+    shortDescription: "Review and act on a voice agent's self-improvement surface: knowledge gaps, FAQ suggestions, instruction gaps, and its knowledge-base resources.",
+    tools: [
+      "list_voice_kb_gaps",
+      "analyze_voice_kb_gaps",
+      "add_voice_kb_gap",
+      "dismiss_voice_kb_gap",
+      "list_voice_faq_suggestions",
+      "generate_voice_faq_suggestions",
+      "add_voice_faq_suggestion",
+      "update_voice_faq_suggestion",
+      "dismiss_voice_faq_suggestion",
+      "list_voice_agent_resources",
+      "create_voice_agent_resource",
+      "bulk_create_voice_agent_resources",
+      "update_voice_agent_resource",
+      "delete_voice_agent_resource",
+      "analyze_voice_instruction_gaps",
+      "apply_voice_instruction_gap",
+    ],
+  },
   {
     id: "users-team",
     name: "Users & teams",

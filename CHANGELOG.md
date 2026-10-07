@@ -1,5 +1,45 @@
 # Changelog
 
+## v1.29.0 (2026-10-05)
+
+- feat(exports): regroup tool categories and keep the README in step with them
+
+## v1.28.6 (2026-10-05)
+
+- Maintenance release
+
+## v1.28.5 (2026-10-04)
+
+- fix(tools): rename delete_chat_conversation and keep unfinished test runs off the hosted server (#100)
+
+## v1.28.4 (2026-10-04)
+
+- fix(tools): mark delete_voice_agent open-world and lint public-surface changes (#99)
+
+## v1.28.3 (2026-10-04)
+
+- fix(tools): declare every outside send and irreversible effect in tool hints (#98)
+
+## v1.28.2 (2026-10-03)
+
+- fix(plugin): split Claude and portable plugin folders, fix flagged tools, build the OpenAI ZIP (#96)
+
+## v1.28.1 (2026-10-02)
+
+- fix(release): wait for npm before logging in to the MCP Registry
+
+## v1.28.0 (2026-10-02)
+
+- fix(voice): stop offering the payment question category through MCP
+
+## v1.27.0 (2026-09-26)
+
+- fix: correct stale tool count left over from rebase conflict resolution
+
+## v1.26.0 (2026-09-25)
+
+- feat(dashboards): add feedback groups, fieldRules and sheetWebhookUrl to dashboard settings
+
 ## v1.25.0 (2026-09-14)
 
 - fix(automations): correct two things end-to-end testing caught

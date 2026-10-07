@@ -1323,7 +1323,7 @@ export function createCli(): Command {
       },
     };
     const { registerAllTools } = await import("../tools/index.js");
-    registerAllTools(stub as any, client);
+    registerAllTools(stub as any, client, { localFileAccess: true });
     return handlers;
   }
 

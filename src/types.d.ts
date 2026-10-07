@@ -1,7 +1,18 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 
-export declare function registerAllTools(server: McpServer, client?: AxiosInstance): void;
+export interface RegisterOptions {
+  /** Register tools that read the local disk. Only for servers on the user's own machine (stdio, CLI). */
+  localFileAccess?: boolean;
+  /** Register the voice test-run tools (start, pause, resume, cancel, results). Their execution engine is not live yet, so the hosted server leaves them off. */
+  voiceTestRuns?: boolean;
+}
+
+export declare function registerAllTools(
+  server: McpServer,
+  client?: AxiosInstance,
+  options?: RegisterOptions
+): void;
 
 export declare function createSpeakClient(options: {
   baseUrl: string;
@@ -19,3 +30,11 @@ export declare function formatAxiosError(error: unknown): string;
 export declare const SPEAK_MCP_TOOL_NAMES: readonly string[];
 
 export type SpeakMcpToolName = (typeof SPEAK_MCP_TOOL_NAMES)[number];
+
+/** Every tool's category (id, display name, tool names), generated from tools.json. */
+export declare const SPEAK_MCP_TOOL_CATEGORIES: readonly {
+  readonly id: string;
+  readonly name: string;
+  readonly tools: readonly string[];
+}[];
+export type SpeakMcpToolCategory = (typeof SPEAK_MCP_TOOL_CATEGORIES)[number];

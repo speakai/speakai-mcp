@@ -1,0 +1,10 @@
+interface:
+  display_name: "Get started with Speak AI"
+  short_description: "Connect and pick the right tool"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "speakai"
+      description: "Speak AI MCP server"
+      transport: "streamable_http"
+      url: "https://api.speakai.co/v1/mcp"

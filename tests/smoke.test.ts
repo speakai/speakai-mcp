@@ -30,18 +30,42 @@ describe("MCP Server Smoke Tests", () => {
     server = new McpServer({ name: "speak-ai-test", version: "1.0.0" });
   });
 
-  it("registers all 119 MCP tools without errors", async () => {
+  it("registers all 168 MCP tools without errors", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    expect(() => registerAllTools(server)).not.toThrow();
+    expect(() => registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true })).not.toThrow();
 
     const tools = getRegisteredTools(server);
     const toolNames = Object.keys(tools);
-    expect(toolNames).toHaveLength(119);
+    expect(toolNames).toHaveLength(168);
+  });
+
+  it("never exposes local-disk or unfinished voice test-run tools on the hosted server", async () => {
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server);
+
+    const toolNames = Object.keys(getRegisteredTools(server));
+    expect(toolNames).not.toContain("upload_local_file");
+    for (const runTool of [
+      "start_voice_test_run",
+      "get_active_voice_test_run",
+      "pause_voice_test_run",
+      "resume_voice_test_run",
+      "cancel_voice_test_run",
+      "list_voice_test_runs",
+      "get_voice_test_run",
+      "apply_voice_test_recommendation",
+      "get_voice_test_baseline",
+      "get_voice_test_score_history",
+    ]) {
+      expect(toolNames).not.toContain(runTool);
+    }
+    expect(toolNames).toContain("get_voice_test_suite");
+    expect(toolNames).toHaveLength(157);
   });
 
   it("registers all tools with unique names", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);
@@ -51,7 +75,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("every tool has a non-empty description", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
 
     const tools = getRegisteredTools(server);
     for (const [name, tool] of Object.entries(tools)) {
@@ -62,7 +86,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("every tool declares Apps SDK annotations and an output schema", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
 
     const tools = getRegisteredTools(server);
     for (const [name, tool] of Object.entries(tools)) {
@@ -83,12 +107,48 @@ describe("MCP Server Smoke Tests", () => {
         tool.annotations?.idempotentHint,
         `Tool ${name} missing idempotentHint`
       ).toBeTypeOf("boolean");
+      if (tool.annotations?.readOnlyHint) {
+        expect(tool.annotations?.destructiveHint, `Read-only tool ${name} cannot be destructive`).toBe(false);
+      }
     }
+  });
+
+  it("only marks writes non-destructive when they are purely additive", async () => {
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
+
+    const tools = getRegisteredTools(server);
+    const additiveWrites = Object.entries(tools)
+      .filter(([, tool]) => !tool.annotations?.readOnlyHint && !tool.annotations?.destructiveHint)
+      .map(([name]) => name)
+      .sort();
+
+    expect(additiveWrites).toEqual([
+      "add_voice_faq_suggestion",
+      "add_voice_kb_gap",
+      "analyze_voice_kb_gaps",
+      "bulk_create_voice_agent_resources",
+      "clone_folder",
+      "create_field",
+      "create_folder",
+      "create_user_group",
+      "create_voice_agent",
+      "create_voice_agent_from_prompt",
+      "create_voice_agent_resource",
+      "create_voice_question",
+      "create_voice_question_template",
+      "duplicate_dashboard",
+      "export_chat_answer",
+      "export_multiple_media",
+      "generate_voice_faq_suggestions",
+      "provision_inbound_webhook",
+      "start_voice_test_run",
+    ].sort());
   });
 
   it("only marks tools open-world when they affect public or external systems", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
 
     const tools = getRegisteredTools(server);
     const openWorldTools = Object.entries(tools)
@@ -97,21 +157,98 @@ describe("MCP Server Smoke Tests", () => {
       .sort();
 
     expect(openWorldTools).toEqual([
+      "ask_ai_chat",
+      "build_automation",
+      "bulk_create_voice_agent_resources",
+      "bulk_move_media",
+      "bulk_update_automation_status",
+      "clone_recorder",
+      "create_automation",
+      "create_clip",
+      "create_dashboard",
+      "create_embed",
+      "create_recorder",
+      "create_text_note",
+      "create_voice_agent_resource",
       "create_webhook",
+      "delete_automation",
+      "delete_dashboard",
+      "delete_media",
+      "delete_recorder",
       "delete_scheduled_assistant",
+      "delete_voice_agent",
       "delete_webhook",
-      "get_live_meeting_transcript",
       "provision_inbound_webhook",
+      "reanalyze_media",
+      "reanalyze_text",
       "remove_assistant_from_meeting",
+      "retry_ai_chat",
       "run_automations",
       "schedule_meeting_event",
+      "share_dashboard",
+      "submit_chat_feedback",
       "test_automation",
+      "toggle_automation_status",
+      "update_automation",
+      "update_dashboard",
+      "update_embed",
+      "update_media_metadata",
+      "update_multiple_fields",
+      "update_recorder_questions",
+      "update_recorder_settings",
+      "update_text_note",
+      "update_voice_agent_resource",
       "update_webhook",
       "upload_and_analyze",
       "upload_and_analyze_batch",
       "upload_local_file",
       "upload_media",
     ].sort());
+  });
+
+  it("never describes an outside send or irreversible effect that the hints don't declare", async () => {
+    // OpenAI's tool scan reads the description against the annotations. A write that says it sends
+    // outside Speak AI, or changes a share link, embedded widget or phone number, must be open-world; one that says it bills, overwrites or permanently deletes
+    // must be destructive. A match is ignored when its clause negates it, or names another tool, first.
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
+
+    const tools = getRegisteredTools(server);
+    const names = Object.keys(tools);
+    const OUTSIDE_SEND =
+      /\b(sends?|sent|sending|posts?|posted|emails?|fires?|triggers?|notifies|calls?)\b[^;]{0,160}?\b(email|slack|webhook|automation|any address|third-party|external)|\bpublic (url|link|page)|\bshare link|\bembedded widget|\bphone numbers?\b|\bphone call|\bjoins? [^;]*?\bmeeting|\bcomposio\b/i;
+    const IRREVERSIBLE = /\b(charges?|bills?|billed|credits?|permanently|overwrites?|replaces?)\b/i;
+    const NEGATED = /\b(not|no|never|without|cannot)\b/i;
+
+    // A match counts unless the clause negates it, or names another tool, before the match.
+    const declares = (clause: string, pattern: RegExp, self: string) => {
+      const match = pattern.exec(clause);
+      if (!match) return null;
+      const before = clause.slice(0, match.index);
+      // A negation covers its list ("does not place calls, or use credits") but stops at a colon.
+      if (NEGATED.test(before.slice(before.lastIndexOf(":") + 1))) return null;
+      // Only another tool named in the same comma-separated phrase as the match makes it that tool's effect.
+      const phrase = before.slice(before.lastIndexOf(",") + 1);
+      if (names.some((other) => other !== self && new RegExp(`\\b${other}\\b`).test(phrase))) return null;
+      return match[0];
+    };
+
+    const mismatches: string[] = [];
+    for (const [name, tool] of Object.entries(tools)) {
+      if (tool.annotations?.readOnlyHint) continue;
+      // Split on sentence ends only, so event names such as media.created stay inside their clause.
+      for (const clause of String(tool.description ?? "").split(/[.;](?=\s|$)/)) {
+        const send = declares(clause, OUTSIDE_SEND, name);
+        if (send && !tool.annotations?.openWorldHint) {
+          mismatches.push(`${name}: describes "${send}" but openWorldHint is false`);
+        }
+        const effect = declares(clause, IRREVERSIBLE, name);
+        if (effect && !tool.annotations?.destructiveHint) {
+          mismatches.push(`${name}: describes "${effect}" but destructiveHint is false`);
+        }
+      }
+    }
+    expect(mismatches).toEqual([]);
   });
 
   it("adds structuredContent to tool responses", async () => {
@@ -317,7 +454,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("includes expected tool categories", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);

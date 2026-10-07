@@ -1,0 +1,10 @@
+interface:
+  display_name: "Surveys and recorders"
+  short_description: "Collect voice and video answers"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "speakai"
+      description: "Speak AI MCP server"
+      transport: "streamable_http"
+      url: "https://api.speakai.co/v1/mcp"

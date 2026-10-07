@@ -74,7 +74,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       isDefault: z
         .boolean()
         .optional()
-        .describe("Whether this view is the folder's default view"),
+        .describe("Whether this view is the folder's default view. Setting true clears the default flag on the folder's other views"),
       columns: z
         .array(
           z.object({
@@ -93,7 +93,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Folder View",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -181,12 +181,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       isDefault: z
         .boolean()
         .optional()
-        .describe("Whether the cloned view becomes the target folder's default"),
+        .describe("Whether the cloned view becomes the target folder's default. Setting true clears the default flag on the target folder's other views"),
     },
     {
       title: "Clone Folder View",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: false,
     },
@@ -306,7 +306,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "clone_folder",
-    "Duplicate an existing folder and all of its contents.",
+    "Create a new folder copied from an existing folder's name and description. Media in the source folder is not copied. Set isSaveDefaultView to also copy the source folder's default view.",
     {
       folderId: z.string().min(1).describe("ID of the folder to clone"),
       name: z.string().optional().describe("Name for the cloned folder"),
@@ -378,7 +378,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "delete_folder",
-    "Permanently delete a folder. Media within the folder will be moved, not deleted.",
+    "Permanently delete a folder. The folder must be empty: the request is refused if it still holds any media or if it is the workspace's last folder, so move or delete its media first.",
     {
       folderId: z.string().min(1).describe("Unique identifier of the folder to delete"),
     },
