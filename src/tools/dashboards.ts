@@ -5,9 +5,7 @@ import {
   DashboardCommentsMode,
   DashboardLabelsMode,
   MAX_DASHBOARD_LABEL_GROUPS,
-  MAX_DASHBOARD_REVIEWERS,
   PUBLIC_ID_PATTERN,
-  USER_ID_PATTERN,
 } from "@speakai/shared";
 import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
@@ -124,7 +122,7 @@ const SETTINGS_RULES =
   "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. " +
   "Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media " +
   "pages use these groups and this Feedback setup from then on. " +
-  "Each section (fields, feedback, fieldEdits, reviewerUserIds, labels, comments) replaces that whole section " +
+  "Each section (fields, feedback, fieldEdits, reviewerNames, labels, comments) replaces that whole section " +
   "when sent; a section left out keeps its saved value. Call get_dashboard first and " +
   "resend every key of the section you change; a key left out resets to its default. " +
   "Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned " +
@@ -134,10 +132,12 @@ const SETTINGS_RULES =
   "fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with " +
   "a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. " +
   "Labels and comments on the shared link are off until the user asks to turn them on. " +
-  "Mode 'apply' (labels) or 'reply' (comments) lets anyone holding the share link write as any listed reviewer, " +
-  "because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so " +
-  "confirm the reviewerUserIds with the user before saving a write mode. " +
-  "Reviewers that are not active workspace members, or label groups that are not active, refuse the whole save " +
+  "Mode 'apply' (labels) or 'reply' (comments) lets a link viewer write as one of the dashboard's feedback " +
+  "submitter names (feedback.submitters, even while feedback itself is off), or only the reviewerNames subset " +
+  "when set. Anyone holding the share link can pick any of those names, because the link has no sign-in (an " +
+  "accepted risk; every entry is marked as made via this dashboard), so confirm the names with the user before " +
+  "saving a write mode. With no submitter names nobody can write. " +
+  "reviewerNames that are not feedback submitters, or label groups that are not active, refuse the whole save " +
   "with a 400 rather than being dropped.";
 
 // Mirrors the server validator. Each section is optional and replaces only itself when sent.
@@ -238,20 +238,19 @@ const dashboardSettingsSchema = z
           ),
       })
       .optional(),
-    reviewerUserIds: z
-      .array(z.string().regex(USER_ID_PATTERN, "Expected a 24-character user id"))
-      .max(MAX_DASHBOARD_REVIEWERS)
+    reviewerNames: z
+      .array(z.string().min(1))
       .optional()
       .describe(
-        "Team members a dashboard viewer may write labels and comments as (unique, at most 200). " +
-          "Get ids from list_users. Must be active members of this workspace.",
+        "Optional subset of feedback.submitters who may write labels and comments from the link (unique). " +
+          "Leave out or empty to let every feedback submitter write. Other names are never allowed with a subset.",
       ),
     labels: z
       .object({
         isEnabled: z.boolean().describe("Show labels on media pages opened from this shared dashboard"),
         mode: z
           .nativeEnum(DashboardLabelsMode)
-          .describe("'view' shows labels read-only; 'apply' also lets a listed reviewer add and remove labels"),
+          .describe("'view' shows labels read-only; 'apply' also lets a viewer, as a reviewer name, add and remove labels"),
         labelGroupIds: z
           .array(z.string().regex(PUBLIC_ID_PATTERN, "Expected a label id"))
           .max(MAX_DASHBOARD_LABEL_GROUPS)
@@ -266,14 +265,14 @@ const dashboardSettingsSchema = z
         isEnabled: z.boolean().describe("Show comments on media pages opened from this shared dashboard"),
         mode: z
           .nativeEnum(DashboardCommentsMode)
-          .describe("'view' shows comments read-only; 'reply' also lets a listed reviewer comment and reply"),
+          .describe("'view' shows comments read-only; 'reply' also lets a viewer, as a reviewer name, comment and reply"),
       })
       .optional(),
   })
   .describe(
     "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the " +
       "Fields tab groups them, the Feedback button, which fields Feedback submitters may edit, and labels and " +
-      "comments with the reviewers who may write them. " +
+      "comments with the reviewer names (feedback submitters) who may write them. " +
       SETTINGS_RULES,
   );
 
