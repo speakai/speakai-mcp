@@ -383,7 +383,6 @@ describe("Tools Integration Tests", () => {
     it("update_dashboard validates and sends reviewer, labels and comments settings", async () => {
       await reg();
       const settings = {
-        reviewerNames: ["Matthew Kirkpatrick"],
         labels: { isEnabled: true, mode: "apply", labelGroupIds: ["grp_1"] },
         comments: { isEnabled: true, mode: "reply" },
       };
@@ -393,9 +392,11 @@ describe("Tools Integration Tests", () => {
         schema.safeParse({ dashboardId: "d1", settings: { ...settings, comments: { isEnabled: true, mode: "edit" } } })
           .success,
       ).toBe(false);
-      expect(schema.safeParse({ dashboardId: "d1", settings: { reviewerNames: [""] } }).success).toBe(false);
-      // Reviewers are feedback submitter names now; a stale reviewerUserIds is never sent.
-      const legacy = schema.parse({ dashboardId: "d1", settings: { reviewerUserIds: ["64b7f0c2a1b2c3d4e5f60718"] } });
+      // Reviewers are the feedback submitter names; a stale reviewerUserIds or reviewerNames is never sent.
+      const legacy = schema.parse({
+        dashboardId: "d1",
+        settings: { reviewerUserIds: ["64b7f0c2a1b2c3d4e5f60718"], reviewerNames: ["Reviewer A"] },
+      });
       expect(legacy.settings).toEqual({});
 
       await getToolCallback(server, "update_dashboard")({ dashboardId: "d1", settings });

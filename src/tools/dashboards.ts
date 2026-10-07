@@ -122,7 +122,7 @@ const SETTINGS_RULES =
   "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. " +
   "Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media " +
   "pages use these groups and this Feedback setup from then on. " +
-  "Each section (fields, feedback, fieldEdits, reviewerNames, labels, comments) replaces that whole section " +
+  "Each section (fields, feedback, fieldEdits, labels, comments) replaces that whole section " +
   "when sent; a section left out keeps its saved value. Call get_dashboard first and " +
   "resend every key of the section you change; a key left out resets to its default. " +
   "Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned " +
@@ -133,12 +133,11 @@ const SETTINGS_RULES =
   "a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. " +
   "Labels and comments on the shared link are off until the user asks to turn them on. " +
   "Mode 'apply' (labels) or 'reply' (comments) lets a link viewer write as one of the dashboard's feedback " +
-  "submitter names (feedback.submitters, even while feedback itself is off), or only the reviewerNames subset " +
-  "when set. Anyone holding the share link can pick any of those names, because the link has no sign-in (an " +
-  "accepted risk; every entry is marked as made via this dashboard), so confirm the names with the user before " +
-  "saving a write mode. With no submitter names nobody can write. " +
-  "reviewerNames that are not feedback submitters, or label groups that are not active, refuse the whole save " +
-  "with a 400 rather than being dropped.";
+  "submitter names (feedback.submitters, even while feedback itself is off), or as another typed name only " +
+  "when feedback.allowOtherSubmitter is true. Anyone holding the share link can pick any of those names, " +
+  "because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so " +
+  "confirm the names with the user before saving a write mode. With no submitter names nobody can write. " +
+  "Label groups that are not active refuse the whole save with a 400 rather than being dropped.";
 
 // Mirrors the server validator. Each section is optional and replaces only itself when sent.
 const dashboardSettingsSchema = z
@@ -238,13 +237,6 @@ const dashboardSettingsSchema = z
           ),
       })
       .optional(),
-    reviewerNames: z
-      .array(z.string().min(1))
-      .optional()
-      .describe(
-        "Optional subset of feedback.submitters who may write labels and comments from the link (unique). " +
-          "Leave out or empty to let every feedback submitter write. Other names are never allowed with a subset.",
-      ),
     labels: z
       .object({
         isEnabled: z.boolean().describe("Show labels on media pages opened from this shared dashboard"),
