@@ -235,3 +235,23 @@ describe("Labels and comments tools", () => {
     expect(result.content[0].text).toContain("409");
   });
 });
+
+describe("Labels and comments notification notes", () => {
+  it("tells the caller where each write shows up in Speak notifications and who else is told", async () => {
+    const server = new McpServer({ name: "test", version: "1.0.0" });
+    (await import("../src/tools/labels.js")).register(server, mockClient);
+    (await import("../src/tools/comments.js")).register(server, mockClient);
+    const description = (name: string): string => (server as any)._registeredTools[name].description;
+
+    const labelWrites = ["create_label", "update_label", "archive_label", "restore_label", "merge_labels", "add_speak_label_sets", "apply_label", "update_media_label", "remove_media_label"];
+    for (const name of labelWrites) expect(description(name), name).toContain("Notifications under Label");
+    for (const name of ["add_comment", "update_comment", "resolve_comment", "delete_comment"]) {
+      expect(description(name), name).toContain("Notifications under Comment");
+    }
+    expect(description("add_comment")).toContain("A reply notifies the thread's starter");
+    expect(description("resolve_comment")).toContain("Resolving or reopening someone else's thread notifies its starter");
+    for (const name of ["list_labels", "list_media_labels", "list_media_comments"]) {
+      expect(description(name), name).not.toContain("Notifications under");
+    }
+  });
+});

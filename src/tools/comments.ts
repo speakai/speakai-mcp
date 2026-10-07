@@ -4,7 +4,7 @@ import { z } from "zod";
 import { registerSpeakTool, ok, err } from "./_helpers.js";
 import { speakClient } from "../client.js";
 import { CommentListFilter, MEDIA_COMMENT_BODY_MAX } from "@speakai/shared";
-import { publicId, rangeInputSchema, resolveRange, STALE_TRANSCRIPT_NOTE } from "./transcript-range.js";
+import { COMMENT_ACTIVITY_NOTE, publicId, rangeInputSchema, resolveRange, STALE_TRANSCRIPT_NOTE } from "./transcript-range.js";
 
 const commentBody = z.string().trim().min(1).max(MEDIA_COMMENT_BODY_MAX);
 
@@ -34,9 +34,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "add_comment",
-    "Add a comment to a media file. Three kinds: on the whole file (no quote or range), on words in the transcript (quote, or range plus expectedTranscriptRevision, exactly as in apply_label), or a reply to a thread (parentId, with no span of its own). Replies go one level deep, so parentId must be a thread's first comment. A reply gives the thread's author an in-app notification in Speak. mediaLabelId links the comment to a labelled span on this file. " +
+    "Add a comment to a media file. Three kinds: on the whole file (no quote or range), on words in the transcript (quote, or range plus expectedTranscriptRevision, exactly as in apply_label), or a reply to a thread (parentId, with no span of its own). Replies go one level deep, so parentId must be a thread's first comment. A reply notifies the thread's starter in Speak, unless the starter wrote the reply. mediaLabelId links the comment to a labelled span on this file. " +
       STALE_TRANSCRIPT_NOTE +
-      " Requires the comments create permission (every member by default).",
+      " Requires the comments create permission (every member by default). " +
+      COMMENT_ACTIVITY_NOTE,
     {
       mediaId: publicId("mediaId").describe("Media id"),
       body: commentBody.describe(`Comment text (1 to ${MEDIA_COMMENT_BODY_MAX} characters)`),
@@ -67,7 +68,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "update_comment",
-    "Edit the text of a comment. Only the comment's author can edit its text (403 otherwise). To resolve or reopen a thread, use resolve_comment.",
+    "Edit the text of a comment. Only the comment's author can edit its text (403 otherwise). To resolve or reopen a thread, use resolve_comment. " +
+      COMMENT_ACTIVITY_NOTE,
     {
       mediaId: publicId("mediaId").describe("Media id"),
       commentId: publicId("commentId").describe("commentId from list_media_comments"),
@@ -86,7 +88,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "resolve_comment",
-    "Resolve a comment thread, or reopen it with resolved false. Only a thread's first comment can be resolved (400 on a reply). Requires the comments update permission (every member by default).",
+    "Resolve a comment thread, or reopen it with resolved false. Only a thread's first comment can be resolved (400 on a reply). Resolving or reopening someone else's thread notifies its starter in Speak. Requires the comments update permission (every member by default). " +
+      COMMENT_ACTIVITY_NOTE,
     {
       mediaId: publicId("mediaId").describe("Media id"),
       commentId: publicId("commentId").describe("commentId of the thread's first comment, from list_media_comments"),
@@ -107,7 +110,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "delete_comment",
-    "Delete a comment. Deleting a thread's first comment keeps its replies visible under an empty placeholder. You can always delete your own comments; deleting someone else's needs the comments delete permission (owners and admins by default), otherwise 403.",
+    "Delete a comment. Deleting a thread's first comment keeps its replies visible under an empty placeholder. You can always delete your own comments; deleting someone else's needs the comments delete permission (owners and admins by default), otherwise 403. " +
+      COMMENT_ACTIVITY_NOTE,
     {
       mediaId: publicId("mediaId").describe("Media id"),
       commentId: publicId("commentId").describe("commentId from list_media_comments"),

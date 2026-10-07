@@ -15,7 +15,7 @@ import {
   MediaLabelAction,
   SpeakLabelSet,
 } from "@speakai/shared";
-import { publicId, rangeInputSchema, resolveRange, STALE_TRANSCRIPT_NOTE } from "./transcript-range.js";
+import { LABEL_ACTIVITY_NOTE, publicId, rangeInputSchema, resolveRange, STALE_TRANSCRIPT_NOTE } from "./transcript-range.js";
 
 const labelName = z.string().trim().min(1).max(LABEL_NAME_MAX);
 const labelDescription = z.string().trim().max(LABEL_DESCRIPTION_MAX);
@@ -59,7 +59,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "create_label",
-    "Create a label, or a label group with isGroup true. Labels are shared by the whole workspace and are applied to transcript words with apply_label. A label can sit in one group (parentId); groups cannot be nested, and a group has no color. Names are unique among active labels under the same parent, ignoring case and extra spaces: 409 means the name is taken. Requires the labels create permission (owners and admins by default).",
+    "Create a label, or a label group with isGroup true. Labels are shared by the whole workspace and are applied to transcript words with apply_label. A label can sit in one group (parentId); groups cannot be nested, and a group has no color. Names are unique among active labels under the same parent, ignoring case and extra spaces: 409 means the name is taken. Requires the labels create permission (owners and admins by default). " +
+      LABEL_ACTIVITY_NOTE,
     {
       name: labelName.describe(`Label or group name (1 to ${LABEL_NAME_MAX} characters)`),
       isGroup: z.boolean().optional().describe("true to create a group that holds labels"),
@@ -84,7 +85,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "update_label",
-    "Rename, recolor, describe, move or reorder a label or group. Send only the fields to change. parentId null moves a label to the top level. An archived label cannot be edited (restore_label first), and a group cannot take a color or a parent. 409 means another active label under the same parent already has the name. Requires the labels update permission (owners and admins by default).",
+    "Rename, recolor, describe, move or reorder a label or group. Send only the fields to change. parentId null moves a label to the top level. An archived label cannot be edited (restore_label first), and a group cannot take a color or a parent. 409 means another active label under the same parent already has the name. Requires the labels update permission (owners and admins by default). " +
+      LABEL_ACTIVITY_NOTE,
     {
       labelId: publicId("labelId").describe("labelId from list_labels"),
       name: labelName.optional().describe(`New name (1 to ${LABEL_NAME_MAX} characters)`),
@@ -109,7 +111,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "archive_label",
-    "Archive a label so it can no longer be applied; archiving a group archives its labels too. Labels already applied to transcripts stay where they are, and restore_label undoes this. Safe to repeat. Returns archivedCount. Requires the labels delete permission (owners and admins by default).",
+    "Archive a label so it can no longer be applied; archiving a group archives its labels too. Labels already applied to transcripts stay where they are, and restore_label undoes this. Safe to repeat. Returns archivedCount. Requires the labels delete permission (owners and admins by default). " +
+      LABEL_ACTIVITY_NOTE,
     { labelId: publicId("labelId").describe("labelId from list_labels") },
     { title: "Archive Label", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ labelId }) => {
@@ -124,7 +127,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "restore_label",
-    "Restore an archived label; restoring a group also restores its archived labels. A label whose name is now used by an active label stays archived and is counted in skippedCount. 409 means the label's own name is taken (rename the active one first); a merged label cannot be restored, and a label cannot be restored while its group is archived. Requires the labels delete permission (owners and admins by default).",
+    "Restore an archived label; restoring a group also restores its archived labels. A label whose name is now used by an active label stays archived and is counted in skippedCount. 409 means the label's own name is taken (rename the active one first); a merged label cannot be restored, and a label cannot be restored while its group is archived. Requires the labels delete permission (owners and admins by default). " +
+      LABEL_ACTIVITY_NOTE,
     { labelId: publicId("labelId").describe("labelId of an archived label, from list_labels with status archived") },
     { title: "Restore Label", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ labelId }) => {
@@ -139,7 +143,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "merge_labels",
-    "Merge one label into another: every place the source label is applied moves onto the target (a span that had both keeps one), then the source is archived with mergedInto set. This cannot be undone by restore_label. Both must be active, non-group labels and different. Returns movedCount. Requires both the labels update and labels delete permissions (owners and admins by default).",
+    "Merge one label into another: every place the source label is applied moves onto the target (a span that had both keeps one), then the source is archived with mergedInto set. This cannot be undone by restore_label. Both must be active, non-group labels and different. Returns movedCount. Requires both the labels update and labels delete permissions (owners and admins by default). " +
+      LABEL_ACTIVITY_NOTE,
     {
       labelId: publicId("labelId").describe("The label to merge away (it is archived)"),
       targetLabelId: publicId("targetLabelId").describe("The label that receives every use of labelId"),
@@ -160,7 +165,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "add_speak_label_sets",
-    "Add ready-made label groups from Speak: sales_qa (Unprofessional, Slang, Objection, Great moment, Compliance risk), research (Pain point, Motivation, Quote for report, Surprise, Follow-up), meetings (Decision, Action item, Risk, Open question) and transcript_feedback (Wrong split, Misheard word, Wrong speaker, Bad translation). Safe to repeat: a group or label that already exists with the same name is reused, and a set whose group name is taken by a plain label is skipped (listed in skippedSets). Requires the labels create permission (owners and admins by default).",
+    "Add ready-made label groups from Speak: sales_qa (Unprofessional, Slang, Objection, Great moment, Compliance risk), research (Pain point, Motivation, Quote for report, Surprise, Follow-up), meetings (Decision, Action item, Risk, Open question) and transcript_feedback (Wrong split, Misheard word, Wrong speaker, Bad translation). Safe to repeat: a group or label that already exists with the same name is reused, and a set whose group name is taken by a plain label is skipped (listed in skippedSets). Requires the labels create permission (owners and admins by default). " +
+      LABEL_ACTIVITY_NOTE,
     {
       sets: z
         .array(z.nativeEnum(SpeakLabelSet))
@@ -201,7 +207,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "apply_label",
     "Apply one or more labels to a span of words in a media file's transcript. Give the span as quote (words copied from get_transcript; this tool finds their position and the current transcriptRevision for you) or as range plus expectedTranscriptRevision. If the same span already has labels, the new ones are added to it. Check the returned anchor.exact to confirm the right words were labelled. " +
       STALE_TRANSCRIPT_NOTE +
-      " A 400 means the range is outside the transcript or a label is archived, a group, or not in this workspace. Requires the labels assign permission (every member by default).",
+      " A 400 means the range is outside the transcript or a label is archived, a group, or not in this workspace. Requires the labels assign permission (every member by default). " +
+      LABEL_ACTIVITY_NOTE,
     {
       mediaId: publicId("mediaId").describe("Media id"),
       labelIds,
@@ -224,7 +231,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "update_media_label",
     "Change a labelled span on a transcript. Do exactly one of: labelIds to replace its labels; action keep to confirm its current anchor (after the transcript was edited and its status is shifted or needs_review); or action replace with a new quote or range to move it. " +
       STALE_TRANSCRIPT_NOTE +
-      " Keep also answers 409 when the anchor was built on an older revision: list_media_labels again first. Requires the labels assign permission (every member by default).",
+      " Keep also answers 409 when the anchor was built on an older revision: list_media_labels again first. Requires the labels assign permission (every member by default). " +
+      LABEL_ACTIVITY_NOTE,
     {
       mediaId: publicId("mediaId").describe("Media id"),
       mediaLabelId: publicId("mediaLabelId").describe("mediaLabelId from list_media_labels"),
@@ -261,7 +269,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "remove_media_label",
-    "Remove a labelled span from a transcript. The label itself stays in the workspace, and comments linked to the span stay without the link. Requires the labels assign permission (every member by default).",
+    "Remove a labelled span from a transcript. The label itself stays in the workspace, and comments linked to the span stay without the link. Requires the labels assign permission (every member by default). " +
+      LABEL_ACTIVITY_NOTE,
     {
       mediaId: publicId("mediaId").describe("Media id"),
       mediaLabelId: publicId("mediaLabelId").describe("mediaLabelId from list_media_labels"),

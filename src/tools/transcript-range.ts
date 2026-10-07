@@ -57,6 +57,10 @@ export const STALE_TRANSCRIPT_NOTE =
   "A 409 that says the transcript changed means someone edited it after your revision was read: read the " +
   "transcript again (get_transcript) and retry with the new range or quote. Nothing was saved.";
 
+// Label and comment writes each leave an entry in the caller's own Speak notifications.
+export const LABEL_ACTIVITY_NOTE = "The change is recorded in your Speak Notifications under Label (type label).";
+export const COMMENT_ACTIVITY_NOTE = "The change is recorded in your Speak Notifications under Comment (type comment).";
+
 export const publicId = (what: string) =>
   z
     .string()
