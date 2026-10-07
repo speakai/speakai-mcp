@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.30.0 (2026-10-07)
+
+- feat(dashboards): fieldEdits setting for editable fields on dashboard media pages
+
 ## v1.29.0 (2026-10-05)
 
 - feat(exports): regroup tool categories and keep the README in step with them

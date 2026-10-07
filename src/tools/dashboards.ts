@@ -122,14 +122,17 @@ const settingsFieldIds = z.array(z.string());
 // settings field description and the create/update tool descriptions.
 const SETTINGS_RULES =
   "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. " +
-  "Saving fields or feedback moves that dashboard onto the settings flow immediately: its media pages use " +
-  "these groups and this Feedback setup from then on. " +
-  "Each section (fields, feedback, reviewerUserIds, labels, comments) replaces that whole section when sent; " +
-  "a section left out keeps its stored value. Call get_dashboard first and " +
+  "Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media " +
+  "pages use these groups and this Feedback setup from then on. " +
+  "Each section (fields, feedback, fieldEdits, reviewerUserIds, labels, comments) replaces that whole section " +
+  "when sent; a section left out keeps its saved value. Call get_dashboard first and " +
   "resend every key of the section you change; a key left out resets to its default. " +
-  "Get field ids from list_fields. Ids that are not the company's fields are dropped when saving. " +
+  "Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned " +
+  "in droppedFieldIds. " +
   "When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. " +
   "Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. " +
+  "fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with " +
+  "a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. " +
   "Labels and comments on the shared link are off until the user asks to turn them on. " +
   "Mode 'apply' (labels) or 'reply' (comments) lets anyone holding the share link write as any listed reviewer, " +
   "because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so " +
@@ -222,6 +225,19 @@ const dashboardSettingsSchema = z
           ),
       })
       .optional(),
+    fieldEdits: z
+      .object({
+        fieldIds: settingsFieldIds
+          .max(50)
+          .describe(
+            "Custom fields that people on the Feedback name list (feedback.submitters, with allowOtherSubmitter) " +
+              "may edit in an \"Edit fields\" tab on media pages opened from this shared dashboard, in tab order. " +
+              "Only fields that have allowed values (others return a 400) and that the media page shows " +
+              "(fields.includeIds, or the company's public fields when it is empty); others are ignored on the page. " +
+              "Max 50 unique ids. Empty turns field editing off.",
+          ),
+      })
+      .optional(),
     reviewerUserIds: z
       .array(z.string().regex(USER_ID_PATTERN, "Expected a 24-character user id"))
       .max(MAX_DASHBOARD_REVIEWERS)
@@ -256,7 +272,8 @@ const dashboardSettingsSchema = z
   })
   .describe(
     "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the " +
-      "Fields tab groups them, the Feedback button, and labels and comments with the reviewers who may write them. " +
+      "Fields tab groups them, the Feedback button, which fields Feedback submitters may edit, and labels and " +
+      "comments with the reviewers who may write them. " +
       SETTINGS_RULES,
   );
 

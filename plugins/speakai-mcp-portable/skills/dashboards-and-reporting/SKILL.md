@@ -2,7 +2,7 @@
 name: dashboards-and-reporting
 description: Build, update, and share Speak AI analytics dashboards. Use this when someone asks for a dashboard, a recurring report, a chart or widget over their recordings, a speaker breakdown, a view of sentiment or themes over time, a shareable link or embed for stakeholders, or a copy of an existing dashboard scoped to a different folder or date range. Covers list_dashboard_widgets, list_dashboards, get_dashboard, create_dashboard, update_dashboard, duplicate_dashboard, share_dashboard, delete_dashboard and get_dashboard_speakers_insight, and explains the strict widget config rules that reject unknown keys.
 metadata:
-  server-version: "1.29.0"
+  server-version: "1.30.0"
   categories: "dashboards, custom-fields, folders-views"
 ---
 
@@ -61,6 +61,30 @@ to it.
 and an embed. That link is public and unauthenticated, so anyone holding it sees the data.
 
 Confirm with the user before sharing, and say plainly that the link needs no login.
+
+## Let reviewers edit fields
+
+`settings.fieldEdits.fieldIds` lists the custom fields that people on the dashboard's
+Feedback name list (`settings.feedback.submitters`, with `allowOtherSubmitter`) can edit
+from a media page opened through the shared dashboard. The fields show in an "Edit fields"
+tab, in the order you list them.
+
+- Only list fields that have allowed values. The server rejects any other field with a 400
+  that names it.
+- The field must also show on the dashboard's media pages (`settings.fields.includeIds`, or
+  the company's public fields when that list is empty). Other fields are ignored on the page.
+- Up to 50 ids. Unknown ids are dropped and returned in `droppedFieldIds`.
+- An empty list turns editing off. On update, leaving `fieldEdits` out keeps what is saved.
+
+Only change this when the user asks. Get field ids from `list_fields`, then call
+`update_dashboard` with metadata only:
+
+```json
+{
+  "dashboardId": "<dashboardId>",
+  "settings": { "fieldEdits": { "fieldIds": ["<statusFieldId>", "<outcomeFieldId>"] } }
+}
+```
 
 ## Speaker breakdowns
 

@@ -399,6 +399,17 @@ describe("Tools Integration Tests", () => {
       expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
     });
 
+    it("update_dashboard keeps settings.fieldEdits through schema parsing and sends it", async () => {
+      await reg();
+      const settings = { fieldEdits: { fieldIds: ["f1", "f2"] } };
+      const schema = (server as any)._registeredTools["update_dashboard"].inputSchema;
+      const parsed = schema.parse({ dashboardId: "d1", settings });
+      expect(parsed.settings).toEqual(settings);
+      expect(schema.safeParse({ dashboardId: "d1", settings: { fieldEdits: { fieldIds: Array(51).fill("f") } } }).success).toBe(false);
+      await getToolCallback(server, "update_dashboard")(parsed);
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
+    });
+
     it("update_dashboard sends the full spec with the revision for optimistic concurrency", async () => {
       await reg();
       await getToolCallback(server, "update_dashboard")({
