@@ -2,7 +2,7 @@ import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { unwrapData } from "./inbound-webhook-utils.js";
 
-// Copies the word order of flattenWords() in @speakai/shared; swap to that import once speak-shared#73 is released.
+// Mirrors the word order of flattenWords() in @speakai/shared; import it instead once that version is published.
 const WHITESPACE = /\s+/;
 const EDGE_PUNCTUATION = /^\p{P}+|\p{P}+$/gu;
 const CURLY_APOSTROPHE = /[‘’ʼ]/g;
@@ -97,7 +97,6 @@ function tokens(text: string | undefined): Word[] {
     .filter((token) => token.norm !== "");
 }
 
-/** Every transcript word in the server's word order. */
 function transcriptWords(transcript: TranscriptSegment[] | undefined): Word[] {
   const words: Word[] = [];
   for (const segment of transcript ?? []) {
