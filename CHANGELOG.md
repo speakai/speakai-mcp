@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.32.0 (2026-10-08)
+
+- feat(dashboards): drop reviewerNames subset; link writers are the feedback submitters
+
 ## v1.31.0 (2026-10-07)
 
 - feat(embed): restore the embed label and comment flags in the MCP
