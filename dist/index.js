@@ -3829,7 +3829,7 @@ var init_anchor = __esm({
 });
 
 // node_modules/@speakai/shared/dist/utils/label.js
-var LABEL_NAME_MAX, LABEL_DESCRIPTION_MAX, LABEL_SORT_ORDER_MAX, MAX_LABELS_PER_SPAN, MEDIA_COMMENT_BODY_MAX, MAX_DASHBOARD_REVIEWERS, MAX_DASHBOARD_LABEL_GROUPS, PUBLIC_ID_PATTERN, LABEL_COLOR_PATTERN, USER_ID_PATTERN, LABEL_COLOR_PRESETS, DEFAULT_LABEL_COLOR, SPEAK_LABEL_SETS, ALL_LABEL_PERMISSIONS, LABEL_PERMISSION_DEFAULTS;
+var LABEL_NAME_MAX, LABEL_DESCRIPTION_MAX, LABEL_SORT_ORDER_MAX, MAX_LABELS_PER_SPAN, MEDIA_COMMENT_BODY_MAX, MAX_DASHBOARD_LABEL_GROUPS, PUBLIC_ID_PATTERN, LABEL_COLOR_PATTERN, LABEL_COLOR_PRESETS, DEFAULT_LABEL_COLOR, SPEAK_LABEL_SETS, ALL_LABEL_PERMISSIONS, LABEL_PERMISSION_DEFAULTS;
 var init_label3 = __esm({
   "node_modules/@speakai/shared/dist/utils/label.js"() {
     "use strict";
@@ -3839,11 +3839,9 @@ var init_label3 = __esm({
     LABEL_SORT_ORDER_MAX = 1e6;
     MAX_LABELS_PER_SPAN = 20;
     MEDIA_COMMENT_BODY_MAX = 5e3;
-    MAX_DASHBOARD_REVIEWERS = 200;
     MAX_DASHBOARD_LABEL_GROUPS = 100;
     PUBLIC_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
     LABEL_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
-    USER_ID_PATTERN = /^[0-9a-f]{24}$/i;
     LABEL_COLOR_PRESETS = [
       "#0d9488",
       "#d97706",
@@ -10523,7 +10521,7 @@ var init_dashboards = __esm({
       preset: import_zod20.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
     }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
     settingsFieldIds = import_zod20.z.array(import_zod20.z.string());
-    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, reviewerUserIds, labels, comments) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets anyone holding the share link write as any listed reviewer, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the reviewerUserIds with the user before saving a write mode. Reviewers that are not active workspace members, or label groups that are not active, refuse the whole save with a 400 rather than being dropped.";
+    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, labels, comments) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets a link viewer write as one of the dashboard's feedback submitter names (feedback.submitters, even while feedback itself is off), or as another typed name only when feedback.allowOtherSubmitter is true. Anyone holding the share link can pick any of those names, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the names with the user before saving a write mode. With no submitter names nobody can write. Label groups that are not active refuse the whole save with a 400 rather than being dropped.";
     dashboardSettingsSchema = import_zod20.z.object({
       fields: import_zod20.z.object({
         includeIds: settingsFieldIds.describe(
@@ -10579,22 +10577,19 @@ var init_dashboards = __esm({
           `Custom fields that people on the Feedback name list (feedback.submitters, with allowOtherSubmitter) may edit in an "Edit fields" tab on media pages opened from this shared dashboard, in tab order. Only fields that have allowed values (others return a 400) and that the media page shows (fields.includeIds, or the company's public fields when it is empty); others are ignored on the page. Max 50 unique ids. Empty turns field editing off.`
         )
       }).optional(),
-      reviewerUserIds: import_zod20.z.array(import_zod20.z.string().regex(USER_ID_PATTERN, "Expected a 24-character user id")).max(MAX_DASHBOARD_REVIEWERS).optional().describe(
-        "Team members a dashboard viewer may write labels and comments as (unique, at most 200). Get ids from list_users. Must be active members of this workspace."
-      ),
       labels: import_zod20.z.object({
         isEnabled: import_zod20.z.boolean().describe("Show labels on media pages opened from this shared dashboard"),
-        mode: import_zod20.z.nativeEnum(DashboardLabelsMode).describe("'view' shows labels read-only; 'apply' also lets a listed reviewer add and remove labels"),
+        mode: import_zod20.z.nativeEnum(DashboardLabelsMode).describe("'view' shows labels read-only; 'apply' also lets a viewer, as a reviewer name, add and remove labels"),
         labelGroupIds: import_zod20.z.array(import_zod20.z.string().regex(PUBLIC_ID_PATTERN, "Expected a label id")).max(MAX_DASHBOARD_LABEL_GROUPS).describe(
           "Label groups the link shows and offers (unique, at most 100). Empty means every active label. Get group ids from list_labels (items with isGroup true)."
         )
       }).optional(),
       comments: import_zod20.z.object({
         isEnabled: import_zod20.z.boolean().describe("Show comments on media pages opened from this shared dashboard"),
-        mode: import_zod20.z.nativeEnum(DashboardCommentsMode).describe("'view' shows comments read-only; 'reply' also lets a listed reviewer comment and reply")
+        mode: import_zod20.z.nativeEnum(DashboardCommentsMode).describe("'view' shows comments read-only; 'reply' also lets a viewer, as a reviewer name, comment and reply")
       }).optional()
     }).describe(
-      "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, the Feedback button, which fields Feedback submitters may edit, and labels and comments with the reviewers who may write them. " + SETTINGS_RULES
+      "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, the Feedback button, which fields Feedback submitters may edit, and labels and comments with the reviewer names (feedback submitters) who may write them. " + SETTINGS_RULES
     );
     metadataFields = {
       icon: import_zod20.z.string().max(200).optional().describe("Icon identifier"),
