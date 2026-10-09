@@ -274,7 +274,7 @@ var init_activities = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/auth.js
-var SSOType, DevicePlatform;
+var SSOType, DevicePlatform, AuthErrorCode;
 var init_auth = __esm({
   "node_modules/@speakai/shared/dist/enums/auth.js"() {
     "use strict";
@@ -292,6 +292,9 @@ var init_auth = __esm({
       DevicePlatform2["DESKTOP"] = "desktop";
       DevicePlatform2["API"] = "api";
     })(DevicePlatform || (DevicePlatform = {}));
+    (function(AuthErrorCode2) {
+      AuthErrorCode2["INVALID_REFRESH_TOKEN"] = "INVALID_REFRESH_TOKEN";
+    })(AuthErrorCode || (AuthErrorCode = {}));
   }
 });
 
@@ -450,6 +453,7 @@ var init_export = __esm({
     (function(ExportFormatType2) {
       ExportFormatType2["CSV"] = "csv";
       ExportFormatType2["CSV_INSIGHTS"] = "csv-insights";
+      ExportFormatType2["CSV_LABELS"] = "csv-labels";
       ExportFormatType2["CSV_TRANSCRIPT"] = "csv-transcript";
       ExportFormatType2["CSV_TRANSCRIPT_WITH_SENTIMENT"] = "csv-transcript-sentiment";
       ExportFormatType2["CSV_TEXT_WITH_SENTIMENT"] = "csv-text-sentiment";
@@ -753,7 +757,7 @@ var init_menu = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/meeting.js
-var MeetingPlatform, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource;
+var MeetingPlatform, MEETING_PLATFORM_LABELS, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource;
 var init_meeting = __esm({
   "node_modules/@speakai/shared/dist/enums/meeting.js"() {
     "use strict";
@@ -763,6 +767,12 @@ var init_meeting = __esm({
       MeetingPlatform2["MICROSOFT_TEAMS"] = "microsoftTeams";
       MeetingPlatform2["WEBEX"] = "webex";
     })(MeetingPlatform || (MeetingPlatform = {}));
+    MEETING_PLATFORM_LABELS = {
+      [MeetingPlatform.ZOOM]: "Zoom",
+      [MeetingPlatform.GOOGLE_MEET]: "Google Meet",
+      [MeetingPlatform.MICROSOFT_TEAMS]: "Microsoft Teams",
+      [MeetingPlatform.WEBEX]: "Webex"
+    };
     (function(MeetingStatus2) {
       MeetingStatus2["WILL_JOIN"] = "willJoin";
       MeetingStatus2["SCHEDULED"] = "scheduled";
@@ -878,6 +888,224 @@ var init_notification = __esm({
       NotificationAction2["RESOLVED"] = "resolved";
       NotificationAction2["REOPENED"] = "reopened";
     })(NotificationAction || (NotificationAction = {}));
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/pushNotification.js
+var PushNotificationAction, PushNotificationType, PushTapTarget, PushDataKey, WebPushDataKey, PUSH_NOTIFICATION_ACTION_LABELS, MEDIA_PUSH_DATA_KEYS, RECORDER_PUSH_DATA_KEYS, PUSH_NOTIFICATION_REGISTRY;
+var init_pushNotification = __esm({
+  "node_modules/@speakai/shared/dist/enums/pushNotification.js"() {
+    "use strict";
+    (function(PushNotificationAction2) {
+      PushNotificationAction2["JOIN"] = "join";
+      PushNotificationAction2["RECORD"] = "record";
+      PushNotificationAction2["OPEN_MEDIA"] = "open-media";
+    })(PushNotificationAction || (PushNotificationAction = {}));
+    (function(PushNotificationType2) {
+      PushNotificationType2["MEETING_REMINDER"] = "meeting-reminder";
+      PushNotificationType2["MEDIA_FAILED"] = "media-failed";
+      PushNotificationType2["MEDIA_ANALYZED"] = "media-analyzed";
+      PushNotificationType2["TRANSCRIPTION_APPROVED"] = "transcription-approved";
+      PushNotificationType2["TRANSCRIPTION_COMPLETED"] = "transcription-completed";
+      PushNotificationType2["RECORDER_SUBMISSION"] = "recorder-submission";
+      PushNotificationType2["RECORDER_DISABLED"] = "recorder-disabled";
+    })(PushNotificationType || (PushNotificationType = {}));
+    (function(PushTapTarget2) {
+      PushTapTarget2["MEETING"] = "meeting";
+      PushTapTarget2["MEDIA"] = "media";
+      PushTapTarget2["RECORDER"] = "recorder";
+    })(PushTapTarget || (PushTapTarget = {}));
+    (function(PushDataKey2) {
+      PushDataKey2["EVENT_ID"] = "eventId";
+      PushDataKey2["UID"] = "uid";
+      PushDataKey2["TITLE"] = "title";
+      PushDataKey2["PLATFORM"] = "platform";
+      PushDataKey2["MEETING_URL"] = "meetingURL";
+      PushDataKey2["START_TIME"] = "startTime";
+      PushDataKey2["MEDIA_ID"] = "mediaId";
+      PushDataKey2["RECORDER_ID"] = "recorderId";
+    })(PushDataKey || (PushDataKey = {}));
+    (function(WebPushDataKey2) {
+      WebPushDataKey2["TITLE"] = "title";
+      WebPushDataKey2["MESSAGE"] = "message";
+      WebPushDataKey2["TAG"] = "tag";
+    })(WebPushDataKey || (WebPushDataKey = {}));
+    PUSH_NOTIFICATION_ACTION_LABELS = {
+      [PushNotificationAction.JOIN]: "Join",
+      [PushNotificationAction.RECORD]: "Record",
+      [PushNotificationAction.OPEN_MEDIA]: "Open"
+    };
+    MEDIA_PUSH_DATA_KEYS = [PushDataKey.UID, PushDataKey.MEDIA_ID];
+    RECORDER_PUSH_DATA_KEYS = [PushDataKey.UID, PushDataKey.RECORDER_ID];
+    PUSH_NOTIFICATION_REGISTRY = {
+      [PushNotificationType.MEETING_REMINDER]: {
+        categoryId: "MEETING_REMINDER",
+        androidChannelId: "meeting-reminders",
+        actions: [PushNotificationAction.JOIN, PushNotificationAction.RECORD],
+        requiredDataKeys: [
+          PushDataKey.EVENT_ID,
+          PushDataKey.UID,
+          PushDataKey.TITLE,
+          PushDataKey.PLATFORM,
+          PushDataKey.MEETING_URL,
+          PushDataKey.START_TIME
+        ],
+        tapTarget: PushTapTarget.MEETING
+      },
+      [PushNotificationType.MEDIA_FAILED]: {
+        categoryId: "MEDIA_FAILED",
+        androidChannelId: "media-updates",
+        actions: [],
+        requiredDataKeys: MEDIA_PUSH_DATA_KEYS,
+        tapTarget: PushTapTarget.MEDIA
+      },
+      [PushNotificationType.MEDIA_ANALYZED]: {
+        categoryId: "MEDIA_ANALYZED",
+        androidChannelId: "media-updates",
+        actions: [],
+        requiredDataKeys: MEDIA_PUSH_DATA_KEYS,
+        tapTarget: PushTapTarget.MEDIA
+      },
+      [PushNotificationType.TRANSCRIPTION_APPROVED]: {
+        categoryId: "TRANSCRIPTION_APPROVED",
+        androidChannelId: "transcription-updates",
+        actions: [],
+        requiredDataKeys: MEDIA_PUSH_DATA_KEYS,
+        tapTarget: PushTapTarget.MEDIA
+      },
+      [PushNotificationType.TRANSCRIPTION_COMPLETED]: {
+        categoryId: "TRANSCRIPTION_COMPLETED",
+        androidChannelId: "transcription-updates",
+        actions: [],
+        requiredDataKeys: MEDIA_PUSH_DATA_KEYS,
+        tapTarget: PushTapTarget.MEDIA
+      },
+      [PushNotificationType.RECORDER_SUBMISSION]: {
+        categoryId: "RECORDER_SUBMISSION",
+        androidChannelId: "recorder-updates",
+        actions: [],
+        requiredDataKeys: RECORDER_PUSH_DATA_KEYS,
+        tapTarget: PushTapTarget.RECORDER
+      },
+      [PushNotificationType.RECORDER_DISABLED]: {
+        categoryId: "RECORDER_DISABLED",
+        androidChannelId: "recorder-updates",
+        actions: [],
+        requiredDataKeys: RECORDER_PUSH_DATA_KEYS,
+        tapTarget: PushTapTarget.RECORDER
+      }
+    };
+  }
+});
+
+// node_modules/@speakai/shared/dist/enums/notificationEvent.js
+var NotificationChannel, NotificationSettingsGroup, NotificationEventKey, NOTIFICATION_SETTINGS_GROUP_ORDER, ALL_CHANNELS, PUSH_CHANNELS, EMAIL_ONLY, NOTIFICATION_EVENTS;
+var init_notificationEvent = __esm({
+  "node_modules/@speakai/shared/dist/enums/notificationEvent.js"() {
+    "use strict";
+    init_pushNotification();
+    (function(NotificationChannel2) {
+      NotificationChannel2["EMAIL"] = "email";
+      NotificationChannel2["WEB"] = "web";
+      NotificationChannel2["MOBILE"] = "mobile";
+    })(NotificationChannel || (NotificationChannel = {}));
+    (function(NotificationSettingsGroup2) {
+      NotificationSettingsGroup2["MEETINGS"] = "meetings";
+      NotificationSettingsGroup2["MEDIA"] = "media";
+      NotificationSettingsGroup2["RECORDER"] = "recorder";
+      NotificationSettingsGroup2["TRANSCRIPTION"] = "transcription";
+      NotificationSettingsGroup2["USAGE"] = "usage";
+      NotificationSettingsGroup2["MAGIC_PROMPT"] = "magicPrompt";
+    })(NotificationSettingsGroup || (NotificationSettingsGroup = {}));
+    (function(NotificationEventKey2) {
+      NotificationEventKey2["MEETING_REMINDER"] = "meeting-reminder";
+      NotificationEventKey2["MEDIA_FAILED"] = "media-failed";
+      NotificationEventKey2["MEDIA_ANALYZED"] = "media-analyzed";
+      NotificationEventKey2["RECORDER_SUBMISSION"] = "recorder-submission";
+      NotificationEventKey2["RECORDER_DISABLED"] = "recorder-disabled";
+      NotificationEventKey2["TRANSCRIPTION_APPROVED"] = "transcription-approved";
+      NotificationEventKey2["TRANSCRIPTION_COMPLETED"] = "transcription-completed";
+      NotificationEventKey2["USAGE_BALANCE"] = "usage-balance";
+      NotificationEventKey2["MAGIC_PROMPT_COMPLETED"] = "magic-prompt-completed";
+    })(NotificationEventKey || (NotificationEventKey = {}));
+    NOTIFICATION_SETTINGS_GROUP_ORDER = [
+      NotificationSettingsGroup.MEETINGS,
+      NotificationSettingsGroup.MEDIA,
+      NotificationSettingsGroup.RECORDER,
+      NotificationSettingsGroup.TRANSCRIPTION,
+      NotificationSettingsGroup.USAGE,
+      NotificationSettingsGroup.MAGIC_PROMPT
+    ];
+    ALL_CHANNELS = [
+      NotificationChannel.EMAIL,
+      NotificationChannel.WEB,
+      NotificationChannel.MOBILE
+    ];
+    PUSH_CHANNELS = [NotificationChannel.WEB, NotificationChannel.MOBILE];
+    EMAIL_ONLY = [NotificationChannel.EMAIL];
+    NOTIFICATION_EVENTS = {
+      [NotificationEventKey.MEETING_REMINDER]: {
+        key: NotificationEventKey.MEETING_REMINDER,
+        group: NotificationSettingsGroup.MEETINGS,
+        preferencePath: "meetings.reminders",
+        channels: PUSH_CHANNELS,
+        pushType: PushNotificationType.MEETING_REMINDER
+      },
+      [NotificationEventKey.MEDIA_FAILED]: {
+        key: NotificationEventKey.MEDIA_FAILED,
+        group: NotificationSettingsGroup.MEDIA,
+        preferencePath: "media.failed",
+        channels: ALL_CHANNELS,
+        pushType: PushNotificationType.MEDIA_FAILED
+      },
+      [NotificationEventKey.MEDIA_ANALYZED]: {
+        key: NotificationEventKey.MEDIA_ANALYZED,
+        group: NotificationSettingsGroup.MEDIA,
+        preferencePath: "media.analyzed",
+        channels: ALL_CHANNELS,
+        pushType: PushNotificationType.MEDIA_ANALYZED
+      },
+      [NotificationEventKey.RECORDER_SUBMISSION]: {
+        key: NotificationEventKey.RECORDER_SUBMISSION,
+        group: NotificationSettingsGroup.RECORDER,
+        preferencePath: "recorder.submission",
+        channels: ALL_CHANNELS,
+        pushType: PushNotificationType.RECORDER_SUBMISSION
+      },
+      [NotificationEventKey.RECORDER_DISABLED]: {
+        key: NotificationEventKey.RECORDER_DISABLED,
+        group: NotificationSettingsGroup.RECORDER,
+        preferencePath: "recorder.disabled",
+        channels: ALL_CHANNELS,
+        pushType: PushNotificationType.RECORDER_DISABLED
+      },
+      [NotificationEventKey.TRANSCRIPTION_APPROVED]: {
+        key: NotificationEventKey.TRANSCRIPTION_APPROVED,
+        group: NotificationSettingsGroup.TRANSCRIPTION,
+        preferencePath: "transcription.approved",
+        channels: ALL_CHANNELS,
+        pushType: PushNotificationType.TRANSCRIPTION_APPROVED
+      },
+      [NotificationEventKey.TRANSCRIPTION_COMPLETED]: {
+        key: NotificationEventKey.TRANSCRIPTION_COMPLETED,
+        group: NotificationSettingsGroup.TRANSCRIPTION,
+        preferencePath: "transcription.completed",
+        channels: ALL_CHANNELS,
+        pushType: PushNotificationType.TRANSCRIPTION_COMPLETED
+      },
+      [NotificationEventKey.USAGE_BALANCE]: {
+        key: NotificationEventKey.USAGE_BALANCE,
+        group: NotificationSettingsGroup.USAGE,
+        preferencePath: "usage.balance",
+        channels: EMAIL_ONLY
+      },
+      [NotificationEventKey.MAGIC_PROMPT_COMPLETED]: {
+        key: NotificationEventKey.MAGIC_PROMPT_COMPLETED,
+        group: NotificationSettingsGroup.MAGIC_PROMPT,
+        preferencePath: "magicPrompt.completed",
+        channels: EMAIL_ONLY
+      }
+    };
   }
 });
 
@@ -1280,6 +1508,8 @@ var init_enums = __esm({
     init_menu();
     init_meeting();
     init_notification();
+    init_notificationEvent();
+    init_pushNotification();
     init_prompt();
     init_recorder();
     init_subscription();
@@ -1448,6 +1678,20 @@ var init_dashboard = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/interfaces/pushNotification.js
+var init_pushNotification2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/pushNotification.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@speakai/shared/dist/interfaces/notificationEvent.js
+var init_notificationEvent2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/notificationEvent.js"() {
+    "use strict";
+  }
+});
+
 // node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
   "node_modules/@speakai/shared/dist/interfaces/index.js"() {
@@ -1473,6 +1717,8 @@ var init_interfaces = __esm({
     init_clip2();
     init_label2();
     init_dashboard();
+    init_pushNotification2();
+    init_notificationEvent2();
   }
 });
 
@@ -3834,6 +4080,7 @@ var init_label3 = __esm({
   "node_modules/@speakai/shared/dist/utils/label.js"() {
     "use strict";
     init_enums();
+    init_transcript2();
     LABEL_NAME_MAX = 80;
     LABEL_DESCRIPTION_MAX = 500;
     LABEL_SORT_ORDER_MAX = 1e6;
@@ -3912,6 +4159,33 @@ var init_label3 = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/utils/meetingLink.js
+var init_meetingLink = __esm({
+  "node_modules/@speakai/shared/dist/utils/meetingLink.js"() {
+    "use strict";
+    init_meeting();
+  }
+});
+
+// node_modules/@speakai/shared/dist/utils/pushNotification.js
+var KNOWN_ACTIONS;
+var init_pushNotification3 = __esm({
+  "node_modules/@speakai/shared/dist/utils/pushNotification.js"() {
+    "use strict";
+    init_pushNotification();
+    KNOWN_ACTIONS = new Set(Object.values(PushNotificationAction));
+  }
+});
+
+// node_modules/@speakai/shared/dist/utils/notificationEvent.js
+var init_notificationEvent3 = __esm({
+  "node_modules/@speakai/shared/dist/utils/notificationEvent.js"() {
+    "use strict";
+    init_auth();
+    init_notificationEvent();
+  }
+});
+
 // node_modules/@speakai/shared/dist/llm/types.js
 var init_types = __esm({
   "node_modules/@speakai/shared/dist/llm/types.js"() {
@@ -3930,6 +4204,9 @@ var init_dist = __esm({
     init_anchor();
     init_label3();
     init_dashboard_spec();
+    init_meetingLink();
+    init_pushNotification3();
+    init_notificationEvent3();
     init_registry();
     init_types();
     init_modelPricing();

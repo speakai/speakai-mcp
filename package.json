@@ -54,7 +54,7 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
-    "@speakai/shared": "^2.1.40",
+    "@speakai/shared": "^2.1.46",
     "@types/node": "^20.0.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",
