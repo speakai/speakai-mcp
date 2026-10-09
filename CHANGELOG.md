@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.33.1 (2026-10-09)
+
+- Maintenance release
+
 ## v1.33.0 (2026-10-09)
 
 - feat(exports): describe the csv-labels export in export_media and export_multiple_media
