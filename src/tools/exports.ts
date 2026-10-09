@@ -9,7 +9,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   registerSpeakTool(server, 
     "export_media",
-    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv). Generates the file and returns it without saving or sharing anything.",
+    "Export a media file's transcript, insights or labels in various formats (pdf, docx, srt, vtt, txt, csv). Use fileType csv-labels for a labels CSV with one row per labelled passage and label (file name, group, label, times, speaker, excerpt, author, status, confidence, comment count). Generates the file and returns it without saving or sharing anything.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
       fileType: z
@@ -69,7 +69,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "export_multiple_media",
-    "Export multiple media files at once, optionally merged into a single file.",
+    "Export multiple media files at once, optionally merged into a single file. With fileType csv-labels you get one labels CSV per file that has labels (files without labels are skipped), or one merged CSV with isMerged; it fails with not found when none of the files has labels.",
     {
       mediaIds: z
         .array(z.string())

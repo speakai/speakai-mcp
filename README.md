@@ -508,8 +508,8 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 
 | Tool | Description |
 |---|---|
-| `export_media` | Export as PDF, DOCX, SRT, VTT, TXT, or CSV |
-| `export_multiple_media` | Batch export with optional merge into one file |
+| `export_media` | Export as PDF, DOCX, SRT, VTT, TXT, CSV, or a labels CSV (`csv-labels`) |
+| `export_multiple_media` | Batch export with optional merge into one file, including labels CSVs |
 
 </details>
 
