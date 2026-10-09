@@ -4,7 +4,7 @@ description: Analyze interviews, user research calls, and customer conversations
 license: MIT
 metadata:
   server: "@speakai/mcp-server"
-  server-version: "1.29.0"
+  server-version: "1.32.0"
   categories: "research"
 ---
 
@@ -17,7 +17,7 @@ recording. The work always follows the same shape. Find the right recordings, co
 they are ready to read, scope the question, ask it, then pull the exact words back out
 of the transcripts so the answer is defensible.
 
-The Speak AI MCP server has 168 tools. This skill uses tools from five of the fifteen
+The Speak AI MCP server has 184 tools. This skill uses tools from five of the fifteen
 categories: search-analytics (3 tools), magic-prompt (13 tools), media (18 tools),
 folders-views (11 tools), and custom-fields (4 tools). Every tool named below exists.
 Do not invent tool names. If you need something that is not listed here, check

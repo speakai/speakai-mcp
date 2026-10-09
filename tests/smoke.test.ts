@@ -30,13 +30,13 @@ describe("MCP Server Smoke Tests", () => {
     server = new McpServer({ name: "speak-ai-test", version: "1.0.0" });
   });
 
-  it("registers all 168 MCP tools without errors", async () => {
+  it("registers all 184 MCP tools without errors", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
     expect(() => registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true })).not.toThrow();
 
     const tools = getRegisteredTools(server);
     const toolNames = Object.keys(tools);
-    expect(toolNames).toHaveLength(168);
+    expect(toolNames).toHaveLength(184);
   });
 
   it("never exposes local-disk or unfinished voice test-run tools on the hosted server", async () => {
@@ -60,7 +60,7 @@ describe("MCP Server Smoke Tests", () => {
       expect(toolNames).not.toContain(runTool);
     }
     expect(toolNames).toContain("get_voice_test_suite");
-    expect(toolNames).toHaveLength(157);
+    expect(toolNames).toHaveLength(173);
   });
 
   it("registers all tools with unique names", async () => {
@@ -124,13 +124,17 @@ describe("MCP Server Smoke Tests", () => {
       .sort();
 
     expect(additiveWrites).toEqual([
+      "add_comment",
+      "add_speak_label_sets",
       "add_voice_faq_suggestion",
       "add_voice_kb_gap",
       "analyze_voice_kb_gaps",
+      "apply_label",
       "bulk_create_voice_agent_resources",
       "clone_folder",
       "create_field",
       "create_folder",
+      "create_label",
       "create_user_group",
       "create_voice_agent",
       "create_voice_agent_from_prompt",

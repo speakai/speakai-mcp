@@ -10,6 +10,8 @@ import * as embed from "./embed.js";
 import * as prompt from "./prompt.js";
 import * as meeting from "./meeting.js";
 import * as fields from "./fields.js";
+import * as labels from "./labels.js";
+import * as comments from "./comments.js";
 import * as automations from "./automations.js";
 import * as webhooks from "./webhooks.js";
 import * as analytics from "./analytics.js";
@@ -41,6 +43,8 @@ const modules: ToolModule[] = [
   prompt,
   meeting,
   fields,
+  labels,
+  comments,
   automations,
   webhooks,
   analytics,

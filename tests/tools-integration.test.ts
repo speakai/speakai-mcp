@@ -380,6 +380,40 @@ describe("Tools Integration Tests", () => {
       expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { isDefault: true });
     });
 
+    it("update_dashboard validates and sends reviewer, labels and comments settings", async () => {
+      await reg();
+      const settings = {
+        labels: { isEnabled: true, mode: "apply", labelGroupIds: ["grp_1"] },
+        comments: { isEnabled: true, mode: "reply" },
+      };
+      const schema = (server as any)._registeredTools.update_dashboard.inputSchema;
+      expect(schema.safeParse({ dashboardId: "d1", settings }).success).toBe(true);
+      expect(
+        schema.safeParse({ dashboardId: "d1", settings: { ...settings, comments: { isEnabled: true, mode: "edit" } } })
+          .success,
+      ).toBe(false);
+      // Reviewers are the feedback submitter names; a stale reviewerUserIds or reviewerNames is never sent.
+      const legacy = schema.parse({
+        dashboardId: "d1",
+        settings: { reviewerUserIds: ["64b7f0c2a1b2c3d4e5f60718"], reviewerNames: ["Reviewer A"] },
+      });
+      expect(legacy.settings).toEqual({});
+
+      await getToolCallback(server, "update_dashboard")({ dashboardId: "d1", settings });
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
+    });
+
+    it("update_dashboard keeps settings.fieldEdits through schema parsing and sends it", async () => {
+      await reg();
+      const settings = { fieldEdits: { fieldIds: ["f1", "f2"] } };
+      const schema = (server as any)._registeredTools["update_dashboard"].inputSchema;
+      const parsed = schema.parse({ dashboardId: "d1", settings });
+      expect(parsed.settings).toEqual(settings);
+      expect(schema.safeParse({ dashboardId: "d1", settings: { fieldEdits: { fieldIds: Array(51).fill("f") } } }).success).toBe(false);
+      await getToolCallback(server, "update_dashboard")(parsed);
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
+    });
+
     it("update_dashboard sends the full spec with the revision for optimistic concurrency", async () => {
       await reg();
       await getToolCallback(server, "update_dashboard")({

@@ -1,6 +1,6 @@
 {
   "name": "@speakai/mcp-server",
-  "version": "1.29.0",
+  "version": "1.32.0",
   "mcpName": "io.github.speakai/mcp-server",
   "description": "Official Speak AI MCP Server — capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows from your AI assistant.",
   "homepage": "https://docs.speakai.co/mcp",
@@ -54,7 +54,7 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
-    "@speakai/shared": "^2.1.0",
+    "@speakai/shared": "^2.1.40",
     "@types/node": "^20.0.0",
     "@vitest/coverage-v8": "^4.1.6",
     "tsup": "^8.5.1",

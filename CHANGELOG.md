@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.32.0 (2026-10-08)
+
+- feat(dashboards): drop reviewerNames subset; link writers are the feedback submitters
+
+## v1.31.0 (2026-10-07)
+
+- feat(embed): restore the embed label and comment flags in the MCP
+
+## v1.30.0 (2026-10-07)
+
+- feat(dashboards): fieldEdits setting for editable fields on dashboard media pages
+
 ## v1.29.0 (2026-10-05)
 
 - feat(exports): regroup tool categories and keep the README in step with them
