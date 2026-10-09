@@ -21,7 +21,8 @@
 # names a literal owner that is not speakai (an -R/--repo value, a PR URL, a repos/<owner>/...
 # api endpoint or the MCP owner field). The session folder's git remote is never used, because
 # cd, pushd or GH_REPO in the same command can point gh at another repo; placeholders such as
-# {owner} or :owner and shell patterns count as unknown. An unknown owner keeps the rule.
+# {owner} or :owner, shell patterns, and paths with .. or %-encoding (a server can resolve them
+# to another owner) count as unknown. An unknown owner keeps the rule.
 # Create and merge are gated for every repo.
 #
 # Output: deny is exit 2 with the reason on stderr (exit 2 blocks before permission rules, and
@@ -102,9 +103,10 @@ ready_policy() {
 owner_is_external() {
   local o
   case "$1" in */*) ;; *) return 1 ;; esac
+  case "$1" in *..*|*%*|*\\*) return 1 ;; esac
   o=$(printf '%s' "${1%%/*}" | tr '[:upper:]' '[:lower:]')
   [ -n "$o" ] || return 1
-  case "$o" in *'$'*|*'`'*|'{'*|':'*|*'*'*|*'?'*|*'['*|*'~'*|*'\\'*) return 1 ;; esac
+  case "$o" in *'$'*|*'`'*|'{'*|':'*|*'*'*|*'?'*|*'['*|*'~'*|*\\*) return 1 ;; esac
   [ "$o" != speakai ]
 }
 # gh -R accepts [HOST/]OWNER/REPO; drop the host so the owner comes first.
