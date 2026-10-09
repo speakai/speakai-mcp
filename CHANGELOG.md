@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.32.1 (2026-10-09)
+
+- fix: route booking links through speakai.co/book
+
 ## v1.32.0 (2026-10-08)
 
 - feat(dashboards): drop reviewerNames subset; link writers are the feedback submitters
