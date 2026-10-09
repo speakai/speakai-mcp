@@ -4770,7 +4770,7 @@ function register3(server, client) {
   registerSpeakTool(
     server,
     "export_media",
-    "Export a media file's transcript or insights in various formats (pdf, docx, srt, vtt, txt, csv). Generates the file and returns it without saving or sharing anything.",
+    "Export a media file's transcript, insights or labels in various formats (pdf, docx, srt, vtt, txt, csv). Use fileType csv-labels for a labels CSV with one row per labelled passage and label (file name, group, label, times, speaker, excerpt, author, status, confidence, comment count). Generates the file and returns it without saving or sharing anything.",
     {
       mediaId: import_zod4.z.string().min(1).describe("Unique identifier of the media file"),
       fileType: import_zod4.z.nativeEnum(ExportFormatType).describe("Desired export format"),
@@ -4810,7 +4810,7 @@ function register3(server, client) {
   registerSpeakTool(
     server,
     "export_multiple_media",
-    "Export multiple media files at once, optionally merged into a single file.",
+    "Export multiple media files at once, optionally merged into a single file. With fileType csv-labels you get one labels CSV per file that has labels (files without labels are skipped), or one merged CSV with isMerged; it fails with not found when none of the files has labels.",
     {
       mediaIds: import_zod4.z.array(import_zod4.z.string()).describe("Array of media IDs to export"),
       fileType: import_zod4.z.nativeEnum(ExportFormatType).describe("Desired export format"),

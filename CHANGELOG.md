@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.33.0 (2026-10-09)
+
+- feat(exports): describe the csv-labels export in export_media and export_multiple_media
+
 ## v1.32.0 (2026-10-08)
 
 - feat(dashboards): drop reviewerNames subset; link writers are the feedback submitters
