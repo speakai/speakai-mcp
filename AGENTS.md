@@ -69,11 +69,13 @@ Tests live in the root `tests/` folder (Vitest, one file per `src` module or sur
 - Try the simplest fix first and add a helper, constant, option or layer only when a second real caller exists today.
 - Before starting or resuming work in a worktree or branch, fetch and merge the latest base branch (dev, main or master per this repo) so the work starts from current code.
 **Code**
-- Comments explain why in one line, never what; change history, plan names and old-behavior notes go in the commit or PR.
+- Comments explain why in one line, never what: keep only reasons, invariants, units and bounds, never restate a name or type or add decorative section banners; change history, plan names and old-behavior notes go in the commit or PR.
 - Match and join records by ID, never by name or label.
 - Put types, enums, interfaces and constants where this repo keeps them (shared package first, then the feature's own file) and never create a file for one value.
 **Tests**
-- Every bug fix gets a test that fails without the fix, placed where this repo's AGENTS.md says tests live (full rules: the testing-policy skill, where installed).
+- Every bug fix gets a test that fails without the fix, added as a case in the existing test file for that module where this repo's AGENTS.md says tests live; create a new test file only when the module has none (full rules: the testing-policy skill, where installed).
+- Keep one test file per source module and add at most 3 new test files in a PR; when a PR needs more, say why in its body and ask a human for the test-budget-ok label.
+- Write a test only for behavior a caller or user would notice breaking, and assert on outputs, stored data or rendered text; constants, copy, class names, enum values, export lists, source text, bare mock calls and timings are not behavior.
 **Pull requests**
 - Open every PR as a draft (gh pr create --draft); the developer marks it Ready and a human merges.
 - Add follow-up work for a task to that task's open PR in this repo instead of opening a new one.
@@ -89,12 +91,9 @@ Tests live in the root `tests/` folder (Vitest, one file per `src` module or sur
 <!-- END ai-skills rules -->
 
 ## Claude Code and Codex
-Codex reads this file and skills in `.agents/skills/`. Claude Code reads `CLAUDE.md`, which only
-imports this file, and skills in `.claude/skills/`. The guardrail hooks, the `add-rule` skill
-(`/add-rule` in Claude Code, `$add-rule` in Codex) and the team rules block above are vendored
-from Speak's shared ai-skills repo, so change them there rather than here. Re-vendor with that
-repo's `scripts/install.sh --target <this repo> --plugins eng-safety`; the plugin list and this
-repo's id are in `.claude/ai-skills.config`. After pulling, Codex users trust the project once and
-approve its hooks in `/hooks` (Codex 0.142 or newer); Codex asks again whenever a hook changes.
+Codex reads this file. Claude Code reads `CLAUDE.md`, which only imports this file. The guardrail
+hooks in `.claude/hooks/ai-skills/` and the team rules block above are vendored from Speak's shared
+ai-skills repo, so change them there rather than here; `.claude/ai-skills.config` names the plugin
+and this repo's id. Codex users trust the project once and approve its hooks in `/hooks`.
 The customer-facing skills in `plugins/speakai-mcp/skills/` are plugin content, not skills for
 working on this repo.

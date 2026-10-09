@@ -17,6 +17,11 @@
 #           enablePullRequestAutoMerge, MCP merge_pull_request              -> deny in every mode
 #   anything else                                                           -> allow silently
 #
+# Exception: the Ready rule applies to speakai repos only. It is skipped when the target repo's
+# owner is known and is not speakai (an -R/--repo value, a PR URL, a repos/<owner>/... api
+# endpoint, the MCP owner field, else the origin remote of the event cwd); an unknown owner
+# keeps the rule. Create and merge are gated for every repo.
+#
 # Output: deny is exit 2 with the reason on stderr (exit 2 blocks before permission rules, and
 # no other hook's allow can override it). ask is exit 0 with hookSpecificOutput JSON on stdout.
 # allow is exit 0 with no output.
@@ -91,6 +96,52 @@ ready_policy() {
     *) note_deny "$R_HEADLESS (permission mode: ${MODE:-not set})" ;;
   esac
 }
+# True when a "owner/rest" string names a literal owner other than speakai (any case).
+owner_is_external() {
+  local o
+  case "$1" in */*) ;; *) return 1 ;; esac
+  o=$(printf '%s' "${1%%/*}" | tr '[:upper:]' '[:lower:]')
+  [ -n "$o" ] || return 1
+  case "$o" in *'$'*|*'`'*|'{'*) return 1 ;; esac
+  [ "$o" != speakai ]
+}
+# Prints owner/repo of the cwd's origin remote, or nothing when git cannot tell.
+origin_slug() {
+  local u
+  u=$(git -C "$CWD" remote get-url origin 2>/dev/null) || return 0
+  case "$u" in
+    file://*) u="" ;;
+    *://*) u=${u#*://}; u=${u#*/} ;;
+    *:*) u=${u#*:} ;;
+    *) u="" ;;
+  esac
+  printf '%s' "$u"
+}
+# gh -R accepts [HOST/]OWNER/REPO; drop the host so the owner comes first.
+drop_repo_host() {
+  case "$1" in */*/*) printf '%s' "${1#*/}" ;; *) printf '%s' "$1" ;; esac
+}
+# True when every repo a gh pr ready names (-R/--repo, PR URL) is external; with none named,
+# the origin remote decides. Any speakai or unreadable owner keeps the Ready rule.
+ready_args_external() {
+  local a prev="" slug found=0
+  for a in "$@"; do
+    slug=""
+    case "$prev" in -R|--repo) slug=$(drop_repo_host "$a") ;; esac
+    case "$a" in
+      --repo=*) slug=$(drop_repo_host "${a#--repo=}") ;;
+      -R?*) slug=$(drop_repo_host "${a#-R}") ;;
+      http://*/pull/*|https://*/pull/*) slug=${a#*://}; slug=${slug#*/} ;;
+    esac
+    prev=$a
+    if [ -n "$slug" ]; then
+      found=1
+      owner_is_external "$slug" || return 1
+    fi
+  done
+  [ "$found" = 1 ] && return 0
+  owner_is_external "$(origin_slug)"
+}
 is_true() {
   case "$1" in 1|t|T|true|TRUE|True) return 0 ;; *) return 1 ;; esac
 }
@@ -120,6 +171,7 @@ elif ! parsed=$(printf '%s' "$input" | jq -r '
     [ (.tool_name // ""), (.permission_mode // ""), (.cwd // ""),
       (if has("turn_id") then "codex" else "" end),
       (.tool_input.draft | if . == true then "true" elif . == false or . == "false" then "false" else "" end),
+      (.tool_input.owner | if type == "string" then . else "" end),
       (.tool_input.command // "") ] | map(tostring) | join("\u001f")' 2>/dev/null); then
   why="the hook input could not be parsed as JSON"
 fi
@@ -136,7 +188,8 @@ TOOL=${parsed%%"$SEP"*};  parsed=${parsed#*"$SEP"}
 MODE=${parsed%%"$SEP"*};  parsed=${parsed#*"$SEP"}
 CWD=${parsed%%"$SEP"*};   parsed=${parsed#*"$SEP"}
 [ "${parsed%%"$SEP"*}" = codex ] && HOST=codex; parsed=${parsed#*"$SEP"}
-DRAFT=${parsed%%"$SEP"*}; COMMAND=${parsed#*"$SEP"}
+DRAFT=${parsed%%"$SEP"*}; parsed=${parsed#*"$SEP"}
+MCP_OWNER=${parsed%%"$SEP"*}; COMMAND=${parsed#*"$SEP"}
 [ -n "$CWD" ] || CWD=$PWD
 
 # ---- Shell tokenizer ----
@@ -336,6 +389,7 @@ count_gh_flags() {
 
 analyze_gh() {
   local a
+  local -a orig=("$@")
   count_gh_flags "$@"; shift "$GH_FLAGS"
   [ $# -gt 0 ] || return 0
   if not_literal "$1"; then note_deny "$R_LITERAL"; return 0; fi
@@ -350,7 +404,7 @@ analyze_gh() {
       shift 2; check_pr_create "$@" ;;
     "pr ready")
       for a in "$@"; do [ "$a" = "--undo" ] && return 0; done
-      ready_policy "$R_READY" ;;
+      ready_args_external "${orig[@]}" || ready_policy "$R_READY" ;;
     "pr merge")
       note_deny "$R_MERGE" ;;
     api\ *)
@@ -422,7 +476,7 @@ read_arg_file() {
 
 check_gh_api() {
   local method="" endpoint="" has_input=0 input_file="" input_text="" fields=""
-  local stdin_text="" stdin_ok=0 stdin_file="" unreadable=0 text a f var
+  local stdin_text="" stdin_ok=0 stdin_file="" unreadable=0 text a f var slug
   while [ $# -gt 0 ]; do
     a=$1; shift
     case "$a" in
@@ -519,7 +573,9 @@ check_gh_api() {
     repos/*/pulls/*/*) ;;
     repos/*/pulls/*)
       if [ "$method" = PATCH ] && printf '%s' "$fields" | grep -Eq '^draft=(false|0)$'; then
-        ready_policy "$R_READY"
+        slug=${endpoint#repos/}
+        case "$slug" in '{owner}'*) slug=$(origin_slug) ;; esac
+        owner_is_external "$slug" || ready_policy "$R_READY"
       fi ;;
     repos/*/pulls)
       if [ "$method" = POST ]; then
@@ -540,7 +596,9 @@ case "$TOOL" in
   mcp__*_create_pull_request)
     [ "$DRAFT" = true ] || note_deny "$R_CREATE" ;;
   mcp__*_update_pull_request)
-    [ "$DRAFT" = false ] && ready_policy "$R_READY" ;;
+    if [ "$DRAFT" = false ]; then
+      owner_is_external "$MCP_OWNER/" || ready_policy "$R_READY"
+    fi ;;
   mcp__*_merge_pull_request)
     note_deny "$R_MERGE" ;;
 esac
