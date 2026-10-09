@@ -1,4 +1,4 @@
-# Synced from speakai/ai-skills @ 08bbc28 on 2026-10-09T01:17:31Z
+# Synced from speakai/ai-skills @ cf32da7 on 2026-10-09T01:23:08Z
 # DO NOT edit these skills here — edit them in ai-skills and re-run install.
 # hook-plugin: eng-safety
 # hook-file: eng-safety/hooks.json
@@ -36,4 +36,4 @@
 # rules: done-report
 # rules: done-scope
 # rules: done-tests
-# checksum: a0d8dce5ddc92c1f29527c84536530f582e8e351
+# checksum: a51c59f3d1476533f51335decdd3bf0f2017090a

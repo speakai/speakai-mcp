@@ -8,8 +8,9 @@
 #                            integration, e2e and contract files are separate kinds by policy.
 # ts_content_findings        reads added-line records (see _added-lines.sh) on stdin and prints
 #                            "SOURCE<TAB>path" or "TIMING<TAB>path", once per finding and file.
-# ts_base_ref                the branch work merges into: origin/dev when it exists, else the
-#                            remote default branch.
+# ts_base_ref                the branch work merges into: of origin/dev and the remote default
+#                            branch, the one with the fewest commits between it and HEAD, so a
+#                            stale origin/dev does not count years of history as this branch's.
 # ts_added_tests BASE        test files this branch adds over BASE, committed or not.
 
 TS_BUDGET=3
@@ -74,11 +75,14 @@ ts_content_findings() {
 }
 
 ts_base_ref() {
-  if git rev-parse -q --verify refs/remotes/origin/dev >/dev/null 2>&1; then
-    printf 'origin/dev'
-  else
-    git symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null
-  fi
+  local ref best="" best_n="" mb n
+  for ref in origin/dev "$(git symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null)"; do
+    [ -n "$ref" ] && git rev-parse -q --verify "refs/remotes/$ref" >/dev/null 2>&1 || continue
+    mb=$(git merge-base HEAD "$ref" 2>/dev/null) || continue
+    n=$(git rev-list --count "$mb..HEAD" 2>/dev/null) || continue
+    if [ -z "$best_n" ] || [ "$n" -lt "$best_n" ]; then best=$ref; best_n=$n; fi
+  done
+  printf '%s' "$best"
 }
 
 ts_added_tests() {

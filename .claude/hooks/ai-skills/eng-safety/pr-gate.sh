@@ -17,10 +17,12 @@
 #           enablePullRequestAutoMerge, MCP merge_pull_request              -> deny in every mode
 #   anything else                                                           -> allow silently
 #
-# Exception: the Ready rule applies to speakai repos only. It is skipped when the target repo's
-# owner is known and is not speakai (an -R/--repo value, a PR URL, a repos/<owner>/... api
-# endpoint, the MCP owner field, else the origin remote of the event cwd); an unknown owner
-# keeps the rule. Create and merge are gated for every repo.
+# Exception: the Ready rule applies to speakai repos only. It is skipped when the command itself
+# names a literal owner that is not speakai (an -R/--repo value, a PR URL, a repos/<owner>/...
+# api endpoint or the MCP owner field). The session folder's git remote is never used, because
+# cd, pushd or GH_REPO in the same command can point gh at another repo; placeholders such as
+# {owner} or :owner and shell patterns count as unknown. An unknown owner keeps the rule.
+# Create and merge are gated for every repo.
 #
 # Output: deny is exit 2 with the reason on stderr (exit 2 blocks before permission rules, and
 # no other hook's allow can override it). ask is exit 0 with hookSpecificOutput JSON on stdout.
@@ -102,27 +104,15 @@ owner_is_external() {
   case "$1" in */*) ;; *) return 1 ;; esac
   o=$(printf '%s' "${1%%/*}" | tr '[:upper:]' '[:lower:]')
   [ -n "$o" ] || return 1
-  case "$o" in *'$'*|*'`'*|'{'*) return 1 ;; esac
+  case "$o" in *'$'*|*'`'*|'{'*|':'*|*'*'*|*'?'*|*'['*|*'~'*|*'\\'*) return 1 ;; esac
   [ "$o" != speakai ]
-}
-# Prints owner/repo of the cwd's origin remote, or nothing when git cannot tell.
-origin_slug() {
-  local u
-  u=$(git -C "$CWD" remote get-url origin 2>/dev/null) || return 0
-  case "$u" in
-    file://*) u="" ;;
-    *://*) u=${u#*://}; u=${u#*/} ;;
-    *:*) u=${u#*:} ;;
-    *) u="" ;;
-  esac
-  printf '%s' "$u"
 }
 # gh -R accepts [HOST/]OWNER/REPO; drop the host so the owner comes first.
 drop_repo_host() {
   case "$1" in */*/*) printf '%s' "${1#*/}" ;; *) printf '%s' "$1" ;; esac
 }
-# True when every repo a gh pr ready names (-R/--repo, PR URL) is external; with none named,
-# the origin remote decides. Any speakai or unreadable owner keeps the Ready rule.
+# True when the gh pr ready names at least one repo (-R/--repo, PR URL) and every named repo is
+# external. Naming none, or any speakai or unreadable owner, keeps the Ready rule.
 ready_args_external() {
   local a prev="" slug found=0
   for a in "$@"; do
@@ -139,8 +129,7 @@ ready_args_external() {
       owner_is_external "$slug" || return 1
     fi
   done
-  [ "$found" = 1 ] && return 0
-  owner_is_external "$(origin_slug)"
+  [ "$found" = 1 ]
 }
 is_true() {
   case "$1" in 1|t|T|true|TRUE|True) return 0 ;; *) return 1 ;; esac
@@ -574,7 +563,6 @@ check_gh_api() {
     repos/*/pulls/*)
       if [ "$method" = PATCH ] && printf '%s' "$fields" | grep -Eq '^draft=(false|0)$'; then
         slug=${endpoint#repos/}
-        case "$slug" in '{owner}'*) slug=$(origin_slug) ;; esac
         owner_is_external "$slug" || ready_policy "$R_READY"
       fi ;;
     repos/*/pulls)
