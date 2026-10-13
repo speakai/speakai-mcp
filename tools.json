@@ -1026,7 +1026,7 @@
         {
           "name": "create_label",
           "title": "Create Label",
-          "description": "Create a label, or a label group with isGroup true. Labels are shared by the whole workspace and are applied to transcript words with apply_label. A label can sit in one group (parentId); groups cannot be nested, and a group has no color. Names are unique among active labels under the same parent, ignoring case and extra spaces: 409 means the name is taken. Requires the labels create permission (owners and admins by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "description": "Create a label, or a label group with isGroup true. Labels are shared by the whole workspace and are applied to transcript words with apply_label. A label can sit in one group (parentId); groups cannot be nested, and a group has no color. Names are unique among active labels under the same parent, ignoring case and extra spaces: 409 means the name is taken. Requires the labels create permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -1035,7 +1035,7 @@
         {
           "name": "update_label",
           "title": "Update Label",
-          "description": "Rename, recolor, describe, move or reorder a label or group. Send only the fields to change. parentId null moves a label to the top level. An archived label cannot be edited (restore_label first), and a group cannot take a color or a parent. 409 means another active label under the same parent already has the name. Requires the labels update permission (owners and admins by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "description": "Rename, recolor, describe, move or reorder a label or group. Send only the fields to change. parentId null moves a label to the top level. An archived label cannot be edited (restore_label first), and a group cannot take a color or a parent. 409 means another active label under the same parent already has the name. Requires the labels update permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -1062,7 +1062,7 @@
         {
           "name": "merge_labels",
           "title": "Merge Labels",
-          "description": "Merge one label into another: every place the source label is applied moves onto the target (a span that had both keeps one), then the source is archived with mergedInto set. This cannot be undone by restore_label. Both must be active, non-group labels and different. Returns movedCount. Requires both the labels update and labels delete permissions (owners and admins by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "description": "Merge one label into another: every place the source label is applied moves onto the target (a span that had both keeps one), then the source is archived with mergedInto set. This cannot be undone by restore_label. Both must be active, non-group labels and different. Returns movedCount. Requires both the labels update and labels delete permissions; only owners and admins have labels delete by default. The change is recorded in your Speak Notifications under Label (type label).",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1071,7 +1071,7 @@
         {
           "name": "add_speak_label_sets",
           "title": "Add Speak Label Sets",
-          "description": "Add ready-made label groups from Speak: sales_qa (Unprofessional, Slang, Objection, Great moment, Compliance risk), research (Pain point, Motivation, Quote for report, Surprise, Follow-up), meetings (Decision, Action item, Risk, Open question) and transcript_feedback (Wrong split, Misheard word, Wrong speaker, Bad translation). Safe to repeat: a group or label that already exists with the same name is reused, and a set whose group name is taken by a plain label is skipped (listed in skippedSets). Requires the labels create permission (owners and admins by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "description": "Add ready-made label groups from Speak: sales_qa (Unprofessional, Slang, Objection, Great moment, Compliance risk), research (Pain point, Motivation, Quote for report, Surprise, Follow-up), meetings (Decision, Action item, Risk, Open question) and transcript_feedback (Wrong split, Misheard word, Wrong speaker, Bad translation). Safe to repeat: a group or label that already exists with the same name is reused, and a set whose group name is taken by a plain label is skipped (listed in skippedSets). Requires the labels create permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": true,
