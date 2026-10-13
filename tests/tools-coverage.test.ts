@@ -273,6 +273,13 @@ describe("Embed tools", () => {
     });
   });
 
+  it("update_embed meta description documents the fieldsFocus toggle and isPromptAsk", () => {
+    const tool = (server as any)._registeredTools["update_embed"];
+    const text = JSON.stringify(tool.inputSchema?.shape?.meta?.description ?? tool.inputSchema?._def?.shape?.().meta?.description ?? tool.inputSchema);
+    expect(text).toContain("fieldsFocus");
+    expect(text).toContain("isPromptAsk");
+  });
+
   it("update_embed calls PUT /v1/embed/:id", async () => {
     const cb = getToolCallback(server, "update_embed");
     await cb({ embedId: "e1", meta: { primaryColor: "#000", isLabels: true, isComments: true } });

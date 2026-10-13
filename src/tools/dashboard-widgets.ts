@@ -309,7 +309,13 @@ export const WIDGET_CATALOG = [
       "columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; " +
       "a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); " +
       'sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); ' +
-      'searchable?: boolean; rowClick?: "openMedia" | "none"',
+      'searchable?: boolean; rowClick?: "openMedia" | "none"; display?: "table" | "cards"; ' +
+      "card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean }. " +
+      'SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, ' +
+      "subtitle lines, up to 2 detail lines and duration). Only valid with rowsAre \"records\"; `card` is only valid with " +
+      'display "cards"; every card value must be an existing column header; set rowClick "openMedia" so a click opens the media page. ' +
+      'Example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, ' +
+      '{ header: "Speaker", field: "Speaker" }], card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true } }',
   },
   {
     type: "comparison",
@@ -351,7 +357,13 @@ export const WIDGET_CATALOG = [
   {
     type: "notes",
     purpose: "Free-text note/context block (full width).",
-    config: "content: string (1-4000 chars, required)",
+    config:
+      "content: string (1-4000 chars, required); actions?: Array<{ label: string (1-40), action: \"openChat\" | \"goToSection\", " +
+      "sectionId?: string }> (max 3 buttons; first renders primary, the rest outline). goToSection needs a sectionId that is a " +
+      'section id of this dashboard (or "overview"); openChat takes no sectionId and needs the shared embed\'s isPromptAsk on ' +
+      "(update_embed meta.isPromptAsk) or the chat panel will not work. " +
+      'Example: { content: "Pick a session below.", actions: [{ label: "Ask the data", action: "openChat" }, ' +
+      '{ label: "See sessions", action: "goToSection", sectionId: "sessions" }] }',
   },
   {
     type: "chat-history",
@@ -390,7 +402,7 @@ export const SPEC_VOCABULARY = {
     '{ when: { op: "gte" | "gt" | "lt" | "lte", value: number } | { op: "between", value: [low, high] }, ' +
     'status: "good" | "warn" | "critical" | "neutral", label?: string (<=40) }',
   source:
-    'Dashboard data source: { type: "folders", folderIds: string[] (1-50) } | { type: "team" } | { type: "workspace" }',
+    'Dashboard data source: { type: "folders", folderIds: string[] (1-250) } | { type: "team" } | { type: "workspace" }',
   dateRangePresets: DATE_RANGE_PRESETS,
   sections:
     "Optional named groups of widgets rendered as tabs/sections (max 12): " +

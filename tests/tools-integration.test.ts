@@ -463,6 +463,48 @@ describe("Tools Integration Tests", () => {
       expect(mockPost).toHaveBeenCalledWith("/v1/dashboards/insights/speakers", { folderScope: ["f1"] });
     });
 
+    it("list_dashboard_widgets documents session cards and notes actions", async () => {
+      await reg();
+      const result = await getToolCallback(server, "list_dashboard_widgets")({});
+      const data = JSON.parse(result.content[0].text);
+      const table = data.widgets.find((w: any) => w.type === "table").config;
+      const notes = data.widgets.find((w: any) => w.type === "notes").config;
+      for (const key of ["display", "cards", "card?:", "titleColumn", "subtitleColumns", "detailColumns", "showDuration", "openMedia"]) {
+        expect(table).toContain(key);
+      }
+      for (const key of ["actions", "openChat", "goToSection", "sectionId", "isPromptAsk", "max 3"]) {
+        expect(notes).toContain(key);
+      }
+      expect(JSON.stringify(data)).toContain("1-250");
+    });
+
+    it("dashboard folder source accepts 250 folder ids and rejects 251", async () => {
+      const { sourceInputSchema, MAX_DASHBOARD_SOURCE_FOLDERS } = await import("../src/tools/dashboards.js");
+      const ids = (n: number) => Array.from({ length: n }, (_, i) => `f${i}`);
+      expect(MAX_DASHBOARD_SOURCE_FOLDERS).toBe(250);
+      expect(sourceInputSchema.safeParse({ type: "folders", folderIds: ids(250) }).success).toBe(true);
+      expect(sourceInputSchema.safeParse({ type: "folders", folderIds: ids(251) }).success).toBe(false);
+    });
+
+    it("create_dashboard passes a cards table and a notes action through unchanged", async () => {
+      await reg();
+      const table = {
+        rowsAre: "records",
+        rowClick: "openMedia",
+        display: "cards",
+        columns: [{ header: "Session", field: "Title" }, { header: "Speaker", field: "Speaker" }],
+        card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true },
+      };
+      const notes = { content: "Start here", actions: [{ label: "Ask", action: "openChat" }] };
+      await getToolCallback(server, "create_dashboard")({
+        title: "D",
+        widgets: [{ type: "table", id: "t", config: table }, { type: "notes", id: "n", config: notes }],
+      });
+      const body = mockPost.mock.calls.at(-1)![1] as any;
+      expect(body.spec.widgets[0].config).toEqual(table);
+      expect(body.spec.widgets[1].config).toEqual(notes);
+    });
+
     it("list_dashboard_widgets returns the widget catalog and design rules (no API call)", async () => {
       await reg();
       const result = await getToolCallback(server, "list_dashboard_widgets")({});

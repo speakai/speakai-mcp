@@ -53,8 +53,8 @@ const widgetInputSchema = z.object({
     .optional()
     .describe(
       "Per-type config (STRICT — unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + " +
-        "metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; " +
-        "field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content; " +
+        "metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}] (+ display: cards and card for session cards); stat-cards: tiles; " +
+        "field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content (+ actions for buttons); " +
         "chat-history: limit (optional, past conversations to list, 1-100, default 25). " +
         "Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. " +
         "Omit for a sensible valid default (except field-distribution, which needs fieldName).",
@@ -89,7 +89,10 @@ const sectionInputSchema = z.object({
     .describe("Widget ids in this section — must match explicit `id`s set on widgets[]"),
 });
 
-const sourceInputSchema = z
+// Mirrors the folderIds limit of the shared dashboard source schema.
+export const MAX_DASHBOARD_SOURCE_FOLDERS = 250;
+
+export const sourceInputSchema = z
   .object({
     type: z.enum(["folders", "team", "workspace"]).describe(
       "folders = specific folder ids; team = the caller's team scope; workspace = everything accessible",
@@ -97,9 +100,9 @@ const sourceInputSchema = z
     folderIds: z
       .array(z.string().min(1).max(64))
       .min(1)
-      .max(50)
+      .max(MAX_DASHBOARD_SOURCE_FOLDERS)
       .optional()
-      .describe('Folder ids — required when type is "folders", forbidden otherwise'),
+      .describe(`Folder ids (1-${MAX_DASHBOARD_SOURCE_FOLDERS}) — required when type is "folders", forbidden otherwise`),
   })
   .describe(
     'Data source: {type:"folders", folderIds:[...]} | {type:"team"} | {type:"workspace"}',
@@ -319,7 +322,7 @@ interface SpecFieldValues {
 function buildSource(source: NonNullable<SpecFieldValues["source"]>): Record<string, unknown> {
   if (source.type === "folders") {
     if (!source.folderIds?.length) {
-      throw new Error('source.type "folders" requires source.folderIds (1-50 folder ids)');
+      throw new Error(`source.type "folders" requires source.folderIds (1-${MAX_DASHBOARD_SOURCE_FOLDERS} folder ids)`);
     }
     return { type: "folders", folderIds: source.folderIds };
   }
