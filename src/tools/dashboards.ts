@@ -21,6 +21,8 @@ import {
   type SectionInput,
 } from "./dashboard-widgets.js";
 
+export const MAX_DASHBOARD_SOURCE_FOLDERS = 250;
+
 // Analytics dashboards (speak-server @speak-dashboards, mounted at /v1/dashboards).
 // `dashboardId` everywhere is the string business id (returned by list/get/create),
 // NOT the Mongo _id. Writes use the dashboard spec envelope: the request body is
@@ -88,9 +90,6 @@ const sectionInputSchema = z.object({
     .max(24)
     .describe("Widget ids in this section — must match explicit `id`s set on widgets[]"),
 });
-
-// Mirrors the folderIds limit of the shared dashboard source schema.
-export const MAX_DASHBOARD_SOURCE_FOLDERS = 250;
 
 export const sourceInputSchema = z
   .object({

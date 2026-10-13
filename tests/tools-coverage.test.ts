@@ -274,10 +274,9 @@ describe("Embed tools", () => {
   });
 
   it("update_embed meta description documents the fieldsFocus toggle and isPromptAsk", () => {
-    const tool = (server as any)._registeredTools["update_embed"];
-    const text = JSON.stringify(tool.inputSchema?.shape?.meta?.description ?? tool.inputSchema?._def?.shape?.().meta?.description ?? tool.inputSchema);
-    expect(text).toContain("fieldsFocus");
-    expect(text).toContain("isPromptAsk");
+    const description = (server as any)._registeredTools["update_embed"].inputSchema.shape.meta.description;
+    expect(description).toContain('{ name: "fieldsFocus", isActive: false }');
+    expect(description).toContain("isPromptAsk must be on");
   });
 
   it("update_embed calls PUT /v1/embed/:id", async () => {
