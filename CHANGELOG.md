@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.33.2 (2026-10-13)
+
+- fix(labels): members create and update labels by default
+
 ## v1.33.1 (2026-10-09)
 
 - Maintenance release
