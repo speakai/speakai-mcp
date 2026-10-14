@@ -425,6 +425,33 @@ describe("Tools Integration Tests", () => {
       expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
     });
 
+    it("settings.speakers accepts valid profiles, sends them unchanged and documents avatarColumn", async () => {
+      await reg();
+      const schema = (server as any)._registeredTools["update_dashboard"].inputSchema;
+      const speakers = {
+        fieldId: "be5d4bfc7e0e",
+        profiles: [{ name: "Ada Lovelace", bio: "Plain text." }, { id: "p2", name: "Sam", photoKey: "s3://bucket/k.png" }],
+      };
+      const parsed = schema.parse({ dashboardId: "d1", settings: { speakers } });
+      expect(parsed.settings).toEqual({ speakers });
+      await getToolCallback(server, "update_dashboard")(parsed);
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings: { speakers } });
+      const ok = (profiles: unknown[]) =>
+        schema.safeParse({ dashboardId: "d1", settings: { speakers: { fieldId: "be5d4bfc7e0e", profiles } } }).success;
+      expect(ok([{ name: "A", bio: "x".repeat(600) }])).toBe(true);
+      expect(ok([{ name: "A", bio: "x".repeat(601) }])).toBe(false);
+      expect(ok([{ name: "" }])).toBe(false);
+      expect(ok([{ name: "x".repeat(81) }])).toBe(false);
+      expect(ok(Array.from({ length: 60 }, (_, i) => ({ name: `n${i}` })))).toBe(true);
+      expect(ok(Array.from({ length: 61 }, (_, i) => ({ name: `n${i}` })))).toBe(false);
+      const table = JSON.parse((await getToolCallback(server, "list_dashboard_widgets")({})).content[0].text)
+        .widgets.find((w: any) => w.type === "table").config;
+      expect(table).toContain("avatarColumn");
+      const desc = (server as any)._registeredTools["update_dashboard"].description;
+      expect(desc).toContain("settings.speakers does not move media pages");
+      expect(desc).toContain("PUBLIC");
+    });
+
     it("update_dashboard sends the full spec with the revision for optimistic concurrency", async () => {
       await reg();
       await getToolCallback(server, "update_dashboard")({

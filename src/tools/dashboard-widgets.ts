@@ -315,10 +315,11 @@ export const WIDGET_CATALOG = [
       "a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); " +
       'sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); ' +
       'searchable?: boolean; rowClick?: "openMedia" | "none"; display?: "table" | "cards"; ' +
-      "card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean }. " +
+      "card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean, avatarColumn?: string }. " +
       'SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, ' +
       "subtitle lines, up to 2 detail lines and duration). Only valid with rowsAre \"records\"; `card` is only valid with " +
-      'display "cards"; every card value must be an existing column header; set rowClick "openMedia" so a click opens the media page. ' +
+      'display "cards"; every card value must be an existing column header; avatarColumn names the column holding the speaker name, ' +
+      'whose profile photo from settings.speakers shows on the card; set rowClick "openMedia" so a click opens the media page. ' +
       'Example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, ' +
       '{ header: "Speaker", field: "Speaker" }], card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true } }',
   },
