@@ -148,7 +148,8 @@ const SETTINGS_RULES =
   "that field's values (trim, case-insensitive); they are matched by display string, so renaming a speaker " +
   "value in the media fields orphans its profile. Names, bios and photos are PUBLIC to anyone with the " +
   "dashboard link: write plain text only, no HTML or links, and confirm the bios with the user before saving. " +
-  "This MCP cannot upload photos: leave photoKey out, or pass one copied unchanged from get_dashboard.";
+  "This MCP cannot upload photos: leave photoKey out, or pass one copied unchanged from get_dashboard. " +
+  "To add a photo over the API, POST the image (multipart, JPEG/PNG/WebP/GIF, max 2 MB) to /v1/dashboards/speaker-photo and use the returned photoKey.";
 
 // Mirrors the server validator. Each section is optional and replaces only itself when sent.
 const dashboardSettingsSchema = z
