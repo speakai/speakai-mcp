@@ -10,6 +10,20 @@ export const passthroughOutputSchema = {
   data: z.unknown().describe("Response payload from the Speak AI API"),
 } as const;
 
+export const fieldIdSchema = z
+  .string()
+  .min(1)
+  .refine((value) => !/^[0-9a-fA-F]{24}$/.test(value), {
+    message:
+      "This looks like the field's database _id. Use the field `id` from list_fields or create_field (12 characters).",
+  })
+  .describe("Field `id` from list_fields or create_field (12 characters), never the database `_id`");
+
+export const SHARED_DASHBOARD_CACHE_NOTE =
+  "Shared dashboard links cache widget data, so field and media edits can take up to about 5 minutes to show " +
+  "for date ranges that include today (15 at most) and up to about 17 minutes for past ranges (60 at most); " +
+  "any dashboard update refreshes it at once.";
+
 type ToolResultContent =
   | { type: "text"; text: string }
   | { type: "image"; data: string; mimeType: string };

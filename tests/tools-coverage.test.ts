@@ -399,6 +399,14 @@ describe("Fields tools", () => {
     });
   });
 
+  it("update_multiple_fields rejects a field's database _id", () => {
+    const schema = (server as any)._registeredTools["update_multiple_fields"].inputSchema;
+    const parsed = schema.safeParse({ mediaIds: ["m1"], fields: [{ id: "6acee5e45fd676474d0d0291", value: "x" }] });
+    expect(parsed.success).toBe(false);
+    expect(parsed.error.issues[0].message).toContain("database _id");
+    expect(schema.safeParse({ mediaIds: ["m1"], fields: [{ id: "be5d4bfc7e0e", value: "x" }] }).success).toBe(true);
+  });
+
   it("update_field calls PUT /v1/fields/:id", async () => {
     const cb = getToolCallback(server, "update_field");
     await cb({ id: "f1", name: "Renamed" });

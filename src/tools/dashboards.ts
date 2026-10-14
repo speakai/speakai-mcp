@@ -4,10 +4,11 @@ import { z } from "zod";
 import {
   DashboardCommentsMode,
   DashboardLabelsMode,
+  FilterOperator,
   MAX_DASHBOARD_LABEL_GROUPS,
   PUBLIC_ID_PATTERN,
 } from "@speakai/shared";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, fieldIdSchema, SHARED_DASHBOARD_CACHE_NOTE } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import {
   WIDGET_TYPES,
@@ -16,6 +17,7 @@ import {
   SPEC_VOCABULARY,
   DESIGN_RULES,
   DASHBOARD_EXAMPLES,
+  SECTION_ICON_DESCRIPTION,
   buildDashboardWidgets,
   type WidgetInput,
   type SectionInput,
@@ -31,9 +33,10 @@ export const MAX_DASHBOARD_SOURCE_FOLDERS = 250;
 // shared @speakai/shared dashboard-spec zod schema (strict shapes; unknown keys 400).
 
 const FILTER_LIST_DESCRIPTION =
-  "Field filters. filters.filterList is an array of " +
-  "{ fieldName, fieldOperator?, fieldValue?: string[], fieldCondition? }. " +
-  "Other keys pass through but only filterList is enforced.";
+  "Fixed pre-filter applied to every widget on the dashboard (not a filter bar viewers can change). " +
+  "filters.filterList is an array of { fieldName: field id, fieldOperator: \"include\", fieldValue: string[] (1 or more), " +
+  "fieldCondition? }; a media file shows only when that field holds one of the values. Shared links apply " +
+  "include filters only. Other keys pass through but only filterList is enforced.";
 
 // Ergonomic widget spec — the MCP assigns ids and computes the grid layout the
 // same way the UI does; you pick the type (and optionally title/config/binding).
@@ -84,7 +87,7 @@ const widgetInputSchema = z.object({
 const sectionInputSchema = z.object({
   id: z.string().min(1).max(64).describe("Section id (kebab-case)"),
   title: z.string().min(1).max(24).describe("Section title, max 24 chars"),
-  icon: z.string().min(1).max(40).describe('Kebab-case lucide icon name, e.g. "dollar-sign"'),
+  icon: z.string().min(1).max(40).describe(SECTION_ICON_DESCRIPTION),
   widgetIds: z
     .array(z.string().max(64))
     .max(24)
@@ -116,7 +119,7 @@ const dateRangeInputSchema = z
   .describe("Date range — strict preset only, no free-form start/end dates");
 
 // Fields shared by create and update writes (metadata that lives OUTSIDE the spec).
-const settingsFieldIds = z.array(z.string());
+const settingsFieldIds = z.array(fieldIdSchema);
 
 // Rules an agent must follow when writing dashboard viewer settings. Shared by the
 // settings field description and the create/update tool descriptions.
@@ -277,7 +280,22 @@ const metadataFields = {
     .max(100)
     .optional()
     .describe("User ids, or group ids in the \"<groupId> (G)\" convention, to share view access with"),
-  filters: z.record(z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
+  filters: z
+    .object({
+      filterList: z
+        .array(
+          z.object({
+            fieldName: fieldIdSchema,
+            fieldOperator: z.literal(FilterOperator.INCLUDE),
+            fieldValue: z.array(z.string().min(1).max(500)).min(1),
+            fieldCondition: z.string().max(50).optional(),
+          }),
+        )
+        .optional(),
+    })
+    .passthrough()
+    .optional()
+    .describe(FILTER_LIST_DESCRIPTION),
   isDefault: z
     .boolean()
     .optional()
@@ -492,7 +510,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "Creating a dashboard does not share it publicly; only share_dashboard creates a public link. " +
       "If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard " +
       "is posted to that external Google Apps Script URL. " +
-      "Viewer settings (the settings input): " +
+      SHARED_DASHBOARD_CACHE_NOTE +
+      " Viewer settings (the settings input): " +
       SETTINGS_RULES,
     {
       title: z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
@@ -543,7 +562,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "rebuild your changes on the fresh spec, and retry with the new revision. " +
       "If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard " +
       "is posted to that external Google Apps Script URL. " +
-      "Viewer settings (the settings input): " +
+      SHARED_DASHBOARD_CACHE_NOTE +
+      " Viewer settings (the settings input): " +
       SETTINGS_RULES,
     {
       dashboardId: z.string().min(1).describe("Dashboard business id"),
