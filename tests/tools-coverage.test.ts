@@ -277,13 +277,16 @@ describe("Embed tools", () => {
     const description = (server as any)._registeredTools["update_embed"].inputSchema.shape.meta.description;
     expect(description).toContain('{ name: "fieldsFocus", isActive: false }');
     expect(description).toContain("isPromptAsk must be on");
+    expect(description).toContain("logoDark must already live in Speak storage and this MCP cannot upload images");
+    expect(description).toContain("ignored when its contrast on the page background is below 3:1");
+    expect(description).toContain("max 60 chars");
   });
 
   it("update_embed calls PUT /v1/embed/:id", async () => {
     const cb = getToolCallback(server, "update_embed");
-    await cb({ embedId: "e1", meta: { primaryColor: "#000", isLabels: true, isComments: true } });
+    await cb({ embedId: "e1", meta: { primaryColor: "#000", isLabels: true, isComments: true, logoDark: "s3://b/d.png", theme: "dark", fontFamily: "Arimo" } });
     expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", {
-      meta: { primaryColor: "#000", isLabels: true, isComments: true },
+      meta: { primaryColor: "#000", isLabels: true, isComments: true, logoDark: "s3://b/d.png", theme: "dark", fontFamily: "Arimo" },
     });
   });
 
