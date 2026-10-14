@@ -315,10 +315,16 @@ export const WIDGET_CATALOG = [
       "a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); " +
       'sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); ' +
       'searchable?: boolean; rowClick?: "openMedia" | "none"; display?: "table" | "cards"; ' +
-      "card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean }. " +
+      "card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean, layout?: \"grid\" | \"rows\", rowBy?: string, rowOrder?: string[] (<=50), hero?: boolean }. " +
       'SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, ' +
       "subtitle lines, up to 2 detail lines and duration). Only valid with rowsAre \"records\"; `card` is only valid with " +
       'display "cards"; every card value must be an existing column header; set rowClick "openMedia" so a click opens the media page. ' +
+      'ROWS AND HERO: layout "rows" renders one horizontal snap-scroll row per distinct value of the rowBy column (rowBy is a column header, ' +
+      'required with layout "rows" and rejected otherwise); rows are ordered by count desc, or by rowOrder (explicit row VALUES first, ' +
+      'the rest by count; rowOrder is only valid with layout "rows"); layout defaults to "grid". hero: true renders the first record after ' +
+      'sort as a wide banner above the grid or rows (valid with either layout). ' +
+      'Rows example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, ' +
+      '{ header: "Track", field: "Track" }], card: { titleColumn: "Session", layout: "rows", rowBy: "Track", rowOrder: ["Track A"], hero: true } }. ' +
       'Example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, ' +
       '{ header: "Speaker", field: "Speaker" }], card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true } }',
   },

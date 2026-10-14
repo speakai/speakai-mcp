@@ -480,7 +480,7 @@ describe("Tools Integration Tests", () => {
       const data = JSON.parse(result.content[0].text);
       const table = data.widgets.find((w: any) => w.type === "table").config;
       const notes = data.widgets.find((w: any) => w.type === "notes").config;
-      for (const key of ["display", "cards", "card?:", "titleColumn", "subtitleColumns", "detailColumns", "showDuration", "openMedia"]) {
+      for (const key of ["display", "cards", "card?:", "titleColumn", "subtitleColumns", "detailColumns", "showDuration", "openMedia", "layout", "rowBy", "rowOrder", "hero", "snap-scroll"]) {
         expect(table).toContain(key);
       }
       for (const key of ["actions", "openChat", "goToSection", "sectionId", "isPromptAsk", "max 3"]) {
