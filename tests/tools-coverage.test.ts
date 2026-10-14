@@ -273,18 +273,22 @@ describe("Embed tools", () => {
     });
   });
 
-  it("update_embed meta description documents the fieldsFocus toggle and isPromptAsk", () => {
+  it("update_embed meta description documents the fieldsFocus toggle, isPromptAsk and the brand keys", () => {
     const description = (server as any)._registeredTools["update_embed"].inputSchema.shape.meta.description;
     expect(description).toContain('{ name: "fieldsFocus", isActive: false }');
     expect(description).toContain("isPromptAsk must be on");
+    for (const key of ["logoDark", "theme", "backgroundColor", "fontFamily", "titleColor"]) {
+      expect(description).toContain(key);
+    }
+    expect(description).toContain("logoDark must be an uploaded logo");
+    expect(description).toContain("max 60 chars");
   });
 
   it("update_embed calls PUT /v1/embed/:id", async () => {
     const cb = getToolCallback(server, "update_embed");
-    await cb({ embedId: "e1", meta: { primaryColor: "#000", isLabels: true, isComments: true } });
-    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", {
-      meta: { primaryColor: "#000", isLabels: true, isComments: true },
-    });
+    const meta = { primaryColor: "#000", isLabels: true, isComments: true, logoDark: "s3://bucket/dark.png", theme: "dark", fontFamily: "Arimo" };
+    await cb({ embedId: "e1", meta });
+    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", { meta });
   });
 
   it("check_embed calls GET /v1/embed with mediaId query param", async () => {

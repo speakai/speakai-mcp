@@ -8,7 +8,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   registerSpeakTool(server, 
     "create_embed",
-    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password, or to show labels and comments (meta isLabels, isComments; off by default).",
+    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password, or to show labels and comments (meta isLabels, isComments; off by default), or to brand a shared dashboard (meta logo, logoDark, theme, backgroundColor, primaryColor, titleColor, fontFamily).",
     {
       mediaId: z
         .string()
@@ -64,8 +64,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .record(z.unknown())
         .optional()
         .describe(
-          "Embed appearance & feature toggles: { backgroundImg, logo, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, isLabels, isComments, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }. " +
+          "Embed appearance & feature toggles: { backgroundImg, logo, logoDark, theme, backgroundColor, fontFamily, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, isLabels, isComments, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }. " +
             "features entry { name: \"fieldsFocus\", isActive: false } turns off the fields-first media page: by default, when a media page is opened from a shared dashboard and the media has custom fields, the page shrinks the player to about 22% and leads with the fields. " +
+            "Shared-dashboard branding: logo is the image shown in light mode and logoDark the one shown when the viewer is in dark mode (logoDark must be an uploaded logo; this MCP cannot upload images, any other URL is rejected with a 400, and it falls back to logo when unset). " +
+            "theme is \"light\" or \"dark\" and forces that theme for every viewer, hiding their toggle; \"\" lets the viewer choose. " +
+            "backgroundColor is a hex colour (#rgb or #rrggbb) for the page background; pair it with theme so text stays readable. " +
+            "primaryColor is a hex accent used for nav, links, card chips and play buttons. " +
+            "titleColor is a hex colour for the dashboard title and is ignored when its contrast on the page background is below 3:1. " +
+            "fontFamily is a Google Fonts family name (letters, digits and spaces, max 60 chars, for example \"Arimo\"; anything else is rejected with a 400); it overrides the account font for this embed, and \"\" falls back to the account font. " +
+            "Send \"\" for any of these keys to clear it. " +
             "isPromptAsk must be on for the chat button of a shared dashboard (and a notes widget openChat action) to work. " +
             "isLabels and isComments show the media's labels and comments read-only on media and folder embeds; both are off by default and embed viewers can never write them.",
         ),

@@ -86,6 +86,29 @@ Only change this when the user asks. Get field ids from `list_fields`, then call
 }
 ```
 
+## Profiles
+
+`settings.profiles` is a list of up to 5 groups, one per custom field. Each group has a label
+and entries that give a value of that field a name, image, description and link:
+`[{ "fieldId": "<speakerFieldId>", "label": "Speakers", "imageShape": "round", "entries": [{ "name": "Ada Lovelace", "description": "Plain text.", "link": "https://example.org/ada" }] }]`.
+
+- Each field can have only one group. Label 1-40 chars; `imageShape` is `round` or `square`.
+- Entry names must equal the field's values (trim, case-insensitive). They are matched by
+  display string, so renaming a value in the media fields orphans its entry. A name listed
+  twice in a group is rejected.
+- Names, descriptions, links and images are public to anyone with the dashboard link. Plain
+  text only, no HTML, description max 600 chars, name 1-80, link http or https only, up to 60
+  entries per group. Confirm the descriptions and links with the user first.
+- The MCP cannot upload images. Images come from the in-app upload
+  (`POST /v1/dashboards/:dashboardId/profile-image`); to keep an existing one, copy its
+  `imageKey` unchanged from `get_dashboard`.
+- The list replaces itself when sent, so resend every group and entry you want to keep. A save
+  that contains only `profiles` does not move media pages onto the settings flow.
+- Pass the `revision` from `get_dashboard` with every `profiles` save; a stale one returns a 409.
+- A records table with `display: "cards"` can show an entry image through `card.imageColumn`.
+  It must name a raw custom-field column whose field has a profile group in `settings.profiles`;
+  the card shows the image of that group's entry that matches the record's value.
+
 ## Speaker breakdowns
 
 `get_dashboard_speakers_insight` computes a speakers breakdown for a folder scope and date

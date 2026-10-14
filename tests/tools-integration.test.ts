@@ -425,6 +425,72 @@ describe("Tools Integration Tests", () => {
       expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
     });
 
+    it("settings.profiles accepts valid groups, sends them unchanged and documents imageColumn", async () => {
+      await reg();
+      const schema = (server as any)._registeredTools["update_dashboard"].inputSchema;
+      const profiles = [
+        {
+          fieldId: "be5d4bfc7e0e",
+          label: "Speakers",
+          imageShape: "round",
+          entries: [
+            { name: "Ada Lovelace", description: "Plain text.", link: "https://example.org/ada" },
+            { id: "p2", name: "Sam", imageKey: "s3://bucket/k.png" },
+          ],
+        },
+        { fieldId: "c0ffee000001", label: "Products", imageShape: "square", entries: [{ name: "Kit" }] },
+      ];
+      const withoutRevision = await getToolCallback(server, "update_dashboard")(
+        schema.parse({ dashboardId: "d1", settings: { profiles } }),
+      );
+      expect(withoutRevision.isError).toBe(true);
+      expect(withoutRevision.content[0].text).toContain("revision");
+      expect(mockPut).not.toHaveBeenCalled();
+      const parsed = schema.parse({ dashboardId: "d1", settings: { profiles }, revision: 4 });
+      expect(parsed.settings).toEqual({ profiles });
+      await getToolCallback(server, "update_dashboard")(parsed);
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings: { profiles }, revision: 4 });
+      const group = (entries: unknown[], extra: Record<string, unknown> = {}) => ({
+        fieldId: "be5d4bfc7e0e",
+        label: "Speakers",
+        entries,
+        ...extra,
+      });
+      const okGroups = (groups: unknown[]) =>
+        schema.safeParse({ dashboardId: "d1", settings: { profiles: groups } }).success;
+      const ok = (entries: unknown[]) => okGroups([group(entries)]);
+      expect(ok([{ name: "A", description: "x".repeat(600) }])).toBe(true);
+      expect(ok([{ name: "A", description: "x".repeat(601) }])).toBe(false);
+      expect(ok([{ name: "" }])).toBe(false);
+      expect(ok([{ name: "x".repeat(81) }])).toBe(false);
+      expect(ok(Array.from({ length: 60 }, (_, i) => ({ name: `n${i}` })))).toBe(true);
+      expect(ok(Array.from({ length: 61 }, (_, i) => ({ name: `n${i}` })))).toBe(false);
+      expect(ok([{ name: "   " }])).toBe(false);
+      expect(ok([{ id: "ada-lovelace", name: "A" }])).toBe(true);
+      expect(ok([{ id: "Not A Slug", name: "A" }])).toBe(false);
+      expect(ok([{ id: "x".repeat(65), name: "A" }])).toBe(false);
+      expect(ok([{ name: "A", imageKey: "s3://b/" + "k".repeat(1024) }])).toBe(false);
+      expect(ok([{ name: "A", link: "javascript:alert(1)" }])).toBe(false);
+      expect(okGroups([group([]), group([])])).toBe(false);
+      expect(okGroups([group([], { label: "" })])).toBe(false);
+      expect(okGroups([group([], { imageShape: "hexagon" })])).toBe(false);
+      expect(
+        okGroups(Array.from({ length: 6 }, (_, i) => group([], { fieldId: `f${String(i).padStart(11, "0")}` }))),
+      ).toBe(false);
+      const trimmed = schema.parse({
+        dashboardId: "d1",
+        settings: { profiles: [group([{ name: "  Ada  ", imageUrl: "https://x.example/a.png" }])] },
+      });
+      expect(trimmed.settings.profiles[0].entries).toEqual([{ name: "Ada" }]);
+      const table = JSON.parse((await getToolCallback(server, "list_dashboard_widgets")({})).content[0].text)
+        .widgets.find((w: any) => w.type === "table").config;
+      expect(table).toContain("imageColumn");
+      const desc = (server as any)._registeredTools["update_dashboard"].description;
+      expect(desc).toContain("settings.profiles does not move media pages");
+      expect(desc).toContain("/v1/dashboards/:dashboardId/profile-image");
+      expect(desc).toContain("PUBLIC");
+    });
+
     it("update_dashboard sends the full spec with the revision for optimistic concurrency", async () => {
       await reg();
       await getToolCallback(server, "update_dashboard")({
@@ -480,7 +546,7 @@ describe("Tools Integration Tests", () => {
       const data = JSON.parse(result.content[0].text);
       const table = data.widgets.find((w: any) => w.type === "table").config;
       const notes = data.widgets.find((w: any) => w.type === "notes").config;
-      for (const key of ["display", "cards", "card?:", "titleColumn", "subtitleColumns", "detailColumns", "showDuration", "openMedia"]) {
+      for (const key of ["display", "cards", "card?:", "titleColumn", "subtitleColumns", "detailColumns", "showDuration", "openMedia", "layout", "rowBy", "rowOrder", "hero", "snap-scroll", "each 1-80 chars", "first page only"]) {
         expect(table).toContain(key);
       }
       for (const key of ["actions", "openChat", "goToSection", "sectionId", "isPromptAsk", "max 3"]) {
