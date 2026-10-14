@@ -86,6 +86,23 @@ Only change this when the user asks. Get field ids from `list_fields`, then call
 }
 ```
 
+## Speaker profiles
+
+`settings.speakers` gives each speaker on a grouping custom field a name, photo and bio:
+`{ "fieldId": "<groupingFieldId>", "profiles": [{ "name": "Ada Lovelace", "bio": "Plain text." }] }`.
+
+- Names must equal the grouping field's values (trim, case-insensitive). They are matched by
+  display string, so renaming a speaker value in the media fields orphans its profile. A name
+  listed twice is rejected.
+- Bios and photos are public to anyone with the dashboard link. Plain text only, no HTML or
+  links, bio max 600 chars, name 1-80, up to 60 profiles. Confirm the bios with the user first.
+- The MCP cannot upload photos. Photos come from the in-app photo upload; to keep an existing
+  one, copy its `photoKey` unchanged from `get_dashboard`.
+- The section replaces itself when sent, so resend every profile you want to keep. A save that
+  contains only `speakers` does not move media pages onto the settings flow.
+- A records table with `display: "cards"` can show the photo through `card.avatarColumn`, the
+  header of the column that holds the speaker name.
+
 ## Speaker breakdowns
 
 `get_dashboard_speakers_insight` computes a speakers breakdown for a folder scope and date
