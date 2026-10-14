@@ -37,6 +37,8 @@ describe("embed brand meta", () => {
       expect(meta).toContain(key);
     }
     expect(meta).toContain("Google Fonts");
+    expect(meta).toContain("max 60 chars");
+    expect(meta).toContain("cannot upload");
   });
 
   it("points create_embed users at update_embed for branding", () => {
