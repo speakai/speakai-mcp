@@ -145,7 +145,7 @@ const SETTINGS_RULES =
   "Label groups that are not active refuse the whole save with a 400 rather than being dropped. " +
   "Saving only settings.speakers does not move media pages onto the settings flow. " +
   "speakers.profiles gives each speaker on the grouping field a name, photo and bio. Names must equal " +
-  "that field's values (trim, case-insensitive); they are matched by display string, so renaming a speaker " +
+  "that field's values (trim, case-insensitive), and a name or id listed twice is rejected with a 400; they are matched by display string, so renaming a speaker " +
   "value in the media fields orphans its profile. Names, bios and photos are PUBLIC to anyone with the " +
   "dashboard link: write plain text only, no HTML or links, and confirm the bios with the user before saving. " +
   "This MCP cannot upload photos: leave photoKey out, or pass one copied unchanged from get_dashboard. " +
@@ -280,15 +280,21 @@ const dashboardSettingsSchema = z
         profiles: z
           .array(
             z.object({
-              id: z.string().min(1).optional().describe("Profile id; leave out for a new profile"),
+              id: z
+                .string()
+                .regex(/^[a-z0-9][a-z0-9-]{0,63}$/, "Profile id is lowercase letters, digits and hyphens, max 64 chars")
+                .optional()
+                .describe("Profile id (lowercase slug, unique); leave out for a new profile and the server generates one"),
               name: z
                 .string()
+                .trim()
                 .min(1)
                 .max(80)
-                .describe("Speaker name, 1-80 chars; must equal a value of the grouping field (trim, case-insensitive)"),
+                .describe("Speaker name, 1-80 chars; must equal a value of the grouping field (trim, case-insensitive) and be unique within the dashboard"),
               photoKey: z
                 .string()
                 .min(1)
+                .max(1024)
                 .optional()
                 .describe(
                   "S3 URI of a photo in Speak's own bucket, set by the in-app photo upload. Only pass a value " +
@@ -473,7 +479,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "get_dashboard",
     "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, " +
       "and the current `revision` (pass that revision back to update_dashboard). Saved viewer settings, " +
-      "including settings.speakers profiles (name, bio, photoKey), are included when the server returns them.",
+      "including settings.speakers profiles (id, name, bio, photoKey, and a signed photoUrl preview that is ignored if sent back), are included when the server returns them.",
     {
       dashboardId: z
         .string()

@@ -92,7 +92,8 @@ Only change this when the user asks. Get field ids from `list_fields`, then call
 `{ "fieldId": "<groupingFieldId>", "profiles": [{ "name": "Ada Lovelace", "bio": "Plain text." }] }`.
 
 - Names must equal the grouping field's values (trim, case-insensitive). They are matched by
-  display string, so renaming a speaker value in the media fields orphans its profile.
+  display string, so renaming a speaker value in the media fields orphans its profile. A name
+  listed twice is rejected.
 - Bios and photos are public to anyone with the dashboard link. Plain text only, no HTML or
   links, bio max 600 chars, name 1-80, up to 60 profiles. Confirm the bios with the user first.
 - The MCP cannot upload photos. Photos come from the in-app photo upload; to keep an existing

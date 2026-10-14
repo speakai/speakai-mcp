@@ -444,6 +444,16 @@ describe("Tools Integration Tests", () => {
       expect(ok([{ name: "x".repeat(81) }])).toBe(false);
       expect(ok(Array.from({ length: 60 }, (_, i) => ({ name: `n${i}` })))).toBe(true);
       expect(ok(Array.from({ length: 61 }, (_, i) => ({ name: `n${i}` })))).toBe(false);
+      expect(ok([{ name: "   " }])).toBe(false);
+      expect(ok([{ id: "ada-lovelace", name: "A" }])).toBe(true);
+      expect(ok([{ id: "Not A Slug", name: "A" }])).toBe(false);
+      expect(ok([{ id: "x".repeat(65), name: "A" }])).toBe(false);
+      expect(ok([{ name: "A", photoKey: "s3://b/" + "k".repeat(1024) }])).toBe(false);
+      const trimmed = schema.parse({
+        dashboardId: "d1",
+        settings: { speakers: { fieldId: "be5d4bfc7e0e", profiles: [{ name: "  Ada  ", photoUrl: "https://x.example/a.png" }] } },
+      });
+      expect(trimmed.settings.speakers.profiles).toEqual([{ name: "Ada" }]);
       const table = JSON.parse((await getToolCallback(server, "list_dashboard_widgets")({})).content[0].text)
         .widgets.find((w: any) => w.type === "table").config;
       expect(table).toContain("avatarColumn");
