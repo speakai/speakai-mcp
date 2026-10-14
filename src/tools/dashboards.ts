@@ -2,6 +2,11 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import {
+  DASHBOARD_SPEAKER_BIO_MAX,
+  DASHBOARD_SPEAKER_ID_PATTERN,
+  DASHBOARD_SPEAKER_MAX_PROFILES,
+  DASHBOARD_SPEAKER_NAME_MAX,
+  DASHBOARD_SPEAKER_PHOTO_KEY_MAX,
   DashboardCommentsMode,
   DashboardLabelsMode,
   FilterOperator,
@@ -149,7 +154,7 @@ const SETTINGS_RULES =
   "value in the media fields orphans its profile. Names, bios and photos are PUBLIC to anyone with the " +
   "dashboard link: write plain text only, no HTML or links, and confirm the bios with the user before saving. " +
   "This MCP cannot upload photos: leave photoKey out, or pass one copied unchanged from get_dashboard. " +
-  "To add a photo over the API, POST the image (multipart, JPEG/PNG/WebP/GIF, max 2 MB) to /v1/dashboards/speaker-photo and use the returned photoKey.";
+  "To add a photo over the API, POST the image (multipart, JPEG/PNG/WebP/GIF, max 2 MB) to /v1/dashboards/:dashboardId/speaker-photo and use the returned photoKey.";
 
 // Mirrors the server validator. Each section is optional and replaces only itself when sent.
 const dashboardSettingsSchema = z
@@ -282,19 +287,19 @@ const dashboardSettingsSchema = z
             z.object({
               id: z
                 .string()
-                .regex(/^[a-z0-9][a-z0-9-]{0,63}$/, "Profile id is lowercase letters, digits and hyphens, max 64 chars")
+                .regex(DASHBOARD_SPEAKER_ID_PATTERN, "Profile id is lowercase letters, digits and hyphens, max 64 chars")
                 .optional()
                 .describe("Profile id (lowercase slug, unique); leave out for a new profile and the server generates one"),
               name: z
                 .string()
                 .trim()
                 .min(1)
-                .max(80)
-                .describe("Speaker name, 1-80 chars; must equal a value of the grouping field (trim, case-insensitive) and be unique within the dashboard"),
+                .max(DASHBOARD_SPEAKER_NAME_MAX)
+                .describe(`Speaker name, 1-${DASHBOARD_SPEAKER_NAME_MAX} chars; must equal a value of the grouping field (trim, case-insensitive) and be unique within the dashboard`),
               photoKey: z
                 .string()
                 .min(1)
-                .max(1024)
+                .max(DASHBOARD_SPEAKER_PHOTO_KEY_MAX)
                 .optional()
                 .describe(
                   "S3 URI of a photo in Speak's own bucket, set by the in-app photo upload. Only pass a value " +
@@ -302,13 +307,15 @@ const dashboardSettingsSchema = z
                 ),
               bio: z
                 .string()
-                .max(600)
+                .max(DASHBOARD_SPEAKER_BIO_MAX)
                 .optional()
-                .describe("Plain-text bio, max 600 chars, no HTML or links. Public to anyone with the dashboard link."),
+                .describe(
+                  `Plain-text bio, max ${DASHBOARD_SPEAKER_BIO_MAX} chars, no HTML or links. Public to anyone with the dashboard link.`,
+                ),
             }),
           )
-          .max(60)
-          .describe("Up to 60 speaker profiles. Empty removes all profiles."),
+          .max(DASHBOARD_SPEAKER_MAX_PROFILES)
+          .describe(`Up to ${DASHBOARD_SPEAKER_MAX_PROFILES} speaker profiles. Empty removes all profiles.`),
       })
       .optional()
       .describe(
@@ -605,7 +612,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   registerSpeakTool(server,
     "update_dashboard",
     "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no " +
-      "spec fields and no revision. (2) Spec update: pass the FULL spec — title, source, dateRange, " +
+      "spec fields and no revision, except that saving settings.speakers also needs the `revision` from " +
+      "get_dashboard (a stale one returns a 409). (2) Spec update: pass the FULL spec — title, source, dateRange, " +
       "sections, widgets — plus `revision`. Widgets and sections are REPLACED, not merged, so call " +
       "get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency " +
       "token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, " +
@@ -630,7 +638,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .nonnegative()
         .optional()
         .describe(
-          "The revision loaded from get_dashboard. Required for spec updates; mismatch returns a 409 conflict.",
+          "The revision loaded from get_dashboard. Required for spec updates and for saving settings.speakers; " +
+            "mismatch returns a 409 conflict.",
         ),
       ...specFields,
       ...metadataFields,
@@ -672,6 +681,15 @@ export function register(server: McpServer, client?: AxiosInstance): void {
             }),
             revision,
           };
+        }
+
+        if (!specTouched && metadata.settings?.speakers !== undefined) {
+          if (revision === undefined) {
+            throw new Error(
+              "Saving settings.speakers can delete replaced photos, so pass the `revision` loaded from get_dashboard.",
+            );
+          }
+          body.revision = revision;
         }
 
         if (Object.keys(body).length === 0) {

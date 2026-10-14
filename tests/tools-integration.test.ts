@@ -432,10 +432,16 @@ describe("Tools Integration Tests", () => {
         fieldId: "be5d4bfc7e0e",
         profiles: [{ name: "Ada Lovelace", bio: "Plain text." }, { id: "p2", name: "Sam", photoKey: "s3://bucket/k.png" }],
       };
-      const parsed = schema.parse({ dashboardId: "d1", settings: { speakers } });
+      const withoutRevision = await getToolCallback(server, "update_dashboard")(
+        schema.parse({ dashboardId: "d1", settings: { speakers } }),
+      );
+      expect(withoutRevision.isError).toBe(true);
+      expect(withoutRevision.content[0].text).toContain("revision");
+      expect(mockPut).not.toHaveBeenCalled();
+      const parsed = schema.parse({ dashboardId: "d1", settings: { speakers }, revision: 4 });
       expect(parsed.settings).toEqual({ speakers });
       await getToolCallback(server, "update_dashboard")(parsed);
-      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings: { speakers } });
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings: { speakers }, revision: 4 });
       const ok = (profiles: unknown[]) =>
         schema.safeParse({ dashboardId: "d1", settings: { speakers: { fieldId: "be5d4bfc7e0e", profiles } } }).success;
       expect(ok([{ name: "A", bio: "x".repeat(600) }])).toBe(true);

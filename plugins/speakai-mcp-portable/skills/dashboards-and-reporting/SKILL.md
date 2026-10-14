@@ -100,6 +100,7 @@ Only change this when the user asks. Get field ids from `list_fields`, then call
   one, copy its `photoKey` unchanged from `get_dashboard`.
 - The section replaces itself when sent, so resend every profile you want to keep. A save that
   contains only `speakers` does not move media pages onto the settings flow.
+- Pass the `revision` from `get_dashboard` with every `speakers` save; a stale one returns a 409.
 - A records table with `display: "cards"` can show the photo through `card.avatarColumn`, the
   header of the column that holds the speaker name.
 
