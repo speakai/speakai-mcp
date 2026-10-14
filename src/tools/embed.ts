@@ -66,7 +66,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .describe(
           "Embed appearance & feature toggles: { backgroundImg, logo, logoDark, theme, backgroundColor, fontFamily, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, isLabels, isComments, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }. " +
             "features entry { name: \"fieldsFocus\", isActive: false } turns off the fields-first media page: by default, when a media page is opened from a shared dashboard and the media has custom fields, the page shrinks the player to about 22% and leads with the fields. " +
-            "Shared-dashboard branding: logo is the image shown in light mode and logoDark the one shown when the viewer is in dark mode (logoDark must already live in Speak storage and this MCP cannot upload images; any other URL is rejected with a 400, and it falls back to logo when unset). " +
+            "Shared-dashboard branding: logo is the image shown in light mode and logoDark the one shown when the viewer is in dark mode (logoDark must be an uploaded logo; this MCP cannot upload images, any other URL is rejected with a 400, and it falls back to logo when unset). " +
             "theme is \"light\" or \"dark\" and forces that theme for every viewer, hiding their toggle; \"\" lets the viewer choose. " +
             "backgroundColor is a hex colour (#rgb or #rrggbb) for the page background; pair it with theme so text stays readable. " +
             "primaryColor is a hex accent used for nav, links, card chips and play buttons. " +

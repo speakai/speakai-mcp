@@ -313,7 +313,7 @@ export const WIDGET_CATALOG = [
       'rowsAre: "records" | "groups"; groupBy?: GroupBy (required when rowsAre="groups", forbidden when "records"); ' +
       "columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; " +
       "a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); " +
-      'sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); ' +
+      'sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); pageSize?: number (1-100, records per page); ' +
       'searchable?: boolean; rowClick?: "openMedia" | "none"; display?: "table" | "cards"; ' +
       "card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean, layout?: \"grid\" | \"rows\", rowBy?: string, rowOrder?: string[] (<=50 values, each 1-80 chars), hero?: boolean, avatarColumn?: string }. " +
       'SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, ' +

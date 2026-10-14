@@ -230,7 +230,7 @@ before you create an embed for media you did not just create with them.
    folder embeds.
 4. Call `update_embed` with `embedId` to change appearance and behaviour. The
    `meta` object holds the toggles: `backgroundImg`, `logo`, `logoDark`
-   (dark-mode logo; must already be in Speak storage, the MCP cannot upload
+   (dark-mode logo; must be an uploaded logo, the MCP cannot upload
    it), `theme` (`light` or `dark` forces the viewer theme), `backgroundColor`
    (hex), `fontFamily` (a Google Fonts name), `primaryColor`, `titleColor`,
    `chatWelcomeMessage`, `assistantTemplateId`, `isTitle`, `isDescription`, `isRemarks`, `isDataVizDownloadable`, `isSEOIndexing`,
