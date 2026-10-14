@@ -245,7 +245,7 @@ function registerSpeakTool(server, name, description, inputSchema, annotations, 
     })
   );
 }
-var import_zod, passthroughOutputSchema;
+var import_zod, passthroughOutputSchema, fieldIdSchema, SHARED_DASHBOARD_CACHE_NOTE;
 var init_helpers = __esm({
   "src/tools/_helpers.ts"() {
     "use strict";
@@ -254,6 +254,10 @@ var init_helpers = __esm({
     passthroughOutputSchema = {
       data: import_zod.z.unknown().describe("Response payload from the Speak AI API")
     };
+    fieldIdSchema = import_zod.z.string().min(1).refine((value) => !/^[0-9a-fA-F]{24}$/.test(value), {
+      message: "This looks like the field's database _id. Use the field `id` from list_fields or create_field (12 characters)."
+    }).describe("Field `id` from list_fields or create_field (12 characters), never the database `_id`");
+    SHARED_DASHBOARD_CACHE_NOTE = "Shared dashboard links cache widget data, so field and media edits can take up to about 5 minutes to show for date ranges that include today (15 at most) and up to about 17 minutes for past ranges (60 at most); any dashboard update refreshes it at once.";
   }
 });
 
@@ -4897,7 +4901,7 @@ function register2(server, client) {
       callbackUrl: import_zod3.z.string().optional().describe("URL that replaces the workspace webhook's destination for this note's webhook events. It takes effect only when the workspace already has an active webhook for the event; on its own it does not create a webhook or send anything."),
       fields: import_zod3.z.array(
         import_zod3.z.object({
-          id: import_zod3.z.string().min(1).describe("Custom field ID"),
+          id: fieldIdSchema,
           value: import_zod3.z.string().min(1).describe("Custom field value")
         })
       ).optional().describe("Custom field values to attach to the text note")
@@ -6724,7 +6728,7 @@ function register9(server, client) {
   registerSpeakTool(
     server,
     "list_fields",
-    "List all custom fields defined in the workspace. Each field returns a `slug` (for example `regulator_comment`) alongside its `id`, `name`, and `type`. Put `{{field.<slug>}}` in the prompt text you send and Speak substitutes that field's value for the media before the model sees it. A slug is unique per company and never changes when the field is renamed, so prefer it over the field name. A field with no slug yet resolves by `id` in the same token.",
+    "List all custom fields defined in the workspace. Each field returns a `slug` (for example `regulator_comment`) alongside its `id`, `name`, and `type`. Put `{{field.<slug>}}` in the prompt text you send and Speak substitutes that field's value for the media before the model sees it. A slug is unique per company and never changes when the field is renamed, so prefer it over the field name. A field with no slug yet resolves by `id` in the same token. Every other tool that takes a field id wants this `id` (12 characters), never the database `_id`.",
     {},
     {
       title: "List Custom Fields",
@@ -6750,7 +6754,7 @@ function register9(server, client) {
   registerSpeakTool(
     server,
     "create_field",
-    "Create a new custom field for categorizing and tagging media.",
+    "Create a new custom field for categorizing and tagging media. The response starts with the new field's `id`; use that `id` (not `_id`) wherever a field id is needed.",
     {
       name: import_zod10.z.string().min(1).describe("Display name for the field"),
       type: import_zod10.z.string().describe("Field type (text, number, select, etc.)"),
@@ -6772,8 +6776,12 @@ function register9(server, client) {
     async (body) => {
       try {
         const result = await api.post("/v1/fields", body);
+        const fieldId = result.data?.data?.id;
+        const idLine = fieldId ? `Field id: ${fieldId} (use this id, not _id, in other tools)
+
+` : "";
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: idLine + JSON.stringify(result.data, null, 2) }]
         };
       } catch (err2) {
         return {
@@ -6786,13 +6794,13 @@ function register9(server, client) {
   registerSpeakTool(
     server,
     "update_multiple_fields",
-    "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. Each value that changes fires your field_updated automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions.",
+    "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. Each value that changes fires your field_updated automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions. " + SHARED_DASHBOARD_CACHE_NOTE,
     {
       folderId: import_zod10.z.string().optional().describe("Apply the field values to all media in this folder"),
       mediaIds: import_zod10.z.array(import_zod10.z.string()).optional().describe("Apply the field values to these specific media files"),
       fields: import_zod10.z.array(
         import_zod10.z.object({
-          id: import_zod10.z.string().min(1).describe("Custom field ID"),
+          id: fieldIdSchema,
           value: import_zod10.z.unknown().describe("Value to set for the field")
         })
       ).describe("Array of field id/value pairs to set")
@@ -6823,7 +6831,7 @@ function register9(server, client) {
     "update_field",
     "Update a specific custom field by ID. `name` must always be supplied (the server replaces the field config).",
     {
-      id: import_zod10.z.string().min(1).describe("Unique identifier of the field"),
+      id: fieldIdSchema,
       name: import_zod10.z.string().describe("Display name for the field"),
       type: import_zod10.z.string().optional().describe("Field type"),
       description: import_zod10.z.string().optional().describe("Optional description for the field"),
@@ -10191,7 +10199,7 @@ function makeWidget(item) {
   }
   return widget;
 }
-var import_crypto, GRID_COLS, WIDGET_TYPES, DATE_RANGE_PRESETS, WIDGET_META, KEBAB_ID, AUTO_LAYOUT, WIDGET_CATALOG, SPEC_VOCABULARY, DESIGN_RULES, DASHBOARD_EXAMPLES;
+var import_crypto, GRID_COLS, WIDGET_TYPES, DATE_RANGE_PRESETS, SECTION_ICON_DESCRIPTION, WIDGET_META, KEBAB_ID, AUTO_LAYOUT, WIDGET_CATALOG, SPEC_VOCABULARY, DESIGN_RULES, DASHBOARD_EXAMPLES;
 var init_dashboard_widgets = __esm({
   "src/tools/dashboard-widgets.ts"() {
     "use strict";
@@ -10218,6 +10226,7 @@ var init_dashboard_widgets = __esm({
       "yearToDate",
       "allTime"
     ];
+    SECTION_ICON_DESCRIPTION = 'Kebab-case lucide icon name. Known good: "dollar-sign", "globe", "users", "trending-up", "message-square", "star", "target", "calendar", "chart-line", "circle-play", "circle-check", "circle-alert". Lucide renamed its "<thing>-circle" icons to "circle-<thing>" (use "circle-play", not "play-circle"); an unknown name shows a blank dot.';
     WIDGET_META = {
       narrative: { w: GRID_COLS, h: 3, titleDefault: "Insights" },
       "stat-cards": { w: GRID_COLS, h: 3, titleDefault: "Usage overview" },
@@ -10308,7 +10317,7 @@ var init_dashboard_widgets = __esm({
       thresholds: 'Color bands for stat tiles, chart marks, and table columns (max 8): { when: { op: "gte" | "gt" | "lt" | "lte", value: number } | { op: "between", value: [low, high] }, status: "good" | "warn" | "critical" | "neutral", label?: string (<=40) }',
       source: 'Dashboard data source: { type: "folders", folderIds: string[] (1-250) } | { type: "team" } | { type: "workspace" }',
       dateRangePresets: DATE_RANGE_PRESETS,
-      sections: "Optional named groups of widgets rendered as tabs/sections (max 12): { id: kebab-case string, title: string (<=24), icon: kebab-case lucide icon name, widgetIds: string[] (<=24) }. Widget ids in sections must match explicit `id`s you set on the widgets; a widget may appear in at most one section; widgets in no section form the implicit Overview group."
+      sections: "Optional named groups of widgets rendered as tabs/sections (max 12): { id: kebab-case string, title: string (<=24), icon: string, widgetIds: string[] (<=24) }. icon: " + SECTION_ICON_DESCRIPTION + " Widget ids in sections must match explicit `id`s you set on the widgets; a widget may appear in at most one section; widgets in no section form the implicit Overview group."
     };
     DESIGN_RULES = [
       "Lead with a narrative widget: on a new dashboard, make it the first widget of the first section \u2014 it is the headline insight.",
@@ -10543,7 +10552,7 @@ function register18(server, client) {
   registerSpeakTool(
     server,
     "create_dashboard",
-    `Create an analytics dashboard. Only \`title\` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad \u2014 every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): ` + SETTINGS_RULES,
+    `Create an analytics dashboard. Only \`title\` is required \u2014 source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:"folders",folderIds} | {type:"team"} | {type:"workspace"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad \u2014 every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. ` + SHARED_DASHBOARD_CACHE_NOTE + " Viewer settings (the settings input): " + SETTINGS_RULES,
     {
       title: import_zod20.z.string().min(1).max(60).describe("Dashboard name, max 60 chars (the only required field)"),
       ...specFields,
@@ -10584,7 +10593,7 @@ function register18(server, client) {
   registerSpeakTool(
     server,
     "update_dashboard",
-    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Viewer settings (the settings input): " + SETTINGS_RULES,
+    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. " + SHARED_DASHBOARD_CACHE_NOTE + " Viewer settings (the settings input): " + SETTINGS_RULES,
     {
       dashboardId: import_zod20.z.string().min(1).describe("Dashboard business id"),
       title: import_zod20.z.string().min(1).max(60).optional().describe("Dashboard name \u2014 required (with revision) when updating the spec"),
@@ -10759,7 +10768,7 @@ var init_dashboards = __esm({
     init_client();
     init_dashboard_widgets();
     MAX_DASHBOARD_SOURCE_FOLDERS = 250;
-    FILTER_LIST_DESCRIPTION = "Field filters. filters.filterList is an array of { fieldName, fieldOperator?, fieldValue?: string[], fieldCondition? }. Other keys pass through but only filterList is enforced.";
+    FILTER_LIST_DESCRIPTION = 'Fixed pre-filter applied to every widget on the dashboard (not a filter bar viewers can change). filters.filterList is an array of { fieldName: field id, fieldOperator: "include", fieldValue: string[] (1 or more), fieldCondition? }; a media file shows only when that field holds one of the values. Shared links apply include filters only. Other keys pass through but only filterList is enforced.';
     widgetInputSchema = import_zod20.z.object({
       type: import_zod20.z.enum(WIDGET_TYPES).describe(
         "Widget type: narrative | stat-cards | metric-chart | table | comparison | field-distribution | sentiment-trend | themes | people | team-activity | notes | chat-history"
@@ -10786,7 +10795,7 @@ var init_dashboards = __esm({
     sectionInputSchema = import_zod20.z.object({
       id: import_zod20.z.string().min(1).max(64).describe("Section id (kebab-case)"),
       title: import_zod20.z.string().min(1).max(24).describe("Section title, max 24 chars"),
-      icon: import_zod20.z.string().min(1).max(40).describe('Kebab-case lucide icon name, e.g. "dollar-sign"'),
+      icon: import_zod20.z.string().min(1).max(40).describe(SECTION_ICON_DESCRIPTION),
       widgetIds: import_zod20.z.array(import_zod20.z.string().max(64)).max(24).describe("Widget ids in this section \u2014 must match explicit `id`s set on widgets[]")
     });
     sourceInputSchema = import_zod20.z.object({
@@ -10800,7 +10809,7 @@ var init_dashboards = __esm({
     dateRangeInputSchema = import_zod20.z.object({
       preset: import_zod20.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
     }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
-    settingsFieldIds = import_zod20.z.array(import_zod20.z.string());
+    settingsFieldIds = import_zod20.z.array(fieldIdSchema);
     SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, labels, comments) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets a link viewer write as one of the dashboard's feedback submitter names (feedback.submitters, even while feedback itself is off), or as another typed name only when feedback.allowOtherSubmitter is true. Anyone holding the share link can pick any of those names, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the names with the user before saving a write mode. With no submitter names nobody can write. Label groups that are not active refuse the whole save with a 400 rather than being dropped.";
     dashboardSettingsSchema = import_zod20.z.object({
       fields: import_zod20.z.object({
@@ -10874,7 +10883,16 @@ var init_dashboards = __esm({
     metadataFields = {
       icon: import_zod20.z.string().max(200).optional().describe("Icon identifier"),
       assignTo: import_zod20.z.array(import_zod20.z.string()).max(100).optional().describe('User ids, or group ids in the "<groupId> (G)" convention, to share view access with'),
-      filters: import_zod20.z.record(import_zod20.z.unknown()).optional().describe(FILTER_LIST_DESCRIPTION),
+      filters: import_zod20.z.object({
+        filterList: import_zod20.z.array(
+          import_zod20.z.object({
+            fieldName: fieldIdSchema,
+            fieldOperator: import_zod20.z.literal(FilterOperator.INCLUDE),
+            fieldValue: import_zod20.z.array(import_zod20.z.string().min(1).max(500)).min(1),
+            fieldCondition: import_zod20.z.string().max(50).optional()
+          })
+        ).optional()
+      }).passthrough().optional().describe(FILTER_LIST_DESCRIPTION),
       isDefault: import_zod20.z.boolean().optional().describe("Make this the owner's default dashboard. Setting true clears the default flag on the owner's other dashboards"),
       settings: dashboardSettingsSchema.optional()
     };

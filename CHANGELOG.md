@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.34.1 (2026-10-14)
+
+- fix(fields,dashboards): guard field ids and dashboard filters
+
 ## v1.34.0 (2026-10-14)
 
 - feat(dashboards): document session cards, notes actions and fieldsFocus; raise folder cap to 250
