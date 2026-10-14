@@ -10262,7 +10262,7 @@ var init_dashboard_widgets = __esm({
       {
         type: "table",
         purpose: "Tabular records or grouped aggregates (full width).",
-        config: 'rowsAre: "records" | "groups"; groupBy?: GroupBy (required when rowsAre="groups", forbidden when "records"); columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); searchable?: boolean; rowClick?: "openMedia" | "none"; display?: "table" | "cards"; card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean }. SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, subtitle lines, up to 2 detail lines and duration). Only valid with rowsAre "records"; `card` is only valid with display "cards"; every card value must be an existing column header; set rowClick "openMedia" so a click opens the media page. Example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, { header: "Speaker", field: "Speaker" }], card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true } }'
+        config: 'rowsAre: "records" | "groups"; groupBy?: GroupBy (required when rowsAre="groups", forbidden when "records"); columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); searchable?: boolean; rowClick?: "openMedia" | "none"; display?: "table" | "cards"; card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean, avatarColumn?: string }. SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, subtitle lines, up to 2 detail lines and duration). Only valid with rowsAre "records"; `card` is only valid with display "cards"; every card value must be an existing column header; avatarColumn names the column holding the speaker name, whose profile photo from settings.speakers shows on the card; set rowClick "openMedia" so a click opens the media page. Example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, { header: "Speaker", field: "Speaker" }], card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true } }'
       },
       {
         type: "comparison",
@@ -10490,7 +10490,7 @@ function register18(server, client) {
   registerSpeakTool(
     server,
     "get_dashboard",
-    "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, and the current `revision` (pass that revision back to update_dashboard).",
+    "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, and the current `revision` (pass that revision back to update_dashboard). Saved viewer settings, including settings.speakers profiles (id, name, bio, photoKey, and a signed photoUrl preview that is ignored if sent back), are included when the server returns them.",
     {
       dashboardId: import_zod20.z.string().min(1).describe("Dashboard business id (the dashboardId field from list_dashboards, not the Mongo _id)")
     },
@@ -10810,7 +10810,7 @@ var init_dashboards = __esm({
       preset: import_zod20.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
     }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
     settingsFieldIds = import_zod20.z.array(fieldIdSchema);
-    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, labels, comments) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets a link viewer write as one of the dashboard's feedback submitter names (feedback.submitters, even while feedback itself is off), or as another typed name only when feedback.allowOtherSubmitter is true. Anyone holding the share link can pick any of those names, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the names with the user before saving a write mode. With no submitter names nobody can write. Label groups that are not active refuse the whole save with a 400 rather than being dropped.";
+    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, labels, comments, speakers) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets a link viewer write as one of the dashboard's feedback submitter names (feedback.submitters, even while feedback itself is off), or as another typed name only when feedback.allowOtherSubmitter is true. Anyone holding the share link can pick any of those names, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the names with the user before saving a write mode. With no submitter names nobody can write. Label groups that are not active refuse the whole save with a 400 rather than being dropped. Saving only settings.speakers does not move media pages onto the settings flow. speakers.profiles gives each speaker on the grouping field a name, photo and bio. Names must equal that field's values (trim, case-insensitive), and a name or id listed twice is rejected with a 400; they are matched by display string, so renaming a speaker value in the media fields orphans its profile. Names, bios and photos are PUBLIC to anyone with the dashboard link: write plain text only, no HTML or links, and confirm the bios with the user before saving. This MCP cannot upload photos: leave photoKey out, or pass one copied unchanged from get_dashboard. To add a photo over the API, POST the image (multipart, JPEG/PNG/WebP/GIF, max 2 MB) to /v1/dashboards/speaker-photo and use the returned photoKey.";
     dashboardSettingsSchema = import_zod20.z.object({
       fields: import_zod20.z.object({
         includeIds: settingsFieldIds.describe(
@@ -10876,9 +10876,26 @@ var init_dashboards = __esm({
       comments: import_zod20.z.object({
         isEnabled: import_zod20.z.boolean().describe("Show comments on media pages opened from this shared dashboard"),
         mode: import_zod20.z.nativeEnum(DashboardCommentsMode).describe("'view' shows comments read-only; 'reply' also lets a viewer, as a reviewer name, comment and reply")
-      }).optional()
+      }).optional(),
+      speakers: import_zod20.z.object({
+        fieldId: fieldIdSchema.describe(
+          "Custom field id of the grouping field whose values are the speaker names (from list_fields)"
+        ),
+        profiles: import_zod20.z.array(
+          import_zod20.z.object({
+            id: import_zod20.z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/, "Profile id is lowercase letters, digits and hyphens, max 64 chars").optional().describe("Profile id (lowercase slug, unique); leave out for a new profile and the server generates one"),
+            name: import_zod20.z.string().trim().min(1).max(80).describe("Speaker name, 1-80 chars; must equal a value of the grouping field (trim, case-insensitive) and be unique within the dashboard"),
+            photoKey: import_zod20.z.string().min(1).max(1024).optional().describe(
+              "S3 URI of a photo in Speak's own bucket, set by the in-app photo upload. Only pass a value copied from get_dashboard; this MCP cannot upload photos."
+            ),
+            bio: import_zod20.z.string().max(600).optional().describe("Plain-text bio, max 600 chars, no HTML or links. Public to anyone with the dashboard link.")
+          })
+        ).max(60).describe("Up to 60 speaker profiles. Empty removes all profiles.")
+      }).optional().describe(
+        "Speaker profiles (name, photo, bio) shown on the shared dashboard. Replaces the whole section when sent. Public to anyone with the link; plain text only."
+      )
     }).describe(
-      "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, the Feedback button, which fields Feedback submitters may edit, and labels and comments with the reviewer names (feedback submitters) who may write them. " + SETTINGS_RULES
+      "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, the Feedback button, which fields Feedback submitters may edit, labels and comments with the reviewer names (feedback submitters) who may write them, and speaker profiles. " + SETTINGS_RULES
     );
     metadataFields = {
       icon: import_zod20.z.string().max(200).optional().describe("Icon identifier"),
