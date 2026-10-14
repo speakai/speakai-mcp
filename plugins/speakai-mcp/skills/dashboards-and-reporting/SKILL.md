@@ -86,23 +86,27 @@ Only change this when the user asks. Get field ids from `list_fields`, then call
 }
 ```
 
-## Speaker profiles
+## Profiles
 
-`settings.speakers` gives each speaker on a grouping custom field a name, photo and bio:
-`{ "fieldId": "<groupingFieldId>", "profiles": [{ "name": "Ada Lovelace", "bio": "Plain text." }] }`.
+`settings.profiles` is a list of up to 5 groups, one per custom field. Each group has a label
+and entries that give a value of that field a name, image, description and link:
+`[{ "fieldId": "<speakerFieldId>", "label": "Speakers", "imageShape": "round", "entries": [{ "name": "Ada Lovelace", "description": "Plain text.", "link": "https://example.org/ada" }] }]`.
 
-- Names must equal the grouping field's values (trim, case-insensitive). They are matched by
-  display string, so renaming a speaker value in the media fields orphans its profile. A name
-  listed twice is rejected.
-- Bios and photos are public to anyone with the dashboard link. Plain text only, no HTML or
-  links, bio max 600 chars, name 1-80, up to 60 profiles. Confirm the bios with the user first.
-- The MCP cannot upload photos. Photos come from the in-app photo upload; to keep an existing
-  one, copy its `photoKey` unchanged from `get_dashboard`.
-- The section replaces itself when sent, so resend every profile you want to keep. A save that
-  contains only `speakers` does not move media pages onto the settings flow.
-- Pass the `revision` from `get_dashboard` with every `speakers` save; a stale one returns a 409.
-- A records table with `display: "cards"` can show the photo through `card.avatarColumn`, the
-  header of the column that holds the speaker name.
+- Each field can have only one group. Label 1-40 chars; `imageShape` is `round` or `square`.
+- Entry names must equal the field's values (trim, case-insensitive). They are matched by
+  display string, so renaming a value in the media fields orphans its entry. A name listed
+  twice in a group is rejected.
+- Names, descriptions, links and images are public to anyone with the dashboard link. Plain
+  text only, no HTML, description max 600 chars, name 1-80, link http or https only, up to 60
+  entries per group. Confirm the descriptions and links with the user first.
+- The MCP cannot upload images. Images come from the in-app upload
+  (`POST /v1/dashboards/:dashboardId/profile-image`); to keep an existing one, copy its
+  `imageKey` unchanged from `get_dashboard`.
+- The list replaces itself when sent, so resend every group and entry you want to keep. A save
+  that contains only `profiles` does not move media pages onto the settings flow.
+- Pass the `revision` from `get_dashboard` with every `profiles` save; a stale one returns a 409.
+- A records table with `display: "cards"` can show an entry image through `card.imageColumn`,
+  the header of the column whose value matches the entry name.
 
 ## Speaker breakdowns
 

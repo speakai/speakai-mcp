@@ -2,11 +2,15 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import {
-  DASHBOARD_SPEAKER_BIO_MAX,
-  DASHBOARD_SPEAKER_ID_PATTERN,
-  DASHBOARD_SPEAKER_MAX_PROFILES,
-  DASHBOARD_SPEAKER_NAME_MAX,
-  DASHBOARD_SPEAKER_PHOTO_KEY_MAX,
+  DASHBOARD_PROFILE_DESCRIPTION_MAX,
+  DASHBOARD_PROFILE_ENTRIES_MAX,
+  DASHBOARD_PROFILE_GROUPS_MAX,
+  DASHBOARD_PROFILE_ID_PATTERN,
+  DASHBOARD_PROFILE_IMAGE_KEY_MAX,
+  DASHBOARD_PROFILE_IMAGE_SHAPES,
+  DASHBOARD_PROFILE_LABEL_MAX,
+  DASHBOARD_PROFILE_LINK_MAX,
+  DASHBOARD_PROFILE_NAME_MAX,
   DashboardCommentsMode,
   DashboardLabelsMode,
   FilterOperator,
@@ -132,7 +136,7 @@ const SETTINGS_RULES =
   "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. " +
   "Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media " +
   "pages use these groups and this Feedback setup from then on. " +
-  "Each section (fields, feedback, fieldEdits, labels, comments, speakers) replaces that whole section " +
+  "Each section (fields, feedback, fieldEdits, labels, comments, profiles) replaces that whole section " +
   "when sent; a section left out keeps its saved value. Call get_dashboard first and " +
   "resend every key of the section you change; a key left out resets to its default. " +
   "Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned " +
@@ -148,13 +152,15 @@ const SETTINGS_RULES =
   "because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so " +
   "confirm the names with the user before saving a write mode. With no submitter names nobody can write. " +
   "Label groups that are not active refuse the whole save with a 400 rather than being dropped. " +
-  "Saving only settings.speakers does not move media pages onto the settings flow. " +
-  "speakers.profiles gives each speaker on the grouping field a name, photo and bio. Names must equal " +
-  "that field's values (trim, case-insensitive), and a name or id listed twice is rejected with a 400; they are matched by display string, so renaming a speaker " +
-  "value in the media fields orphans its profile. Names, bios and photos are PUBLIC to anyone with the " +
-  "dashboard link: write plain text only, no HTML or links, and confirm the bios with the user before saving. " +
-  "This MCP cannot upload photos: leave photoKey out, or pass one copied unchanged from get_dashboard. " +
-  "To add a photo over the API, POST the image (multipart, JPEG/PNG/WebP/GIF, max 2 MB) to /v1/dashboards/:dashboardId/speaker-photo and use the returned photoKey.";
+  "Saving only settings.profiles does not move media pages onto the settings flow. " +
+  `settings.profiles is a list of up to ${DASHBOARD_PROFILE_GROUPS_MAX} groups, one per custom field (a field may appear only once), ` +
+  "each with a label (for example Speakers or Products) and entries that give a value of that field a name, image, " +
+  "description and link. Entry names must equal that field's values (trim, case-insensitive), and a name or id listed " +
+  "twice in a group is rejected with a 400; they are matched by display string, so renaming a value in the media " +
+  "fields orphans its profile. Names, descriptions, links and images are PUBLIC to anyone with the dashboard link: " +
+  "write plain text only, no HTML, and confirm the descriptions and links with the user before saving. " +
+  "This MCP cannot upload images: leave imageKey out, or pass one copied unchanged from get_dashboard. " +
+  "To add an image over the API, POST it (multipart, JPEG/PNG/WebP/GIF, max 2 MB) to /v1/dashboards/:dashboardId/profile-image and use the returned imageKey.";
 
 // Mirrors the server validator. Each section is optional and replaces only itself when sent.
 const dashboardSettingsSchema = z
@@ -277,50 +283,75 @@ const dashboardSettingsSchema = z
           .describe("'view' shows comments read-only; 'reply' also lets a viewer, as a reviewer name, comment and reply"),
       })
       .optional(),
-    speakers: z
-      .object({
-        fieldId: fieldIdSchema.describe(
-          "Custom field id of the grouping field whose values are the speaker names (from list_fields)",
-        ),
-        profiles: z
-          .array(
-            z.object({
-              id: z
-                .string()
-                .regex(DASHBOARD_SPEAKER_ID_PATTERN, "Profile id is lowercase letters, digits and hyphens, max 64 chars")
-                .optional()
-                .describe("Profile id (lowercase slug, unique); leave out for a new profile and the server generates one"),
-              name: z
-                .string()
-                .trim()
-                .min(1)
-                .max(DASHBOARD_SPEAKER_NAME_MAX)
-                .describe(`Speaker name, 1-${DASHBOARD_SPEAKER_NAME_MAX} chars; must equal a value of the grouping field (trim, case-insensitive) and be unique within the dashboard`),
-              photoKey: z
-                .string()
-                .min(1)
-                .max(DASHBOARD_SPEAKER_PHOTO_KEY_MAX)
-                .optional()
-                .describe(
-                  "S3 URI of a photo in Speak's own bucket, set by the in-app photo upload. Only pass a value " +
-                    "copied from get_dashboard; this MCP cannot upload photos.",
-                ),
-              bio: z
-                .string()
-                .max(DASHBOARD_SPEAKER_BIO_MAX)
-                .optional()
-                .describe(
-                  `Plain-text bio, max ${DASHBOARD_SPEAKER_BIO_MAX} chars, no HTML or links. Public to anyone with the dashboard link.`,
-                ),
-            }),
-          )
-          .max(DASHBOARD_SPEAKER_MAX_PROFILES)
-          .describe(`Up to ${DASHBOARD_SPEAKER_MAX_PROFILES} speaker profiles. Empty removes all profiles.`),
-      })
+    profiles: z
+      .array(
+        z.object({
+          fieldId: fieldIdSchema.describe(
+            "Custom field id whose values the entries describe (from list_fields); each field at most once",
+          ),
+          label: z
+            .string()
+            .trim()
+            .min(1)
+            .max(DASHBOARD_PROFILE_LABEL_MAX)
+            .describe(`Group label shown on the dashboard, 1-${DASHBOARD_PROFILE_LABEL_MAX} chars (for example Speakers)`),
+          imageShape: z
+            .enum(DASHBOARD_PROFILE_IMAGE_SHAPES)
+            .optional()
+            .describe(`How entry images are cropped: ${DASHBOARD_PROFILE_IMAGE_SHAPES.join(" or ")}`),
+          entries: z
+            .array(
+              z.object({
+                id: z
+                  .string()
+                  .regex(DASHBOARD_PROFILE_ID_PATTERN, "Profile id is lowercase letters, digits and hyphens, max 64 chars")
+                  .optional()
+                  .describe("Entry id (lowercase slug, unique in the group); leave out for a new entry and the server generates one"),
+                name: z
+                  .string()
+                  .trim()
+                  .min(1)
+                  .max(DASHBOARD_PROFILE_NAME_MAX)
+                  .describe(`Entry name, 1-${DASHBOARD_PROFILE_NAME_MAX} chars; must equal a value of the group's field (trim, case-insensitive) and be unique within the group`),
+                imageKey: z
+                  .string()
+                  .min(1)
+                  .max(DASHBOARD_PROFILE_IMAGE_KEY_MAX)
+                  .optional()
+                  .describe(
+                    "S3 URI of an image in Speak's own bucket, set by the in-app image upload. Only pass a value " +
+                      "copied from get_dashboard; this MCP cannot upload images.",
+                  ),
+                description: z
+                  .string()
+                  .max(DASHBOARD_PROFILE_DESCRIPTION_MAX)
+                  .optional()
+                  .describe(
+                    `Plain-text description, max ${DASHBOARD_PROFILE_DESCRIPTION_MAX} chars, no HTML. Public to anyone with the dashboard link.`,
+                  ),
+                link: z
+                  .string()
+                  .trim()
+                  .url()
+                  .max(DASHBOARD_PROFILE_LINK_MAX)
+                  .refine((value) => /^https?:\/\//i.test(value), "Link must be an http or https URL")
+                  .optional()
+                  .describe(`Optional http or https URL, max ${DASHBOARD_PROFILE_LINK_MAX} chars. Public to anyone with the dashboard link.`),
+              }),
+            )
+            .max(DASHBOARD_PROFILE_ENTRIES_MAX)
+            .describe(`Up to ${DASHBOARD_PROFILE_ENTRIES_MAX} entries. Empty removes every entry of the group.`),
+        }),
+      )
+      .max(DASHBOARD_PROFILE_GROUPS_MAX)
+      .refine(
+        (groups) => new Set(groups.map((group) => group.fieldId)).size === groups.length,
+        "Each field can have only one profile group",
+      )
       .optional()
       .describe(
-        "Speaker profiles (name, photo, bio) shown on the shared dashboard. Replaces the whole section when sent. " +
-          "Public to anyone with the link; plain text only.",
+        `Profile groups (up to ${DASHBOARD_PROFILE_GROUPS_MAX}, one per field) shown on the shared dashboard. ` +
+          "Replaces the whole list when sent; an empty list removes every group. Public to anyone with the link; plain text only.",
       ),
   })
   .describe(
@@ -486,7 +517,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "get_dashboard",
     "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, " +
       "and the current `revision` (pass that revision back to update_dashboard). Saved viewer settings, " +
-      "including settings.speakers profiles (id, name, bio, photoKey, and a signed photoUrl preview that is ignored if sent back), are included when the server returns them.",
+      "including settings.profiles groups (fieldId, label, imageShape, and entries with id, name, description, link, imageKey, and a signed imageUrl preview that is ignored if sent back), are included when the server returns them.",
     {
       dashboardId: z
         .string()
@@ -612,7 +643,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   registerSpeakTool(server,
     "update_dashboard",
     "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no " +
-      "spec fields and no revision, except that saving settings.speakers also needs the `revision` from " +
+      "spec fields and no revision, except that saving settings.profiles also needs the `revision` from " +
       "get_dashboard (a stale one returns a 409). (2) Spec update: pass the FULL spec — title, source, dateRange, " +
       "sections, widgets — plus `revision`. Widgets and sections are REPLACED, not merged, so call " +
       "get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency " +
@@ -638,7 +669,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .nonnegative()
         .optional()
         .describe(
-          "The revision loaded from get_dashboard. Required for spec updates and for saving settings.speakers; " +
+          "The revision loaded from get_dashboard. Required for spec updates and for saving settings.profiles; " +
             "mismatch returns a 409 conflict.",
         ),
       ...specFields,
@@ -683,10 +714,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           };
         }
 
-        if (!specTouched && metadata.settings?.speakers !== undefined) {
+        if (!specTouched && metadata.settings?.profiles !== undefined) {
           if (revision === undefined) {
             throw new Error(
-              "Saving settings.speakers can delete replaced photos, so pass the `revision` loaded from get_dashboard.",
+              "Saving settings.profiles can delete replaced images, so pass the `revision` loaded from get_dashboard.",
             );
           }
           body.revision = revision;

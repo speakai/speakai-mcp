@@ -425,27 +425,42 @@ describe("Tools Integration Tests", () => {
       expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
     });
 
-    it("settings.speakers accepts valid profiles, sends them unchanged and documents avatarColumn", async () => {
+    it("settings.profiles accepts valid groups, sends them unchanged and documents imageColumn", async () => {
       await reg();
       const schema = (server as any)._registeredTools["update_dashboard"].inputSchema;
-      const speakers = {
-        fieldId: "be5d4bfc7e0e",
-        profiles: [{ name: "Ada Lovelace", bio: "Plain text." }, { id: "p2", name: "Sam", photoKey: "s3://bucket/k.png" }],
-      };
+      const profiles = [
+        {
+          fieldId: "be5d4bfc7e0e",
+          label: "Speakers",
+          imageShape: "round",
+          entries: [
+            { name: "Ada Lovelace", description: "Plain text.", link: "https://example.org/ada" },
+            { id: "p2", name: "Sam", imageKey: "s3://bucket/k.png" },
+          ],
+        },
+        { fieldId: "c0ffee000001", label: "Products", imageShape: "square", entries: [{ name: "Kit" }] },
+      ];
       const withoutRevision = await getToolCallback(server, "update_dashboard")(
-        schema.parse({ dashboardId: "d1", settings: { speakers } }),
+        schema.parse({ dashboardId: "d1", settings: { profiles } }),
       );
       expect(withoutRevision.isError).toBe(true);
       expect(withoutRevision.content[0].text).toContain("revision");
       expect(mockPut).not.toHaveBeenCalled();
-      const parsed = schema.parse({ dashboardId: "d1", settings: { speakers }, revision: 4 });
-      expect(parsed.settings).toEqual({ speakers });
+      const parsed = schema.parse({ dashboardId: "d1", settings: { profiles }, revision: 4 });
+      expect(parsed.settings).toEqual({ profiles });
       await getToolCallback(server, "update_dashboard")(parsed);
-      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings: { speakers }, revision: 4 });
-      const ok = (profiles: unknown[]) =>
-        schema.safeParse({ dashboardId: "d1", settings: { speakers: { fieldId: "be5d4bfc7e0e", profiles } } }).success;
-      expect(ok([{ name: "A", bio: "x".repeat(600) }])).toBe(true);
-      expect(ok([{ name: "A", bio: "x".repeat(601) }])).toBe(false);
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings: { profiles }, revision: 4 });
+      const group = (entries: unknown[], extra: Record<string, unknown> = {}) => ({
+        fieldId: "be5d4bfc7e0e",
+        label: "Speakers",
+        entries,
+        ...extra,
+      });
+      const okGroups = (groups: unknown[]) =>
+        schema.safeParse({ dashboardId: "d1", settings: { profiles: groups } }).success;
+      const ok = (entries: unknown[]) => okGroups([group(entries)]);
+      expect(ok([{ name: "A", description: "x".repeat(600) }])).toBe(true);
+      expect(ok([{ name: "A", description: "x".repeat(601) }])).toBe(false);
       expect(ok([{ name: "" }])).toBe(false);
       expect(ok([{ name: "x".repeat(81) }])).toBe(false);
       expect(ok(Array.from({ length: 60 }, (_, i) => ({ name: `n${i}` })))).toBe(true);
@@ -454,17 +469,25 @@ describe("Tools Integration Tests", () => {
       expect(ok([{ id: "ada-lovelace", name: "A" }])).toBe(true);
       expect(ok([{ id: "Not A Slug", name: "A" }])).toBe(false);
       expect(ok([{ id: "x".repeat(65), name: "A" }])).toBe(false);
-      expect(ok([{ name: "A", photoKey: "s3://b/" + "k".repeat(1024) }])).toBe(false);
+      expect(ok([{ name: "A", imageKey: "s3://b/" + "k".repeat(1024) }])).toBe(false);
+      expect(ok([{ name: "A", link: "javascript:alert(1)" }])).toBe(false);
+      expect(okGroups([group([]), group([])])).toBe(false);
+      expect(okGroups([group([], { label: "" })])).toBe(false);
+      expect(okGroups([group([], { imageShape: "hexagon" })])).toBe(false);
+      expect(
+        okGroups(Array.from({ length: 6 }, (_, i) => group([], { fieldId: `f${String(i).padStart(11, "0")}` }))),
+      ).toBe(false);
       const trimmed = schema.parse({
         dashboardId: "d1",
-        settings: { speakers: { fieldId: "be5d4bfc7e0e", profiles: [{ name: "  Ada  ", photoUrl: "https://x.example/a.png" }] } },
+        settings: { profiles: [group([{ name: "  Ada  ", imageUrl: "https://x.example/a.png" }])] },
       });
-      expect(trimmed.settings.speakers.profiles).toEqual([{ name: "Ada" }]);
+      expect(trimmed.settings.profiles[0].entries).toEqual([{ name: "Ada" }]);
       const table = JSON.parse((await getToolCallback(server, "list_dashboard_widgets")({})).content[0].text)
         .widgets.find((w: any) => w.type === "table").config;
-      expect(table).toContain("avatarColumn");
+      expect(table).toContain("imageColumn");
       const desc = (server as any)._registeredTools["update_dashboard"].description;
-      expect(desc).toContain("settings.speakers does not move media pages");
+      expect(desc).toContain("settings.profiles does not move media pages");
+      expect(desc).toContain("/v1/dashboards/:dashboardId/profile-image");
       expect(desc).toContain("PUBLIC");
     });
 
