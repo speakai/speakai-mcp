@@ -4152,7 +4152,7 @@ var init_label3 = __esm({
       [UserRole.OWNER]: ALL_LABEL_PERMISSIONS,
       [UserRole.ADMIN]: ALL_LABEL_PERMISSIONS,
       [UserRole.MEMBER]: {
-        labels: { create: false, update: false, delete: false, assign: true },
+        labels: { create: true, update: true, delete: false, assign: true },
         comments: { create: true, update: true, delete: false }
       }
     };
@@ -5916,7 +5916,7 @@ function register6(server, client) {
       ),
       password: import_zod7.z.string().optional().describe("Password to protect the embed with when privacyMode is private. Only applied when privacyMode is also sent."),
       meta: import_zod7.z.record(import_zod7.z.unknown()).optional().describe(
-        "Embed appearance & feature toggles: { backgroundImg, logo, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, isLabels, isComments, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }. isLabels and isComments show the media's labels and comments read-only on media and folder embeds; both are off by default and embed viewers can never write them."
+        `Embed appearance & feature toggles: { backgroundImg, logo, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, isLabels, isComments, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }. features entry { name: "fieldsFocus", isActive: false } turns off the fields-first media page: by default, when a media page is opened from a shared dashboard and the media has custom fields, the page shrinks the player to about 22% and leads with the fields. isPromptAsk must be on for the chat button of a shared dashboard (and a notes widget openChat action) to work. isLabels and isComments show the media's labels and comments read-only on media and folder embeds; both are off by default and embed viewers can never write them.`
       )
     },
     {
@@ -10253,7 +10253,7 @@ var init_dashboard_widgets = __esm({
       {
         type: "table",
         purpose: "Tabular records or grouped aggregates (full width).",
-        config: 'rowsAre: "records" | "groups"; groupBy?: GroupBy (required when rowsAre="groups", forbidden when "records"); columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); searchable?: boolean; rowClick?: "openMedia" | "none"'
+        config: 'rowsAre: "records" | "groups"; groupBy?: GroupBy (required when rowsAre="groups", forbidden when "records"); columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); searchable?: boolean; rowClick?: "openMedia" | "none"; display?: "table" | "cards"; card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean }. SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, subtitle lines, up to 2 detail lines and duration). Only valid with rowsAre "records"; `card` is only valid with display "cards"; every card value must be an existing column header; set rowClick "openMedia" so a click opens the media page. Example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, { header: "Speaker", field: "Speaker" }], card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true } }'
       },
       {
         type: "comparison",
@@ -10288,7 +10288,7 @@ var init_dashboard_widgets = __esm({
       {
         type: "notes",
         purpose: "Free-text note/context block (full width).",
-        config: "content: string (1-4000 chars, required)"
+        config: `content: string (1-4000 chars, required); actions?: Array<{ label: string (1-40), action: "openChat" | "goToSection", sectionId?: string }> (max 3 buttons; first renders primary, the rest outline). goToSection needs a sectionId that is a section id of this dashboard (or "overview"); openChat takes no sectionId and needs the shared embed's isPromptAsk on (update_embed meta.isPromptAsk) or the chat panel will not work. Example: { content: "Pick a session below.", actions: [{ label: "Ask the data", action: "openChat" }, { label: "See sessions", action: "goToSection", sectionId: "sessions" }] }`
       },
       {
         type: "chat-history",
@@ -10306,7 +10306,7 @@ var init_dashboard_widgets = __esm({
       binding: "Per-widget scope override, set as `binding` on any widget (omit a key to inherit the dashboard's value): { source?: Source, dateRange?: { preset }, filter?: Filter }",
       filter: 'Predicate tree: { field, op: "eq" | "neq" | "in" | "gt" | "gte" | "lt" | "lte" | "exists" | "notExists", value? } (op "in" takes an array value; "exists"/"notExists" take none) \u2014 or { and: Filter[] } / { or: Filter[] } (1-10 branches, max depth 5)',
       thresholds: 'Color bands for stat tiles, chart marks, and table columns (max 8): { when: { op: "gte" | "gt" | "lt" | "lte", value: number } | { op: "between", value: [low, high] }, status: "good" | "warn" | "critical" | "neutral", label?: string (<=40) }',
-      source: 'Dashboard data source: { type: "folders", folderIds: string[] (1-50) } | { type: "team" } | { type: "workspace" }',
+      source: 'Dashboard data source: { type: "folders", folderIds: string[] (1-250) } | { type: "team" } | { type: "workspace" }',
       dateRangePresets: DATE_RANGE_PRESETS,
       sections: "Optional named groups of widgets rendered as tabs/sections (max 12): { id: kebab-case string, title: string (<=24), icon: kebab-case lucide icon name, widgetIds: string[] (<=24) }. Widget ids in sections must match explicit `id`s you set on the widgets; a widget may appear in at most one section; widgets in no section form the implicit Overview group."
     };
@@ -10416,12 +10416,14 @@ var init_dashboard_widgets = __esm({
 // src/tools/dashboards.ts
 var dashboards_exports = {};
 __export(dashboards_exports, {
-  register: () => register18
+  MAX_DASHBOARD_SOURCE_FOLDERS: () => MAX_DASHBOARD_SOURCE_FOLDERS,
+  register: () => register18,
+  sourceInputSchema: () => sourceInputSchema
 });
 function buildSource(source) {
   if (source.type === "folders") {
     if (!source.folderIds?.length) {
-      throw new Error('source.type "folders" requires source.folderIds (1-50 folder ids)');
+      throw new Error(`source.type "folders" requires source.folderIds (1-${MAX_DASHBOARD_SOURCE_FOLDERS} folder ids)`);
     }
     return { type: "folders", folderIds: source.folderIds };
   }
@@ -10747,7 +10749,7 @@ function register18(server, client) {
     }
   );
 }
-var import_zod20, FILTER_LIST_DESCRIPTION, widgetInputSchema, sectionInputSchema, sourceInputSchema, dateRangeInputSchema, settingsFieldIds, SETTINGS_RULES, dashboardSettingsSchema, metadataFields, specFields, SPEAKERS_FILTER_SCHEMA;
+var import_zod20, MAX_DASHBOARD_SOURCE_FOLDERS, FILTER_LIST_DESCRIPTION, widgetInputSchema, sectionInputSchema, sourceInputSchema, dateRangeInputSchema, settingsFieldIds, SETTINGS_RULES, dashboardSettingsSchema, metadataFields, specFields, SPEAKERS_FILTER_SCHEMA;
 var init_dashboards = __esm({
   "src/tools/dashboards.ts"() {
     "use strict";
@@ -10756,6 +10758,7 @@ var init_dashboards = __esm({
     init_helpers();
     init_client();
     init_dashboard_widgets();
+    MAX_DASHBOARD_SOURCE_FOLDERS = 250;
     FILTER_LIST_DESCRIPTION = "Field filters. filters.filterList is an array of { fieldName, fieldOperator?, fieldValue?: string[], fieldCondition? }. Other keys pass through but only filterList is enforced.";
     widgetInputSchema = import_zod20.z.object({
       type: import_zod20.z.enum(WIDGET_TYPES).describe(
@@ -10766,7 +10769,7 @@ var init_dashboards = __esm({
       ),
       title: import_zod20.z.string().min(1).max(40).optional().describe("Widget title, max 40 chars (defaults to a per-type label)"),
       config: import_zod20.z.record(import_zod20.z.unknown()).optional().describe(
-        "Per-type config (STRICT \u2014 unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}]; stat-cards: tiles; field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content; chat-history: limit (optional, past conversations to list, 1-100, default 25). Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. Omit for a sensible valid default (except field-distribution, which needs fieldName)."
+        "Per-type config (STRICT \u2014 unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}] (+ display: cards and card for session cards); stat-cards: tiles; field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content (+ actions for buttons); chat-history: limit (optional, past conversations to list, 1-100, default 25). Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. Omit for a sensible valid default (except field-distribution, which needs fieldName)."
       ),
       binding: import_zod20.z.record(import_zod20.z.unknown()).optional().describe(
         "Per-widget scope override: { source?, dateRange?: {preset}, filter? }. Omit any key to inherit the dashboard's value."
@@ -10790,7 +10793,7 @@ var init_dashboards = __esm({
       type: import_zod20.z.enum(["folders", "team", "workspace"]).describe(
         "folders = specific folder ids; team = the caller's team scope; workspace = everything accessible"
       ),
-      folderIds: import_zod20.z.array(import_zod20.z.string().min(1).max(64)).min(1).max(50).optional().describe('Folder ids \u2014 required when type is "folders", forbidden otherwise')
+      folderIds: import_zod20.z.array(import_zod20.z.string().min(1).max(64)).min(1).max(MAX_DASHBOARD_SOURCE_FOLDERS).optional().describe(`Folder ids (1-${MAX_DASHBOARD_SOURCE_FOLDERS}) \u2014 required when type is "folders", forbidden otherwise`)
     }).describe(
       'Data source: {type:"folders", folderIds:[...]} | {type:"team"} | {type:"workspace"}'
     );

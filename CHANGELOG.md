@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.34.0 (2026-10-14)
+
+- feat(dashboards): document session cards, notes actions and fieldsFocus; raise folder cap to 250
+
 ## v1.33.2 (2026-10-13)
 
 - fix(labels): members create and update labels by default
