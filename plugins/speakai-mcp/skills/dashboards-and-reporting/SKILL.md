@@ -105,8 +105,9 @@ and entries that give a value of that field a name, image, description and link:
 - The list replaces itself when sent, so resend every group and entry you want to keep. A save
   that contains only `profiles` does not move media pages onto the settings flow.
 - Pass the `revision` from `get_dashboard` with every `profiles` save; a stale one returns a 409.
-- A records table with `display: "cards"` can show an entry image through `card.imageColumn`,
-  the header of the column whose value matches the entry name.
+- A records table with `display: "cards"` can show an entry image through `card.imageColumn`.
+  It must name a raw custom-field column whose field has a profile group in `settings.profiles`;
+  the card shows the image of that group's entry that matches the record's value.
 
 ## Speaker breakdowns
 

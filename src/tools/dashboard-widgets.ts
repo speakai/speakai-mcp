@@ -318,8 +318,9 @@ export const WIDGET_CATALOG = [
       "card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean, layout?: \"grid\" | \"rows\", rowBy?: string, rowOrder?: string[] (<=50 values, each 1-80 chars), hero?: boolean, imageColumn?: string }. " +
       'SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, ' +
       "subtitle lines, up to 2 detail lines and duration). Only valid with rowsAre \"records\"; `card` is only valid with " +
-      'display "cards"; every card value must be an existing column header; imageColumn names a column whose value matches a ' +
-      'settings.profiles entry name, and that entry\'s image shows on the card; set rowClick "openMedia" so a click opens the media page. ' +
+      'display "cards"; every card value must be an existing column header; imageColumn names a raw custom-field column whose field ' +
+      'has a profile group in settings.profiles, and the card shows the image of that group\'s entry matching the record\'s value; ' +
+      'set rowClick "openMedia" so a click opens the media page. ' +
       'ROWS AND HERO: layout "rows" renders one horizontal snap-scroll row per distinct value of the rowBy column (rowBy is a column header, ' +
       'required with layout "rows" and rejected otherwise); rows are ordered by count desc, or by rowOrder (explicit row VALUES first, ' +
       'the rest by count; rowOrder is only valid with layout "rows"); layout defaults to "grid". hero: true renders the first record after ' +

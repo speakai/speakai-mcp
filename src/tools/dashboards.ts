@@ -7,7 +7,9 @@ import {
   DASHBOARD_PROFILE_GROUPS_MAX,
   DASHBOARD_PROFILE_ID_PATTERN,
   DASHBOARD_PROFILE_IMAGE_KEY_MAX,
+  DASHBOARD_PROFILE_IMAGE_MAX_BYTES,
   DASHBOARD_PROFILE_IMAGE_SHAPES,
+  DASHBOARD_PROFILE_IMAGE_TYPES,
   DASHBOARD_PROFILE_LABEL_MAX,
   DASHBOARD_PROFILE_LINK_MAX,
   DASHBOARD_PROFILE_NAME_MAX,
@@ -160,7 +162,8 @@ const SETTINGS_RULES =
   "fields orphans its profile. Names, descriptions, links and images are PUBLIC to anyone with the dashboard link: " +
   "write plain text only, no HTML, and confirm the descriptions and links with the user before saving. " +
   "This MCP cannot upload images: leave imageKey out, or pass one copied unchanged from get_dashboard. " +
-  "To add an image over the API, POST it (multipart, JPEG/PNG/WebP/GIF, max 2 MB) to /v1/dashboards/:dashboardId/profile-image and use the returned imageKey.";
+  `To add an image over the API, POST it (multipart, ${DASHBOARD_PROFILE_IMAGE_TYPES.map((type) => type.replace("image/", "").toUpperCase()).join("/")}, ` +
+  `max ${DASHBOARD_PROFILE_IMAGE_MAX_BYTES / (1024 * 1024)} MB) to /v1/dashboards/:dashboardId/profile-image and use the returned imageKey.`;
 
 // Mirrors the server validator. Each section is optional and replaces only itself when sent.
 const dashboardSettingsSchema = z
@@ -357,7 +360,7 @@ const dashboardSettingsSchema = z
   .describe(
     "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the " +
       "Fields tab groups them, the Feedback button, which fields Feedback submitters may edit, labels and " +
-      "comments with the reviewer names (feedback submitters) who may write them, and speaker profiles. " +
+      "comments with the reviewer names (feedback submitters) who may write them, and profile groups. " +
       SETTINGS_RULES,
   );
 
