@@ -65,6 +65,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .optional()
         .describe(
           "Embed appearance & feature toggles: { backgroundImg, logo, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, isLabels, isComments, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }. " +
+            "features entry { name: \"fieldsFocus\", isActive: false } turns off the fields-first media page: by default, when a media page is opened from a shared dashboard and the media has custom fields, the page shrinks the player to about 22% and leads with the fields. " +
+            "isPromptAsk must be on for the chat button of a shared dashboard (and a notes widget openChat action) to work. " +
             "isLabels and isComments show the media's labels and comments read-only on media and folder embeds; both are off by default and embed viewers can never write them.",
         ),
     },
