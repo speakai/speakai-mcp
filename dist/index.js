@@ -727,6 +727,7 @@ var init_menu = __esm({
       MenuItemId2["Developers"] = "developers-manage";
       MenuItemId2["AiAssistant"] = "ai-assistant";
       MenuItemId2["Fields"] = "fields";
+      MenuItemId2["Labels"] = "labels";
       MenuItemId2["KnowledgeBase"] = "knowledge-base";
       MenuItemId2["AgentsList"] = "agents-list";
       MenuItemId2["AgentsConversations"] = "agents-conversations";
@@ -1183,7 +1184,7 @@ var init_prompt = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/recorder.js
-var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating;
+var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating, RecorderSessionEventType, RecorderSessionEventCategory, RecorderSessionWakeLock, RECORDER_SESSION_EVENTS;
 var init_recorder = __esm({
   "node_modules/@speakai/shared/dist/enums/recorder.js"() {
     "use strict";
@@ -1207,6 +1208,150 @@ var init_recorder = __esm({
       RecordingFeedbackRating2["POSITIVE"] = "positive";
       RecordingFeedbackRating2["NEGATIVE"] = "negative";
     })(RecordingFeedbackRating || (RecordingFeedbackRating = {}));
+    (function(RecorderSessionEventType2) {
+      RecorderSessionEventType2["VISIBILITY_HIDDEN"] = "visibility_hidden";
+      RecorderSessionEventType2["VISIBILITY_VISIBLE"] = "visibility_visible";
+      RecorderSessionEventType2["PAGE_FREEZE"] = "page_freeze";
+      RecorderSessionEventType2["PAGE_RESUME"] = "page_resume";
+      RecorderSessionEventType2["SUSPEND_DETECTED"] = "suspend_detected";
+      RecorderSessionEventType2["WAKELOCK_ACQUIRED"] = "wakelock_acquired";
+      RecorderSessionEventType2["WAKELOCK_RELEASED"] = "wakelock_released";
+      RecorderSessionEventType2["WAKELOCK_DENIED"] = "wakelock_denied";
+      RecorderSessionEventType2["FLOATING_WINDOW_OPENED"] = "floating_window_opened";
+      RecorderSessionEventType2["FLOATING_WINDOW_CLOSED"] = "floating_window_closed";
+      RecorderSessionEventType2["MIC_MUTED"] = "mic_muted";
+      RecorderSessionEventType2["MIC_UNMUTED"] = "mic_unmuted";
+      RecorderSessionEventType2["MIC_ENDED"] = "mic_ended";
+      RecorderSessionEventType2["DEVICE_CHANGE"] = "device_change";
+      RecorderSessionEventType2["RECORDER_ERROR"] = "recorder_error";
+      RecorderSessionEventType2["GAP"] = "gap";
+      RecorderSessionEventType2["ONLINE"] = "online";
+      RecorderSessionEventType2["OFFLINE"] = "offline";
+      RecorderSessionEventType2["POWER_CHANGE"] = "power_change";
+      RecorderSessionEventType2["USER_PAUSE"] = "user_pause";
+      RecorderSessionEventType2["USER_RESUME"] = "user_resume";
+      RecorderSessionEventType2["LIVE_DISCONNECTED"] = "live_disconnected";
+      RecorderSessionEventType2["LIVE_RECONNECTING"] = "live_reconnecting";
+      RecorderSessionEventType2["LIVE_RESUMED"] = "live_resumed";
+      RecorderSessionEventType2["LIVE_FAILED"] = "live_failed";
+    })(RecorderSessionEventType || (RecorderSessionEventType = {}));
+    (function(RecorderSessionEventCategory2) {
+      RecorderSessionEventCategory2["DEVICE_SLEEP"] = "device_sleep";
+      RecorderSessionEventCategory2["SCREEN_TAB"] = "screen_tab";
+      RecorderSessionEventCategory2["AUDIO_CAPTURE"] = "audio_capture";
+      RecorderSessionEventCategory2["LIVE_TRANSCRIPTION"] = "live_transcription";
+      RecorderSessionEventCategory2["NETWORK"] = "network";
+      RecorderSessionEventCategory2["POWER"] = "power";
+      RecorderSessionEventCategory2["USER"] = "user";
+    })(RecorderSessionEventCategory || (RecorderSessionEventCategory = {}));
+    (function(RecorderSessionWakeLock2) {
+      RecorderSessionWakeLock2["ACQUIRED"] = "acquired";
+      RecorderSessionWakeLock2["DENIED"] = "denied";
+      RecorderSessionWakeLock2["UNSUPPORTED"] = "unsupported";
+      RecorderSessionWakeLock2["RELEASED"] = "released";
+    })(RecorderSessionWakeLock || (RecorderSessionWakeLock = {}));
+    RECORDER_SESSION_EVENTS = {
+      [RecorderSessionEventType.SUSPEND_DETECTED]: {
+        category: RecorderSessionEventCategory.DEVICE_SLEEP,
+        description: "The laptop or browser was asleep, so no audio was recorded for that time."
+      },
+      [RecorderSessionEventType.PAGE_FREEZE]: {
+        category: RecorderSessionEventCategory.DEVICE_SLEEP,
+        description: "The browser paused the recorder page to save power."
+      },
+      [RecorderSessionEventType.PAGE_RESUME]: {
+        category: RecorderSessionEventCategory.DEVICE_SLEEP,
+        description: "The browser started running the recorder page again after pausing it."
+      },
+      [RecorderSessionEventType.VISIBILITY_HIDDEN]: {
+        category: RecorderSessionEventCategory.SCREEN_TAB,
+        description: "The recorder tab was hidden, for example another tab or app was in front or the screen locked."
+      },
+      [RecorderSessionEventType.VISIBILITY_VISIBLE]: {
+        category: RecorderSessionEventCategory.SCREEN_TAB,
+        description: "The recorder tab was visible on screen again."
+      },
+      [RecorderSessionEventType.WAKELOCK_ACQUIRED]: {
+        category: RecorderSessionEventCategory.SCREEN_TAB,
+        description: "The recorder asked the browser to keep the screen awake, and the browser agreed."
+      },
+      [RecorderSessionEventType.WAKELOCK_RELEASED]: {
+        category: RecorderSessionEventCategory.SCREEN_TAB,
+        description: "The recorder stopped keeping the screen awake, so the screen could turn off or lock."
+      },
+      [RecorderSessionEventType.WAKELOCK_DENIED]: {
+        category: RecorderSessionEventCategory.SCREEN_TAB,
+        description: "The browser did not allow the recorder to keep the screen awake."
+      },
+      [RecorderSessionEventType.FLOATING_WINDOW_OPENED]: {
+        category: RecorderSessionEventCategory.SCREEN_TAB,
+        description: "The recorder's small floating window was opened to keep the laptop awake."
+      },
+      [RecorderSessionEventType.FLOATING_WINDOW_CLOSED]: {
+        category: RecorderSessionEventCategory.SCREEN_TAB,
+        description: "The recorder's small floating window was closed; the recording continued."
+      },
+      [RecorderSessionEventType.GAP]: {
+        category: RecorderSessionEventCategory.AUDIO_CAPTURE,
+        description: "No audio was recorded for this stretch."
+      },
+      [RecorderSessionEventType.MIC_MUTED]: {
+        category: RecorderSessionEventCategory.AUDIO_CAPTURE,
+        description: "The microphone stopped sending sound, for example it was muted by the system or another app."
+      },
+      [RecorderSessionEventType.MIC_UNMUTED]: {
+        category: RecorderSessionEventCategory.AUDIO_CAPTURE,
+        description: "The microphone started sending sound again."
+      },
+      [RecorderSessionEventType.MIC_ENDED]: {
+        category: RecorderSessionEventCategory.AUDIO_CAPTURE,
+        description: "The microphone was disconnected or turned off, so the recorder could no longer hear it."
+      },
+      [RecorderSessionEventType.DEVICE_CHANGE]: {
+        category: RecorderSessionEventCategory.AUDIO_CAPTURE,
+        description: "A microphone, headset or other audio device was plugged in, unplugged or switched."
+      },
+      [RecorderSessionEventType.RECORDER_ERROR]: {
+        category: RecorderSessionEventCategory.AUDIO_CAPTURE,
+        description: "The browser reported an error while recording audio."
+      },
+      [RecorderSessionEventType.LIVE_DISCONNECTED]: {
+        category: RecorderSessionEventCategory.LIVE_TRANSCRIPTION,
+        description: "Live transcription lost its connection; the recording itself continued."
+      },
+      [RecorderSessionEventType.LIVE_RECONNECTING]: {
+        category: RecorderSessionEventCategory.LIVE_TRANSCRIPTION,
+        description: "Live transcription was trying to reconnect."
+      },
+      [RecorderSessionEventType.LIVE_RESUMED]: {
+        category: RecorderSessionEventCategory.LIVE_TRANSCRIPTION,
+        description: "Live transcription reconnected and continued."
+      },
+      [RecorderSessionEventType.LIVE_FAILED]: {
+        category: RecorderSessionEventCategory.LIVE_TRANSCRIPTION,
+        description: "Live transcription stopped and could not reconnect; the recording itself continued."
+      },
+      [RecorderSessionEventType.ONLINE]: {
+        category: RecorderSessionEventCategory.NETWORK,
+        description: "The internet connection came back."
+      },
+      [RecorderSessionEventType.OFFLINE]: {
+        category: RecorderSessionEventCategory.NETWORK,
+        description: "The internet connection was lost."
+      },
+      [RecorderSessionEventType.POWER_CHANGE]: {
+        category: RecorderSessionEventCategory.POWER,
+        description: "The device was plugged in to charge or unplugged."
+      },
+      [RecorderSessionEventType.USER_PAUSE]: {
+        category: RecorderSessionEventCategory.USER,
+        description: "The recording was paused."
+      },
+      [RecorderSessionEventType.USER_RESUME]: {
+        category: RecorderSessionEventCategory.USER,
+        description: "The recording was resumed after a pause."
+      }
+    };
   }
 });
 
@@ -1484,6 +1629,7 @@ var init_llm = __esm({
       LLMModels2["GEMINI_3_5_FLASH"] = "gemini-3.5-flash";
       LLMModels2["GEMINI_3_7_FLASH"] = "gemini-3.7-flash";
       LLMModels2["GEMINI_3_8_FLASH"] = "gemini-3.8-flash";
+      LLMModels2["GEMINI_4_ARGON"] = "gemini-4-argon";
       LLMModels2["GROK_4_5"] = "x-ai/grok-4.5";
       LLMModels2["GLM_5_2"] = "z-ai/glm-5.2";
     })(LLMModels || (LLMModels = {}));
@@ -1675,10 +1821,22 @@ var init_dashboard_spec = __esm({
 });
 
 // node_modules/@speakai/shared/dist/interfaces/dashboard.js
+var DASHBOARD_PROFILE_GROUPS_MAX, DASHBOARD_PROFILE_ENTRIES_MAX, DASHBOARD_PROFILE_NAME_MAX, DASHBOARD_PROFILE_LABEL_MAX, DASHBOARD_PROFILE_DESCRIPTION_MAX, DASHBOARD_PROFILE_LINK_MAX, DASHBOARD_PROFILE_IMAGE_MAX_BYTES, DASHBOARD_PROFILE_IMAGE_KEY_MAX, DASHBOARD_PROFILE_ID_PATTERN, DASHBOARD_PROFILE_IMAGE_TYPES, DASHBOARD_PROFILE_IMAGE_SHAPES;
 var init_dashboard = __esm({
   "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
     "use strict";
     init_dashboard_spec();
+    DASHBOARD_PROFILE_GROUPS_MAX = 5;
+    DASHBOARD_PROFILE_ENTRIES_MAX = 60;
+    DASHBOARD_PROFILE_NAME_MAX = 80;
+    DASHBOARD_PROFILE_LABEL_MAX = 40;
+    DASHBOARD_PROFILE_DESCRIPTION_MAX = 600;
+    DASHBOARD_PROFILE_LINK_MAX = 2048;
+    DASHBOARD_PROFILE_IMAGE_MAX_BYTES = 2 * 1024 * 1024;
+    DASHBOARD_PROFILE_IMAGE_KEY_MAX = 1024;
+    DASHBOARD_PROFILE_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,63}$/;
+    DASHBOARD_PROFILE_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    DASHBOARD_PROFILE_IMAGE_SHAPES = ["round", "square"];
   }
 });
 
@@ -2943,7 +3101,8 @@ var init_registry = __esm({
         label: "Gemini 2.5 Flash",
         provider: LLMProvider.GOOGLE,
         family: "gemini",
-        status: "deprecated",
+        // Vertex retires it on 2026-10-20; retired so every resolver substitutes 3.7 Flash instead of dispatching it.
+        status: "retired",
         replacedBy: LLMModels.GEMINI_3_7_FLASH,
         offeredInChat: false,
         offeredInVoice: false,
@@ -2963,7 +3122,8 @@ var init_registry = __esm({
         label: "Gemini 2.5 Pro",
         provider: LLMProvider.GOOGLE,
         family: "gemini",
-        status: "deprecated",
+        // Vertex retires it on 2026-10-20.
+        status: "retired",
         replacedBy: LLMModels.GEMINI_3_8_FLASH,
         offeredInChat: false,
         offeredInVoice: false,
@@ -2985,7 +3145,8 @@ var init_registry = __esm({
         label: "Gemini 2.5 Flash Lite",
         provider: LLMProvider.GOOGLE,
         family: "gemini",
-        status: "deprecated",
+        // Vertex retires it on 2026-10-20.
+        status: "retired",
         replacedBy: LLMModels.GEMINI_3_7_FLASH,
         offeredInChat: false,
         offeredInVoice: false,
@@ -3120,6 +3281,28 @@ var init_registry = __esm({
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
         capabilities: GEMINI_THINKING,
         openRouterSlug: "google/gemini-3.8-flash"
+      },
+      // Backup only: reached by provider failover when both Flash models are overloaded, never offered for selection.
+      {
+        id: LLMModels.GEMINI_4_ARGON,
+        label: "Gemini 4 Argon",
+        provider: LLMProvider.GOOGLE,
+        family: "gemini",
+        status: "live",
+        offeredInChat: false,
+        offeredInVoice: false,
+        premium: true,
+        // Google's rate from 2026-12-01 ($2 / $10 until then), billed from day one so a turn is never under-charged.
+        pricing: {
+          inputPerMillion: 4,
+          outputPerMillion: 20,
+          cachedInputPerMillion: 0.2,
+          provider: LLMProvider.GOOGLE
+        },
+        // Google publishes no separate audio rate; audio at 2x input and video at input, the same ratio as Gemini 3.x Flash.
+        modality: { audioPerMillion: 8, videoPerMillion: 4 },
+        maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+        capabilities: GEMINI_THINKING
       },
       {
         id: LLMModels.GROK_4_5,
@@ -5882,7 +6065,7 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "create_embed",
-    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password, or to show labels and comments (meta isLabels, isComments; off by default).",
+    "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password, or to show labels and comments (meta isLabels, isComments; off by default), or to brand a shared dashboard (meta logo, logoDark, theme, backgroundColor, primaryColor, titleColor, fontFamily).",
     {
       mediaId: import_zod7.z.string().optional().describe("Media file to embed (for a single-media embed)"),
       folderIds: import_zod7.z.array(import_zod7.z.string()).optional().describe("Folder IDs to embed (for a folder/library embed)")
@@ -5920,7 +6103,7 @@ function register6(server, client) {
       ),
       password: import_zod7.z.string().optional().describe("Password to protect the embed with when privacyMode is private. Only applied when privacyMode is also sent."),
       meta: import_zod7.z.record(import_zod7.z.unknown()).optional().describe(
-        `Embed appearance & feature toggles: { backgroundImg, logo, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, isLabels, isComments, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }. features entry { name: "fieldsFocus", isActive: false } turns off the fields-first media page: by default, when a media page is opened from a shared dashboard and the media has custom fields, the page shrinks the player to about 22% and leads with the fields. isPromptAsk must be on for the chat button of a shared dashboard (and a notes widget openChat action) to work. isLabels and isComments show the media's labels and comments read-only on media and folder embeds; both are off by default and embed viewers can never write them.`
+        `Embed appearance & feature toggles: { backgroundImg, logo, logoDark, theme, backgroundColor, fontFamily, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, isLabels, isComments, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }. features entry { name: "fieldsFocus", isActive: false } turns off the fields-first media page: by default, when a media page is opened from a shared dashboard and the media has custom fields, the page shrinks the player to about 22% and leads with the fields. Shared-dashboard branding: logo is the image shown in light mode and logoDark the one shown when the viewer is in dark mode (logoDark must be an uploaded logo; this MCP cannot upload images, any other URL is rejected with a 400, and it falls back to logo when unset). theme is "light" or "dark" and forces that theme for every viewer, hiding their toggle; "" lets the viewer choose. backgroundColor is a hex colour (#rgb or #rrggbb) for the page background; pair it with theme so text stays readable. primaryColor is a hex accent used for nav, links, card chips and play buttons. titleColor is a hex colour for the dashboard title and is ignored when its contrast on the page background is below 3:1. fontFamily is a Google Fonts family name (letters, digits and spaces, max 60 chars, for example "Arimo"; anything else is rejected with a 400); it overrides the account font for this embed, and "" falls back to the account font. Send "" for any of these keys to clear it. isPromptAsk must be on for the chat button of a shared dashboard (and a notes widget openChat action) to work. isLabels and isComments show the media's labels and comments read-only on media and folder embeds; both are off by default and embed viewers can never write them.`
       )
     },
     {
@@ -10262,7 +10445,7 @@ var init_dashboard_widgets = __esm({
       {
         type: "table",
         purpose: "Tabular records or grouped aggregates (full width).",
-        config: 'rowsAre: "records" | "groups"; groupBy?: GroupBy (required when rowsAre="groups", forbidden when "records"); columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); searchable?: boolean; rowClick?: "openMedia" | "none"; display?: "table" | "cards"; card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean }. SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, subtitle lines, up to 2 detail lines and duration). Only valid with rowsAre "records"; `card` is only valid with display "cards"; every card value must be an existing column header; set rowClick "openMedia" so a click opens the media page. Example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, { header: "Speaker", field: "Speaker" }], card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true } }'
+        config: 'rowsAre: "records" | "groups"; groupBy?: GroupBy (required when rowsAre="groups", forbidden when "records"); columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); pageSize?: number (1-100, records per page); searchable?: boolean; rowClick?: "openMedia" | "none"; display?: "table" | "cards"; card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean, layout?: "grid" | "rows", rowBy?: string, rowOrder?: string[] (<=50 values, each 1-80 chars), hero?: boolean, imageColumn?: string }. SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, subtitle lines, up to 2 detail lines and duration). Only valid with rowsAre "records"; `card` is only valid with display "cards"; every card value must be an existing column header; imageColumn names a raw custom-field column whose field has a profile group in settings.profiles, and the card shows the image of that group\'s entry matching the record\'s value; set rowClick "openMedia" so a click opens the media page. ROWS AND HERO: layout "rows" renders one horizontal snap-scroll row per distinct value of the rowBy column (rowBy is a column header, required with layout "rows" and rejected otherwise); rows are ordered by count desc, or by rowOrder (explicit row VALUES first, the rest by count; rowOrder is only valid with layout "rows"); layout defaults to "grid". hero: true renders the first record after sort as a wide banner above the grid or rows, on the first page only (valid with either layout). Records with a blank rowBy value go in a last "other" row; rows are not paged, so every record up to limit shows. Rows example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, { header: "Track", field: "Track" }], card: { titleColumn: "Session", layout: "rows", rowBy: "Track", rowOrder: ["Track A"], hero: true } }. Example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, { header: "Speaker", field: "Speaker" }], card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true } }'
       },
       {
         type: "comparison",
@@ -10490,7 +10673,7 @@ function register18(server, client) {
   registerSpeakTool(
     server,
     "get_dashboard",
-    "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, and the current `revision` (pass that revision back to update_dashboard).",
+    "Get a single dashboard's full spec: title, description, source, date range, sections, widgets, and the current `revision` (pass that revision back to update_dashboard). Saved viewer settings, including settings.profiles groups (fieldId, label, imageShape, and entries with id, name, description, link, imageKey, and a signed imageUrl preview that is ignored if sent back), are included when the server returns them.",
     {
       dashboardId: import_zod20.z.string().min(1).describe("Dashboard business id (the dashboardId field from list_dashboards, not the Mongo _id)")
     },
@@ -10593,12 +10776,12 @@ function register18(server, client) {
   registerSpeakTool(
     server,
     "update_dashboard",
-    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision. (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. " + SHARED_DASHBOARD_CACHE_NOTE + " Viewer settings (the settings input): " + SETTINGS_RULES,
+    "Update a dashboard. Two modes. (1) Metadata-only: pass just icon/assignTo/filters/isDefault/settings, with no spec fields and no revision, except that saving settings.profiles also needs the `revision` from get_dashboard (a stale one returns a 409). (2) Spec update: pass the FULL spec \u2014 title, source, dateRange, sections, widgets \u2014 plus `revision`. Widgets and sections are REPLACED, not merged, so call get_dashboard first and resend everything you want to keep. `revision` is the optimistic-concurrency token from get_dashboard/list_dashboards: the server accepts the write only if it still matches, then increments it. A 409 conflict means another writer saved first \u2014 re-fetch with get_dashboard, rebuild your changes on the fresh spec, and retry with the new revision. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. " + SHARED_DASHBOARD_CACHE_NOTE + " Viewer settings (the settings input): " + SETTINGS_RULES,
     {
       dashboardId: import_zod20.z.string().min(1).describe("Dashboard business id"),
       title: import_zod20.z.string().min(1).max(60).optional().describe("Dashboard name \u2014 required (with revision) when updating the spec"),
       revision: import_zod20.z.number().int().nonnegative().optional().describe(
-        "The revision loaded from get_dashboard. Required for spec updates; mismatch returns a 409 conflict."
+        "The revision loaded from get_dashboard. Required for spec updates and for saving settings.profiles; mismatch returns a 409 conflict."
       ),
       ...specFields,
       ...metadataFields
@@ -10631,6 +10814,14 @@ function register18(server, client) {
             }),
             revision
           };
+        }
+        if (!specTouched && metadata.settings?.profiles !== void 0) {
+          if (revision === void 0) {
+            throw new Error(
+              "Saving settings.profiles can delete replaced images, so pass the `revision` loaded from get_dashboard."
+            );
+          }
+          body.revision = revision;
         }
         if (Object.keys(body).length === 0) {
           throw new Error("Nothing to update: pass spec fields (with revision) or metadata fields.");
@@ -10810,7 +11001,7 @@ var init_dashboards = __esm({
       preset: import_zod20.z.enum(DATE_RANGE_PRESETS).describe("One of: last7days | last30days | last3months | yearToDate | allTime")
     }).describe("Date range \u2014 strict preset only, no free-form start/end dates");
     settingsFieldIds = import_zod20.z.array(fieldIdSchema);
-    SETTINGS_RULES = "Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, labels, comments) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets a link viewer write as one of the dashboard's feedback submitter names (feedback.submitters, even while feedback itself is off), or as another typed name only when feedback.allowOtherSubmitter is true. Anyone holding the share link can pick any of those names, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the names with the user before saving a write mode. With no submitter names nobody can write. Label groups that are not active refuse the whole save with a 400 rather than being dropped.";
+    SETTINGS_RULES = `Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, labels, comments, profiles) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets a link viewer write as one of the dashboard's feedback submitter names (feedback.submitters, even while feedback itself is off), or as another typed name only when feedback.allowOtherSubmitter is true. Anyone holding the share link can pick any of those names, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the names with the user before saving a write mode. With no submitter names nobody can write. Label groups that are not active refuse the whole save with a 400 rather than being dropped. Saving only settings.profiles does not move media pages onto the settings flow. settings.profiles is a list of up to ${DASHBOARD_PROFILE_GROUPS_MAX} groups, one per custom field (a field may appear only once), each with a label (for example Speakers or Products) and entries that give a value of that field a name, image, description and link. Entry names must equal that field's values (trim, case-insensitive), and a name or id listed twice in a group is rejected with a 400; they are matched by display string, so renaming a value in the media fields orphans its profile. Names, descriptions, links and images are PUBLIC to anyone with the dashboard link: write plain text only, no HTML, and confirm the descriptions and links with the user before saving. This MCP cannot upload images: leave imageKey out, or pass one copied unchanged from get_dashboard. To add an image over the API, POST it (multipart, ${DASHBOARD_PROFILE_IMAGE_TYPES.map((type) => type.replace("image/", "").toUpperCase()).join("/")}, max ${DASHBOARD_PROFILE_IMAGE_MAX_BYTES / (1024 * 1024)} MB) to /v1/dashboards/:dashboardId/profile-image and use the returned imageKey.`;
     dashboardSettingsSchema = import_zod20.z.object({
       fields: import_zod20.z.object({
         includeIds: settingsFieldIds.describe(
@@ -10876,9 +11067,36 @@ var init_dashboards = __esm({
       comments: import_zod20.z.object({
         isEnabled: import_zod20.z.boolean().describe("Show comments on media pages opened from this shared dashboard"),
         mode: import_zod20.z.nativeEnum(DashboardCommentsMode).describe("'view' shows comments read-only; 'reply' also lets a viewer, as a reviewer name, comment and reply")
-      }).optional()
+      }).optional(),
+      profiles: import_zod20.z.array(
+        import_zod20.z.object({
+          fieldId: fieldIdSchema.describe(
+            "Custom field id whose values the entries describe (from list_fields); each field at most once"
+          ),
+          label: import_zod20.z.string().trim().min(1).max(DASHBOARD_PROFILE_LABEL_MAX).describe(`Group label shown on the dashboard, 1-${DASHBOARD_PROFILE_LABEL_MAX} chars (for example Speakers)`),
+          imageShape: import_zod20.z.enum(DASHBOARD_PROFILE_IMAGE_SHAPES).optional().describe(`How entry images are cropped: ${DASHBOARD_PROFILE_IMAGE_SHAPES.join(" or ")}`),
+          entries: import_zod20.z.array(
+            import_zod20.z.object({
+              id: import_zod20.z.string().regex(DASHBOARD_PROFILE_ID_PATTERN, "Profile id is lowercase letters, digits and hyphens, max 64 chars").optional().describe("Entry id (lowercase slug, unique in the group); leave out for a new entry and the server generates one"),
+              name: import_zod20.z.string().trim().min(1).max(DASHBOARD_PROFILE_NAME_MAX).describe(`Entry name, 1-${DASHBOARD_PROFILE_NAME_MAX} chars; must equal a value of the group's field (trim, case-insensitive) and be unique within the group`),
+              imageKey: import_zod20.z.string().min(1).max(DASHBOARD_PROFILE_IMAGE_KEY_MAX).optional().describe(
+                "S3 URI of an image in Speak's own bucket, set by the in-app image upload. Only pass a value copied from get_dashboard; this MCP cannot upload images."
+              ),
+              description: import_zod20.z.string().max(DASHBOARD_PROFILE_DESCRIPTION_MAX).optional().describe(
+                `Plain-text description, max ${DASHBOARD_PROFILE_DESCRIPTION_MAX} chars, no HTML. Public to anyone with the dashboard link.`
+              ),
+              link: import_zod20.z.string().trim().url().max(DASHBOARD_PROFILE_LINK_MAX).refine((value) => /^https?:\/\//i.test(value), "Link must be an http or https URL").optional().describe(`Optional http or https URL, max ${DASHBOARD_PROFILE_LINK_MAX} chars. Public to anyone with the dashboard link.`)
+            })
+          ).max(DASHBOARD_PROFILE_ENTRIES_MAX).describe(`Up to ${DASHBOARD_PROFILE_ENTRIES_MAX} entries. Empty removes every entry of the group.`)
+        })
+      ).max(DASHBOARD_PROFILE_GROUPS_MAX).refine(
+        (groups) => new Set(groups.map((group) => group.fieldId)).size === groups.length,
+        "Each field can have only one profile group"
+      ).optional().describe(
+        `Profile groups (up to ${DASHBOARD_PROFILE_GROUPS_MAX}, one per field) shown on the shared dashboard. Replaces the whole list when sent; an empty list removes every group. Public to anyone with the link; plain text only.`
+      )
     }).describe(
-      "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, the Feedback button, which fields Feedback submitters may edit, and labels and comments with the reviewer names (feedback submitters) who may write them. " + SETTINGS_RULES
+      "Viewer settings for media pages opened from this dashboard's share link: which fields show, how the Fields tab groups them, the Feedback button, which fields Feedback submitters may edit, labels and comments with the reviewer names (feedback submitters) who may write them, and profile groups. " + SETTINGS_RULES
     );
     metadataFields = {
       icon: import_zod20.z.string().max(200).optional().describe("Icon identifier"),

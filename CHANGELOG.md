@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.35.0 (2026-10-14)
+
+- fix(dashboards): send revision with speaker-only saves, use shared speaker limits
+
 ## v1.34.1 (2026-10-14)
 
 - fix(fields,dashboards): guard field ids and dashboard filters
