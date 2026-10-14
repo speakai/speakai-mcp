@@ -403,6 +403,17 @@ describe("Tools Integration Tests", () => {
       expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
     });
 
+    it("update_dashboard accepts only include filterList rules with values", async () => {
+      await reg();
+      const schema = (server as any)._registeredTools.update_dashboard.inputSchema;
+      const rule = { fieldName: "be5d4bfc7e0e", fieldOperator: "include", fieldValue: ["Yes"] };
+      const parse = (r: Record<string, unknown>) => schema.safeParse({ dashboardId: "d1", filters: { filterList: [r] } }).success;
+      expect(parse(rule)).toBe(true);
+      expect(parse({ ...rule, fieldOperator: "notInclude" })).toBe(false);
+      expect(parse({ ...rule, fieldValue: [] })).toBe(false);
+      expect(parse({ fieldName: "be5d4bfc7e0e" })).toBe(false);
+    });
+
     it("update_dashboard keeps settings.fieldEdits through schema parsing and sends it", async () => {
       await reg();
       const settings = { fieldEdits: { fieldIds: ["f1", "f2"] } };

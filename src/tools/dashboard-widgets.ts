@@ -35,6 +35,11 @@ export const DATE_RANGE_PRESETS = [
 
 export type DateRangePreset = (typeof DATE_RANGE_PRESETS)[number];
 
+export const SECTION_ICON_DESCRIPTION =
+  'Kebab-case lucide icon name. Known good: "dollar-sign", "globe", "users", "trending-up", "message-square", ' +
+  '"star", "target", "calendar", "chart-line", "circle-play", "circle-check", "circle-alert". Lucide renamed its ' +
+  '"<thing>-circle" icons to "circle-<thing>" (use "circle-play", not "play-circle"); an unknown name shows a blank dot.';
+
 interface WidgetMeta {
   w: number;
   h: number;
@@ -406,7 +411,9 @@ export const SPEC_VOCABULARY = {
   dateRangePresets: DATE_RANGE_PRESETS,
   sections:
     "Optional named groups of widgets rendered as tabs/sections (max 12): " +
-    "{ id: kebab-case string, title: string (<=24), icon: kebab-case lucide icon name, widgetIds: string[] (<=24) }. " +
+    "{ id: kebab-case string, title: string (<=24), icon: string, widgetIds: string[] (<=24) }. icon: " +
+    SECTION_ICON_DESCRIPTION +
+    " " +
     "Widget ids in sections must match explicit `id`s you set on the widgets; a widget may appear in at most one section; " +
     "widgets in no section form the implicit Overview group.",
 } as const;

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, fieldIdSchema } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
@@ -28,7 +28,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       fields: z
         .array(
           z.object({
-            id: z.string().min(1).describe("Custom field ID"),
+            id: fieldIdSchema,
             value: z.string().min(1).describe("Custom field value"),
           })
         )
