@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 
 // Create a mock axios instance that tracks calls
 const mockGet = vi.fn().mockResolvedValue({ data: { data: {} } });
@@ -650,6 +651,53 @@ describe("Tools Integration Tests", () => {
       expect(data.designRules.join(" ")).toContain("narrative");
       expect(data.designRules.join(" ")).toContain("every widget earns its place");
       expect(mockGet).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Voice agent tools", () => {
+    it("update_voice_agent forwards chatSettings to PUT /v1/voice/agents/:id unmodified", async () => {
+      const { register } = await import("../src/tools/voice.js");
+      register(server, mockClient);
+
+      const callback = getToolCallback(server, "update_voice_agent");
+      await callback({
+        agentId: "agent-1",
+        chatSettings: {
+          welcomeMessage: "New welcome",
+          maxResponseLength: 40,
+          responsePace: "normal",
+        },
+      });
+
+      expect(mockPut).toHaveBeenCalledWith("/v1/voice/agents/agent-1", {
+        chatSettings: {
+          welcomeMessage: "New welcome",
+          maxResponseLength: 40,
+          responsePace: "normal",
+        },
+      });
+    });
+
+    it("accepts conversationMode values that match speak-server's real enum (voice/avatar)", async () => {
+      const { register } = await import("../src/tools/voice.js");
+      register(server, mockClient);
+
+      const callback = getToolCallback(server, "update_voice_agent");
+      await callback({ agentId: "agent-1", conversationMode: "avatar" });
+
+      expect(mockPut).toHaveBeenCalledWith("/v1/voice/agents/agent-1", {
+        conversationMode: "avatar",
+      });
+    });
+
+    it("rejects the old mismatched conversationMode values at the schema level (MCP protocol validates before dispatching to the handler)", async () => {
+      const { voiceInputSchema } = await import("../src/tools/voice.js");
+      const schema = z.object(voiceInputSchema).partial();
+
+      expect(schema.safeParse({ conversationMode: "voice_only" }).success).toBe(false);
+      expect(schema.safeParse({ conversationMode: "video_avatar" }).success).toBe(false);
+      expect(schema.safeParse({ conversationMode: "avatar" }).success).toBe(true);
+      expect(schema.safeParse({ conversationMode: "voice" }).success).toBe(true);
     });
   });
 });
