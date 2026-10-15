@@ -118,7 +118,7 @@ describe("Tools Integration Tests", () => {
       await vi.advanceTimersByTimeAsync(10_000);
       const result = await pending;
       expect(mockPut).toHaveBeenLastCalledWith("/v1/media/abc123/thumbnail", { seekSec: 12.5 });
-      expect(mockGet).toHaveBeenCalledWith("/v1/media/insight/abc123");
+      expect(mockGet).toHaveBeenCalledWith("/v1/media/status/abc123");
       expect(result.structuredContent.data).toEqual({ thumbnail: { url: "https://cdn/x.jpg", source: "custom" } });
     });
 

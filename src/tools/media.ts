@@ -767,7 +767,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "set_media_thumbnail",
     "Set a custom thumbnail for a video. Send exactly one of imageUrl, imageBase64 or atSeconds. " +
       "The image must be JPEG, PNG or WebP and at most 10 MB; the type is judged from the file bytes, not the name. " +
-      "atSeconds uses the video frame at that moment; this tool waits up to 60 seconds for the frame and returns its url, or says it is still processing (check later with get_media_insights, which carries the thumbnail field). " +
+      "atSeconds uses the video frame at that moment; this tool waits up to 60 seconds for the frame and returns its url, or says it is still processing (check later with get_media_status, which carries the thumbnail field). " +
       "Each call replaces the current custom thumbnail, and there is no way back to the automatic one. " +
       "Needs permission to edit the media. Errors: 400 bad input, unsupported image, blocked link or failed frame; 413 image too large; 409 a frame is already being made; 503 frame service busy, try again shortly.",
     {
@@ -828,7 +828,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         const deadline = Date.now() + THUMBNAIL_POLL_TIMEOUT_MS;
         while (Date.now() < deadline) {
           await new Promise((resolve) => setTimeout(resolve, THUMBNAIL_POLL_INTERVAL_MS));
-          const detail = await api.get(`/v1/media/insight/${mediaId}`);
+          const detail = await api.get(`/v1/media/status/${mediaId}`);
           const thumbnail = detail.data?.data?.thumbnail;
           if (!thumbnail || thumbnail.pending) continue;
           if (thumbnail?.error) {
@@ -838,7 +838,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         }
         return ok({
           thumbnail: { pending: true },
-          message: "The frame is still processing. Check the thumbnail field with get_media_insights in a minute.",
+          message: "The frame is still processing. Check the thumbnail field with get_media_status in a minute.",
         });
       } catch (error) {
         return err(error);
