@@ -507,6 +507,25 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
       expect(result.success).toBe(true);
     });
 
+    it("set_media_thumbnail rejects bad input before calling the API", async () => {
+      const schema = getToolInputSchema(server, "set_media_thumbnail");
+      expect(schema.safeParse({ mediaId: "m", atSeconds: -1 }).success).toBe(false);
+      expect(schema.safeParse({ mediaId: "m", imageUrl: "http://example.com/a.png" }).success).toBe(false);
+
+      const callback = getToolCallback(server, "set_media_thumbnail");
+      const gif = Buffer.from("GIF89a").toString("base64");
+      const tooBig = Buffer.alloc(10 * 1024 * 1024 + 1, 0xff).toString("base64");
+      for (const params of [
+        { mediaId: "m" },
+        { mediaId: "m", imageUrl: "https://example.com/a.png", atSeconds: 1 },
+        { mediaId: "m", imageBase64: gif },
+        { mediaId: "m", imageBase64: tooBig },
+      ]) {
+        expect((await callback(params)).isError).toBe(true);
+      }
+      expect(mockPut).not.toHaveBeenCalled();
+    });
+
     it("list_media schema accepts empty object (all optional)", () => {
       const schema = getToolInputSchema(server, "list_media");
       const result = schema.safeParse({});

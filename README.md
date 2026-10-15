@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 184 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 185 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,10 +394,10 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (184)
+### MCP Tools (185)
 
 <details>
-<summary>Media (18 tools)</summary>
+<summary>Media (19 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -414,6 +414,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `bulk_update_transcript_speakers` | Rename speaker labels across multiple media files in one call (max 500) |
 | `get_media_status` | Check processing status (pending → processed) |
 | `update_media_metadata` | Update name, description, tags, or folder |
+| `set_media_thumbnail` | Set a custom video thumbnail from an image link, base64 image bytes, or a frame at a given second (JPEG, PNG or WebP, up to 10 MB) |
 | `delete_media` | Permanently delete a media file |
 | `toggle_media_favorite` | Mark or unmark media as a favorite |
 | `reanalyze_media` | Re-run AI analysis with latest models |

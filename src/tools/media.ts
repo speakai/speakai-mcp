@@ -1,18 +1,27 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, ok, err } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 import {
   isVideoFile,
   getMimeType,
+  detectImageMimeType,
   SUPPORTED_URL_SOURCES,
   UNSUPPORTED_URL_SOURCES,
 } from "../media-utils.js";
 
 export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
 export const LIST_MEDIA_MAX_PAGE_SIZE = 100;
+const THUMBNAIL_MAX_BYTES = 10 * 1024 * 1024;
+const THUMBNAIL_POLL_TIMEOUT_MS = 60_000;
+const THUMBNAIL_POLL_INTERVAL_MS = 3_000;
+const THUMBNAIL_FILE_EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
@@ -750,6 +759,89 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
           isError: true,
         };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "set_media_thumbnail",
+    "Set a custom thumbnail for a video. Send exactly one of imageUrl, imageBase64 or atSeconds. " +
+      "The image must be JPEG, PNG or WebP and at most 10 MB; the type is judged from the file bytes, not the name. " +
+      "atSeconds uses the video frame at that moment; this tool waits up to 60 seconds for the frame and returns its url, or says it is still processing (check later with get_media_insights, which carries the thumbnail field). " +
+      "Each call replaces the current custom thumbnail, and there is no way back to the automatic one. " +
+      "Needs permission to edit the media. Errors: 400 bad input, unsupported image, blocked link or failed frame; 413 image too large; 409 a frame is already being made; 503 frame service busy, try again shortly.",
+    {
+      mediaId: z.string().min(1).describe("Unique identifier of the video"),
+      imageUrl: z
+        .string()
+        .url()
+        .refine((value) => /^https:\/\//i.test(value), "imageUrl must be an https URL")
+        .optional()
+        .describe("A public https link to a JPEG, PNG or WebP image of at most 10 MB. The server downloads it."),
+      imageBase64: z
+        .string()
+        .min(1)
+        .optional()
+        .describe("The image bytes in base64 (JPEG, PNG or WebP, at most 10 MB once decoded). A data:image/...;base64, prefix is allowed."),
+      atSeconds: z
+        .number()
+        .min(0)
+        .optional()
+        .describe("Use the video frame at this many seconds from the start. Values past the end use the last second."),
+    },
+    {
+      title: "Set Media Thumbnail",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+    async ({ mediaId, imageUrl, imageBase64, atSeconds }) => {
+      const modes = [imageUrl, imageBase64, atSeconds].filter((value) => value !== undefined);
+      if (modes.length !== 1) {
+        return err(new Error("Send exactly one of imageUrl, imageBase64 or atSeconds."));
+      }
+      const path = `/v1/media/${mediaId}/thumbnail`;
+      try {
+        if (imageUrl !== undefined) {
+          const result = await api.put(path, { url: imageUrl });
+          return ok(result.data);
+        }
+        if (imageBase64 !== undefined) {
+          const bytes = Buffer.from(imageBase64.replace(/^data:[^,]*;base64,/i, ""), "base64");
+          if (bytes.length === 0) {
+            return err(new Error("imageBase64 decoded to an empty file."));
+          }
+          if (bytes.length > THUMBNAIL_MAX_BYTES) {
+            return err(new Error("The image is larger than 10 MB."));
+          }
+          const mimeType = detectImageMimeType(bytes);
+          if (!mimeType) {
+            return err(new Error("The image must be a JPEG, PNG or WebP file."));
+          }
+          const form = new FormData();
+          form.append("image", new Blob([bytes], { type: mimeType }), `thumbnail.${THUMBNAIL_FILE_EXTENSIONS[mimeType]}`);
+          const result = await api.put(path, form, { headers: { "Content-Type": "multipart/form-data" } });
+          return ok(result.data);
+        }
+        await api.put(path, { seekSec: atSeconds });
+        const deadline = Date.now() + THUMBNAIL_POLL_TIMEOUT_MS;
+        while (Date.now() < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, THUMBNAIL_POLL_INTERVAL_MS));
+          const detail = await api.get(`/v1/media/insight/${mediaId}`);
+          const thumbnail = detail.data?.data?.thumbnail;
+          if (!thumbnail || thumbnail.pending) continue;
+          if (thumbnail?.error) {
+            return err(new Error(`The frame could not be used: ${thumbnail.error}`));
+          }
+          return ok({ thumbnail });
+        }
+        return ok({
+          thumbnail: { pending: true },
+          message: "The frame is still processing. Check the thumbnail field with get_media_insights in a minute.",
+        });
+      } catch (error) {
+        return err(error);
       }
     }
   );

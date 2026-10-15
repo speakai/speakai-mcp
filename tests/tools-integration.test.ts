@@ -92,6 +92,36 @@ describe("Tools Integration Tests", () => {
       expect(mockDelete).toHaveBeenCalledWith("/v1/media/abc123");
     });
 
+    it("set_media_thumbnail sends a link, sniffed image bytes, or a frame time it waits for", async () => {
+      const { register } = await import("../src/tools/media.js");
+      register(server, mockClient);
+      const callback = getToolCallback(server, "set_media_thumbnail");
+
+      await callback({ mediaId: "abc123", imageUrl: "https://example.com/a.png" });
+      expect(mockPut).toHaveBeenCalledWith("/v1/media/abc123/thumbnail", { url: "https://example.com/a.png" });
+
+      const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
+      await callback({ mediaId: "abc123", imageBase64: `data:image/jpeg;base64,${png.toString("base64")}` });
+      const [path, form, config] = mockPut.mock.calls[1];
+      expect(path).toBe("/v1/media/abc123/thumbnail");
+      expect(config).toEqual({ headers: { "Content-Type": "multipart/form-data" } });
+      const image = (form as FormData).get("image") as File;
+      expect(image.type).toBe("image/png");
+      expect(image.name).toBe("thumbnail.png");
+      expect(Buffer.from(await image.arrayBuffer())).toEqual(png);
+
+      vi.useFakeTimers();
+      mockGet
+        .mockResolvedValueOnce({ data: { data: { thumbnail: { pending: true } } } })
+        .mockResolvedValueOnce({ data: { data: { thumbnail: { url: "https://cdn/x.jpg", source: "custom" } } } });
+      const pending = callback({ mediaId: "abc123", atSeconds: 12.5 });
+      await vi.advanceTimersByTimeAsync(10_000);
+      const result = await pending;
+      expect(mockPut).toHaveBeenLastCalledWith("/v1/media/abc123/thumbnail", { seekSec: 12.5 });
+      expect(mockGet).toHaveBeenCalledWith("/v1/media/insight/abc123");
+      expect(result.structuredContent.data).toEqual({ thumbnail: { url: "https://cdn/x.jpg", source: "custom" } });
+    });
+
     it("get_media_status calls GET /v1/media/status/:id", async () => {
       const { register } = await import("../src/tools/media.js");
       register(server, mockClient);

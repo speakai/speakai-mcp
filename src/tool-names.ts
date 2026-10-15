@@ -103,6 +103,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "search_media",
   "delete_media",
   "update_media_metadata",
+  "set_media_thumbnail",
   "toggle_media_favorite",
   "reanalyze_media",
   "get_captions",

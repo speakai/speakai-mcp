@@ -23,6 +23,7 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "reanalyze_media",
       "bulk_move_media",
       "upload_and_analyze_batch",
+      "set_media_thumbnail",
     ],
   },
   {
