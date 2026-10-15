@@ -238,7 +238,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 4. Get media insights
   registerSpeakTool(server, 
     "get_media_insights",
-    "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead.",
+    "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },
@@ -391,7 +391,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 7. Get media status
   registerSpeakTool(server, 
     "get_media_status",
-    "Check the processing status of a media file. States: pending → transcribing → analyzing → processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
+    "Check the processing status of a media file. States: pending → transcribing → analyzing → processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },

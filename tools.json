@@ -66,7 +66,7 @@
         {
           "name": "get_media_insights",
           "title": "Get Media Insights",
-          "description": "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead.",
+          "description": "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -111,7 +111,7 @@
         {
           "name": "get_media_status",
           "title": "Get Media Status",
-          "description": "Check the processing status of a media file. States: pending → transcribing → analyzing → processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
+          "description": "Check the processing status of a media file. States: pending → transcribing → analyzing → processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
