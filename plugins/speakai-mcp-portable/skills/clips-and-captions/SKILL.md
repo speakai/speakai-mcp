@@ -13,7 +13,7 @@ The user's explicit instructions take priority over this skill. When they ask fo
 
 This skill covers the tools that produce something a person can watch, read, or
 publish. Four categories matter here: clips (4 tools), exports (2 tools), media
-(18 tools), and embed-other (4 tools).
+(19 tools), and embed-other (4 tools).
 
 Every step below needs a `mediaId`. Get one from `search_media` or `list_media`
 before you do anything else.
