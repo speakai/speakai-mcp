@@ -12344,9 +12344,9 @@ function register22(server, client) {
     "Advisory only \u2014 compares a voice agent's current instructions against anchors/original intent/recent call summaries you supply and suggests up to 3 patches. Requires the OWNER or ADMIN role. Nothing is written; pass a suggestion's suggestedPatch to apply_voice_instruction_gap to actually apply it.",
     {
       agentId: import_zod24.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
-      anchors: import_zod24.z.array(import_zod24.z.string()).optional().describe("Specific requirements the instructions must cover. Defaults to empty."),
-      originalPrompt: import_zod24.z.string().optional().describe("The original generation prompt, for context."),
-      conversationSummaries: import_zod24.z.array(import_zod24.z.string()).optional().describe("Recent call summaries, to ground suggestions in what actually came up. Defaults to empty.")
+      anchors: import_zod24.z.array(import_zod24.z.string().trim().min(1).max(500)).max(20).optional().describe("Specific requirements the instructions must cover, at most 20 of up to 500 characters each. Defaults to empty."),
+      originalPrompt: import_zod24.z.string().optional().describe("The original generation prompt, for context. Only the first 2000 characters are used."),
+      conversationSummaries: import_zod24.z.array(import_zod24.z.string().trim().min(1).max(2e3)).max(20).optional().describe("Recent call summaries, to ground suggestions in what actually came up, at most 20 of up to 2000 characters each. Defaults to empty.")
     },
     { title: "Analyze Voice Instruction Gaps", readOnlyHint: true, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId, ...body }) => {

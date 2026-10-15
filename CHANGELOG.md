@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.37.1 (2026-10-15)
+
+- fix(analyze_voice_instruction_gaps): mirror the server's input caps in the tool schema
+
 ## v1.37.0 (2026-10-15)
 
 - feat(voice): add chatSettings to the agent create/update schema
