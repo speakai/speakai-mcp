@@ -4414,6 +4414,13 @@ function getMimeType(filePath) {
 function detectMediaType(filePath) {
   return isVideoFile(filePath) ? "video" : "audio";
 }
+function detectImageMimeType(bytes) {
+  const ascii = (start, end) => String.fromCharCode(...bytes.subarray(start, end));
+  if (bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) return "image/jpeg";
+  if (bytes.length >= 8 && bytes[0] === 137 && ascii(1, 8) === "PNG\r\n\n") return "image/png";
+  if (bytes.length >= 12 && ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "image/webp";
+  return null;
+}
 var path, VIDEO_EXTENSIONS, MIME_TYPES, SUPPORTED_URL_SOURCES, UNSUPPORTED_URL_SOURCES;
 var init_media_utils = __esm({
   "src/media-utils.ts"() {
@@ -4583,7 +4590,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "get_media_insights",
-    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead.",
+    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
     },
@@ -4722,7 +4729,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "get_media_status",
-    "Check the processing status of a media file. States: pending \u2192 transcribing \u2192 analyzing \u2192 processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
+    "Check the processing status of a media file. States: pending \u2192 transcribing \u2192 analyzing \u2192 processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
     },
@@ -5049,8 +5056,74 @@ function register(server, client) {
       }
     }
   );
+  registerSpeakTool(
+    server,
+    "set_media_thumbnail",
+    "Set a custom thumbnail for a video. Send exactly one of imageUrl, imageBase64 or atSeconds. The image must be JPEG, PNG or WebP and at most 10 MB; the type is judged from the file bytes, not the name. atSeconds uses the video frame at that moment; this tool waits up to 60 seconds for the frame and returns its url, or says it is still processing (check later with get_media_status, which carries the thumbnail field). Each call replaces the current custom thumbnail, and there is no way back to the automatic one. Needs permission to edit the media. Errors: 400 bad input, unsupported image, blocked link or failed frame; 413 image too large; 409 a frame is already being made; 503 frame service busy, try again shortly.",
+    {
+      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the video"),
+      imageUrl: import_zod2.z.string().url().refine((value) => /^https:\/\//i.test(value), "imageUrl must be an https URL").optional().describe("A public https link to a JPEG, PNG or WebP image of at most 10 MB. The server downloads it."),
+      imageBase64: import_zod2.z.string().min(1).optional().describe("The image bytes in base64 (JPEG, PNG or WebP, at most 10 MB once decoded). A data:image/...;base64, prefix is allowed."),
+      atSeconds: import_zod2.z.number().min(0).optional().describe("Use the video frame at this many seconds from the start. Values past the end use the last second.")
+    },
+    {
+      title: "Set Media Thumbnail",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true
+    },
+    async ({ mediaId, imageUrl, imageBase64, atSeconds }) => {
+      const modes = [imageUrl, imageBase64, atSeconds].filter((value) => value !== void 0);
+      if (modes.length !== 1) {
+        return err(new Error("Send exactly one of imageUrl, imageBase64 or atSeconds."));
+      }
+      const path4 = `/v1/media/${mediaId}/thumbnail`;
+      try {
+        if (imageUrl !== void 0) {
+          const result = await api.put(path4, { url: imageUrl });
+          return ok(result.data);
+        }
+        if (imageBase64 !== void 0) {
+          const bytes = Buffer.from(imageBase64.replace(/^data:[^,]*;base64,/i, ""), "base64");
+          if (bytes.length === 0) {
+            return err(new Error("imageBase64 decoded to an empty file."));
+          }
+          if (bytes.length > THUMBNAIL_MAX_BYTES) {
+            return err(new Error("The image is larger than 10 MB."));
+          }
+          const mimeType = detectImageMimeType(bytes);
+          if (!mimeType) {
+            return err(new Error("The image must be a JPEG, PNG or WebP file."));
+          }
+          const form = new FormData();
+          form.append("image", new Blob([bytes], { type: mimeType }), `thumbnail.${THUMBNAIL_FILE_EXTENSIONS[mimeType]}`);
+          const result = await api.put(path4, form, { headers: { "Content-Type": "multipart/form-data" } });
+          return ok(result.data);
+        }
+        await api.put(path4, { seekSec: atSeconds });
+        const deadline = Date.now() + THUMBNAIL_POLL_TIMEOUT_MS;
+        while (Date.now() < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, THUMBNAIL_POLL_INTERVAL_MS));
+          const detail = await api.get(`/v1/media/status/${mediaId}`);
+          const thumbnail = detail.data?.data?.thumbnail;
+          if (!thumbnail || thumbnail.pending) continue;
+          if (thumbnail?.error) {
+            return err(new Error(`The frame could not be used: ${thumbnail.error}`));
+          }
+          return ok({ thumbnail });
+        }
+        return ok({
+          thumbnail: { pending: true },
+          message: "The frame is still processing. Check the thumbnail field with get_media_status in a minute."
+        });
+      } catch (error) {
+        return err(error);
+      }
+    }
+  );
 }
-var import_zod2, LIST_MEDIA_DEFAULT_PAGE_SIZE, LIST_MEDIA_MAX_PAGE_SIZE;
+var import_zod2, LIST_MEDIA_DEFAULT_PAGE_SIZE, LIST_MEDIA_MAX_PAGE_SIZE, THUMBNAIL_MAX_BYTES, THUMBNAIL_POLL_TIMEOUT_MS, THUMBNAIL_POLL_INTERVAL_MS, THUMBNAIL_FILE_EXTENSIONS;
 var init_media3 = __esm({
   "src/tools/media.ts"() {
     "use strict";
@@ -5061,6 +5134,14 @@ var init_media3 = __esm({
     init_media_utils();
     LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
     LIST_MEDIA_MAX_PAGE_SIZE = 100;
+    THUMBNAIL_MAX_BYTES = 10 * 1024 * 1024;
+    THUMBNAIL_POLL_TIMEOUT_MS = 6e4;
+    THUMBNAIL_POLL_INTERVAL_MS = 3e3;
+    THUMBNAIL_FILE_EXTENSIONS = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp"
+    };
   }
 });
 
@@ -12682,6 +12763,7 @@ var init_tool_names = __esm({
       "search_media",
       "delete_media",
       "update_media_metadata",
+      "set_media_thumbnail",
       "toggle_media_favorite",
       "reanalyze_media",
       "get_captions",
@@ -13973,7 +14055,8 @@ var SPEAK_MCP_TOOL_CATEGORIES = [
       "toggle_media_favorite",
       "reanalyze_media",
       "bulk_move_media",
-      "upload_and_analyze_batch"
+      "upload_and_analyze_batch",
+      "set_media_thumbnail"
     ]
   },
   {

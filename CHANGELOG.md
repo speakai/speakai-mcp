@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.36.0 (2026-10-15)
+
+- fix(set_media_thumbnail): wait for the frame on the media status endpoint
+
 ## v1.35.0 (2026-10-14)
 
 - fix(dashboards): send revision with speaker-only saves, use shared speaker limits
