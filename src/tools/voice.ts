@@ -1,12 +1,27 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import { RESPONSE_PACES } from "@speakai/shared";
 import { registerSpeakTool } from "./_helpers.js";
 import type { RegisterOptions } from "./index.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 // Voice agents and conversations, under /v1/voice; companyId is stamped server-side, no tenancy id is passed here.
-const voiceInputSchema = {
+const chatSettingsSchema = z
+  .object({
+    welcomeMessage: z.string().optional().describe("The agent's opening line."),
+    conversationStarters: z.array(z.string()).optional(),
+    topicsToAvoid: z.array(z.string()).optional(),
+    maxResponseLength: z.number().int().min(10).max(50).optional().describe("Words per response, 10-50."),
+    maxSessionLength: z.number().int().positive().optional().describe("Minutes before the call ends."),
+    language: z.string().optional(),
+    responsePace: z.enum(RESPONSE_PACES as unknown as [string, ...string[]]).optional(),
+  })
+  .describe(
+    "Sending this object replaces it whole on the stored agent, the same as voice/llm/avatar below -- fields you omit are not merged, they're dropped. Fetch get_voice_agent first and resend every key you want to keep.",
+  );
+
+export const voiceInputSchema = {
   name: z.string().min(1).describe("Required on create. Trimmed, non-empty."),
   personality: z.string().describe("Required on create. Free text describing the agent's tone."),
   instructions: z.string().describe("Required on create. The agent's system instructions."),
@@ -31,7 +46,8 @@ const voiceInputSchema = {
     })
     .optional()
     .describe("Set to attach a video avatar; avatarUrl/provider are derived server-side from the catalog row."),
-  conversationMode: z.enum(["voice_only", "video_avatar"]).optional(),
+  chatSettings: chatSettingsSchema.optional(),
+  conversationMode: z.enum(["voice", "avatar"]).optional(),
   folderId: z.string().optional().describe("Folder to file this agent's conversations under."),
   enableWebSearch: z.boolean().optional().describe("Let the agent search the web mid-call, separate from any attached knowledge base."),
 };
@@ -179,7 +195,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server,
     "update_voice_agent",
-    "Update a voice agent. Requires the OWNER or ADMIN role. Send only the fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent.",
+    "Update a voice agent. Requires the OWNER or ADMIN role. Send only the top-level fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent. Object fields (voice, llm, avatar, chatSettings) each replace the stored object whole, not merge -- fetch get_voice_agent first and resend every key of an object field you're not fully replacing.",
     {
       agentId: z.string().min(1).describe("ID of the voice agent to update (from list_voice_agents)"),
       ...Object.fromEntries(
