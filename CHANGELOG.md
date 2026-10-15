@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.37.0 (2026-10-15)
+
+- feat(voice): add chatSettings to the agent create/update schema
+
 ## v1.36.0 (2026-10-15)
 
 - fix(set_media_thumbnail): wait for the frame on the media status endpoint
