@@ -369,7 +369,7 @@
         {
           "name": "create_folder",
           "title": "Create Folder",
-          "description": "Create a new folder in the workspace.",
+          "description": "Create a new folder in the workspace, optionally assigned to users or user groups.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -387,7 +387,7 @@
         {
           "name": "update_folder",
           "title": "Update Folder",
-          "description": "Update a folder. `name` must always be supplied (the server replaces the folder config).",
+          "description": "Update a folder. `name` must always be supplied (the server replaces the folder config). Pass `assignTo` to replace who can access it; omit it to keep the current assignment.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -1391,7 +1391,7 @@
         {
           "name": "update_voice_agent",
           "title": "Update Voice Agent",
-          "description": "Update a voice agent. Requires the OWNER or ADMIN role. Send only the fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent.",
+          "description": "Update a voice agent. Requires the OWNER or ADMIN role. Send only the top-level fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent. Object fields (voice, llm, avatar, chatSettings) each replace the stored object whole, not merge -- fetch get_voice_agent first and resend every key of an object field you're not fully replacing.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,

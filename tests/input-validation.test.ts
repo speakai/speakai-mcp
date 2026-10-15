@@ -283,6 +283,24 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       expect(mockPut).toHaveBeenCalledWith("/v1/folder/f1", { name: "Renamed" });
     });
 
+    it("create_folder and update_folder schemas keep assignTo for users and groups", () => {
+      const assignTo = ["user123", "group456 (G)"];
+      for (const [tool, input] of [
+        ["create_folder", { name: "Research", assignTo }],
+        ["update_folder", { folderId: "f1", name: "Research", assignTo }],
+      ] as const) {
+        const result = getToolInputSchema(server, tool).safeParse(input);
+        expect(result.success).toBe(true);
+        expect(result.data.assignTo).toEqual(assignTo);
+      }
+    });
+
+    it("update_folder sends assignTo to the server", async () => {
+      const callback = getToolCallback(server, "update_folder");
+      await callback({ folderId: "f1", name: "Research", assignTo: ["group456 (G)"] });
+      expect(mockPut).toHaveBeenCalledWith("/v1/folder/f1", { name: "Research", assignTo: ["group456 (G)"] });
+    });
+
     it("delete_folder calls correct endpoint", async () => {
       const callback = getToolCallback(server, "delete_folder");
       await callback({ folderId: "f1" });

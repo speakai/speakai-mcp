@@ -275,10 +275,16 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "create_folder",
-    "Create a new folder in the workspace.",
+    "Create a new folder in the workspace, optionally assigned to users or user groups.",
     {
       name: z.string().min(1).describe("Display name for the new folder"),
       description: z.string().optional().describe("Optional folder description"),
+      assignTo: z
+        .array(z.string().min(1))
+        .optional()
+        .describe(
+          "Who can access the folder: user IDs, and user group IDs with a \" (G)\" suffix (e.g. \"64b1... (G)\"). Get IDs from list_users and list_user_groups."
+        ),
     },
     {
       title: "Create Folder",
@@ -346,11 +352,17 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_folder",
-    "Update a folder. `name` must always be supplied (the server replaces the folder config).",
+    "Update a folder. `name` must always be supplied (the server replaces the folder config). Pass `assignTo` to replace who can access it; omit it to keep the current assignment.",
     {
       folderId: z.string().min(1).describe("Unique identifier of the folder"),
       name: z.string().describe("Display name for the folder"),
       description: z.string().optional().describe("Optional folder description"),
+      assignTo: z
+        .array(z.string().min(1))
+        .optional()
+        .describe(
+          "Who can access the folder: user IDs, and user group IDs with a \" (G)\" suffix (e.g. \"64b1... (G)\"). Get IDs from list_users and list_user_groups."
+        ),
     },
     {
       title: "Update Folder",
