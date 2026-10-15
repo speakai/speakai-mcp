@@ -688,18 +688,18 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `get_voice_test_suite` | Get a voice agent's test suite (its scenarios and run settings) |
 | `update_voice_test_suite` | Create or update a voice agent's test suite (upserts; replaces scenarios) |
 | `generate_voice_test_suite` | Auto-generate a default test suite from the agent's name, personality and instructions |
-| `start_voice_test_run` | Queue a test run of a voice agent's scripted test suite (creates a queued run record; no calls are placed) |
+| `start_voice_test_run` | Start a test run: sends each enabled scenario's user messages to the agent as text and grades every criterion (no calls are placed; uses credits for the AI cost) |
 | `get_active_voice_test_run` | Get a voice agent's currently active run (queued, running, or paused) |
-| `pause_voice_test_run` | Pause a running or queued test run |
-| `resume_voice_test_run` | Resume a paused test run |
-| `cancel_voice_test_run` | Cancel a test run; terminal, cannot be resumed |
+| `pause_voice_test_run` | Pause a running or queued test run; takes effect after the current scenario |
+| `resume_voice_test_run` | Resume a paused test run from the next scenario |
+| `cancel_voice_test_run` | Cancel a test run at its next AI call; cost already used is charged; terminal |
 | `list_voice_test_runs` | List a voice agent's test runs, most recent first |
 | `get_voice_test_run` | Get a test run's full detail, including scenario results and recommendations |
 | `apply_voice_test_recommendation` | Apply a test run recommendation's quick action to the agent |
 | `get_voice_test_baseline` | Get a voice agent's best-scoring completed run, for regression comparison |
 | `get_voice_test_score_history` | Get completed-run score points for charting |
 
-The ten run tools, from `start_voice_test_run` down, register only with `voiceTestRuns: true`. The stdio server and Speak's in-app assistant include them; the hosted endpoint does not, until the engine that runs the scenarios is live.
+A test run sends each enabled scenario's scripted user messages to the agent as text and grades every criterion. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. The ten run tools, from `start_voice_test_run` down, register by default; pass `voiceTestRuns: false` to `registerAllTools` to leave them off.
 
 </details>
 

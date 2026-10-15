@@ -1391,7 +1391,7 @@
         {
           "name": "update_voice_agent",
           "title": "Update Voice Agent",
-          "description": "Update a voice agent. Requires the OWNER or ADMIN role. Send only the fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent.",
+          "description": "Update a voice agent. Requires the OWNER or ADMIN role. Send only the top-level fields you want to change; agentId, companyId, and userId are immutable and silently dropped if sent. Object fields (voice, llm, avatar, chatSettings) each replace the stored object whole, not merge -- fetch get_voice_agent first and resend every key of an object field you're not fully replacing.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1570,10 +1570,10 @@
         },
         {
           "name": "start_voice_test_run",
-          "title": "Queue Voice Agent Test Run",
-          "description": "Queue a test run of a voice agent's scripted test suite. Creates a run record in queued status and returns it; it does not place phone calls, start a conversation, or use credits. Requires the OWNER or ADMIN role. Returns 404 if the agent or its test suite does not exist, and 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
+          "title": "Start Voice Agent Test Run",
+          "description": "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run, and 402 if the workspace has no credits.",
           "readOnlyHint": false,
-          "destructiveHint": false,
+          "destructiveHint": true,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1589,7 +1589,7 @@
         {
           "name": "pause_voice_test_run",
           "title": "Pause Voice Test Run",
-          "description": "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running. The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.",
+          "description": "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running. Takes effect after the current scenario finishes.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1598,7 +1598,7 @@
         {
           "name": "resume_voice_test_run",
           "title": "Resume Voice Test Run",
-          "description": "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused. Only the run's status changes. The live execution engine is not wired up yet, so no scenarios execute.",
+          "description": "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused. The run continues from the next scenario.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -1607,7 +1607,7 @@
         {
           "name": "cancel_voice_test_run",
           "title": "Cancel Voice Test Run",
-          "description": "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. Terminal — a cancelled run can never be resumed.",
+          "description": "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. The run stops at its next AI call; the AI cost already used is still charged. Terminal — a cancelled run can never be resumed.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
