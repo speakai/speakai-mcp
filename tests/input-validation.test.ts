@@ -640,4 +640,37 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
       expect(result.success).toBe(false);
     });
   });
+
+  describe("Voice intelligence tools", () => {
+    beforeEach(async () => {
+      const { register } = await import("../src/tools/voice-intelligence.js");
+      register(server, mockClient);
+    });
+
+    // Mirrors analyzeGapsBody in speak-server: 20 anchors of 500 and 20 summaries of 2000.
+    it("analyze_voice_instruction_gaps schema accepts inputs at the server caps", () => {
+      const schema = getToolInputSchema(server, "analyze_voice_instruction_gaps");
+      const result = schema.safeParse({
+        agentId: "a1",
+        anchors: Array(20).fill("a".repeat(500)),
+        conversationSummaries: Array(20).fill("s".repeat(2000)),
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("analyze_voice_instruction_gaps schema rejects inputs over the server caps", () => {
+      const schema = getToolInputSchema(server, "analyze_voice_instruction_gaps");
+      const over = [
+        { anchors: Array(21).fill("a") },
+        { anchors: ["a".repeat(501)] },
+        { anchors: ["   "] },
+        { conversationSummaries: Array(21).fill("s") },
+        { conversationSummaries: ["s".repeat(2001)] },
+        { conversationSummaries: ["   "] },
+      ];
+      for (const body of over) {
+        expect(schema.safeParse({ agentId: "a1", ...body }).success).toBe(false);
+      }
+    });
+  });
 });
