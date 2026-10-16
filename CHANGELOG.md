@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.38.0 (2026-10-16)
+
+- feat(voice-testing): run voice agent test suites
+
 ## v1.37.1 (2026-10-15)
 
 - fix(analyze_voice_instruction_gaps): mirror the server's input caps in the tool schema

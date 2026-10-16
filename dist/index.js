@@ -5658,10 +5658,13 @@ function register4(server, client) {
   registerSpeakTool(
     server,
     "create_folder",
-    "Create a new folder in the workspace.",
+    "Create a new folder in the workspace, optionally assigned to users or user groups.",
     {
       name: import_zod5.z.string().min(1).describe("Display name for the new folder"),
-      description: import_zod5.z.string().optional().describe("Optional folder description")
+      description: import_zod5.z.string().optional().describe("Optional folder description"),
+      assignTo: import_zod5.z.array(import_zod5.z.string().min(1)).optional().describe(
+        'Who can access the folder: user IDs, and user group IDs with a " (G)" suffix (e.g. "64b1... (G)"). Get IDs from list_users and list_user_groups.'
+      )
     },
     {
       title: "Create Folder",
@@ -5723,11 +5726,14 @@ function register4(server, client) {
   registerSpeakTool(
     server,
     "update_folder",
-    "Update a folder. `name` must always be supplied (the server replaces the folder config).",
+    "Update a folder. `name` must always be supplied (the server replaces the folder config). Pass `assignTo` to replace who can access it; omit it to keep the current assignment.",
     {
       folderId: import_zod5.z.string().min(1).describe("Unique identifier of the folder"),
       name: import_zod5.z.string().describe("Display name for the folder"),
-      description: import_zod5.z.string().optional().describe("Optional folder description")
+      description: import_zod5.z.string().optional().describe("Optional folder description"),
+      assignTo: import_zod5.z.array(import_zod5.z.string().min(1)).optional().describe(
+        'Who can access the folder: user IDs, and user group IDs with a " (G)" suffix (e.g. "64b1... (G)"). Get IDs from list_users and list_user_groups.'
+      )
     },
     {
       title: "Update Folder",
@@ -11552,9 +11558,9 @@ function register19(server, client, options = {}) {
               "get_voice_test_suite",
               "update_voice_test_suite",
               "generate_voice_test_suite",
-              ...options.voiceTestRuns ? ["start_voice_test_run"] : []
+              ...options.voiceTestRuns === false ? [] : ["start_voice_test_run", "get_active_voice_test_run"]
             ],
-            notes: options.voiceTestRuns ? "Scripted scenarios and a run history. The run lifecycle is live; the engine that drives a simulated conversation is not wired up yet, so a run stays queued." : "Scripted test scenarios for the agent. Running them is not available yet, because the engine that drives a simulated conversation is not live."
+            notes: options.voiceTestRuns === false ? "Scripted test scenarios for the agent. This server does not expose the run tools." : "Scripted scenarios and a run history. A run sends each enabled scenario's user messages to the agent as text and grades every criterion; it uses credits for the AI cost. Poll get_active_voice_test_run for progress."
           },
           {
             area: "Feedback / self-improvement (Intelligence)",
@@ -11574,7 +11580,7 @@ function register19(server, client, options = {}) {
         ],
         commonMistakes: [
           "Calling create_voice_agent with a made-up voiceId instead of one from list_voices -- the create call fails validation.",
-          ...options.voiceTestRuns ? ["Expecting start_voice_test_run to return real scores -- the execution engine isn't wired up yet, see the Testing tools' own descriptions."] : [],
+          ...options.voiceTestRuns === false ? [] : ["Reading scores from start_voice_test_run's response -- it returns the run in queued status; poll get_active_voice_test_run until it finishes, then read get_voice_test_run."],
           "Looking for a knowledge-base tool in this group -- collections are managed by the separate Knowledge Base tool group and only attached here."
         ]
       };
@@ -11655,9 +11661,9 @@ function register20(server, client, options = {}) {
       agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       scenarios: import_zod22.z.array(scenarioSchema).optional(),
       maxCostPerRun: import_zod22.z.number().min(0).optional(),
-      autoRunOnKbUpdate: import_zod22.z.boolean().optional(),
-      autoRunOnInstructionSave: import_zod22.z.boolean().optional(),
-      scheduledCron: import_zod22.z.string().optional().nullable()
+      autoRunOnKbUpdate: import_zod22.z.boolean().optional().describe("Run the suite automatically when the agent's knowledge base changes. Changes are grouped into one run that starts about 2 minutes after the last change, at most once an hour. Each run is charged in credits."),
+      autoRunOnInstructionSave: import_zod22.z.boolean().optional().describe("Run the suite automatically when the agent's instructions, personality or chat settings change. Same grouping, hourly limit and credit charge as autoRunOnKbUpdate."),
+      scheduledCron: import_zod22.z.string().optional().nullable().describe("Run the suite on a schedule: a 5-field cron expression in UTC, e.g. '0 9 * * 1-5' for 09:00 UTC on weekdays. At most once an hour. Send null or an empty string to turn the schedule off. Each run is charged in credits.")
     },
     { title: "Update Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, ...body }) => {
@@ -11684,13 +11690,13 @@ function register20(server, client, options = {}) {
       }
     }
   );
-  if (!options.voiceTestRuns) return;
+  if (options.voiceTestRuns === false) return;
   registerSpeakTool(
     server,
     "start_voice_test_run",
-    "Queue a test run of a voice agent's scripted test suite. Creates a run record in queued status and returns it; it does not place phone calls, start a conversation, or use credits. Requires the OWNER or ADMIN role. Returns 404 if the agent or its test suite does not exist, and 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run." + NOT_WIRED_NOTE,
+    "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run, and 402 if the workspace has no credits.",
     { agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Queue Voice Agent Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Start Voice Agent Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run`);
@@ -11718,7 +11724,7 @@ function register20(server, client, options = {}) {
   registerSpeakTool(
     server,
     "pause_voice_test_run",
-    "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running." + NOT_WIRED_NOTE,
+    "Pause a voice agent's test run. Requires the OWNER or ADMIN role. Valid only from queued or running. Takes effect after the current scenario finishes.",
     {
       agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: import_zod22.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
@@ -11736,7 +11742,7 @@ function register20(server, client, options = {}) {
   registerSpeakTool(
     server,
     "resume_voice_test_run",
-    "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused. Only the run's status changes. The live execution engine is not wired up yet, so no scenarios execute.",
+    "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused. The run continues from the next scenario.",
     {
       agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: import_zod22.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
@@ -11754,7 +11760,7 @@ function register20(server, client, options = {}) {
   registerSpeakTool(
     server,
     "cancel_voice_test_run",
-    "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. Terminal \u2014 a cancelled run can never be resumed.",
+    "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. The run stops at its next AI call; the AI cost already used is still charged. Terminal \u2014 a cancelled run can never be resumed.",
     {
       agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: import_zod22.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
@@ -11858,14 +11864,13 @@ function register20(server, client, options = {}) {
     }
   );
 }
-var import_zod22, NOT_WIRED_NOTE, criterionSchema, scenarioSchema;
+var import_zod22, criterionSchema, scenarioSchema;
 var init_voice_testing = __esm({
   "src/tools/voice-testing.ts"() {
     "use strict";
     import_zod22 = require("zod");
     init_helpers();
     init_client();
-    NOT_WIRED_NOTE = " The live execution engine is not wired up yet: a run created here stays queued, scenarioResults stays empty, and overallScore stays 0.";
     criterionSchema = import_zod22.z.object({
       criterionId: import_zod22.z.string().optional(),
       name: import_zod22.z.string(),
