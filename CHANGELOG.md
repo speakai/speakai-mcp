@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.38.1 (2026-10-16)
+
+- Maintenance release
+
 ## v1.38.0 (2026-10-16)
 
 - feat(voice-testing): run voice agent test suites
