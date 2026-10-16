@@ -144,7 +144,9 @@ jobs:
           git add -A
           git commit -m "chore: release ${{ steps.bump.outputs.new_version }} [skip ci]"
           git tag "${{ steps.bump.outputs.new_version }}"
-          git push origin main --tags
+          # Atomic: if main moved since checkout (a second merge), neither the commit nor the tag lands,
+          # so no orphan tag blocks later releases; the queued run for that merge releases both.
+          git push --atomic origin HEAD:main "refs/tags/${{ steps.bump.outputs.new_version }}"
 
       - name: Publish to npm
         if: steps.bump.outputs.should_release == 'true'
@@ -175,7 +177,13 @@ jobs:
 
       - name: Authenticate to MCP Registry
         if: steps.bump.outputs.should_release == 'true'
-        run: ./mcp-publisher login github-oidc
+        # GitHub's OIDC endpoint times out now and then (504); npm is already published by this point.
+        run: |
+          for i in 1 2 3; do
+            ./mcp-publisher login github-oidc && exit 0
+            sleep $((i * 10))
+          done
+          exit 1
 
       - name: Publish to MCP Registry
         if: steps.bump.outputs.should_release == 'true'
