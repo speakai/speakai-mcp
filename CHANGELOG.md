@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.38.2 (2026-10-16)
+
+- fix(ci): push the release commit and tag atomically; retry the MCP Registry login
+
 ## v1.38.1 (2026-10-16)
 
 - Maintenance release
