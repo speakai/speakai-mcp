@@ -57,9 +57,9 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       scenarios: z.array(scenarioSchema).optional(),
       maxCostPerRun: z.number().min(0).optional(),
-      autoRunOnKbUpdate: z.boolean().optional(),
-      autoRunOnInstructionSave: z.boolean().optional(),
-      scheduledCron: z.string().optional().nullable(),
+      autoRunOnKbUpdate: z.boolean().optional().describe("Run the suite automatically when the agent's knowledge base changes. Changes are grouped into one run that starts about 2 minutes after the last change, at most once an hour. Each run is charged in credits."),
+      autoRunOnInstructionSave: z.boolean().optional().describe("Run the suite automatically when the agent's instructions, personality or chat settings change. Same grouping, hourly limit and credit charge as autoRunOnKbUpdate."),
+      scheduledCron: z.string().optional().nullable().describe("Run the suite on a schedule: a 5-field cron expression in UTC, e.g. '0 9 * * 1-5' for 09:00 UTC on weekdays. At most once an hour. Send null or an empty string to turn the schedule off. Each run is charged in credits."),
     },
     { title: "Update Voice Test Suite", readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async ({ agentId, ...body }) => {
