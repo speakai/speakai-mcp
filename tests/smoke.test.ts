@@ -39,12 +39,21 @@ describe("MCP Server Smoke Tests", () => {
     expect(toolNames).toHaveLength(185);
   });
 
-  it("never exposes local-disk or unfinished voice test-run tools on the hosted server", async () => {
+  it("exposes the voice test-run tools but not local-disk tools on the hosted server", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
     registerAllTools(server);
 
     const toolNames = Object.keys(getRegisteredTools(server));
     expect(toolNames).not.toContain("upload_local_file");
+    expect(toolNames).toContain("start_voice_test_run");
+    expect(toolNames).toHaveLength(184);
+  });
+
+  it("leaves the voice test-run tools off when voiceTestRuns is false", async () => {
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server, undefined, { voiceTestRuns: false });
+
+    const toolNames = Object.keys(getRegisteredTools(server));
     for (const runTool of [
       "start_voice_test_run",
       "get_active_voice_test_run",
@@ -146,7 +155,6 @@ describe("MCP Server Smoke Tests", () => {
       "export_multiple_media",
       "generate_voice_faq_suggestions",
       "provision_inbound_webhook",
-      "start_voice_test_run",
     ].sort());
   });
 

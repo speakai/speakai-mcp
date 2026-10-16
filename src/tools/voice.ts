@@ -377,11 +377,11 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
               "get_voice_test_suite",
               "update_voice_test_suite",
               "generate_voice_test_suite",
-              ...(options.voiceTestRuns ? ["start_voice_test_run"] : []),
+              ...(options.voiceTestRuns === false ? [] : ["start_voice_test_run", "get_active_voice_test_run"]),
             ],
-            notes: options.voiceTestRuns
-              ? "Scripted scenarios and a run history. The run lifecycle is live; the engine that drives a simulated conversation is not wired up yet, so a run stays queued."
-              : "Scripted test scenarios for the agent. Running them is not available yet, because the engine that drives a simulated conversation is not live.",
+            notes: options.voiceTestRuns === false
+              ? "Scripted test scenarios for the agent. This server does not expose the run tools."
+              : "Scripted scenarios and a run history. A run sends each enabled scenario's user messages to the agent as text and grades every criterion; it uses credits for the AI cost. Poll get_active_voice_test_run for progress.",
           },
           {
             area: "Feedback / self-improvement (Intelligence)",
@@ -401,9 +401,9 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         ],
         commonMistakes: [
           "Calling create_voice_agent with a made-up voiceId instead of one from list_voices -- the create call fails validation.",
-          ...(options.voiceTestRuns
-            ? ["Expecting start_voice_test_run to return real scores -- the execution engine isn't wired up yet, see the Testing tools' own descriptions."]
-            : []),
+          ...(options.voiceTestRuns === false
+            ? []
+            : ["Reading scores from start_voice_test_run's response -- it returns the run in queued status; poll get_active_voice_test_run until it finishes, then read get_voice_test_run."]),
           "Looking for a knowledge-base tool in this group -- collections are managed by the separate Knowledge Base tool group and only attached here.",
         ],
       };
