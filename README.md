@@ -464,7 +464,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `get_folder_info` | Get folder details and contents |
 | `create_folder` | Create a new folder |
 | `clone_folder` | Duplicate a folder and its contents |
-| `update_folder` | Rename or update a folder |
+| `update_folder` | Rename or update a folder, or change which users and groups can access it |
 | `delete_folder` | Delete a folder (media is preserved) |
 | `get_all_folder_views` | List all saved views across folders |
 | `get_folder_views` | List views for a specific folder |

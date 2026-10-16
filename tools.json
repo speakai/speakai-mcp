@@ -369,7 +369,7 @@
         {
           "name": "create_folder",
           "title": "Create Folder",
-          "description": "Create a new folder in the workspace.",
+          "description": "Create a new folder in the workspace, optionally assigned to users or user groups.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -387,7 +387,7 @@
         {
           "name": "update_folder",
           "title": "Update Folder",
-          "description": "Update a folder. `name` must always be supplied (the server replaces the folder config).",
+          "description": "Update a folder. `name` must always be supplied (the server replaces the folder config). Pass `assignTo` to replace who can access it; omit it to keep the current assignment.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
