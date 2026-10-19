@@ -205,6 +205,9 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "update_embed",
       "check_embed",
       "get_embed_iframe_url",
+      "list_embed_sessions",
+      "get_embed_session_summary",
+      "get_embed_session",
     ],
   },
   {
@@ -249,6 +252,7 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "list_voices",
       "list_voice_conversations",
       "get_voice_conversation",
+      "get_agent_analytics",
       "list_voice_questions",
       "get_voice_question",
       "create_voice_question",

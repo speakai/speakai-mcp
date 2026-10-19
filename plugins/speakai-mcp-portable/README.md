@@ -7,7 +7,7 @@ client can load it. It is also the package for Codex and for the OpenAI plugin d
 
 The plugin gives an agent 184 Speak AI tools, 5 resources, and 3 prompts, plus eight skills
 that teach it how to use them. Access alone is not much use: the skills are what turn "this
-agent can call 185 tools" into "this agent knows which three to call, in what order, and
+agent can call 189 tools" into "this agent knows which three to call, in what order, and
 what to do when a recording is still processing".
 
 Full documentation: <https://docs.speakai.co/mcp/plugin>

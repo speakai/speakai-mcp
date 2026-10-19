@@ -3,6 +3,30 @@ import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
+import {
+  EMBED_SESSION_ID_PATTERN,
+  EMBED_SESSION_LIMITS,
+  EMBED_VIEWER_ID_PATTERN,
+  EmbedSessionDeviceFilter,
+  EmbedSessionSort,
+  EmbedSessionTrafficFilter,
+  EmbedSessionViewerFilter,
+} from "@speakai/shared";
+
+const objectIdSchema = z.string().regex(/^[0-9a-fA-F]{24}$/);
+
+const embedIdSchema = objectIdSchema.describe("The embed's _id (24 hex characters), as returned by create_embed or check_embed");
+
+// Range filters shared by the session list and the summary.
+const embedSessionRangeSchema = {
+  from: z.string().optional().describe("Only sessions started on or after this time (ISO 8601 date)"),
+  to: z.string().optional().describe("Only sessions started on or before this time (ISO 8601 date)"),
+  traffic: z
+    .enum(Object.values(EmbedSessionTrafficFilter) as [string, ...string[]])
+    .optional()
+    .describe("people leaves out bots, bots shows only bots (default all)"),
+  includeOwner: z.boolean().optional().describe("Include sessions from people signed in to your own Speak AI workspace (default false)"),
+};
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
@@ -145,6 +169,158 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         const result = await api.get("/v1/embed/iframe", {
           params: { mediaId },
         });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "list_embed_sessions",
+    "Owner analytics for an embed: list the visits (sessions) to one embed, newest first by default. " +
+      "Each session has its start and last activity time, whether it is still live, total and active time, media opened, time watched, questions asked, " +
+      "the viewer's email and name when they identified themselves, their country, browser, device and referrer, campaign tags, and whether it was a bot. " +
+      "Returns sessions with totalCount, page and pageSize. Use get_embed_session with a session's _id for its full timeline.",
+    {
+      embedId: embedIdSchema,
+      ...embedSessionRangeSchema,
+      page: z.number().int().min(0).optional().describe("0-based page index (default 0)"),
+      pageSize: z
+        .number()
+        .int()
+        .min(1)
+        .max(EMBED_SESSION_LIMITS.maxListPageSize)
+        .optional()
+        .describe(`Sessions per page (default ${EMBED_SESSION_LIMITS.listPageSize}, max ${EMBED_SESSION_LIMITS.maxListPageSize})`),
+      search: z
+        .string()
+        .max(EMBED_SESSION_LIMITS.maxSearchLength)
+        .optional()
+        .describe("Match a viewer email (any part) or the start of a visitorId"),
+      viewer: z
+        .enum(Object.values(EmbedSessionViewerFilter) as [string, ...string[]])
+        .optional()
+        .describe("identified keeps viewers who gave their email, anonymous keeps the rest (default all)"),
+      device: z
+        .enum(Object.values(EmbedSessionDeviceFilter) as [string, ...string[]])
+        .optional()
+        .describe("Filter by device type (default all)"),
+      country: z.string().optional().describe("Exact country name as shown in a session's client.country"),
+      includeLegacy: z
+        .boolean()
+        .optional()
+        .describe("Also include visits recorded before session tracking started (default false)"),
+      viewerId: z
+        .string()
+        .regex(EMBED_VIEWER_ID_PATTERN)
+        .optional()
+        .describe("Only sessions of one identified viewer (viewerId from a session)"),
+      visitorId: z
+        .string()
+        .regex(EMBED_SESSION_ID_PATTERN)
+        .optional()
+        .describe("Only sessions from one browser (visitorId from a session)"),
+      mediaId: z.string().optional().describe("Only sessions that opened this media file"),
+      sort: z
+        .enum(Object.values(EmbedSessionSort) as [string, ...string[]])
+        .optional()
+        .describe(`Sort order (default ${EmbedSessionSort.STARTED_DESC})`),
+    },
+    {
+      title: "List Embed Sessions",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    async ({ embedId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/embed/sessions/${embedId}`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "get_embed_session_summary",
+    "Owner analytics for an embed: totals across its visits for a date range. " +
+      "Returns KPIs (sessions, unique and returning visitors, identified viewers, average active time, media opens, time watched, questions and sessions with questions), " +
+      "sessions and visitors per day, top traffic sources, and a paged table of media with opens, unique viewers, plays, time watched, completion rate, questions and downloads.",
+    {
+      embedId: embedIdSchema,
+      ...embedSessionRangeSchema,
+      tz: z.string().max(100).optional().describe("IANA time zone used to group by day, e.g. America/Toronto (default UTC)"),
+      mediaPage: z.number().int().min(0).optional().describe("0-based page of the media table (default 0)"),
+      mediaPageSize: z
+        .number()
+        .int()
+        .min(1)
+        .max(EMBED_SESSION_LIMITS.maxMediaPageSize)
+        .optional()
+        .describe(`Media rows per page (default ${EMBED_SESSION_LIMITS.mediaPageSize}, max ${EMBED_SESSION_LIMITS.maxMediaPageSize})`),
+    },
+    {
+      title: "Get Embed Session Summary",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    async ({ embedId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/embed/sessions/${embedId}/summary`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "get_embed_session",
+    "Owner analytics for an embed: one visit in full. Returns the session with the media it opened (time watched, plays, seeks, furthest position, completed), " +
+      "the questions asked in chat, and a paged list of its events in time order, plus how many sessions the same viewer or browser has had on this embed. " +
+      "Use eventsPage and eventsPageSize to read long timelines.",
+    {
+      embedId: embedIdSchema,
+      id: objectIdSchema.describe("The session's _id (24 hex characters) from list_embed_sessions, not its sessionId"),
+      eventsPage: z.number().int().min(0).optional().describe("0-based page of events (default 0)"),
+      eventsPageSize: z
+        .number()
+        .int()
+        .min(1)
+        .max(EMBED_SESSION_LIMITS.maxEventsPageSize)
+        .optional()
+        .describe(`Events per page (default ${EMBED_SESSION_LIMITS.eventsPageSize}, max ${EMBED_SESSION_LIMITS.maxEventsPageSize})`),
+    },
+    {
+      title: "Get Embed Session",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    async ({ embedId, id, ...params }) => {
+      try {
+        const result = await api.get(`/v1/embed/sessions/${embedId}/detail/${id}`, { params });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
