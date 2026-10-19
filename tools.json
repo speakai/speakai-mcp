@@ -1526,7 +1526,7 @@
         {
           "name": "create_voice_question",
           "title": "Create Voice Question",
-          "description": "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) — 404 if either isn't found.",
+          "description": "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) — 404 if either isn't found. Returns 409 if the agent already has an enabled question whose template has the same name (they save to the same answer key); disable or delete that question first, or create this one with enabled: false.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -1535,7 +1535,7 @@
         {
           "name": "update_voice_question",
           "title": "Update Voice Question",
-          "description": "Partially update a voice agent question — only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped.",
+          "description": "Partially update a voice agent question — only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped. Returns 409 when setting enabled: true on a disabled question while another enabled question on the same agent has a template with the same name (they save to the same answer key); other edits to an existing duplicate still succeed.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
