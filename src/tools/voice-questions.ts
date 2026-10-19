@@ -64,7 +64,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "create_voice_question",
-    "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) — 404 if either isn't found. Returns 409 if the agent already has an enabled question that collects the same answer key; disable or delete that question first, or create this one with enabled: false.",
+    "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) — 404 if either isn't found. Returns 409 if the agent already has an enabled question whose template has the same name (they save to the same answer key); disable or delete that question first, or create this one with enabled: false.",
     {
       agentId: z.string().min(1),
       templateId: z.string().min(1).describe("From list_voice_question_templates."),
@@ -90,7 +90,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "update_voice_question",
-    "Partially update a voice agent question — only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped. Returns 409 when setting enabled: true on a disabled question while another enabled question on the same agent collects the same answer key; other edits to an existing duplicate still succeed.",
+    "Partially update a voice agent question — only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped. Returns 409 when setting enabled: true on a disabled question while another enabled question on the same agent has a template with the same name (they save to the same answer key); other edits to an existing duplicate still succeed.",
     {
       fieldId: z.string().min(1).describe("ID of the question to update (from list_voice_questions)"),
       customConfig: customConfigSchema.optional(),
