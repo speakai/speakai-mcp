@@ -88,6 +88,7 @@ const additions: Record<string, string[]> = {
     "validate_automation_graph",
     "describe_automation_graph",
   ],
+  "embed-other": ["list_embed_sessions", "get_embed_session_summary", "get_embed_session"],
 };
 
 // Brand-new categories.
@@ -110,6 +111,7 @@ const newCategories = [
       "list_voices",
       "list_voice_conversations",
       "get_voice_conversation",
+      "get_agent_analytics",
       "list_voice_questions",
       "get_voice_question",
       "create_voice_question",

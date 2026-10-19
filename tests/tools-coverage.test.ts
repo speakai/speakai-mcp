@@ -303,6 +303,32 @@ describe("Embed tools", () => {
     expect(mockGet).toHaveBeenCalledWith("/v1/embed/iframe", { params: { mediaId: "m1" } });
   });
 
+  it("embed session tools call GET /v1/embed/sessions/:embedId routes with the id out of the query", async () => {
+    const embedId = "a".repeat(24);
+    const sessionId = "b".repeat(24);
+
+    await getToolCallback(server, "list_embed_sessions")({ embedId, page: 1, pageSize: 50, viewer: "identified", sort: "questions:desc" });
+    expect(mockGet).toHaveBeenCalledWith(`/v1/embed/sessions/${embedId}`, {
+      params: { page: 1, pageSize: 50, viewer: "identified", sort: "questions:desc" },
+    });
+
+    await getToolCallback(server, "get_embed_session_summary")({ embedId, from: "2026-10-01", tz: "UTC", mediaPage: 0 });
+    expect(mockGet).toHaveBeenCalledWith(`/v1/embed/sessions/${embedId}/summary`, {
+      params: { from: "2026-10-01", tz: "UTC", mediaPage: 0 },
+    });
+
+    await getToolCallback(server, "get_embed_session")({ embedId, id: sessionId, eventsPage: 2 });
+    expect(mockGet).toHaveBeenCalledWith(`/v1/embed/sessions/${embedId}/detail/${sessionId}`, {
+      params: { eventsPage: 2 },
+    });
+
+    const tools = (server as any)._registeredTools;
+    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId: "not-an-id" }).success).toBe(false);
+    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId, pageSize: 101 }).success).toBe(false);
+    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId, device: "watch" }).success).toBe(false);
+    expect(tools["get_embed_session"].inputSchema.safeParse({ embedId, id: sessionId, eventsPageSize: 501 }).success).toBe(false);
+  });
+
   it("handles error on create_embed", async () => {
     mockPost.mockRejectedValueOnce(new Error("fail"));
     const cb = getToolCallback(server, "create_embed");

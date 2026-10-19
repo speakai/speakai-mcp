@@ -49,6 +49,9 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "update_embed",
   "check_embed",
   "get_embed_iframe_url",
+  "list_embed_sessions",
+  "get_embed_session_summary",
+  "get_embed_session",
 
   // exports
   "export_media",
@@ -195,6 +198,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "list_voices",
   "list_voice_conversations",
   "get_voice_conversation",
+  "get_agent_analytics",
 
   // voice: testing
   "get_voice_test_suite",

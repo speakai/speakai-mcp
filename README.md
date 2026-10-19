@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 185 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 189 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,7 +394,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (185)
+### MCP Tools (189)
 
 <details>
 <summary>Media (19 tools)</summary>
@@ -619,7 +619,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Embed players (4 tools)</summary>
+<summary>Embed players (7 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -627,6 +627,9 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `update_embed` | Update embed settings |
 | `check_embed` | Check if embed exists for media |
 | `get_embed_iframe_url` | Get iframe URL for your website |
+| `list_embed_sessions` | Owner analytics: list visits to an embed with viewer, device, country and traffic filters |
+| `get_embed_session_summary` | Owner analytics: an embed's visit KPIs, daily trend, sources and per-media table |
+| `get_embed_session` | Owner analytics: one embed visit in full, with paged events |
 
 </details>
 
@@ -661,7 +664,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Voice agents (33 tools)</summary>
+<summary>Voice agents (34 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -677,6 +680,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `list_voices` | List the text-to-speech voices available to a voice agent |
 | `list_voice_conversations` | List conversations handled by voice agents (filter by agentId) |
 | `get_voice_conversation` | Get a single conversation by conversationId |
+| `get_agent_analytics` | Owner analytics for one voice agent over a date range (KPIs, audience, outcomes, quality) |
 | `list_voice_questions` | List the questions configured on a voice agent, in ask order |
 | `get_voice_question` | Get a single question by fieldId |
 | `create_voice_question` | Attach a question template to a voice agent |

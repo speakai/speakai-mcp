@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 185,
+  "totalTools": 189,
   "categories": [
     {
       "id": "media",
@@ -1210,6 +1210,33 @@
           "destructiveHint": false,
           "idempotentHint": true,
           "openWorldHint": false
+        },
+        {
+          "name": "list_embed_sessions",
+          "title": "List Embed Sessions",
+          "description": "Owner analytics for an embed: list the visits (sessions) to one embed, newest first by default. Each session has its start and last activity time, whether it is still live, total and active time, media opened, time watched, questions asked, the viewer's email and name when they identified themselves, their country, browser, device and referrer, campaign tags, and whether it was a bot. Returns sessions with totalCount, page and pageSize. Use get_embed_session with a session's _id for its full timeline.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_embed_session_summary",
+          "title": "Get Embed Session Summary",
+          "description": "Owner analytics for an embed: totals across its visits for a date range. Returns KPIs (sessions, unique and returning visitors, identified viewers, average active time, media opens, time watched, questions and sessions with questions), sessions and visitors per day, top traffic sources, and a paged table of media with opens, unique viewers, plays, time watched, completion rate, questions and downloads.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_embed_session",
+          "title": "Get Embed Session",
+          "description": "Owner analytics for an embed: one visit in full. Returns the session with the media it opened (time watched, plays, seeks, furthest position, completed), the questions asked in chat, and a paged list of its events in time order, plus how many sessions the same viewer or browser has had on this embed. Use eventsPage and eventsPageSize to read long timelines.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
         }
       ]
     },
@@ -1464,6 +1491,15 @@
           "name": "get_voice_conversation",
           "title": "Get Voice Conversation",
           "description": "Fetch a single voice conversation by its conversationId, including transcript, usage, costs, and analysis. A cross-company conversationId returns 404.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "get_agent_analytics",
+          "title": "Get Voice Agent Analytics",
+          "description": "Owner analytics for one voice agent over a date range. Returns the range used; conversation totals with completion rate, average duration and returning callers; conversations per day split into web and phone; where callers are, their devices, browsers and traffic sources; web callers who left without saying anything and the number of open knowledge gaps (questions the agent could not answer); leads captured, handoffs and action items; engagement, sentiment, top topics, end reasons and satisfaction; busiest hours, weekdays and languages; and web versus phone counts. Test calls are left out unless includeTests is true, and the count of test calls is always returned. Leave start empty for all time; a start more than 5 years before end is moved up to 5 years. A cross-company agentId returns 404.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,

@@ -699,5 +699,18 @@ describe("Tools Integration Tests", () => {
       expect(schema.safeParse({ conversationMode: "avatar" }).success).toBe(true);
       expect(schema.safeParse({ conversationMode: "voice" }).success).toBe(true);
     });
+
+    it("get_agent_analytics sends its range and flags as query params to GET /v1/voice/analytics/agent", async () => {
+      const { register } = await import("../src/tools/voice.js");
+      register(server, mockClient);
+
+      const params = { agentId: "agent-1", start: "2026-09-01", end: "2026-10-01", tz: "America/Toronto", compare: true, includeTests: false };
+      await getToolCallback(server, "get_agent_analytics")(params);
+
+      expect(mockGet).toHaveBeenCalledWith("/v1/voice/analytics/agent", { params });
+      const schema = (server as any)._registeredTools["get_agent_analytics"].inputSchema;
+      expect(schema.safeParse({}).success).toBe(false);
+      expect(schema.safeParse({ agentId: "agent-1" }).success).toBe(true);
+    });
   });
 });

@@ -30,13 +30,13 @@ describe("MCP Server Smoke Tests", () => {
     server = new McpServer({ name: "speak-ai-test", version: "1.0.0" });
   });
 
-  it("registers all 185 MCP tools without errors", async () => {
+  it("registers all 189 MCP tools without errors", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
     expect(() => registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true })).not.toThrow();
 
     const tools = getRegisteredTools(server);
     const toolNames = Object.keys(tools);
-    expect(toolNames).toHaveLength(185);
+    expect(toolNames).toHaveLength(189);
   });
 
   it("exposes the voice test-run tools but not local-disk tools on the hosted server", async () => {
@@ -46,7 +46,7 @@ describe("MCP Server Smoke Tests", () => {
     const toolNames = Object.keys(getRegisteredTools(server));
     expect(toolNames).not.toContain("upload_local_file");
     expect(toolNames).toContain("start_voice_test_run");
-    expect(toolNames).toHaveLength(184);
+    expect(toolNames).toHaveLength(188);
   });
 
   it("leaves the voice test-run tools off when voiceTestRuns is false", async () => {
@@ -69,7 +69,7 @@ describe("MCP Server Smoke Tests", () => {
       expect(toolNames).not.toContain(runTool);
     }
     expect(toolNames).toContain("get_voice_test_suite");
-    expect(toolNames).toHaveLength(174);
+    expect(toolNames).toHaveLength(178);
   });
 
   it("registers all tools with unique names", async () => {

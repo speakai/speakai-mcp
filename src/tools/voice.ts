@@ -168,6 +168,39 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
   );
 
   registerSpeakTool(server,
+    "get_agent_analytics",
+    "Owner analytics for one voice agent over a date range. Returns the range used; conversation totals with completion rate, average duration and returning callers; conversations per day split into web and phone; where callers are, their devices, browsers and traffic sources; web callers who left without saying anything and the number of open knowledge gaps (questions the agent could not answer); leads captured, handoffs and action items; engagement, sentiment, top topics, end reasons and satisfaction; busiest hours, weekdays and languages; and web versus phone counts. Test calls are left out unless includeTests is true, and the count of test calls is always returned. Leave start empty for all time; a start more than 5 years before end is moved up to 5 years. A cross-company agentId returns 404.",
+    {
+      agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      start: z.string().optional().describe("Start of the range (ISO 8601 date). Omit for all time. Must be before end."),
+      end: z.string().optional().describe("End of the range (ISO 8601 date). Defaults to now."),
+      tz: z.string().max(100).optional().describe("IANA time zone used to group by day, hour and weekday, e.g. America/Toronto (default UTC)."),
+      compare: z.boolean().optional().describe("Also return the same KPIs for the period just before the range (default false). Needs start."),
+      includeTests: z.boolean().optional().describe("Count the agent's test calls in the results (default false)."),
+    },
+    {
+      title: "Get Voice Agent Analytics",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/voice/analytics/agent", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+        };
+      } catch (err) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
     "create_voice_agent",
     "Create a voice agent. Requires the OWNER or ADMIN role. name, personality, instructions, and voice (provider + voiceId) are required; everything else can be set now or later with update_voice_agent. Call list_voice_avatars or list_voices first to get valid ids.",
     voiceInputSchema,
