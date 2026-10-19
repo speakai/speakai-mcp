@@ -636,7 +636,7 @@ var init_label = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/media.js
-var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType;
+var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType, ThumbnailStatus, ThumbnailOrigin;
 var init_media = __esm({
   "node_modules/@speakai/shared/dist/enums/media.js"() {
     "use strict";
@@ -702,6 +702,18 @@ var init_media = __esm({
       MediaProcessType2["DUBBING"] = "dubbing";
       MediaProcessType2["TRANSLATION"] = "translation";
     })(MediaProcessType || (MediaProcessType = {}));
+    (function(ThumbnailStatus2) {
+      ThumbnailStatus2["PENDING"] = "pending";
+      ThumbnailStatus2["CREATED"] = "created";
+      ThumbnailStatus2["FAILED"] = "failed";
+      ThumbnailStatus2["EXPIRED"] = "expired";
+      ThumbnailStatus2["REPLACED"] = "replaced";
+      ThumbnailStatus2["DELETED"] = "deleted";
+    })(ThumbnailStatus || (ThumbnailStatus = {}));
+    (function(ThumbnailOrigin2) {
+      ThumbnailOrigin2["AUTO"] = "auto";
+      ThumbnailOrigin2["CUSTOM"] = "custom";
+    })(ThumbnailOrigin || (ThumbnailOrigin = {}));
   }
 });
 
@@ -762,7 +774,7 @@ var init_menu = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/meeting.js
-var MeetingPlatform, MEETING_PLATFORM_LABELS, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource;
+var MeetingPlatform, MEETING_PLATFORM_LABELS, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource, MeetingRecorder, DesktopAutoRecord, DesktopConsentNotice, DesktopSystemAudioStatus, DesktopClaimReason;
 var init_meeting = __esm({
   "node_modules/@speakai/shared/dist/enums/meeting.js"() {
     "use strict";
@@ -771,12 +783,16 @@ var init_meeting = __esm({
       MeetingPlatform2["ZOOM"] = "zoom";
       MeetingPlatform2["MICROSOFT_TEAMS"] = "microsoftTeams";
       MeetingPlatform2["WEBEX"] = "webex";
+      MeetingPlatform2["SLACK"] = "slack";
+      MeetingPlatform2["OTHER"] = "other";
     })(MeetingPlatform || (MeetingPlatform = {}));
     MEETING_PLATFORM_LABELS = {
       [MeetingPlatform.ZOOM]: "Zoom",
       [MeetingPlatform.GOOGLE_MEET]: "Google Meet",
       [MeetingPlatform.MICROSOFT_TEAMS]: "Microsoft Teams",
-      [MeetingPlatform.WEBEX]: "Webex"
+      [MeetingPlatform.WEBEX]: "Webex",
+      [MeetingPlatform.SLACK]: "Slack",
+      [MeetingPlatform.OTHER]: "Other"
     };
     (function(MeetingStatus2) {
       MeetingStatus2["WILL_JOIN"] = "willJoin";
@@ -832,7 +848,37 @@ var init_meeting = __esm({
     (function(MeetingAssistantEventSource2) {
       MeetingAssistantEventSource2["INSTANT"] = "instant";
       MeetingAssistantEventSource2["ASSISTANT"] = "assistant";
+      MeetingAssistantEventSource2["DESKTOP"] = "desktop";
     })(MeetingAssistantEventSource || (MeetingAssistantEventSource = {}));
+    (function(MeetingRecorder2) {
+      MeetingRecorder2["DESKTOP_FIRST"] = "desktopFirst";
+      MeetingRecorder2["DESKTOP_ONLY"] = "desktopOnly";
+      MeetingRecorder2["BOT_ONLY"] = "botOnly";
+    })(MeetingRecorder || (MeetingRecorder = {}));
+    (function(DesktopAutoRecord2) {
+      DesktopAutoRecord2["ALLOW"] = "allow";
+      DesktopAutoRecord2["PROMPT_ONLY"] = "promptOnly";
+      DesktopAutoRecord2["OFF"] = "off";
+    })(DesktopAutoRecord || (DesktopAutoRecord = {}));
+    (function(DesktopConsentNotice2) {
+      DesktopConsentNotice2["OFF"] = "off";
+      DesktopConsentNotice2["REMIND"] = "remind";
+      DesktopConsentNotice2["REQUIRE"] = "require";
+    })(DesktopConsentNotice || (DesktopConsentNotice = {}));
+    (function(DesktopSystemAudioStatus2) {
+      DesktopSystemAudioStatus2["CAPTURED"] = "captured";
+      DesktopSystemAudioStatus2["UNAVAILABLE"] = "unavailable";
+      DesktopSystemAudioStatus2["SILENT"] = "silent";
+    })(DesktopSystemAudioStatus || (DesktopSystemAudioStatus = {}));
+    (function(DesktopClaimReason2) {
+      DesktopClaimReason2["CLAIMED"] = "claimed";
+      DesktopClaimReason2["NOT_ENABLED"] = "not-enabled";
+      DesktopClaimReason2["NO_CALENDAR_EVENT"] = "no-calendar-event";
+      DesktopClaimReason2["OUTSIDE_WINDOW"] = "outside-window";
+      DesktopClaimReason2["OTHER_DEVICE"] = "other-device";
+      DesktopClaimReason2["BOT_RECORDING"] = "bot-recording";
+      DesktopClaimReason2["BOT_SENT"] = "bot-sent";
+    })(DesktopClaimReason || (DesktopClaimReason = {}));
   }
 });
 
@@ -1184,7 +1230,7 @@ var init_prompt = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/recorder.js
-var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating, RecorderSessionEventType, RecorderSessionEventCategory, RecorderSessionWakeLock, RECORDER_SESSION_EVENTS;
+var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating, RecorderSessionEventType, RecordingSessionSource, RecorderSessionEventCategory, RecorderSessionWakeLock, RECORDER_SESSION_EVENTS;
 var init_recorder = __esm({
   "node_modules/@speakai/shared/dist/enums/recorder.js"() {
     "use strict";
@@ -1234,7 +1280,17 @@ var init_recorder = __esm({
       RecorderSessionEventType2["LIVE_RECONNECTING"] = "live_reconnecting";
       RecorderSessionEventType2["LIVE_RESUMED"] = "live_resumed";
       RecorderSessionEventType2["LIVE_FAILED"] = "live_failed";
+      RecorderSessionEventType2["SYSTEM_RESUMED"] = "system_resumed";
+      RecorderSessionEventType2["SYSTEM_AUDIO_RESTARTED"] = "system_audio_restarted";
+      RecorderSessionEventType2["SIDE_SILENT"] = "side_silent";
+      RecorderSessionEventType2["ECHO_CANCELLER_CHANGED"] = "echo_canceller_changed";
+      RecorderSessionEventType2["UPLOAD_RETRY"] = "upload_retry";
+      RecorderSessionEventType2["TAKE_SPLIT"] = "take_split";
     })(RecorderSessionEventType || (RecorderSessionEventType = {}));
+    (function(RecordingSessionSource2) {
+      RecordingSessionSource2["EMBED"] = "embed";
+      RecordingSessionSource2["DESKTOP"] = "desktop";
+    })(RecordingSessionSource || (RecordingSessionSource = {}));
     (function(RecorderSessionEventCategory2) {
       RecorderSessionEventCategory2["DEVICE_SLEEP"] = "device_sleep";
       RecorderSessionEventCategory2["SCREEN_TAB"] = "screen_tab";
@@ -1254,6 +1310,10 @@ var init_recorder = __esm({
       [RecorderSessionEventType.SUSPEND_DETECTED]: {
         category: RecorderSessionEventCategory.DEVICE_SLEEP,
         description: "The laptop or browser was asleep, so no audio was recorded for that time."
+      },
+      [RecorderSessionEventType.SYSTEM_RESUMED]: {
+        category: RecorderSessionEventCategory.DEVICE_SLEEP,
+        description: "The computer woke up from sleep."
       },
       [RecorderSessionEventType.PAGE_FREEZE]: {
         category: RecorderSessionEventCategory.DEVICE_SLEEP,
@@ -1311,6 +1371,22 @@ var init_recorder = __esm({
         category: RecorderSessionEventCategory.AUDIO_CAPTURE,
         description: "A microphone, headset or other audio device was plugged in, unplugged or switched."
       },
+      [RecorderSessionEventType.SYSTEM_AUDIO_RESTARTED]: {
+        category: RecorderSessionEventCategory.AUDIO_CAPTURE,
+        description: "The recorder restarted capture of the computer's sound, for example after a headset switch."
+      },
+      [RecorderSessionEventType.SIDE_SILENT]: {
+        category: RecorderSessionEventCategory.AUDIO_CAPTURE,
+        description: "One side of the call (your microphone or the other people) was silent while the other side was talking."
+      },
+      [RecorderSessionEventType.ECHO_CANCELLER_CHANGED]: {
+        category: RecorderSessionEventCategory.AUDIO_CAPTURE,
+        description: "Echo removal was turned on or off, for example when switching between speakers and headphones."
+      },
+      [RecorderSessionEventType.TAKE_SPLIT]: {
+        category: RecorderSessionEventCategory.USER,
+        description: "The recording was split into a new meeting."
+      },
       [RecorderSessionEventType.RECORDER_ERROR]: {
         category: RecorderSessionEventCategory.AUDIO_CAPTURE,
         description: "The browser reported an error while recording audio."
@@ -1330,6 +1406,10 @@ var init_recorder = __esm({
       [RecorderSessionEventType.LIVE_FAILED]: {
         category: RecorderSessionEventCategory.LIVE_TRANSCRIPTION,
         description: "Live transcription stopped and could not reconnect; the recording itself continued."
+      },
+      [RecorderSessionEventType.UPLOAD_RETRY]: {
+        category: RecorderSessionEventCategory.NETWORK,
+        description: "An upload failed and was tried again."
       },
       [RecorderSessionEventType.ONLINE]: {
         category: RecorderSessionEventCategory.NETWORK,
@@ -1636,6 +1716,225 @@ var init_llm = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/enums/embedSession.js
+var EmbedSessionEventCategory, EmbedSessionEventType, EmbedSessionEventSource, EmbedSessionEndReason, EmbedSessionMediaOpenSource, EmbedSessionSearchScope, EmbedSessionBotKind, EmbedSessionTrafficFilter, EmbedSessionViewerFilter, EmbedSessionDeviceFilter, EmbedSessionSort, EMBED_SESSION_EVENTS;
+var init_embedSession = __esm({
+  "node_modules/@speakai/shared/dist/enums/embedSession.js"() {
+    "use strict";
+    (function(EmbedSessionEventCategory2) {
+      EmbedSessionEventCategory2["LIFECYCLE"] = "lifecycle";
+      EmbedSessionEventCategory2["NAVIGATION"] = "navigation";
+      EmbedSessionEventCategory2["PLAYBACK"] = "playback";
+      EmbedSessionEventCategory2["CHAT"] = "chat";
+      EmbedSessionEventCategory2["ENGAGEMENT"] = "engagement";
+      EmbedSessionEventCategory2["IDENTITY"] = "identity";
+      EmbedSessionEventCategory2["SHARING"] = "sharing";
+    })(EmbedSessionEventCategory || (EmbedSessionEventCategory = {}));
+    (function(EmbedSessionEventType2) {
+      EmbedSessionEventType2["SESSION_START"] = "session_start";
+      EmbedSessionEventType2["SESSION_RESUME"] = "session_resume";
+      EmbedSessionEventType2["SESSION_END"] = "session_end";
+      EmbedSessionEventType2["PAGE_VIEW"] = "page_view";
+      EmbedSessionEventType2["DASHBOARD_VIEW"] = "dashboard_view";
+      EmbedSessionEventType2["WIDGET_OPEN"] = "widget_open";
+      EmbedSessionEventType2["MEDIA_OPEN"] = "media_open";
+      EmbedSessionEventType2["MEDIA_CLOSE"] = "media_close";
+      EmbedSessionEventType2["CITATION_OPEN"] = "citation_open";
+      EmbedSessionEventType2["SEARCH"] = "search";
+      EmbedSessionEventType2["TRANSCRIPT_DOWNLOAD"] = "transcript_download";
+      EmbedSessionEventType2["TRANSCRIPT_COPY"] = "transcript_copy";
+      EmbedSessionEventType2["MEDIA_DOWNLOAD"] = "media_download";
+      EmbedSessionEventType2["EXPORT"] = "export";
+      EmbedSessionEventType2["PLAY"] = "play";
+      EmbedSessionEventType2["PAUSE"] = "pause";
+      EmbedSessionEventType2["SEEK"] = "seek";
+      EmbedSessionEventType2["ENDED"] = "ended";
+      EmbedSessionEventType2["RATE_CHANGE"] = "rate_change";
+      EmbedSessionEventType2["CHAT_QUESTION"] = "chat_question";
+      EmbedSessionEventType2["CHAT_FEEDBACK"] = "chat_feedback";
+      EmbedSessionEventType2["HIDDEN"] = "hidden";
+      EmbedSessionEventType2["IDLE"] = "idle";
+      EmbedSessionEventType2["GATE_SHOWN"] = "gate_shown";
+      EmbedSessionEventType2["LEAD_CAPTURED"] = "lead_captured";
+    })(EmbedSessionEventType || (EmbedSessionEventType = {}));
+    (function(EmbedSessionEventSource2) {
+      EmbedSessionEventSource2["CLIENT"] = "client";
+      EmbedSessionEventSource2["SERVER"] = "server";
+    })(EmbedSessionEventSource || (EmbedSessionEventSource = {}));
+    (function(EmbedSessionEndReason2) {
+      EmbedSessionEndReason2["PAGEHIDE"] = "pagehide";
+      EmbedSessionEndReason2["IDLE_TIMEOUT"] = "idle_timeout";
+      EmbedSessionEndReason2["MAX_DURATION"] = "max_duration";
+    })(EmbedSessionEndReason || (EmbedSessionEndReason = {}));
+    (function(EmbedSessionMediaOpenSource2) {
+      EmbedSessionMediaOpenSource2["LIST"] = "list";
+      EmbedSessionMediaOpenSource2["CITATION"] = "citation";
+      EmbedSessionMediaOpenSource2["SEARCH"] = "search";
+      EmbedSessionMediaOpenSource2["WIDGET"] = "widget";
+      EmbedSessionMediaOpenSource2["DIRECT"] = "direct";
+    })(EmbedSessionMediaOpenSource || (EmbedSessionMediaOpenSource = {}));
+    (function(EmbedSessionSearchScope2) {
+      EmbedSessionSearchScope2["LIBRARY"] = "library";
+      EmbedSessionSearchScope2["DASHBOARD"] = "dashboard";
+      EmbedSessionSearchScope2["TRANSCRIPT"] = "transcript";
+    })(EmbedSessionSearchScope || (EmbedSessionSearchScope = {}));
+    (function(EmbedSessionBotKind2) {
+      EmbedSessionBotKind2["RENDER"] = "render";
+      EmbedSessionBotKind2["CRAWLER"] = "crawler";
+    })(EmbedSessionBotKind || (EmbedSessionBotKind = {}));
+    (function(EmbedSessionTrafficFilter2) {
+      EmbedSessionTrafficFilter2["ALL"] = "all";
+      EmbedSessionTrafficFilter2["PEOPLE"] = "people";
+      EmbedSessionTrafficFilter2["BOTS"] = "bots";
+    })(EmbedSessionTrafficFilter || (EmbedSessionTrafficFilter = {}));
+    (function(EmbedSessionViewerFilter2) {
+      EmbedSessionViewerFilter2["ALL"] = "all";
+      EmbedSessionViewerFilter2["IDENTIFIED"] = "identified";
+      EmbedSessionViewerFilter2["ANONYMOUS"] = "anonymous";
+    })(EmbedSessionViewerFilter || (EmbedSessionViewerFilter = {}));
+    (function(EmbedSessionDeviceFilter2) {
+      EmbedSessionDeviceFilter2["ALL"] = "all";
+      EmbedSessionDeviceFilter2["DESKTOP"] = "desktop";
+      EmbedSessionDeviceFilter2["MOBILE"] = "mobile";
+      EmbedSessionDeviceFilter2["TABLET"] = "tablet";
+    })(EmbedSessionDeviceFilter || (EmbedSessionDeviceFilter = {}));
+    (function(EmbedSessionSort2) {
+      EmbedSessionSort2["STARTED_DESC"] = "startedAt:desc";
+      EmbedSessionSort2["STARTED_ASC"] = "startedAt:asc";
+      EmbedSessionSort2["ACTIVE_DESC"] = "activeMs:desc";
+      EmbedSessionSort2["WATCHED_DESC"] = "watchedMs:desc";
+      EmbedSessionSort2["QUESTIONS_DESC"] = "questions:desc";
+    })(EmbedSessionSort || (EmbedSessionSort = {}));
+    EMBED_SESSION_EVENTS = {
+      [EmbedSessionEventType.SESSION_START]: {
+        category: EmbedSessionEventCategory.LIFECYCLE,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer opened the embed and a new session started."
+      },
+      [EmbedSessionEventType.SESSION_RESUME]: {
+        category: EmbedSessionEventCategory.LIFECYCLE,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer came back to the same session, for example after a refresh."
+      },
+      [EmbedSessionEventType.SESSION_END]: {
+        category: EmbedSessionEventCategory.LIFECYCLE,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer left the page or was inactive for too long, so the session ended."
+      },
+      [EmbedSessionEventType.PAGE_VIEW]: {
+        category: EmbedSessionEventCategory.NAVIGATION,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer moved to another page inside the embed."
+      },
+      [EmbedSessionEventType.DASHBOARD_VIEW]: {
+        category: EmbedSessionEventCategory.NAVIGATION,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer opened the dashboard."
+      },
+      [EmbedSessionEventType.WIDGET_OPEN]: {
+        category: EmbedSessionEventCategory.NAVIGATION,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer opened a dashboard widget."
+      },
+      [EmbedSessionEventType.MEDIA_OPEN]: {
+        category: EmbedSessionEventCategory.NAVIGATION,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer opened a media file."
+      },
+      [EmbedSessionEventType.MEDIA_CLOSE]: {
+        category: EmbedSessionEventCategory.NAVIGATION,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer closed a media file."
+      },
+      [EmbedSessionEventType.CITATION_OPEN]: {
+        category: EmbedSessionEventCategory.NAVIGATION,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer opened a citation from an AI answer."
+      },
+      [EmbedSessionEventType.SEARCH]: {
+        category: EmbedSessionEventCategory.NAVIGATION,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer searched the library, dashboard or transcript."
+      },
+      [EmbedSessionEventType.TRANSCRIPT_DOWNLOAD]: {
+        category: EmbedSessionEventCategory.SHARING,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer downloaded a transcript."
+      },
+      [EmbedSessionEventType.TRANSCRIPT_COPY]: {
+        category: EmbedSessionEventCategory.SHARING,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer copied a transcript."
+      },
+      [EmbedSessionEventType.MEDIA_DOWNLOAD]: {
+        category: EmbedSessionEventCategory.SHARING,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer downloaded a media file."
+      },
+      [EmbedSessionEventType.EXPORT]: {
+        category: EmbedSessionEventCategory.SHARING,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer exported an AI answer."
+      },
+      [EmbedSessionEventType.PLAY]: {
+        category: EmbedSessionEventCategory.PLAYBACK,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer started playing a media file."
+      },
+      [EmbedSessionEventType.PAUSE]: {
+        category: EmbedSessionEventCategory.PLAYBACK,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer paused a media file."
+      },
+      [EmbedSessionEventType.SEEK]: {
+        category: EmbedSessionEventCategory.PLAYBACK,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer jumped to another point in a media file."
+      },
+      [EmbedSessionEventType.ENDED]: {
+        category: EmbedSessionEventCategory.PLAYBACK,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "A media file played to the end."
+      },
+      [EmbedSessionEventType.RATE_CHANGE]: {
+        category: EmbedSessionEventCategory.PLAYBACK,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer changed the playback speed."
+      },
+      [EmbedSessionEventType.CHAT_QUESTION]: {
+        category: EmbedSessionEventCategory.CHAT,
+        source: EmbedSessionEventSource.SERVER,
+        description: "The viewer asked the AI a question."
+      },
+      [EmbedSessionEventType.CHAT_FEEDBACK]: {
+        category: EmbedSessionEventCategory.CHAT,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer rated an AI answer."
+      },
+      [EmbedSessionEventType.HIDDEN]: {
+        category: EmbedSessionEventCategory.ENGAGEMENT,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The page was in a background tab for more than a minute."
+      },
+      [EmbedSessionEventType.IDLE]: {
+        category: EmbedSessionEventCategory.ENGAGEMENT,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer did nothing on the page for more than a minute."
+      },
+      [EmbedSessionEventType.GATE_SHOWN]: {
+        category: EmbedSessionEventCategory.IDENTITY,
+        source: EmbedSessionEventSource.CLIENT,
+        description: "The viewer was asked for their email before viewing."
+      },
+      [EmbedSessionEventType.LEAD_CAPTURED]: {
+        category: EmbedSessionEventCategory.IDENTITY,
+        source: EmbedSessionEventSource.SERVER,
+        description: "The viewer entered their email to get access."
+      }
+    };
+  }
+});
+
 // node_modules/@speakai/shared/dist/enums/index.js
 var init_enums = __esm({
   "node_modules/@speakai/shared/dist/enums/index.js"() {
@@ -1670,6 +1969,7 @@ var init_enums = __esm({
     init_user();
     init_webhook();
     init_llm();
+    init_embedSession();
   }
 });
 
@@ -1681,9 +1981,11 @@ var init_api = __esm({
 });
 
 // node_modules/@speakai/shared/dist/interfaces/media.js
+var CUSTOM_THUMBNAIL_MAX_BYTES;
 var init_media2 = __esm({
   "node_modules/@speakai/shared/dist/interfaces/media.js"() {
     "use strict";
+    CUSTOM_THUMBNAIL_MAX_BYTES = 10 * 1024 * 1024;
   }
 });
 
@@ -1854,6 +2156,13 @@ var init_notificationEvent2 = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/interfaces/embedSession.js
+var init_embedSession2 = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/embedSession.js"() {
+    "use strict";
+  }
+});
+
 // node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
   "node_modules/@speakai/shared/dist/interfaces/index.js"() {
@@ -1881,6 +2190,7 @@ var init_interfaces = __esm({
     init_dashboard();
     init_pushNotification2();
     init_notificationEvent2();
+    init_embedSession2();
   }
 });
 
@@ -1933,7 +2243,7 @@ var init_billing = __esm({
 });
 
 // node_modules/@speakai/shared/dist/voice/enums/conversation.js
-var ConversationEventType, SentimentType, CanonicalEndReason;
+var ConversationEventType, SentimentType, VoiceCallSource, CanonicalEndReason;
 var init_conversation = __esm({
   "node_modules/@speakai/shared/dist/voice/enums/conversation.js"() {
     "use strict";
@@ -1977,6 +2287,11 @@ var init_conversation = __esm({
       SentimentType2["NEUTRAL"] = "neutral";
       SentimentType2["NEGATIVE"] = "negative";
     })(SentimentType || (SentimentType = {}));
+    (function(VoiceCallSource2) {
+      VoiceCallSource2["WIDGET"] = "widget";
+      VoiceCallSource2["DASHBOARD_TEST"] = "dashboard_test";
+      VoiceCallSource2["PHONE"] = "phone";
+    })(VoiceCallSource || (VoiceCallSource = {}));
     (function(CanonicalEndReason2) {
       CanonicalEndReason2["USER_GOODBYE"] = "user-goodbye";
       CanonicalEndReason2["USER_MANUAL_END"] = "user-manual-end";
@@ -4373,6 +4688,65 @@ var init_notificationEvent3 = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/utils/embedSession.js
+var EMBED_SESSION_ID_PATTERN, EMBED_VIEWER_ID_PATTERN, EMBED_SESSION_LIMITS;
+var init_embedSession3 = __esm({
+  "node_modules/@speakai/shared/dist/utils/embedSession.js"() {
+    "use strict";
+    init_embedSession();
+    EMBED_SESSION_ID_PATTERN = /^[A-Za-z0-9-]{16,64}$/;
+    EMBED_VIEWER_ID_PATTERN = /^[a-f0-9]{32}$/;
+    EMBED_SESSION_LIMITS = {
+      flushIntervalMs: 3e4,
+      idleAfterMs: 6e4,
+      engagementGapMs: 6e4,
+      sessionTimeoutMs: 18e5,
+      maxSessionMs: 864e5,
+      liveWindowMs: 6e4,
+      maxEventsPerDocument: 1e4,
+      completedPositionPct: 95,
+      eventsPageSize: 200,
+      maxEventsPageSize: 500,
+      listPageSize: 25,
+      maxListPageSize: 100,
+      mediaPageSize: 25,
+      maxMediaPageSize: 100,
+      maxSearchLength: 100,
+      searchDebounceMs: 1e3
+    };
+  }
+});
+
+// node_modules/@speakai/shared/dist/embedSession/playback.js
+var init_playback = __esm({
+  "node_modules/@speakai/shared/dist/embedSession/playback.js"() {
+    "use strict";
+    init_embedSession();
+    init_embedSession3();
+  }
+});
+
+// node_modules/@speakai/shared/dist/embedSession/tracker.js
+var ACTIVITY_NEUTRAL_EVENTS, SESSION_LIFECYCLE_EVENTS;
+var init_tracker = __esm({
+  "node_modules/@speakai/shared/dist/embedSession/tracker.js"() {
+    "use strict";
+    init_embedSession();
+    init_embedSession3();
+    init_playback();
+    ACTIVITY_NEUTRAL_EVENTS = /* @__PURE__ */ new Set([
+      EmbedSessionEventType.SESSION_END,
+      EmbedSessionEventType.HIDDEN,
+      EmbedSessionEventType.IDLE
+    ]);
+    SESSION_LIFECYCLE_EVENTS = /* @__PURE__ */ new Set([
+      EmbedSessionEventType.SESSION_START,
+      EmbedSessionEventType.SESSION_RESUME,
+      EmbedSessionEventType.SESSION_END
+    ]);
+  }
+});
+
 // node_modules/@speakai/shared/dist/llm/types.js
 var init_types = __esm({
   "node_modules/@speakai/shared/dist/llm/types.js"() {
@@ -4394,6 +4768,8 @@ var init_dist = __esm({
     init_meetingLink();
     init_pushNotification3();
     init_notificationEvent3();
+    init_embedSession3();
+    init_tracker();
     init_registry();
     init_types();
     init_modelPricing();
@@ -6272,14 +6648,126 @@ function register6(server, client) {
       }
     }
   );
+  registerSpeakTool(
+    server,
+    "list_embed_sessions",
+    "Owner analytics for an embed: list the visits (sessions) to one embed, newest first by default. Each session has its start and last activity time, whether it is still live, total and active time, media opened, time watched, questions asked, the viewer's email and name when they identified themselves, their country, browser, device and referrer, campaign tags, and whether it was a bot. Returns sessions with totalCount, page and pageSize. Use get_embed_session with a session's _id for its full timeline.",
+    {
+      embedId: embedIdSchema,
+      ...embedSessionRangeSchema,
+      page: import_zod7.z.number().int().min(0).optional().describe("0-based page index (default 0)"),
+      pageSize: import_zod7.z.number().int().min(1).max(EMBED_SESSION_LIMITS.maxListPageSize).optional().describe(`Sessions per page (default ${EMBED_SESSION_LIMITS.listPageSize}, max ${EMBED_SESSION_LIMITS.maxListPageSize})`),
+      search: import_zod7.z.string().max(EMBED_SESSION_LIMITS.maxSearchLength).optional().describe("Match a viewer email (any part) or the start of a visitorId"),
+      viewer: import_zod7.z.enum(Object.values(EmbedSessionViewerFilter)).optional().describe("identified keeps viewers who gave their email, anonymous keeps the rest (default all)"),
+      device: import_zod7.z.enum(Object.values(EmbedSessionDeviceFilter)).optional().describe("Filter by device type (default all)"),
+      country: import_zod7.z.string().optional().describe("Exact country name as shown in a session's client.country"),
+      includeLegacy: import_zod7.z.boolean().optional().describe("Also include visits recorded before session tracking started (default false)"),
+      viewerId: import_zod7.z.string().regex(EMBED_VIEWER_ID_PATTERN).optional().describe("Only sessions of one identified viewer (viewerId from a session)"),
+      visitorId: import_zod7.z.string().regex(EMBED_SESSION_ID_PATTERN).optional().describe("Only sessions from one browser (visitorId from a session)"),
+      mediaId: import_zod7.z.string().optional().describe("Only sessions that opened this media file"),
+      sort: import_zod7.z.enum(Object.values(EmbedSessionSort)).optional().describe(`Sort order (default ${EmbedSessionSort.STARTED_DESC})`)
+    },
+    {
+      title: "List Embed Sessions",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ embedId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/embed/sessions/${embedId}`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err2) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_embed_session_summary",
+    "Owner analytics for an embed: totals across its visits for a date range. Returns KPIs (sessions, unique and returning visitors, identified viewers, average active time, media opens, time watched, questions and sessions with questions), sessions and visitors per day, top traffic sources, and a paged table of media with opens, unique viewers, plays, time watched, completion rate, questions and downloads.",
+    {
+      embedId: embedIdSchema,
+      ...embedSessionRangeSchema,
+      tz: import_zod7.z.string().max(100).optional().describe("IANA time zone used to group by day, e.g. America/Toronto (default UTC)"),
+      mediaPage: import_zod7.z.number().int().min(0).optional().describe("0-based page of the media table (default 0)"),
+      mediaPageSize: import_zod7.z.number().int().min(1).max(EMBED_SESSION_LIMITS.maxMediaPageSize).optional().describe(`Media rows per page (default ${EMBED_SESSION_LIMITS.mediaPageSize}, max ${EMBED_SESSION_LIMITS.maxMediaPageSize})`)
+    },
+    {
+      title: "Get Embed Session Summary",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ embedId, ...params }) => {
+      try {
+        const result = await api.get(`/v1/embed/sessions/${embedId}/summary`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err2) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "get_embed_session",
+    "Owner analytics for an embed: one visit in full. Returns the session with the media it opened (time watched, plays, seeks, furthest position, completed), the questions asked in chat, and a paged list of its events in time order, plus how many sessions the same viewer or browser has had on this embed. Use eventsPage and eventsPageSize to read long timelines.",
+    {
+      embedId: embedIdSchema,
+      id: objectIdSchema.describe("The session's _id (24 hex characters) from list_embed_sessions, not its sessionId"),
+      eventsPage: import_zod7.z.number().int().min(0).optional().describe("0-based page of events (default 0)"),
+      eventsPageSize: import_zod7.z.number().int().min(1).max(EMBED_SESSION_LIMITS.maxEventsPageSize).optional().describe(`Events per page (default ${EMBED_SESSION_LIMITS.eventsPageSize}, max ${EMBED_SESSION_LIMITS.maxEventsPageSize})`)
+    },
+    {
+      title: "Get Embed Session",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async ({ embedId, id, ...params }) => {
+      try {
+        const result = await api.get(`/v1/embed/sessions/${embedId}/detail/${id}`, { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err2) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          isError: true
+        };
+      }
+    }
+  );
 }
-var import_zod7;
+var import_zod7, objectIdSchema, embedIdSchema, embedSessionRangeSchema;
 var init_embed3 = __esm({
   "src/tools/embed.ts"() {
     "use strict";
     import_zod7 = require("zod");
     init_helpers();
     init_client();
+    init_dist();
+    objectIdSchema = import_zod7.z.string().regex(/^[0-9a-fA-F]{24}$/);
+    embedIdSchema = objectIdSchema.describe("The embed's _id (24 hex characters), as returned by create_embed or check_embed");
+    embedSessionRangeSchema = {
+      from: import_zod7.z.string().optional().describe("Only sessions started on or after this time (ISO 8601 date)"),
+      to: import_zod7.z.string().optional().describe("Only sessions started on or before this time (ISO 8601 date)"),
+      traffic: import_zod7.z.enum(Object.values(EmbedSessionTrafficFilter)).optional().describe("people leaves out bots, bots shows only bots (default all)"),
+      includeOwner: import_zod7.z.boolean().optional().describe("Include sessions from people signed in to your own Speak AI workspace (default false)")
+    };
   }
 });
 
@@ -11350,6 +11838,39 @@ function register19(server, client, options = {}) {
   );
   registerSpeakTool(
     server,
+    "get_agent_analytics",
+    "Owner analytics for one voice agent over a date range. Returns the range used; conversation totals with completion rate, average duration and returning callers; conversations per day split into web and phone; where callers are, their devices, browsers and traffic sources; web callers who left without saying anything and the number of open knowledge gaps (questions the agent could not answer); leads captured, handoffs and action items; engagement, sentiment, top topics, end reasons and satisfaction; busiest hours, weekdays and languages; and web versus phone counts. Test calls are left out unless includeTests is true, and the count of test calls is always returned. Leave start empty for all time; a start more than 5 years before end is moved up to 5 years. A cross-company agentId returns 404.",
+    {
+      agentId: import_zod21.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
+      start: import_zod21.z.string().optional().describe("Start of the range (ISO 8601 date). Omit for all time. Must be before end."),
+      end: import_zod21.z.string().optional().describe("End of the range (ISO 8601 date). Defaults to now."),
+      tz: import_zod21.z.string().max(100).optional().describe("IANA time zone used to group by day, hour and weekday, e.g. America/Toronto (default UTC)."),
+      compare: import_zod21.z.boolean().optional().describe("Also return the same KPIs for the period just before the range (default false). Needs start."),
+      includeTests: import_zod21.z.boolean().optional().describe("Count the agent's test calls in the results (default false).")
+    },
+    {
+      title: "Get Voice Agent Analytics",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/voice/analytics/agent", { params });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err2) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
     "create_voice_agent",
     "Create a voice agent. Requires the OWNER or ADMIN role. name, personality, instructions, and voice (provider + voiceId) are required; everything else can be set now or later with update_voice_agent. Call list_voice_avatars or list_voices first to get valid ids.",
     voiceInputSchema,
@@ -11938,7 +12459,7 @@ function register21(server, client) {
   registerSpeakTool(
     server,
     "create_voice_question",
-    "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) \u2014 404 if either isn't found.",
+    "Attach a question template to a voice agent. Requires the OWNER or ADMIN role. agentId and templateId are both required and must belong to your company (or, for templateId, be a public system template) \u2014 404 if either isn't found. Returns 409 if the agent already has an enabled question whose template has the same name (they save to the same answer key); disable or delete that question first, or create this one with enabled: false.",
     {
       agentId: import_zod23.z.string().min(1),
       templateId: import_zod23.z.string().min(1).describe("From list_voice_question_templates."),
@@ -11964,7 +12485,7 @@ function register21(server, client) {
   registerSpeakTool(
     server,
     "update_voice_question",
-    "Partially update a voice agent question \u2014 only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped.",
+    "Partially update a voice agent question \u2014 only the fields you send are changed. Requires the OWNER or ADMIN role. agentId and templateId are fixed after create; sending them is silently dropped. Returns 409 when setting enabled: true on a disabled question while another enabled question on the same agent has a template with the same name (they save to the same answer key); other edits to an existing duplicate still succeed.",
     {
       fieldId: import_zod23.z.string().min(1).describe("ID of the question to update (from list_voice_questions)"),
       customConfig: customConfigSchema.optional(),
@@ -12734,6 +13255,9 @@ var init_tool_names = __esm({
       "update_embed",
       "check_embed",
       "get_embed_iframe_url",
+      "list_embed_sessions",
+      "get_embed_session_summary",
+      "get_embed_session",
       // exports
       "export_media",
       "export_multiple_media",
@@ -12865,6 +13389,7 @@ var init_tool_names = __esm({
       "list_voices",
       "list_voice_conversations",
       "get_voice_conversation",
+      "get_agent_analytics",
       // voice: testing
       "get_voice_test_suite",
       "update_voice_test_suite",
@@ -14256,7 +14781,10 @@ var SPEAK_MCP_TOOL_CATEGORIES = [
       "create_embed",
       "update_embed",
       "check_embed",
-      "get_embed_iframe_url"
+      "get_embed_iframe_url",
+      "list_embed_sessions",
+      "get_embed_session_summary",
+      "get_embed_session"
     ]
   },
   {
@@ -14301,6 +14829,7 @@ var SPEAK_MCP_TOOL_CATEGORIES = [
       "list_voices",
       "list_voice_conversations",
       "get_voice_conversation",
+      "get_agent_analytics",
       "list_voice_questions",
       "get_voice_question",
       "create_voice_question",

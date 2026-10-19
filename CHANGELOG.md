@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.39.0 (2026-10-19)
+
+- feat(analytics): add voice agent and embed session analytics tools
+
 ## v1.38.2 (2026-10-16)
 
 - fix(ci): push the release commit and tag atomically; retry the MCP Registry login
