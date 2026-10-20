@@ -442,6 +442,8 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `export_chat_answer` | Export a conversation or answer |
 | `get_analysis_quote` | Check if a file can be analysed as audio/video and what it costs |
 
+`ask_ai_chat`, `retry_ai_chat` and `get_analysis_quote` register only with `aiChat: true`. The stdio server includes them; the hosted endpoint does not, because Speak's assistant behind AI Chat can call other tools.
+
 </details>
 
 <details>

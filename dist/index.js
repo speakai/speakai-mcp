@@ -261,10 +261,10 @@ var init_helpers = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/activities.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/activities.js
 var ActivityType;
 var init_activities = __esm({
-  "node_modules/@speakai/shared/dist/enums/activities.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/activities.js"() {
     "use strict";
     (function(ActivityType2) {
       ActivityType2["MEDIA_ANALYSIS"] = "mediaAnalysis";
@@ -277,10 +277,10 @@ var init_activities = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/auth.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/auth.js
 var SSOType, DevicePlatform, AuthErrorCode;
 var init_auth = __esm({
-  "node_modules/@speakai/shared/dist/enums/auth.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/auth.js"() {
     "use strict";
     (function(SSOType2) {
       SSOType2["GOOGLE"] = "google";
@@ -302,10 +302,10 @@ var init_auth = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/automation.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/automation.js
 var AutomationTrigger, AutomationAction, AutomationStepType, AutomationRunStatus, AutomationIOType, AutomationRunType, AutomationScheduleTimePeriod, AssistantType, WebSearchProvider;
 var init_automation = __esm({
-  "node_modules/@speakai/shared/dist/enums/automation.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/automation.js"() {
     "use strict";
     (function(AutomationTrigger2) {
       AutomationTrigger2["FOLDERS"] = "folders";
@@ -370,10 +370,10 @@ var init_automation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/calendar.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/calendar.js
 var CalendarType, EventStatus, AutoJoinStatus;
 var init_calendar = __esm({
-  "node_modules/@speakai/shared/dist/enums/calendar.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/calendar.js"() {
     "use strict";
     (function(CalendarType2) {
       CalendarType2["GOOGLE"] = "google";
@@ -393,10 +393,10 @@ var init_calendar = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/clip.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/clip.js
 var ClipState, ClipGenerationSource;
 var init_clip = __esm({
-  "node_modules/@speakai/shared/dist/enums/clip.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/clip.js"() {
     "use strict";
     (function(ClipState2) {
       ClipState2["QUEUED"] = "queued";
@@ -412,10 +412,10 @@ var init_clip = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/domain.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/domain.js
 var ServiceType, VerificationStatus;
 var init_domain = __esm({
-  "node_modules/@speakai/shared/dist/enums/domain.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/domain.js"() {
     "use strict";
     (function(ServiceType2) {
       ServiceType2["RECORDER"] = "recorder";
@@ -431,10 +431,10 @@ var init_domain = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/embed.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/embed.js
 var EmbedType, ImageSelectionType;
 var init_embed = __esm({
-  "node_modules/@speakai/shared/dist/enums/embed.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/embed.js"() {
     "use strict";
     (function(EmbedType2) {
       EmbedType2["MEDIA_PLAYER"] = "mediaPlayer";
@@ -449,10 +449,10 @@ var init_embed = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/export.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/export.js
 var ExportFormatType;
 var init_export = __esm({
-  "node_modules/@speakai/shared/dist/enums/export.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/export.js"() {
     "use strict";
     (function(ExportFormatType2) {
       ExportFormatType2["CSV"] = "csv";
@@ -476,10 +476,10 @@ var init_export = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/fields.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/fields.js
 var FieldType, AllowedValuesMode, DefaultViewColumn;
 var init_fields = __esm({
-  "node_modules/@speakai/shared/dist/enums/fields.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/fields.js"() {
     "use strict";
     (function(FieldType2) {
       FieldType2["TEXT"] = "text";
@@ -508,10 +508,10 @@ var init_fields = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/filter.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/filter.js
 var FilterFieldName, FilterOperator, FilterCondition;
 var init_filter = __esm({
-  "node_modules/@speakai/shared/dist/enums/filter.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/filter.js"() {
     "use strict";
     (function(FilterFieldName2) {
       FilterFieldName2["CATEGORY"] = "category";
@@ -540,10 +540,10 @@ var init_filter = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/genesys.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/genesys.js
 var GenesysConnectionStatus, GenesysPollStatus, GenesysHandoffStatus;
 var init_genesys = __esm({
-  "node_modules/@speakai/shared/dist/enums/genesys.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/genesys.js"() {
     "use strict";
     (function(GenesysConnectionStatus2) {
       GenesysConnectionStatus2["CONNECTED"] = "connected";
@@ -564,10 +564,10 @@ var init_genesys = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/integration.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/integration.js
 var IntegrationAuthType;
 var init_integration = __esm({
-  "node_modules/@speakai/shared/dist/enums/integration.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/integration.js"() {
     "use strict";
     (function(IntegrationAuthType2) {
       IntegrationAuthType2["OAUTH"] = "oauth";
@@ -576,10 +576,10 @@ var init_integration = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/knowledgeBase.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/knowledgeBase.js
 var KnowledgeBaseOwnerType;
 var init_knowledgeBase = __esm({
-  "node_modules/@speakai/shared/dist/enums/knowledgeBase.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/knowledgeBase.js"() {
     "use strict";
     (function(KnowledgeBaseOwnerType2) {
       KnowledgeBaseOwnerType2["FOLDER"] = "folder";
@@ -589,10 +589,10 @@ var init_knowledgeBase = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/label.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/label.js
 var LabelSource, AnchorStatus, DashboardLabelsMode, DashboardCommentsMode, LabelListStatus, MediaLabelAction, CommentListFilter, SpeakLabelSet;
 var init_label = __esm({
-  "node_modules/@speakai/shared/dist/enums/label.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/label.js"() {
     "use strict";
     (function(LabelSource2) {
       LabelSource2["USER"] = "user";
@@ -635,10 +635,10 @@ var init_label = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/media.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/media.js
 var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType, ThumbnailStatus, ThumbnailOrigin;
 var init_media = __esm({
-  "node_modules/@speakai/shared/dist/enums/media.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/media.js"() {
     "use strict";
     (function(MediaType2) {
       MediaType2["AUDIO"] = "audio";
@@ -717,10 +717,10 @@ var init_media = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/menu.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/menu.js
 var MenuItemId, SectionId, MANAGEABLE_SECTION_IDS, PROFILE_MANAGEABLE_IDS, SIDEMENU_DEFAULT_ORDER, SIDEMENU_CORE_ANCHORS;
 var init_menu = __esm({
-  "node_modules/@speakai/shared/dist/enums/menu.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/menu.js"() {
     "use strict";
     (function(MenuItemId2) {
       MenuItemId2["Home"] = "home";
@@ -773,10 +773,10 @@ var init_menu = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/meeting.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/meeting.js
 var MeetingPlatform, MEETING_PLATFORM_LABELS, MeetingStatus, MeetingRecordingMode, ScreenShareRecordingMode, MeetingSummarySettings, MediaPlayerSettings, MeetingFilterEventCondition, MeetingAttendeeType, MeetingAssistantEventSource, MeetingRecorder, DesktopAutoRecord, DesktopConsentNotice, DesktopSystemAudioStatus, DesktopClaimReason;
 var init_meeting = __esm({
-  "node_modules/@speakai/shared/dist/enums/meeting.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/meeting.js"() {
     "use strict";
     (function(MeetingPlatform2) {
       MeetingPlatform2["GOOGLE_MEET"] = "googleMeet";
@@ -882,10 +882,10 @@ var init_meeting = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/notification.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/notification.js
 var NotificationType, NotificationAction;
 var init_notification = __esm({
-  "node_modules/@speakai/shared/dist/enums/notification.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/notification.js"() {
     "use strict";
     (function(NotificationType2) {
       NotificationType2["CLIP"] = "clip";
@@ -942,10 +942,10 @@ var init_notification = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/pushNotification.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/pushNotification.js
 var PushNotificationAction, PushNotificationType, PushTapTarget, PushDataKey, WebPushDataKey, PUSH_NOTIFICATION_ACTION_LABELS, MEDIA_PUSH_DATA_KEYS, RECORDER_PUSH_DATA_KEYS, PUSH_NOTIFICATION_REGISTRY;
 var init_pushNotification = __esm({
-  "node_modules/@speakai/shared/dist/enums/pushNotification.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/pushNotification.js"() {
     "use strict";
     (function(PushNotificationAction2) {
       PushNotificationAction2["JOIN"] = "join";
@@ -1049,10 +1049,10 @@ var init_pushNotification = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/notificationEvent.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/notificationEvent.js
 var NotificationChannel, NotificationSettingsGroup, NotificationEventKey, NOTIFICATION_SETTINGS_GROUP_ORDER, ALL_CHANNELS, PUSH_CHANNELS, EMAIL_ONLY, NOTIFICATION_EVENTS;
 var init_notificationEvent = __esm({
-  "node_modules/@speakai/shared/dist/enums/notificationEvent.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/notificationEvent.js"() {
     "use strict";
     init_pushNotification();
     (function(NotificationChannel2) {
@@ -1160,10 +1160,10 @@ var init_notificationEvent = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/prompt.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/prompt.js
 var PromptState, MessageRole, PromptSource, ToolName, FileType, ChatStepType, ChatStepConfirmationStatus, ChatStepClarificationStatus;
 var init_prompt = __esm({
-  "node_modules/@speakai/shared/dist/enums/prompt.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/prompt.js"() {
     "use strict";
     (function(PromptState2) {
       PromptState2["INITIATED"] = "initiated";
@@ -1229,10 +1229,10 @@ var init_prompt = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/recorder.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/recorder.js
 var RecorderAnswerType, RecorderUploadType, RecordingFeedbackRating, RecorderSessionEventType, RecordingSessionSource, RecorderSessionEventCategory, RecorderSessionWakeLock, RECORDER_SESSION_EVENTS;
 var init_recorder = __esm({
-  "node_modules/@speakai/shared/dist/enums/recorder.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/recorder.js"() {
     "use strict";
     (function(RecorderAnswerType2) {
       RecorderAnswerType2["Single"] = "single";
@@ -1435,10 +1435,10 @@ var init_recorder = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/subscription.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/subscription.js
 var SubscriptionStatus, SubscriptionDuration, TrialTier;
 var init_subscription = __esm({
-  "node_modules/@speakai/shared/dist/enums/subscription.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/subscription.js"() {
     "use strict";
     (function(SubscriptionStatus2) {
       SubscriptionStatus2["Active"] = "active";
@@ -1464,10 +1464,10 @@ var init_subscription = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/team.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/team.js
 var TeamInviteStatus;
 var init_team = __esm({
-  "node_modules/@speakai/shared/dist/enums/team.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/team.js"() {
     "use strict";
     (function(TeamInviteStatus2) {
       TeamInviteStatus2["ACTIVE"] = "active";
@@ -1478,10 +1478,10 @@ var init_team = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/transcription.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/transcription.js
 var TranscriptionEngine, TranscriptionJobState, TranscriptionJobRevisionState;
 var init_transcription = __esm({
-  "node_modules/@speakai/shared/dist/enums/transcription.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/transcription.js"() {
     "use strict";
     (function(TranscriptionEngine2) {
       TranscriptionEngine2["AZURE"] = "azure";
@@ -1510,10 +1510,10 @@ var init_transcription = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/transaction.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/transaction.js
 var TransactionSource, TransactionType, TransactionStatus;
 var init_transaction = __esm({
-  "node_modules/@speakai/shared/dist/enums/transaction.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/transaction.js"() {
     "use strict";
     (function(TransactionSource2) {
       TransactionSource2["STRIPE"] = "stripe";
@@ -1543,10 +1543,10 @@ var init_transaction = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/translation.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/translation.js
 var TranslationState, DubbingState;
 var init_translation = __esm({
-  "node_modules/@speakai/shared/dist/enums/translation.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/translation.js"() {
     "use strict";
     (function(TranslationState2) {
       TranslationState2["NOTFOUND"] = "notFound";
@@ -1567,10 +1567,10 @@ var init_translation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/user.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/user.js
 var UserRole, UserType, UserPermissionType, UserActionType;
 var init_user = __esm({
-  "node_modules/@speakai/shared/dist/enums/user.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/user.js"() {
     "use strict";
     (function(UserRole2) {
       UserRole2["ADMIN"] = "admin";
@@ -1619,10 +1619,10 @@ var init_user = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/webhook.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/webhook.js
 var WebhookEvent, WebhookEventSource;
 var init_webhook = __esm({
-  "node_modules/@speakai/shared/dist/enums/webhook.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/webhook.js"() {
     "use strict";
     (function(WebhookEvent2) {
       WebhookEvent2["embed_recorder.created"] = "embed_recorder.created";
@@ -1654,10 +1654,10 @@ var init_webhook = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/llm.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/llm.js
 var LLMProvider, LLMModels;
 var init_llm = __esm({
-  "node_modules/@speakai/shared/dist/enums/llm.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/llm.js"() {
     "use strict";
     (function(LLMProvider2) {
       LLMProvider2["OPENAI"] = "openai";
@@ -1716,10 +1716,10 @@ var init_llm = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/embedSession.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/embedSession.js
 var EmbedSessionEventCategory, EmbedSessionEventType, EmbedSessionEventSource, EmbedSessionEndReason, EmbedSessionMediaOpenSource, EmbedSessionSearchScope, EmbedSessionBotKind, EmbedSessionTrafficFilter, EmbedSessionViewerFilter, EmbedSessionDeviceFilter, EmbedSessionSort, EMBED_SESSION_EVENTS;
 var init_embedSession = __esm({
-  "node_modules/@speakai/shared/dist/enums/embedSession.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/embedSession.js"() {
     "use strict";
     (function(EmbedSessionEventCategory2) {
       EmbedSessionEventCategory2["LIFECYCLE"] = "lifecycle";
@@ -1935,9 +1935,9 @@ var init_embedSession = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/enums/index.js
+// ../executor-audit/node_modules/@speakai/shared/dist/enums/index.js
 var init_enums = __esm({
-  "node_modules/@speakai/shared/dist/enums/index.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/enums/index.js"() {
     "use strict";
     init_activities();
     init_auth();
@@ -1973,159 +1973,159 @@ var init_enums = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/api.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/api.js
 var init_api = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/api.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/api.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/media.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/media.js
 var CUSTOM_THUMBNAIL_MAX_BYTES;
 var init_media2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/media.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/media.js"() {
     "use strict";
     CUSTOM_THUMBNAIL_MAX_BYTES = 10 * 1024 * 1024;
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/transcript.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/transcript.js
 var init_transcript = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/transcript.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/text.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/text.js
 var init_text = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/text.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/text.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/folder.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/folder.js
 var init_folder = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/folder.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/folder.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/integration.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/integration.js
 var init_integration2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/integration.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/integration.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/recorder.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/recorder.js
 var init_recorder2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/recorder.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/embed.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/embed.js
 var init_embed2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/embed.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/embed.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/automation.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/automation.js
 var init_automation2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/automation.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/automation.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/webhook.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/webhook.js
 var init_webhook2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/webhook.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/field.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/field.js
 var init_field = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/field.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/field.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/meeting.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/meeting.js
 var init_meeting2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/meeting.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/export.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/export.js
 var init_export2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/export.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/export.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/prompt.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/prompt.js
 var init_prompt2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/prompt.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/user.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/user.js
 var init_user2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/user.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/user.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/subscription.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/subscription.js
 var init_subscription2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/subscription.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/calendar.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/calendar.js
 var init_calendar2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/calendar.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/category.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/category.js
 var init_category = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/category.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/category.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/clip.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/clip.js
 var init_clip2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/clip.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/clip.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/label.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/label.js
 var init_label2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/label.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/label.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/dashboard-spec.js
+// ../executor-audit/node_modules/@speakai/shared/dist/utils/dashboard-spec.js
 var init_dashboard_spec = __esm({
-  "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/dashboard.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/dashboard.js
 var DASHBOARD_PROFILE_GROUPS_MAX, DASHBOARD_PROFILE_ENTRIES_MAX, DASHBOARD_PROFILE_NAME_MAX, DASHBOARD_PROFILE_LABEL_MAX, DASHBOARD_PROFILE_DESCRIPTION_MAX, DASHBOARD_PROFILE_LINK_MAX, DASHBOARD_PROFILE_IMAGE_MAX_BYTES, DASHBOARD_PROFILE_IMAGE_KEY_MAX, DASHBOARD_PROFILE_ID_PATTERN, DASHBOARD_PROFILE_IMAGE_TYPES, DASHBOARD_PROFILE_IMAGE_SHAPES;
 var init_dashboard = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/dashboard.js"() {
     "use strict";
     init_dashboard_spec();
     DASHBOARD_PROFILE_GROUPS_MAX = 5;
@@ -2142,30 +2142,30 @@ var init_dashboard = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/pushNotification.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/pushNotification.js
 var init_pushNotification2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/pushNotification.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/pushNotification.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/notificationEvent.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/notificationEvent.js
 var init_notificationEvent2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/notificationEvent.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/notificationEvent.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/embedSession.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/embedSession.js
 var init_embedSession2 = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/embedSession.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/embedSession.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/interfaces/index.js
+// ../executor-audit/node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
-  "node_modules/@speakai/shared/dist/interfaces/index.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/interfaces/index.js"() {
     "use strict";
     init_api();
     init_media2();
@@ -2194,10 +2194,10 @@ var init_interfaces = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/agent.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/agent.js
 var AgentStatus, AGENT_STATUSES;
 var init_agent = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/agent.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/agent.js"() {
     "use strict";
     (function(AgentStatus2) {
       AgentStatus2["DRAFT"] = "draft";
@@ -2209,10 +2209,10 @@ var init_agent = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/auth.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/auth.js
 var AuthProvider, SignupSource;
 var init_auth2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/auth.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/auth.js"() {
     "use strict";
     (function(AuthProvider2) {
       AuthProvider2["EMAIL"] = "email";
@@ -2228,24 +2228,24 @@ var init_auth2 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/avatar.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/avatar.js
 var init_avatar = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/avatar.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/avatar.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/billing.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/billing.js
 var init_billing = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/billing.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/billing.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/conversation.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/conversation.js
 var ConversationEventType, SentimentType, VoiceCallSource, CanonicalEndReason;
 var init_conversation = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/conversation.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/conversation.js"() {
     "use strict";
     (function(ConversationEventType2) {
       ConversationEventType2["STT"] = "stt";
@@ -2312,10 +2312,10 @@ var init_conversation = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/dataCollection.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/dataCollection.js
 var DataCollectionFieldType, DataCollectionCategory, CollectionMethod, BlockingMode, NoResponseBehavior;
 var init_dataCollection = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/dataCollection.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/dataCollection.js"() {
     "use strict";
     (function(DataCollectionFieldType2) {
       DataCollectionFieldType2["EMAIL"] = "email";
@@ -2353,10 +2353,10 @@ var init_dataCollection = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/integration.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/integration.js
 var IntegrationSlug, IntegrationCategory, VoiceIntegrationAuthType, IntegrationStatus, RuleConditionField, RuleOperator;
 var init_integration3 = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/integration.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/integration.js"() {
     "use strict";
     (function(IntegrationSlug2) {
       IntegrationSlug2["HUBSPOT"] = "hubspot";
@@ -2440,10 +2440,10 @@ var init_integration3 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/livekit.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/livekit.js
 var LiveKitDataMessageType;
 var init_livekit = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/livekit.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/livekit.js"() {
     "use strict";
     (function(LiveKitDataMessageType2) {
       LiveKitDataMessageType2["USER_MESSAGE"] = "user_message";
@@ -2469,17 +2469,17 @@ var init_livekit = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/notification.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/notification.js
 var init_notification2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/notification.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/notification.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/organization.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/organization.js
 var OrgRole, ORG_ROLES;
 var init_organization = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/organization.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/organization.js"() {
     "use strict";
     (function(OrgRole2) {
       OrgRole2["OWNER"] = "owner";
@@ -2491,10 +2491,10 @@ var init_organization = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/providers.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/providers.js
 var STTProvider, TTSProvider, AvatarProvider;
 var init_providers = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/providers.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/providers.js"() {
     "use strict";
     (function(STTProvider2) {
       STTProvider2["DEEPGRAM"] = "deepgram";
@@ -2522,10 +2522,10 @@ var init_providers = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/responsePace.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/responsePace.js
 var ResponsePace, RESPONSE_PACES;
 var init_responsePace = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/responsePace.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/responsePace.js"() {
     "use strict";
     (function(ResponsePace2) {
       ResponsePace2["SNAPPY"] = "snappy";
@@ -2537,10 +2537,10 @@ var init_responsePace = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/structuredOutput.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/structuredOutput.js
 var StructuredOutputType;
 var init_structuredOutput = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/structuredOutput.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/structuredOutput.js"() {
     "use strict";
     (function(StructuredOutputType2) {
       StructuredOutputType2["STRING"] = "string";
@@ -2553,23 +2553,23 @@ var init_structuredOutput = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/telephony.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/telephony.js
 var init_telephony = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/telephony.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/telephony.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/voice.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/voice.js
 var init_voice = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/voice.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/voice.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/enums/index.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/enums/index.js
 var init_enums2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/enums/index.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/enums/index.js"() {
     "use strict";
     init_agent();
     init_auth2();
@@ -2589,128 +2589,128 @@ var init_enums2 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/agent.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/agent.js
 var init_agent2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/agent.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/agent.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/avatar.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/avatar.js
 var init_avatar2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/avatar.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/avatar.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/voice.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/voice.js
 var init_voice2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/voice.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/voice.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/livekit.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/livekit.js
 var init_livekit2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/livekit.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/livekit.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/conversation.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/conversation.js
 var init_conversation2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/conversation.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/conversation.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/questions.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/questions.js
 var init_questions = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/questions.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/questions.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/structuredOutput.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/structuredOutput.js
 var init_structuredOutput2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/structuredOutput.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/structuredOutput.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/telephony.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/telephony.js
 var init_telephony2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/telephony.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/telephony.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/billing.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/billing.js
 var init_billing2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/billing.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/billing.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/knowledgeBase.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/knowledgeBase.js
 var init_knowledgeBase2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/knowledgeBase.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/knowledgeBase.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/analytics.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/analytics.js
 var init_analytics = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/analytics.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/analytics.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/integration.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/integration.js
 var init_integration4 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/integration.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/integration.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/kbGap.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/kbGap.js
 var init_kbGap = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/kbGap.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/kbGap.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/notification.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/notification.js
 var init_notification3 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/notification.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/notification.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/organization.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/organization.js
 var init_organization2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/organization.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/organization.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/testing.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/testing.js
 var init_testing = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/testing.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/testing.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/turnTaking.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/turnTaking.js
 var init_turnTaking = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/turnTaking.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/turnTaking.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/interfaces/index.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/index.js
 var init_interfaces2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/interfaces/index.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/interfaces/index.js"() {
     "use strict";
     init_agent2();
     init_avatar2();
@@ -2732,10 +2732,10 @@ var init_interfaces2 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/llm/registry.js
+// ../executor-audit/node_modules/@speakai/shared/dist/llm/registry.js
 var MAX_OUTPUT_TOKENS, GEMINI_MAX_OUTPUT_TOKENS, OPENROUTER_MAX_OUTPUT_TOKENS, NO_CAPS, GPT_LEGACY, GPT_5, CLAUDE_LEGACY, CLAUDE_4, CLAUDE_ADAPTIVE, GEMINI_LEGACY, GEMINI_THINKING, MODEL_REGISTRY, OPENAI_DEFAULT_MODEL, CLAUDE_DEFAULT_MODEL, GEMINI_DEFAULT_MODEL, OPENROUTER_DEFAULT_MODEL, FREE_TIER_MODEL, BY_ID;
 var init_registry = __esm({
-  "node_modules/@speakai/shared/dist/llm/registry.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/llm/registry.js"() {
     "use strict";
     init_llm();
     MAX_OUTPUT_TOKENS = 14500;
@@ -3669,10 +3669,10 @@ var init_registry = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/templates/agent-templates.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/templates/agent-templates.js
 var TEMPLATE_LLM, BLANK_TEMPLATE, AGENT_TEMPLATES;
 var init_agent_templates = __esm({
-  "node_modules/@speakai/shared/dist/voice/templates/agent-templates.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/templates/agent-templates.js"() {
     "use strict";
     init_registry();
     TEMPLATE_LLM = {
@@ -4267,10 +4267,10 @@ Keep every response to two or three sentences. Speak naturally and warmly using 
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/templates/lookup.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/templates/lookup.js
 var ALL_AGENT_TEMPLATES, BY_ID2;
 var init_lookup = __esm({
-  "node_modules/@speakai/shared/dist/voice/templates/lookup.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/templates/lookup.js"() {
     "use strict";
     init_agent_templates();
     ALL_AGENT_TEMPLATES = [BLANK_TEMPLATE, ...AGENT_TEMPLATES];
@@ -4278,19 +4278,19 @@ var init_lookup = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/templates/index.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/templates/index.js
 var init_templates = __esm({
-  "node_modules/@speakai/shared/dist/voice/templates/index.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/templates/index.js"() {
     "use strict";
     init_agent_templates();
     init_lookup();
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/responsePace.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/responsePace.js
 var DEFAULT_RESPONSE_PACE, RESPONSE_PACE_PRESETS;
 var init_responsePace2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/responsePace.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/responsePace.js"() {
     "use strict";
     init_responsePace();
     DEFAULT_RESPONSE_PACE = ResponsePace.BALANCED;
@@ -4313,20 +4313,20 @@ var init_responsePace2 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/pronunciation.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/pronunciation.js
 var init_pronunciation = __esm({
-  "node_modules/@speakai/shared/dist/voice/pronunciation.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/pronunciation.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/liveModels.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/liveModels.js
 function liveVoices(ids) {
   return ids.map((id) => ({ id, label: id.charAt(0).toUpperCase() + id.slice(1) }));
 }
 var VOICE_LIVE_MODELS, VOICE_LIVE_CHOICES;
 var init_liveModels = __esm({
-  "node_modules/@speakai/shared/dist/voice/liveModels.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/liveModels.js"() {
     "use strict";
     init_llm();
     VOICE_LIVE_MODELS = [
@@ -4403,10 +4403,10 @@ var init_liveModels = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/llm.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/llm.js
 var VOICE_AGENT_LLM_PROVIDERS, VOICE_AGENT_LLM_MODELS, VOICE_AGENT_LLM_CHOICES, VOICE_DEFAULT_MODELS, VOICE_AGENT_MODEL_IDS;
 var init_llm2 = __esm({
-  "node_modules/@speakai/shared/dist/voice/llm.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/llm.js"() {
     "use strict";
     init_llm();
     init_registry();
@@ -4428,20 +4428,20 @@ var init_llm2 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/pricing/modelPricing.js
+// ../executor-audit/node_modules/@speakai/shared/dist/pricing/modelPricing.js
 var MODEL_PRICING;
 var init_modelPricing = __esm({
-  "node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/pricing/modelPricing.js"() {
     "use strict";
     init_registry();
     MODEL_PRICING = Object.fromEntries(MODEL_REGISTRY.map((model) => [model.id, model.pricing]));
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/pricing.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/pricing.js
 var VOICE_TTS_RATES, VOICE_STT_RATES, VOICE_AVATAR_RATES;
 var init_pricing = __esm({
-  "node_modules/@speakai/shared/dist/voice/pricing.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/pricing.js"() {
     "use strict";
     init_modelPricing();
     init_registry();
@@ -4462,9 +4462,9 @@ var init_pricing = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/voice/index.js
+// ../executor-audit/node_modules/@speakai/shared/dist/voice/index.js
 var init_voice3 = __esm({
-  "node_modules/@speakai/shared/dist/voice/index.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/voice/index.js"() {
     "use strict";
     init_enums2();
     init_interfaces2();
@@ -4477,7 +4477,7 @@ var init_voice3 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/transcript.js
+// ../executor-audit/node_modules/@speakai/shared/dist/utils/transcript.js
 function parseTranscriptTime(timeStr) {
   if (!timeStr)
     return 0;
@@ -4494,12 +4494,12 @@ function parseTranscriptTime(timeStr) {
   return numeric || 0;
 }
 var init_transcript2 = __esm({
-  "node_modules/@speakai/shared/dist/utils/transcript.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/utils/transcript.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/anchor.js
+// ../executor-audit/node_modules/@speakai/shared/dist/utils/anchor.js
 function normalizeWord(word) {
   return word.normalize("NFC").toLowerCase().replace(CURLY_APOSTROPHE, "'").replace(EDGE_PUNCTUATION, "");
 }
@@ -4567,7 +4567,7 @@ function spreadTime(start, end, step, steps) {
 }
 var EDGE_PUNCTUATION, CURLY_APOSTROPHE, WHITESPACE;
 var init_anchor = __esm({
-  "node_modules/@speakai/shared/dist/utils/anchor.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/utils/anchor.js"() {
     "use strict";
     init_transcript2();
     EDGE_PUNCTUATION = /^\p{P}+|\p{P}+$/gu;
@@ -4576,10 +4576,10 @@ var init_anchor = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/label.js
+// ../executor-audit/node_modules/@speakai/shared/dist/utils/label.js
 var LABEL_NAME_MAX, LABEL_DESCRIPTION_MAX, LABEL_SORT_ORDER_MAX, MAX_LABELS_PER_SPAN, MEDIA_COMMENT_BODY_MAX, MAX_DASHBOARD_LABEL_GROUPS, PUBLIC_ID_PATTERN, LABEL_COLOR_PATTERN, LABEL_COLOR_PRESETS, DEFAULT_LABEL_COLOR, SPEAK_LABEL_SETS, ALL_LABEL_PERMISSIONS, LABEL_PERMISSION_DEFAULTS;
 var init_label3 = __esm({
-  "node_modules/@speakai/shared/dist/utils/label.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/utils/label.js"() {
     "use strict";
     init_enums();
     init_transcript2();
@@ -4661,37 +4661,37 @@ var init_label3 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/meetingLink.js
+// ../executor-audit/node_modules/@speakai/shared/dist/utils/meetingLink.js
 var init_meetingLink = __esm({
-  "node_modules/@speakai/shared/dist/utils/meetingLink.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/utils/meetingLink.js"() {
     "use strict";
     init_meeting();
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/pushNotification.js
+// ../executor-audit/node_modules/@speakai/shared/dist/utils/pushNotification.js
 var KNOWN_ACTIONS;
 var init_pushNotification3 = __esm({
-  "node_modules/@speakai/shared/dist/utils/pushNotification.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/utils/pushNotification.js"() {
     "use strict";
     init_pushNotification();
     KNOWN_ACTIONS = new Set(Object.values(PushNotificationAction));
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/notificationEvent.js
+// ../executor-audit/node_modules/@speakai/shared/dist/utils/notificationEvent.js
 var init_notificationEvent3 = __esm({
-  "node_modules/@speakai/shared/dist/utils/notificationEvent.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/utils/notificationEvent.js"() {
     "use strict";
     init_auth();
     init_notificationEvent();
   }
 });
 
-// node_modules/@speakai/shared/dist/utils/embedSession.js
+// ../executor-audit/node_modules/@speakai/shared/dist/utils/embedSession.js
 var EMBED_SESSION_ID_PATTERN, EMBED_VIEWER_ID_PATTERN, EMBED_SESSION_LIMITS;
 var init_embedSession3 = __esm({
-  "node_modules/@speakai/shared/dist/utils/embedSession.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/utils/embedSession.js"() {
     "use strict";
     init_embedSession();
     EMBED_SESSION_ID_PATTERN = /^[A-Za-z0-9-]{16,64}$/;
@@ -4717,19 +4717,19 @@ var init_embedSession3 = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/embedSession/playback.js
+// ../executor-audit/node_modules/@speakai/shared/dist/embedSession/playback.js
 var init_playback = __esm({
-  "node_modules/@speakai/shared/dist/embedSession/playback.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/embedSession/playback.js"() {
     "use strict";
     init_embedSession();
     init_embedSession3();
   }
 });
 
-// node_modules/@speakai/shared/dist/embedSession/tracker.js
+// ../executor-audit/node_modules/@speakai/shared/dist/embedSession/tracker.js
 var ACTIVITY_NEUTRAL_EVENTS, SESSION_LIFECYCLE_EVENTS;
 var init_tracker = __esm({
-  "node_modules/@speakai/shared/dist/embedSession/tracker.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/embedSession/tracker.js"() {
     "use strict";
     init_embedSession();
     init_embedSession3();
@@ -4747,16 +4747,16 @@ var init_tracker = __esm({
   }
 });
 
-// node_modules/@speakai/shared/dist/llm/types.js
+// ../executor-audit/node_modules/@speakai/shared/dist/llm/types.js
 var init_types = __esm({
-  "node_modules/@speakai/shared/dist/llm/types.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/llm/types.js"() {
     "use strict";
   }
 });
 
-// node_modules/@speakai/shared/dist/index.js
+// ../executor-audit/node_modules/@speakai/shared/dist/index.js
 var init_dist = __esm({
-  "node_modules/@speakai/shared/dist/index.js"() {
+  "../executor-audit/node_modules/@speakai/shared/dist/index.js"() {
     "use strict";
     init_enums();
     init_interfaces();
@@ -4910,7 +4910,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "list_media",
-    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_ai_chat. For deep full-text search across transcripts, use search_media instead.",
+    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript or get_media_insights. For deep full-text search across transcripts, use search_media instead.",
     {
       mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO, MediaType.TEXT]).optional().describe('Filter by media type: "audio", "video", or "text"'),
       page: import_zod2.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
@@ -4966,7 +4966,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "get_media_insights",
-    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
+    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
     },
@@ -6776,7 +6776,7 @@ var prompt_exports = {};
 __export(prompt_exports, {
   register: () => register7
 });
-function register7(server, client) {
+function register7(server, client, options = {}) {
   const api = client ?? speakClient;
   const askAiChatDescription = [
     "Ask an AI-powered question about your media using Speak AI's AI Chat.",
@@ -6871,7 +6871,7 @@ function register7(server, client) {
       };
     }
   };
-  registerSpeakTool(
+  if (options.aiChat) registerSpeakTool(
     server,
     "ask_ai_chat",
     askAiChatDescription,
@@ -6879,7 +6879,7 @@ function register7(server, client) {
     askAiChatAnnotations,
     askAiChatHandler
   );
-  registerSpeakTool(
+  if (options.aiChat) registerSpeakTool(
     server,
     "get_analysis_quote",
     "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason \u2014 an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
@@ -6911,7 +6911,7 @@ function register7(server, client) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.aiChat) registerSpeakTool(
     server,
     "retry_ai_chat",
     "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
@@ -6943,7 +6943,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "get_chat_history",
-    "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_ai_chat or retrieve full messages via get_chat_messages.",
+    "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to retrieve full messages via get_chat_messages.",
     {
       limit: import_zod8.z.number().int().positive().optional().describe("Number of recent conversations to return (default: 10)")
     },
@@ -13148,7 +13148,7 @@ function registerPrompts(server) {
               ``,
               `Steps:`,
               `1. Use search_media to find relevant media matching this topic`,
-              `2. For the most relevant results, use ask_ai_chat with the matching mediaIds to ask: "${topic}"`,
+              `2. For the most relevant results, read the transcript with get_transcript and the insights with get_media_insights, looking for: "${topic}"`,
               `3. Synthesize findings across all results:`,
               `   - Common themes and patterns`,
               `   - Notable quotes or data points`,
@@ -14941,7 +14941,7 @@ if (isCliMode) {
             name: "speak-ai",
             version: "1.0.0"
           });
-          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true });
+          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
           registerResources2(server);
           registerPrompts2(server);
           const transport = new StdioServerTransport();

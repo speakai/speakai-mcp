@@ -57,7 +57,7 @@
         {
           "name": "list_media",
           "title": "List Media Files",
-          "description": "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_ai_chat. For deep full-text search across transcripts, use search_media instead.",
+          "description": "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript or get_media_insights. For deep full-text search across transcripts, use search_media instead.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -66,7 +66,7 @@
         {
           "name": "get_media_insights",
           "title": "Get Media Insights",
-          "description": "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
+          "description": "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -209,7 +209,7 @@
         {
           "name": "get_chat_history",
           "title": "Get Chat History",
-          "description": "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_ai_chat or retrieve full messages via get_chat_messages.",
+          "description": "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to retrieve full messages via get_chat_messages.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,

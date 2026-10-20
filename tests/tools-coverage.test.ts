@@ -1105,7 +1105,7 @@ describe("Prompt tools — remaining untested endpoints", () => {
     mockDelete.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/prompt.js");
-    register(server, mockClient);
+    register(server, mockClient, { aiChat: true });
   });
 
   it("retry_ai_chat calls POST /v1/prompt/retry", async () => {
