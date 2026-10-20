@@ -77,7 +77,7 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 | Category id | Tools | What it is for | Start with |
 |---|---|---|---|
 | `media` | 19 | Upload, transcripts, captions, insights, status, metadata, speakers, thumbnails | `list_media`, `get_transcript`, `get_media_insights` |
-| `magic-prompt` | 12 | AI chat over one file, a folder, or the whole workspace | `ask_ai_chat`, `list_prompts`, `export_chat_answer` |
+| `magic-prompt` | 12 | Chat history and prompt tools. AI Chat itself is available only on the local stdio server (`npx @speakai/mcp-server`) | `get_chat_history`, `list_prompts`, `export_chat_answer` |
 | `search-analytics` | 3 | Deep search, workspace statistics, language list | `search_media`, `get_media_statistics` |
 | `folders-views` | 11 | Folders and saved views | `list_folders`, `create_folder`, `create_folder_view` |
 | `recorders-surveys` | 10 | Async voice and video surveys | `create_recorder`, `generate_recorder_url`, `get_recorder_recordings` |
@@ -164,12 +164,16 @@ current year, so set an explicit range when the user asks about last year.
 
 ### Ask questions across recordings
 
-`ask_ai_chat` takes `mediaIds` for specific files, `folderIds` for whole folders, or
-neither to cover the workspace. It returns a `promptId`. Pass that `promptId` back on the
-next call to continue the same conversation instead of starting a new one. Use
-`get_chat_messages` to re-read a thread and `export_chat_answer` to hand the user a file.
+Answer these yourself from the data you read. Find the set with `search_media` or
+`list_media`, then read each file with `get_transcript` for the words, speakers, and
+timestamps, and `get_media_insights` for topics, sentiment, keywords, and action items.
+For many files, `list_media` with `include: ["transcription"]` returns the transcripts
+inline, so page through the set instead of calling `get_transcript` once per file. Cite
+the file name, speaker, and timestamp for each point you make.
 
-Docs: <https://docs.speakai.co/mcp/tools/magic-prompt/ask_ai_chat/>
+To read conversations the user already had with Speak's AI Chat, use `get_chat_history`
+to find them and `get_chat_messages` to read one. `export_chat_answer` hands the user an
+answer from one of those conversations as a file.
 
 ### Clip and export
 
