@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.39.1 (2026-10-28)
+
+- fix(ask_ai_chat): read the analysis outcome by promptId
+
 ## v1.39.0 (2026-10-19)
 
 - feat(analytics): add voice agent and embed session analytics tools
