@@ -4824,7 +4824,8 @@ var media_exports = {};
 __export(media_exports, {
   LIST_MEDIA_DEFAULT_PAGE_SIZE: () => LIST_MEDIA_DEFAULT_PAGE_SIZE,
   LIST_MEDIA_MAX_PAGE_SIZE: () => LIST_MEDIA_MAX_PAGE_SIZE,
-  register: () => register
+  register: () => register,
+  toNameFilter: () => toNameFilter
 });
 function register(server, client) {
   const api = client ?? speakClient;
@@ -4919,7 +4920,7 @@ function register(server, client) {
       ),
       sortBy: import_zod2.z.string().optional().describe('Sort field and direction, e.g. "createdAt:desc" or "name:asc"'),
       filterMedia: import_zod2.z.number().int().optional().describe("Filter: 0=Uploaded, 1=Assigned, 2=Both (default: 2)"),
-      filterName: import_zod2.z.string().optional().describe("Filter media by partial name match"),
+      filterName: import_zod2.z.string().optional().describe("Filter media by partial name match. Searches names only; use search_media to search transcripts."),
       folderId: import_zod2.z.string().optional().describe("Filter media within a specific folder"),
       from: import_zod2.z.string().optional().describe("Start date for date range filter (ISO 8601)"),
       to: import_zod2.z.string().optional().describe("End date for date range filter (ISO 8601)"),
@@ -4947,6 +4948,9 @@ function register(server, client) {
     async ({ include, ...params }) => {
       try {
         const queryParams = { ...params };
+        if (params.filterName) {
+          queryParams.filterName = toNameFilter(params.filterName);
+        }
         if (include?.length) {
           queryParams.requestTypes = include.join(",");
         }
@@ -5499,7 +5503,7 @@ function register(server, client) {
     }
   );
 }
-var import_zod2, LIST_MEDIA_DEFAULT_PAGE_SIZE, LIST_MEDIA_MAX_PAGE_SIZE, THUMBNAIL_MAX_BYTES, THUMBNAIL_POLL_TIMEOUT_MS, THUMBNAIL_POLL_INTERVAL_MS, THUMBNAIL_FILE_EXTENSIONS;
+var import_zod2, LIST_MEDIA_DEFAULT_PAGE_SIZE, LIST_MEDIA_MAX_PAGE_SIZE, THUMBNAIL_MAX_BYTES, THUMBNAIL_POLL_TIMEOUT_MS, THUMBNAIL_POLL_INTERVAL_MS, THUMBNAIL_FILE_EXTENSIONS, toNameFilter;
 var init_media3 = __esm({
   "src/tools/media.ts"() {
     "use strict";
@@ -5518,6 +5522,7 @@ var init_media3 = __esm({
       "image/png": "png",
       "image/webp": "webp"
     };
+    toNameFilter = (text) => /^name:/i.test(text) ? text : `name:${text}`;
   }
 });
 
@@ -13761,7 +13766,7 @@ function createCli() {
       };
       if (opts.type) params.mediaType = opts.type;
       if (opts.folder) params.folderId = opts.folder;
-      if (opts.name) params.filterName = opts.name;
+      if (opts.name) params.filterName = toNameFilter(opts.name);
       if (opts.from) params.from = opts.from;
       if (opts.to) params.to = opts.to;
       if (opts.favorites) params.isFavorites = true;
@@ -14557,6 +14562,7 @@ var init_cli = __esm({
     init_config();
     init_format();
     init_media_utils();
+    init_media3();
   }
 });
 
