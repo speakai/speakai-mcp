@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.39.2 (2026-10-28)
+
+- fix(media): list_media and the CLI search media names only
+
 ## v1.39.1 (2026-10-28)
 
 - fix(ask_ai_chat): read the analysis outcome by promptId
