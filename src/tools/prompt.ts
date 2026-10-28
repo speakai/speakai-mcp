@@ -125,13 +125,17 @@ export function register(server: McpServer, client?: AxiosInstance): void {
    *
    * Best-effort: a failure here must not lose the answer the caller already paid for.
    */
-  const withAnalysisOutcome = async (payload: unknown, messageId?: string): Promise<unknown> => {
-    if (!messageId) return payload;
+  const withAnalysisOutcome = async (payload: unknown, promptId?: string, messageId?: string): Promise<unknown> => {
+    if (!promptId || !messageId) return payload;
     try {
-      const res = await api.get("/v1/prompt/messages", { params: { messageId } });
-      const messages = res.data?.data?.messages ?? res.data?.data ?? [];
-      const list = Array.isArray(messages) ? messages : [];
-      const match = list.find((m: { messageId?: string }) => m?.messageId === messageId) ?? list[0];
+      const res = await api.get("/v1/prompt/messages", { params: { promptId } });
+      const history = res.data?.data?.history;
+      const list = Array.isArray(history)
+        ? history.flatMap((conversation: { messages?: unknown }) =>
+            Array.isArray(conversation?.messages) ? conversation.messages : [],
+          )
+        : [];
+      const match = list.find((m: { messageId?: string }) => m?.messageId === messageId);
       const analysis = match?.analysis;
       if (!analysis) return payload;
 
@@ -180,7 +184,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         ? await api.post("/v1/prompt", params, { timeout: ANALYSIS_TIMEOUT_MS })
         : await api.post("/v1/prompt", params);
       const payload = analysisInput
-        ? await withAnalysisOutcome(result.data, result.data?.data?.messageId)
+        ? await withAnalysisOutcome(result.data, result.data?.data?.promptId, result.data?.data?.messageId)
         : result.data;
       return {
         content: [{ type: "text" as const, text: JSON.stringify(payload, null, 2) }],
