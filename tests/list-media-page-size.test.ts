@@ -56,4 +56,14 @@ describe("list_media page size", () => {
       params: { isFavorites: true, pageSize: 25 },
     });
   });
+
+  it("searches names only, keeping an explicit name: scope as given", async () => {
+    const callback = getToolCallback(server, "list_media");
+    await callback({ filterName: "MyaGill Inbound" });
+    await callback({ filterName: "name:\"Quarterly review\"" });
+    expect(mockGet.mock.calls.map(([, opts]) => opts.params.filterName)).toEqual([
+      "name:MyaGill Inbound",
+      'name:"Quarterly review"',
+    ]);
+  });
 });
