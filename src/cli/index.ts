@@ -9,6 +9,7 @@ import {
 } from "./config.js";
 import { printJson, printTable, printError, printSuccess } from "./format.js";
 import { getMimeType, detectMediaType } from "../media-utils.js";
+import { toNameFilter } from "../tools/media.js";
 
 /**
  * Lazily load the speakClient — must be called AFTER resolveApiKey()
@@ -296,7 +297,7 @@ export function createCli(): Command {
         };
         if (opts.type) params.mediaType = opts.type;
         if (opts.folder) params.folderId = opts.folder;
-        if (opts.name) params.filterName = opts.name;
+        if (opts.name) params.filterName = toNameFilter(opts.name);
         if (opts.from) params.from = opts.from;
         if (opts.to) params.to = opts.to;
         if (opts.favorites) params.isFavorites = true;

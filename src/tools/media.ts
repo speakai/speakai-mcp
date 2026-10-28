@@ -14,6 +14,9 @@ import {
 export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
 export const LIST_MEDIA_MAX_PAGE_SIZE = 100;
 
+/** Scopes a media name search to the name field; an unscoped search also scans every transcript. */
+export const toNameFilter = (text: string): string => (/^name:/i.test(text) ? text : `name:${text}`);
+
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   // 1. Get signed upload URL
@@ -164,7 +167,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       filterName: z
         .string()
         .optional()
-        .describe("Filter media by partial name match"),
+        .describe("Filter media by partial name match. Searches names only; use search_media to search transcripts."),
       folderId: z
         .string()
         .optional()
@@ -207,6 +210,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async ({ include, ...params }) => {
       try {
         const queryParams: Record<string, unknown> = { ...params };
+        if (params.filterName) {
+          queryParams.filterName = toNameFilter(params.filterName);
+        }
         if (include?.length) {
           queryParams.requestTypes = include.join(",");
         }
