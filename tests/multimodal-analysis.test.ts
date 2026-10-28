@@ -171,10 +171,16 @@ describe("ask_ai_chat — analysis fields", () => {
     mockGet.mockResolvedValue({
       data: {
         data: {
-          messages: [
+          history: [
             {
-              messageId: "m1",
-              analysis: { requested: "audio", used: "transcript", skippedReason: "Could not extract the audio track." },
+              promptId: "p1",
+              messages: [
+                { messageId: "m0", analysis: { requested: "audio", used: "audio" } },
+                {
+                  messageId: "m1",
+                  analysis: { requested: "audio", used: "transcript", skippedReason: "Could not extract the audio track." },
+                },
+              ],
             },
           ],
         },
@@ -184,6 +190,7 @@ describe("ask_ai_chat — analysis fields", () => {
     const cb = getToolCallback(server, "ask_ai_chat");
     const result = await cb({ prompt: "x", mediaIds: ["abc"], analysisMediaId: "abc", analysisInput: "audio" });
 
+    expect(mockGet).toHaveBeenCalledWith("/v1/prompt/messages", { params: { promptId: "p1" } });
     const payload = JSON.parse(result.content[0].text);
     expect(payload.analysis.used).toBe("transcript");
     expect(payload.analysisWarning).toContain("Requested audio analysis");
@@ -192,7 +199,9 @@ describe("ask_ai_chat — analysis fields", () => {
 
   it("adds no warning when the requested analysis actually ran", async () => {
     mockGet.mockResolvedValue({
-      data: { data: { messages: [{ messageId: "m1", analysis: { requested: "audio", used: "audio" } }] } },
+      data: {
+        data: { history: [{ promptId: "p1", messages: [{ messageId: "m1", analysis: { requested: "audio", used: "audio" } }] }] },
+      },
     });
 
     const cb = getToolCallback(server, "ask_ai_chat");
