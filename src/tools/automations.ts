@@ -329,7 +329,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "list_automation_names",
-    "List automations as lightweight { name, id } pairs — useful for pickers without fetching full configs.",
+    "List the names and ids of active automations that contain an AI chat (magic prompt) step. Inactive " +
+      "automations and automations without an AI chat step are not included; use list_automations for the full list.",
     {},
     {
       title: "List Automation Names",
@@ -417,18 +418,21 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "create_automation",
-    "Create a new automation rule using the V2 graph model (trigger + ordered steps). " +
-      "Fetch valid step/trigger options with list_automation_triggers / list_automation_actions if unsure. " +
-      "For inbound-webhook automations the response includes inboundWebhook.inboundUrl (where to POST payloads) — " +
-      "recommended flow: create, send a test payload to the URL with ?test=1, call get_inbound_webhook to see " +
-      "mappable payload tokens, then update_automation to wire tokens/fieldsMap.",
+    "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and " +
+      "then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any " +
+      "address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into " +
+      "Speak, run actions in connected third-party apps through Composio, and use AI credits. An inbound-webhook " +
+      "trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio " +
+      "app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types " +
+      "come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send " +
+      "a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
     writeSchema,
     {
       title: "Create Automation",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -462,7 +466,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   registerSpeakTool(server,
     "update_automation",
     "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), " +
-      "so fetch the current values with get_automation first and pass them all back with your changes.",
+      "so fetch the current values with get_automation first and pass them all back with your changes. " +
+      "The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, " +
+      "and run actions in connected third-party apps. Changing a Composio app-event trigger updates the " +
+      "subscription on that third-party account.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
       ...writeSchema,
@@ -472,7 +479,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ automationId, ...body }) => {
       try {
@@ -504,16 +511,20 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "toggle_automation_status",
-    "Toggle an automation rule between active and inactive. This flips the current state — call get_automation first if you need to know which way it will flip.",
+    "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation " +
+      "first if you need to know which way it will flip. An active automation runs on its own every time its trigger " +
+      "fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party " +
+      "apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected " +
+      "third-party account.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
     },
     {
       title: "Toggle Automation Status",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ automationId }) => {
       try {
@@ -532,7 +543,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "bulk_update_automation_status",
-    "Activate or deactivate multiple automations at once.",
+    "Activate or deactivate multiple automations at once. An active automation runs on its own every time its " +
+      "trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected " +
+      "third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the " +
+      "connected third-party account.",
     {
       automationIds: z
         .array(z.string().min(1))
@@ -544,9 +558,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Bulk Update Automation Status",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -601,7 +615,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "run_automations",
-    "Manually run one or more automations against one or more media items now (outside the normal trigger).",
+    "Manually run one or more automations against one or more media items now (outside the normal trigger). " +
+      "Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without " +
+      "an error. The runs happen in the background and this returns only an acknowledgement, so check results " +
+      "with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook " +
+      "URLs, run actions in connected third-party apps, and use AI credits.",
     {
       mediaIds: z.array(z.string().min(1)).min(1).describe("Media ids to run the automations against"),
       automationIds: z.array(z.string().min(1)).min(1).describe("Automation ids to run"),
@@ -609,7 +627,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Run Automations",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -630,7 +648,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "delete_automation",
-    "Permanently delete an automation rule.",
+    "Permanently delete an automation rule. If it has an inbound webhook URL, that URL stops accepting payloads, " +
+      "and any event subscription it holds on a connected third-party account through Composio is removed.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation to delete"),
     },
@@ -639,7 +658,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ automationId }) => {
       try {
@@ -730,13 +749,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "test_automation",
-    "Run an automation once against one media item to see which way it branches. " +
-      "THIS HAS REAL SIDE EFFECTS: only Speak's own run notifications are suppressed — outbound webhooks fire, " +
-      "Composio actions run against the connected third party, and AI steps are billed. Ask the user before " +
-      "calling it on an automation that posts anywhere outside Speak. " +
-      "It also needs a mediaId and sends no webhook payload, so an inbound-webhook automation cannot be " +
-      "meaningfully tested this way — its payload tokens will resolve to empty. " +
-      "Returns a runId; read the result with get_automation_run.",
+    "Run one automation once against one media item to see which way it branches. This is a real run, not a " +
+      "dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed " +
+      "and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks " +
+      "still fire, Composio actions still run against the connected third-party account, and AI steps use credits. " +
+      "Confirm with the user before testing an automation that sends anything outside Speak. " +
+      "It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens " +
+      "resolve to empty. Returns a runId; read the result with get_automation_run.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation to test"),
       mediaId: z.string().min(1).describe("Media item to run the automation against"),
@@ -884,7 +903,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "list_automation_apps",
-    "List the apps available in the automation catalog (e.g. Speak native + connected integrations). Use to discover what triggers/actions exist before building an automation.",
+    "List the apps in Speak's automation catalog: Speak's built-in apps plus, when enabled, third-party apps " +
+      "available through Composio, each marked connected or not_connected for this user. Read-only: the list comes " +
+      "from Speak's own catalog and the user's saved connections, and no third-party service is called. Use the app " +
+      "slugs with list_automation_triggers and list_automation_actions.",
     {},
     {
       title: "List Automation Apps",
@@ -938,7 +960,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "list_automation_actions",
-    "List the action/step types available in the automation catalog. Optionally filter by app.",
+    "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the " +
+      "fields each filter or condition step can test. Read-only: served from Speak's own catalog and the user's saved " +
+      "connections, with no third-party calls. Listing an action does not run it.",
     {
       app: z.string().min(1).max(100).optional().describe("Filter actions to a specific app slug"),
     },

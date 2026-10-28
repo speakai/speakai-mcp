@@ -2,13 +2,15 @@
 name: meeting-summaries
 description: Turn meetings recorded in Speak AI into decisions, action items, owners, and risks. Use this when the user asks you to send the AI assistant to a Zoom, Google Meet, or Microsoft Teams call, to follow a meeting while it is running, to summarize a meeting that already finished, to pull decisions and next steps out of a call, to build a weekly digest of recent meetings, or to export a meeting summary as a document. Covers the full path from scheduling the assistant, checking event status, waiting for the recording to finish processing, reading the transcript and insights, asking follow-up questions, and exporting the result. Also covers what to do when media is still processing, when a meeting produced no recording, and when a request returns nothing.
 metadata:
-  server-version: "1.25.0"
+  server-version: "1.39.1"
   package: "@speakai/mcp-server"
   endpoint: "https://api.speakai.co/v1/mcp"
 license: MIT
 ---
 
 # Meeting summaries
+
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
 
 You produce one artifact: a structured meeting readout with decisions, action items
 with owners, open questions, and risks. Everything below is in service of that.

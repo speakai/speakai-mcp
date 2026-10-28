@@ -2,10 +2,12 @@
 
 // Public API — for use as a library (e.g., from speak-server)
 export { registerAllTools } from "./tools/index.js";
+export type { RegisterOptions } from "./tools/index.js";
 export { registerResources } from "./resources.js";
 export { registerPrompts } from "./prompts.js";
 export { createSpeakClient, formatAxiosError } from "./client.js";
 export { SPEAK_MCP_TOOL_NAMES, type SpeakMcpToolName } from "./tool-names.js";
+export { SPEAK_MCP_TOOL_CATEGORIES, type SpeakMcpToolCategory } from "./tool-categories.js";
 
 /**
  * Entry point: detect whether we're running as CLI or MCP server.
@@ -87,7 +89,7 @@ if (isCliMode) {
             version: "1.0.0",
           });
 
-          registerAllTools(server);
+          registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
           registerResources(server);
           registerPrompts(server);
 

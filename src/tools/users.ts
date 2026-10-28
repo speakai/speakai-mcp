@@ -141,7 +141,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "delete_user_group",
-    "Delete a user group. This removes the group only; it does not delete the users themselves.",
+    "Permanently delete a user group. The users themselves are not deleted, but members lose any access that was shared with the group (for example dashboards assigned to it).",
     {
       id: z.string().min(1).describe("Group _id to delete (from list_user_groups)"),
     },

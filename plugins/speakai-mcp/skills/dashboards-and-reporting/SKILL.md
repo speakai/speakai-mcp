@@ -2,11 +2,13 @@
 name: dashboards-and-reporting
 description: Build, update, and share Speak AI analytics dashboards. Use this when someone asks for a dashboard, a recurring report, a chart or widget over their recordings, a speaker breakdown, a view of sentiment or themes over time, a shareable link or embed for stakeholders, or a copy of an existing dashboard scoped to a different folder or date range. Covers list_dashboard_widgets, list_dashboards, get_dashboard, create_dashboard, update_dashboard, duplicate_dashboard, share_dashboard, delete_dashboard and get_dashboard_speakers_insight, and explains the strict widget config rules that reject unknown keys.
 metadata:
-  server-version: "1.25.0"
+  server-version: "1.39.1"
   categories: "dashboards, custom-fields, folders-views"
 ---
 
 # Dashboards and reporting
+
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
 
 A dashboard is a saved set of widgets over a scope of media. It answers "how is this
 changing" rather than "what did this call say", and it can be shared with people who do not
@@ -59,6 +61,53 @@ to it.
 and an embed. That link is public and unauthenticated, so anyone holding it sees the data.
 
 Confirm with the user before sharing, and say plainly that the link needs no login.
+
+## Let reviewers edit fields
+
+`settings.fieldEdits.fieldIds` lists the custom fields that people on the dashboard's
+Feedback name list (`settings.feedback.submitters`, with `allowOtherSubmitter`) can edit
+from a media page opened through the shared dashboard. The fields show in an "Edit fields"
+tab, in the order you list them.
+
+- Only list fields that have allowed values. The server rejects any other field with a 400
+  that names it.
+- The field must also show on the dashboard's media pages (`settings.fields.includeIds`, or
+  the company's public fields when that list is empty). Other fields are ignored on the page.
+- Up to 50 ids. Unknown ids are dropped and returned in `droppedFieldIds`.
+- An empty list turns editing off. On update, leaving `fieldEdits` out keeps what is saved.
+
+Only change this when the user asks. Get field ids from `list_fields`, then call
+`update_dashboard` with metadata only:
+
+```json
+{
+  "dashboardId": "<dashboardId>",
+  "settings": { "fieldEdits": { "fieldIds": ["<statusFieldId>", "<outcomeFieldId>"] } }
+}
+```
+
+## Profiles
+
+`settings.profiles` is a list of up to 5 groups, one per custom field. Each group has a label
+and entries that give a value of that field a name, image, description and link:
+`[{ "fieldId": "<speakerFieldId>", "label": "Speakers", "imageShape": "round", "entries": [{ "name": "Ada Lovelace", "description": "Plain text.", "link": "https://example.org/ada" }] }]`.
+
+- Each field can have only one group. Label 1-40 chars; `imageShape` is `round` or `square`.
+- Entry names must equal the field's values (trim, case-insensitive). They are matched by
+  display string, so renaming a value in the media fields orphans its entry. A name listed
+  twice in a group is rejected.
+- Names, descriptions, links and images are public to anyone with the dashboard link. Plain
+  text only, no HTML, description max 600 chars, name 1-80, link http or https only, up to 60
+  entries per group. Confirm the descriptions and links with the user first.
+- The MCP cannot upload images. Images come from the in-app upload
+  (`POST /v1/dashboards/:dashboardId/profile-image`); to keep an existing one, copy its
+  `imageKey` unchanged from `get_dashboard`.
+- The list replaces itself when sent, so resend every group and entry you want to keep. A save
+  that contains only `profiles` does not move media pages onto the settings flow.
+- Pass the `revision` from `get_dashboard` with every `profiles` save; a stale one returns a 409.
+- A records table with `display: "cards"` can show an entry image through `card.imageColumn`.
+  It must name a raw custom-field column whose field has a profile group in `settings.profiles`;
+  the card shows the image of that group's entry that matches the record's value.
 
 ## Speaker breakdowns
 

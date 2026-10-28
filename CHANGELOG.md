@@ -1,5 +1,113 @@
 # Changelog
 
+## v1.39.1 (2026-10-28)
+
+- fix(ask_ai_chat): read the analysis outcome by promptId
+
+## v1.39.0 (2026-10-19)
+
+- feat(analytics): add voice agent and embed session analytics tools
+
+## v1.38.2 (2026-10-16)
+
+- fix(ci): push the release commit and tag atomically; retry the MCP Registry login
+
+## v1.38.1 (2026-10-16)
+
+- Maintenance release
+
+## v1.38.0 (2026-10-16)
+
+- feat(voice-testing): run voice agent test suites
+
+## v1.37.1 (2026-10-15)
+
+- fix(analyze_voice_instruction_gaps): mirror the server's input caps in the tool schema
+
+## v1.37.0 (2026-10-15)
+
+- feat(voice): add chatSettings to the agent create/update schema
+
+## v1.36.0 (2026-10-15)
+
+- fix(set_media_thumbnail): wait for the frame on the media status endpoint
+
+## v1.35.0 (2026-10-14)
+
+- fix(dashboards): send revision with speaker-only saves, use shared speaker limits
+
+## v1.34.1 (2026-10-14)
+
+- fix(fields,dashboards): guard field ids and dashboard filters
+
+## v1.34.0 (2026-10-14)
+
+- feat(dashboards): document session cards, notes actions and fieldsFocus; raise folder cap to 250
+
+## v1.33.2 (2026-10-13)
+
+- fix(labels): members create and update labels by default
+
+## v1.33.1 (2026-10-09)
+
+- Maintenance release
+
+## v1.33.0 (2026-10-09)
+
+- feat(exports): describe the csv-labels export in export_media and export_multiple_media
+
+## v1.32.0 (2026-10-08)
+
+- feat(dashboards): drop reviewerNames subset; link writers are the feedback submitters
+
+## v1.31.0 (2026-10-07)
+
+- feat(embed): restore the embed label and comment flags in the MCP
+
+## v1.30.0 (2026-10-07)
+
+- feat(dashboards): fieldEdits setting for editable fields on dashboard media pages
+
+## v1.29.0 (2026-10-05)
+
+- feat(exports): regroup tool categories and keep the README in step with them
+
+## v1.28.6 (2026-10-05)
+
+- Maintenance release
+
+## v1.28.5 (2026-10-04)
+
+- fix(tools): rename delete_chat_conversation and keep unfinished test runs off the hosted server (#100)
+
+## v1.28.4 (2026-10-04)
+
+- fix(tools): mark delete_voice_agent open-world and lint public-surface changes (#99)
+
+## v1.28.3 (2026-10-04)
+
+- fix(tools): declare every outside send and irreversible effect in tool hints (#98)
+
+## v1.28.2 (2026-10-03)
+
+- fix(plugin): split Claude and portable plugin folders, fix flagged tools, build the OpenAI ZIP (#96)
+
+## v1.28.1 (2026-10-02)
+
+- fix(release): wait for npm before logging in to the MCP Registry
+
+## v1.28.0 (2026-10-02)
+
+- fix(voice): stop offering the payment question category through MCP
+
+## v1.27.0 (2026-09-26)
+
+- fix: correct stale tool count left over from rebase conflict resolution
+
+## v1.26.0 (2026-09-25)
+
+- feat(dashboards): add feedback groups, fieldRules and sheetWebhookUrl to dashboard settings
+
 ## v1.25.0 (2026-09-14)
 
 - fix(automations): correct two things end-to-end testing caught

@@ -1,16 +1,18 @@
 ---
 name: getting-started
-description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the 119 MCP tools across 15 categories, the 5 resources, the 3 built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
+description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the 189 MCP tools across 15 categories, the 5 resources, the 3 built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
 metadata:
-  server-version: "1.25.0"
+  server-version: "1.39.1"
   openclaw-homepage: "https://docs.speakai.co/mcp"
   openclaw-emoji: "🎙️"
 ---
 
 # Speak AI: getting started
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 Speak AI transcribes and analyzes audio, video, and text. The MCP server gives you
-**119 tools, 5 resources, and 3 prompts** over one workspace of recordings, transcripts,
+**189 tools, 5 resources, and 3 prompts** over one workspace of recordings, transcripts,
 AI insights, folders, recorders, automations, and dashboards.
 
 Recordings stay in the user's Speak AI workspace. You only read what the user's
@@ -62,44 +64,19 @@ curl -s https://api.speakai.co/v1/mcp \
 
 ### Path 2: local stdio with an API key
 
-Use this for CLI agents, scripts, and clients without remote MCP support. Node.js 22 or
-newer is required. Pin the version instead of `@latest` so an upstream release cannot
-reach the user without review.
+Use this for CLI agents, scripts, and clients without remote MCP support. It runs the
+`@speakai/mcp-server` npm package on the user's machine with a Speak AI API key, and the
+same package installs a CLI named `speakai-mcp` that mirrors the tool surface. Setup,
+version pinning and key handling are documented at <https://docs.speakai.co/mcp/authentication>.
 
-```json
-{
-  "mcpServers": {
-    "speakai": {
-      "command": "npx",
-      "args": ["-y", "@speakai/mcp-server@1.25.0"],
-      "env": {
-        "SPEAK_API_KEY": "speak_sk_example_000000000000"
-      }
-    }
-  }
-}
-```
-
-- Create the key at <https://app.speakai.co/developers/apikeys>.
-- The package is `@speakai/mcp-server` on npm. It also installs a CLI named
-  `speakai-mcp` that mirrors the tool surface.
-- Set `SPEAK_BASE_URL` only when Speak AI support tells you to. The default is
-  `https://api.speakai.co`. Treat any other value as a choice the user must confirm.
-
-Check the connection before you do real work:
-
-```sh
-SPEAK_API_KEY=speak_sk_example_000000000000 npx @speakai/mcp-server@1.25.0 config test
-```
-
-## What the 119 tools cover
+## What the 189 tools cover
 
 Pick the narrowest tool that answers the request. Per-tool documentation lives at
 `https://docs.speakai.co/mcp/tools/<category-id>/<tool_name>/`.
 
 | Category id | Tools | What it is for | Start with |
 |---|---|---|---|
-| `media` | 18 | Upload, transcripts, captions, insights, status, metadata, speakers | `list_media`, `get_transcript`, `get_media_insights` |
+| `media` | 19 | Upload, transcripts, captions, insights, status, metadata, speakers, thumbnails | `list_media`, `get_transcript`, `get_media_insights` |
 | `magic-prompt` | 12 | AI chat over one file, a folder, or the whole workspace | `ask_ai_chat`, `list_prompts`, `export_chat_answer` |
 | `search-analytics` | 3 | Deep search, workspace statistics, language list | `search_media`, `get_media_statistics` |
 | `folders-views` | 11 | Folders and saved views | `list_folders`, `create_folder`, `create_folder_view` |
@@ -111,7 +88,8 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 | `webhooks` | 7 | Outbound and inbound webhooks, delivery attempts | `list_webhooks`, `create_webhook`, `get_webhook_attempts` |
 | `text-notes` | 4 | Analyze pasted text like a recording | `create_text_note`, `get_text_insight` |
 | `custom-fields` | 4 | Structured metadata on media | `list_fields`, `update_multiple_fields` |
-| `embed-other` | 4 | Embeds and iframe URLs | `create_embed`, `get_embed_iframe_url` |
+| `labels-comments` | 16 | Labels on transcript words and comment threads | `list_labels`, `apply_label`, `add_comment` |
+| `embed-other` | 7 | Embeds, iframe URLs and visit analytics | `create_embed`, `get_embed_iframe_url`, `get_embed_session_summary` |
 | `users-team` | 5 | Workspace members and groups | `list_users`, `list_user_groups` |
 | `dashboards` | 9 | Analytics dashboards and widgets | `list_dashboards`, `get_dashboard` |
 
@@ -148,8 +126,9 @@ Prefer these over hand-built tool chains when the request matches.
 ### Transcribe a recording and read the results
 
 1. `upload_and_analyze` with a direct file URL or a shareable page link. It returns
-   `mediaId` right away. For a file on disk use `upload_local_file`. For a two-step
-   upload use `get_signed_upload_url`, PUT the bytes, then `upload_media`.
+   `mediaId` right away. For a file on disk, use `get_signed_upload_url`, PUT the bytes,
+   then `upload_media`. `upload_local_file` does this in one call, but it exists only when
+   the server runs locally over stdio, never on the remote endpoint.
 
    Page links are resolved to the underlying media server-side. Supported: YouTube,
    TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion,
@@ -265,7 +244,7 @@ proceed.
 State the action, the exact ids, and the consequence, then wait for a clear yes.
 
 - **Deletes:** `delete_media`, `delete_folder`, `delete_clip`, `delete_recorder`,
-  `delete_webhook`, `delete_automation`, `delete_dashboard`, `delete_chat_message`,
+  `delete_webhook`, `delete_automation`, `delete_dashboard`, `delete_chat_conversation`,
   `delete_user_group`, `delete_scheduled_assistant`. `delete_media` is permanent.
 - **Bulk changes:** `bulk_move_media`, `bulk_update_transcript_speakers`,
   `bulk_update_automation_status`, `bulk_assign_automation_folders`,
@@ -291,12 +270,9 @@ meeting events, and `update_embed` or `delete_clip` for shared assets.
    list in Claude.ai or ChatGPT.
 2. For OAuth, confirm the connection is still authorized at
    <https://api.speakai.co/v1/oauth/connections>. Reconnect if it was revoked.
-3. For stdio, confirm `SPEAK_API_KEY` is set, `node --version` reports 22 or newer, and
-   the pinned version in the config matches what you installed.
-4. Run `npx @speakai/mcp-server@1.25.0 config test` to validate the key and reach the API.
-5. On 401 or 403, rotate the key at <https://app.speakai.co/developers/apikeys> and
+3. For stdio or the CLI, follow the setup checks at <https://docs.speakai.co/mcp/authentication>.
+4. On 401 or 403, rotate the key at <https://app.speakai.co/developers/apikeys> and
    reconfigure.
-6. If you overrode `SPEAK_BASE_URL`, point it back at `https://api.speakai.co`.
 
 ## Where to go next
 

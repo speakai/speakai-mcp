@@ -273,10 +273,22 @@ describe("Embed tools", () => {
     });
   });
 
+  it("update_embed meta description documents the fieldsFocus toggle, isPromptAsk and the brand keys", () => {
+    const description = (server as any)._registeredTools["update_embed"].inputSchema.shape.meta.description;
+    expect(description).toContain('{ name: "fieldsFocus", isActive: false }');
+    expect(description).toContain("isPromptAsk must be on");
+    for (const key of ["logoDark", "theme", "backgroundColor", "fontFamily", "titleColor"]) {
+      expect(description).toContain(key);
+    }
+    expect(description).toContain("logoDark must be an uploaded logo");
+    expect(description).toContain("max 60 chars");
+  });
+
   it("update_embed calls PUT /v1/embed/:id", async () => {
     const cb = getToolCallback(server, "update_embed");
-    await cb({ embedId: "e1", meta: { primaryColor: "#000" } });
-    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", { meta: { primaryColor: "#000" } });
+    const meta = { primaryColor: "#000", isLabels: true, isComments: true, logoDark: "s3://bucket/dark.png", theme: "dark", fontFamily: "Arimo" };
+    await cb({ embedId: "e1", meta });
+    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", { meta });
   });
 
   it("check_embed calls GET /v1/embed with mediaId query param", async () => {
@@ -289,6 +301,32 @@ describe("Embed tools", () => {
     const cb = getToolCallback(server, "get_embed_iframe_url");
     await cb({ mediaId: "m1" });
     expect(mockGet).toHaveBeenCalledWith("/v1/embed/iframe", { params: { mediaId: "m1" } });
+  });
+
+  it("embed session tools call GET /v1/embed/sessions/:embedId routes with the id out of the query", async () => {
+    const embedId = "a".repeat(24);
+    const sessionId = "b".repeat(24);
+
+    await getToolCallback(server, "list_embed_sessions")({ embedId, page: 1, pageSize: 50, viewer: "identified", sort: "questions:desc" });
+    expect(mockGet).toHaveBeenCalledWith(`/v1/embed/sessions/${embedId}`, {
+      params: { page: 1, pageSize: 50, viewer: "identified", sort: "questions:desc" },
+    });
+
+    await getToolCallback(server, "get_embed_session_summary")({ embedId, from: "2026-10-01", tz: "UTC", mediaPage: 0 });
+    expect(mockGet).toHaveBeenCalledWith(`/v1/embed/sessions/${embedId}/summary`, {
+      params: { from: "2026-10-01", tz: "UTC", mediaPage: 0 },
+    });
+
+    await getToolCallback(server, "get_embed_session")({ embedId, id: sessionId, eventsPage: 2 });
+    expect(mockGet).toHaveBeenCalledWith(`/v1/embed/sessions/${embedId}/detail/${sessionId}`, {
+      params: { eventsPage: 2 },
+    });
+
+    const tools = (server as any)._registeredTools;
+    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId: "not-an-id" }).success).toBe(false);
+    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId, pageSize: 101 }).success).toBe(false);
+    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId, device: "watch" }).success).toBe(false);
+    expect(tools["get_embed_session"].inputSchema.safeParse({ embedId, id: sessionId, eventsPageSize: 501 }).success).toBe(false);
   });
 
   it("handles error on create_embed", async () => {
@@ -389,6 +427,14 @@ describe("Fields tools", () => {
       mediaIds: ["m1"],
       fields: [{ id: "f1", value: "Updated" }],
     });
+  });
+
+  it("update_multiple_fields rejects a field's database _id", () => {
+    const schema = (server as any)._registeredTools["update_multiple_fields"].inputSchema;
+    const parsed = schema.safeParse({ mediaIds: ["m1"], fields: [{ id: "6acee5e45fd676474d0d0291", value: "x" }] });
+    expect(parsed.success).toBe(false);
+    expect(parsed.error.issues[0].message).toContain("database _id");
+    expect(schema.safeParse({ mediaIds: ["m1"], fields: [{ id: "be5d4bfc7e0e", value: "x" }] }).success).toBe(true);
   });
 
   it("update_field calls PUT /v1/fields/:id", async () => {
@@ -567,12 +613,13 @@ describe("Text tools", () => {
     register(server, mockClient);
   });
 
-  it("create_text_note calls POST /v1/text/create", async () => {
+  it("create_text_note calls POST /v1/text/create and mirrors text into rawText", async () => {
     const cb = getToolCallback(server, "create_text_note");
     await cb({ name: "My Note", text: "Hello world", folderId: "f1" });
     expect(mockPost).toHaveBeenCalledWith("/v1/text/create", {
       name: "My Note",
       text: "Hello world",
+      rawText: "Hello world",
       folderId: "f1",
     });
   });
@@ -583,10 +630,12 @@ describe("Text tools", () => {
     expect(mockGet).toHaveBeenCalledWith("/v1/text/insight/t1");
   });
 
-  it("reanalyze_text calls GET /v1/media/reanalyze/:id", async () => {
+  it("reanalyze_text calls GET /v1/media/reanalyze/:id with every analysis flag", async () => {
     const cb = getToolCallback(server, "reanalyze_text");
     await cb({ mediaId: "t1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/media/reanalyze/t1");
+    expect(mockGet).toHaveBeenCalledWith("/v1/media/reanalyze/t1", {
+      params: { isInsights: true, isSentiment: true, isFillerWords: true, isEmbeddings: true },
+    });
   });
 
   it("update_text_note calls PUT /v1/text/update/:id and mirrors text into rawText", async () => {
@@ -759,7 +808,7 @@ describe("Workflows tools (upload_and_analyze)", () => {
     mockPost.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/workflows.js");
-    register(server, mockClient);
+    register(server, mockClient, { localFileAccess: true, voiceTestRuns: true });
   });
 
   it("upload_and_analyze returns media_id immediately without polling", async () => {
@@ -1076,8 +1125,8 @@ describe("Prompt tools — remaining untested endpoints", () => {
     });
   });
 
-  it("delete_chat_message calls DELETE /v1/prompt/message/:id", async () => {
-    const cb = getToolCallback(server, "delete_chat_message");
+  it("delete_chat_conversation calls DELETE /v1/prompt/message/:id", async () => {
+    const cb = getToolCallback(server, "delete_chat_conversation");
     await cb({ promptId: "p1" });
     expect(mockDelete).toHaveBeenCalledWith("/v1/prompt/message/p1");
   });

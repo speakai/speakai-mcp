@@ -283,6 +283,24 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       expect(mockPut).toHaveBeenCalledWith("/v1/folder/f1", { name: "Renamed" });
     });
 
+    it("create_folder and update_folder schemas keep assignTo for users and groups", () => {
+      const assignTo = ["user123", "group456 (G)"];
+      for (const [tool, input] of [
+        ["create_folder", { name: "Research", assignTo }],
+        ["update_folder", { folderId: "f1", name: "Research", assignTo }],
+      ] as const) {
+        const result = getToolInputSchema(server, tool).safeParse(input);
+        expect(result.success).toBe(true);
+        expect(result.data.assignTo).toEqual(assignTo);
+      }
+    });
+
+    it("update_folder sends assignTo to the server", async () => {
+      const callback = getToolCallback(server, "update_folder");
+      await callback({ folderId: "f1", name: "Research", assignTo: ["group456 (G)"] });
+      expect(mockPut).toHaveBeenCalledWith("/v1/folder/f1", { name: "Research", assignTo: ["group456 (G)"] });
+    });
+
     it("delete_folder calls correct endpoint", async () => {
       const callback = getToolCallback(server, "delete_folder");
       await callback({ folderId: "f1" });
@@ -507,6 +525,25 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
       expect(result.success).toBe(true);
     });
 
+    it("set_media_thumbnail rejects bad input before calling the API", async () => {
+      const schema = getToolInputSchema(server, "set_media_thumbnail");
+      expect(schema.safeParse({ mediaId: "m", atSeconds: -1 }).success).toBe(false);
+      expect(schema.safeParse({ mediaId: "m", imageUrl: "http://example.com/a.png" }).success).toBe(false);
+
+      const callback = getToolCallback(server, "set_media_thumbnail");
+      const gif = Buffer.from("GIF89a").toString("base64");
+      const tooBig = Buffer.alloc(10 * 1024 * 1024 + 1, 0xff).toString("base64");
+      for (const params of [
+        { mediaId: "m" },
+        { mediaId: "m", imageUrl: "https://example.com/a.png", atSeconds: 1 },
+        { mediaId: "m", imageBase64: gif },
+        { mediaId: "m", imageBase64: tooBig },
+      ]) {
+        expect((await callback(params)).isError).toBe(true);
+      }
+      expect(mockPut).not.toHaveBeenCalled();
+    });
+
     it("list_media schema accepts empty object (all optional)", () => {
       const schema = getToolInputSchema(server, "list_media");
       const result = schema.safeParse({});
@@ -619,6 +656,39 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
       const schema = getToolInputSchema(server, "get_chat_history");
       const result = schema.safeParse({ limit: 0 });
       expect(result.success).toBe(false);
+    });
+  });
+
+  describe("Voice intelligence tools", () => {
+    beforeEach(async () => {
+      const { register } = await import("../src/tools/voice-intelligence.js");
+      register(server, mockClient);
+    });
+
+    // Mirrors analyzeGapsBody in speak-server: 20 anchors of 500 and 20 summaries of 2000.
+    it("analyze_voice_instruction_gaps schema accepts inputs at the server caps", () => {
+      const schema = getToolInputSchema(server, "analyze_voice_instruction_gaps");
+      const result = schema.safeParse({
+        agentId: "a1",
+        anchors: Array(20).fill("a".repeat(500)),
+        conversationSummaries: Array(20).fill("s".repeat(2000)),
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("analyze_voice_instruction_gaps schema rejects inputs over the server caps", () => {
+      const schema = getToolInputSchema(server, "analyze_voice_instruction_gaps");
+      const over = [
+        { anchors: Array(21).fill("a") },
+        { anchors: ["a".repeat(501)] },
+        { anchors: ["   "] },
+        { conversationSummaries: Array(21).fill("s") },
+        { conversationSummaries: ["s".repeat(2001)] },
+        { conversationSummaries: ["   "] },
+      ];
+      for (const body of over) {
+        expect(schema.safeParse({ agentId: "a1", ...body }).success).toBe(false);
+      }
     });
   });
 });

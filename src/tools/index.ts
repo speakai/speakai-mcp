@@ -10,6 +10,8 @@ import * as embed from "./embed.js";
 import * as prompt from "./prompt.js";
 import * as meeting from "./meeting.js";
 import * as fields from "./fields.js";
+import * as labels from "./labels.js";
+import * as comments from "./comments.js";
 import * as automations from "./automations.js";
 import * as webhooks from "./webhooks.js";
 import * as analytics from "./analytics.js";
@@ -17,8 +19,21 @@ import * as clips from "./clips.js";
 import * as workflows from "./workflows.js";
 import * as users from "./users.js";
 import * as dashboards from "./dashboards.js";
+import * as voice from "./voice.js";
+import * as voiceTesting from "./voice-testing.js";
+import * as voiceQuestions from "./voice-questions.js";
+import * as voiceIntelligence from "./voice-intelligence.js";
 
-const modules = [
+export interface RegisterOptions {
+  localFileAccess?: boolean;
+  voiceTestRuns?: boolean;
+}
+
+type ToolModule = {
+  register(server: McpServer, client?: AxiosInstance, options?: RegisterOptions): void;
+};
+
+const modules: ToolModule[] = [
   media,
   text,
   exports,
@@ -28,6 +43,8 @@ const modules = [
   prompt,
   meeting,
   fields,
+  labels,
+  comments,
   automations,
   webhooks,
   analytics,
@@ -35,6 +52,10 @@ const modules = [
   workflows,
   users,
   dashboards,
+  voice,
+  voiceTesting,
+  voiceQuestions,
+  voiceIntelligence,
 ];
 
 /**
@@ -42,9 +63,15 @@ const modules = [
  * @param server - McpServer instance
  * @param client - Optional custom axios client (for server-side use with per-request auth).
  *                 If omitted, uses the default client from env vars (STDIO mode).
+ * @param options - Set localFileAccess only where the server runs on the user's machine. The voice
+ *                  test-run tools register unless voiceTestRuns is false.
  */
-export function registerAllTools(server: McpServer, client?: AxiosInstance): void {
+export function registerAllTools(
+  server: McpServer,
+  client?: AxiosInstance,
+  options: RegisterOptions = {}
+): void {
   for (const mod of modules) {
-    mod.register(server, client);
+    mod.register(server, client, options);
   }
 }

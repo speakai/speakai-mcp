@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, fieldIdSchema, SHARED_DASHBOARD_CACHE_NOTE } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { AllowedValuesMode } from "@speakai/shared";
 
@@ -13,7 +13,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "`regulator_comment`) alongside its `id`, `name`, and `type`. Put `{{field.<slug>}}` in the prompt text " +
       "you send and Speak substitutes that field's value for the media before the model sees it. A slug is " +
       "unique per company and never changes when the field is renamed, so prefer it over the field name. A " +
-      "field with no slug yet resolves by `id` in the same token.",
+      "field with no slug yet resolves by `id` in the same token. Every other tool that takes a field id wants " +
+      "this `id` (12 characters), never the database `_id`.",
     {},
     {
       title: "List Custom Fields",
@@ -39,7 +40,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "create_field",
-    "Create a new custom field for categorizing and tagging media.",
+    "Create a new custom field for categorizing and tagging media. The response starts with the new field's " +
+      "`id`; use that `id` (not `_id`) wherever a field id is needed.",
     {
       name: z.string().min(1).describe("Display name for the field"),
       type: z.string().describe("Field type (text, number, select, etc.)"),
@@ -73,8 +75,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async (body) => {
       try {
         const result = await api.post("/v1/fields", body);
+        const fieldId = result.data?.data?.id;
+        const idLine = fieldId ? `Field id: ${fieldId} (use this id, not _id, in other tools)\n\n` : "";
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+          content: [{ type: "text", text: idLine + JSON.stringify(result.data, null, 2) }],
         };
       } catch (err) {
         return {
@@ -87,7 +91,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_multiple_fields",
-    "Set custom field values across media in a single batch operation. Scope the update with `folderId` (all media in a folder) and/or `mediaIds`.",
+    "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. Each value that changes fires your field_updated automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions. " +
+      SHARED_DASHBOARD_CACHE_NOTE,
     {
       folderId: z
         .string()
@@ -100,7 +105,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       fields: z
         .array(
           z.object({
-            id: z.string().min(1).describe("Custom field ID"),
+            id: fieldIdSchema,
             value: z.unknown().describe("Value to set for the field"),
           }),
         )
@@ -111,7 +116,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -132,7 +137,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "update_field",
     "Update a specific custom field by ID. `name` must always be supplied (the server replaces the field config).",
     {
-      id: z.string().min(1).describe("Unique identifier of the field"),
+      id: fieldIdSchema,
       name: z.string().describe("Display name for the field"),
       type: z.string().optional().describe("Field type"),
       description: z.string().optional().describe("Optional description for the field"),

@@ -1,0 +1,10 @@
+interface:
+  display_name: "Import social and video links"
+  short_description: "Transcribe public video links"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "speakai"
+      description: "Speak AI MCP server"
+      transport: "streamable_http"
+      url: "https://api.speakai.co/v1/mcp"

@@ -35,6 +35,11 @@ export const DATE_RANGE_PRESETS = [
 
 export type DateRangePreset = (typeof DATE_RANGE_PRESETS)[number];
 
+export const SECTION_ICON_DESCRIPTION =
+  'Kebab-case lucide icon name. Known good: "dollar-sign", "globe", "users", "trending-up", "message-square", ' +
+  '"star", "target", "calendar", "chart-line", "circle-play", "circle-check", "circle-alert". Lucide renamed its ' +
+  '"<thing>-circle" icons to "circle-<thing>" (use "circle-play", not "play-circle"); an unknown name shows a blank dot.';
+
 interface WidgetMeta {
   w: number;
   h: number;
@@ -308,8 +313,23 @@ export const WIDGET_CATALOG = [
       'rowsAre: "records" | "groups"; groupBy?: GroupBy (required when rowsAre="groups", forbidden when "records"); ' +
       "columns: Array<{ header: string (<=40, unique), field: string } | { header: string, metric: Metric }> (1-12; " +
       "a column is EITHER a raw field OR a metric, never both; thresholds? allowed on both forms); " +
-      'sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); ' +
-      'searchable?: boolean; rowClick?: "openMedia" | "none"',
+      'sort?: { column: <one of the headers>, dir: "asc" | "desc" }; limit?: number (1-500); pageSize?: number (1-100, records per page); ' +
+      'searchable?: boolean; rowClick?: "openMedia" | "none"; display?: "table" | "cards"; ' +
+      "card?: { titleColumn?: string, subtitleColumns?: string[] (<=2), detailColumns?: string[] (<=2), showDuration?: boolean, layout?: \"grid\" | \"rows\", rowBy?: string, rowOrder?: string[] (<=50 values, each 1-80 chars), hero?: boolean, imageColumn?: string }. " +
+      'SESSION CARDS: display "cards" renders each record as a card (poster frame from the video, loaded lazily, plus title, ' +
+      "subtitle lines, up to 2 detail lines and duration). Only valid with rowsAre \"records\"; `card` is only valid with " +
+      'display "cards"; every card value must be an existing column header; imageColumn names a raw custom-field column whose field ' +
+      'has a profile group in settings.profiles, and the card shows the image of that group\'s entry matching the record\'s value; ' +
+      'set rowClick "openMedia" so a click opens the media page. ' +
+      'ROWS AND HERO: layout "rows" renders one horizontal snap-scroll row per distinct value of the rowBy column (rowBy is a column header, ' +
+      'required with layout "rows" and rejected otherwise); rows are ordered by count desc, or by rowOrder (explicit row VALUES first, ' +
+      'the rest by count; rowOrder is only valid with layout "rows"); layout defaults to "grid". hero: true renders the first record after ' +
+      'sort as a wide banner above the grid or rows, on the first page only (valid with either layout). ' +
+      'Records with a blank rowBy value go in a last "other" row; rows are not paged, so every record up to limit shows. ' +
+      'Rows example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, ' +
+      '{ header: "Track", field: "Track" }], card: { titleColumn: "Session", layout: "rows", rowBy: "Track", rowOrder: ["Track A"], hero: true } }. ' +
+      'Example: { rowsAre: "records", rowClick: "openMedia", display: "cards", columns: [{ header: "Session", field: "Title" }, ' +
+      '{ header: "Speaker", field: "Speaker" }], card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true } }',
   },
   {
     type: "comparison",
@@ -351,7 +371,13 @@ export const WIDGET_CATALOG = [
   {
     type: "notes",
     purpose: "Free-text note/context block (full width).",
-    config: "content: string (1-4000 chars, required)",
+    config:
+      "content: string (1-4000 chars, required); actions?: Array<{ label: string (1-40), action: \"openChat\" | \"goToSection\", " +
+      "sectionId?: string }> (max 3 buttons; first renders primary, the rest outline). goToSection needs a sectionId that is a " +
+      'section id of this dashboard (or "overview"); openChat takes no sectionId and needs the shared embed\'s isPromptAsk on ' +
+      "(update_embed meta.isPromptAsk) or the chat panel will not work. " +
+      'Example: { content: "Pick a session below.", actions: [{ label: "Ask the data", action: "openChat" }, ' +
+      '{ label: "See sessions", action: "goToSection", sectionId: "sessions" }] }',
   },
   {
     type: "chat-history",
@@ -390,11 +416,13 @@ export const SPEC_VOCABULARY = {
     '{ when: { op: "gte" | "gt" | "lt" | "lte", value: number } | { op: "between", value: [low, high] }, ' +
     'status: "good" | "warn" | "critical" | "neutral", label?: string (<=40) }',
   source:
-    'Dashboard data source: { type: "folders", folderIds: string[] (1-50) } | { type: "team" } | { type: "workspace" }',
+    'Dashboard data source: { type: "folders", folderIds: string[] (1-250) } | { type: "team" } | { type: "workspace" }',
   dateRangePresets: DATE_RANGE_PRESETS,
   sections:
     "Optional named groups of widgets rendered as tabs/sections (max 12): " +
-    "{ id: kebab-case string, title: string (<=24), icon: kebab-case lucide icon name, widgetIds: string[] (<=24) }. " +
+    "{ id: kebab-case string, title: string (<=24), icon: string, widgetIds: string[] (<=24) }. icon: " +
+    SECTION_ICON_DESCRIPTION +
+    " " +
     "Widget ids in sections must match explicit `id`s you set on the widgets; a widget may appear in at most one section; " +
     "widgets in no section form the implicit Overview group.",
 } as const;

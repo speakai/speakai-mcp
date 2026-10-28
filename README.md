@@ -236,13 +236,13 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 **You shouldn't need to be technical to install this.** If anything is confusing or doesn't work:
 
 - Email [success@speakai.co](mailto:success@speakai.co) — we'll respond within 24 hours
-- [Book a demo with us](https://calendly.com/speak-ai/demo?utm_source=mcp&utm_medium=readme&utm_campaign=booking-cta) and we'll set it up together
+- [Book a demo with us](https://speakai.co/book?utm_source=mcp&utm_medium=docs&utm_campaign=book) and we'll set it up together
 
 ---
 
 ## What you can do once installed
 
-Speak AI ships 119 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 189 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,31 +394,32 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (119)
+### MCP Tools (189)
 
 <details>
-<summary>Media (18 tools)</summary>
+<summary>Media (19 tools)</summary>
 
 | Tool | Description |
 |---|---|
+| `update_transcription` | Edit the official transcript text of a media file by finding and replacing text |
 | `get_signed_upload_url` | Get a pre-signed S3 URL for direct file upload |
-| `upload_media` | Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a social/video page link resolved automatically (YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru, Rutube). Vimeo and Loom page links are not supported. |
-| `upload_local_file` | Upload a local file directly from disk |
+| `upload_media` | Import an audio or video file from a direct public URL, a `get_signed_upload_url` URL, or a supported page link (YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru, Rutube). Vimeo and Loom page links are not supported. Bills the media duration. |
+| `upload_local_file` | Upload a local file directly from disk (stdio and CLI only, never on the remote server) |
 | `upload_and_analyze` | Upload media from a URL (direct file, or any social/video page link `upload_media` accepts — resolved automatically) and return its `media_id` immediately. Poll `get_media_status` until `processed`, then call `get_media_insights` for AI summaries. Set `mediaType` when the user has said which they want; leave it off otherwise and the server picks the best available track. |
-| `upload_and_analyze_batch` | Upload up to 25 URLs in one call, 5 at a time. Each URL is reported as uploaded or failed with its reason, so one bad link does not sink the batch. Use this instead of calling `upload_and_analyze` in a loop. |
 | `list_media` | List and search media files with filters, pagination, and optional inline data (transcripts, speakers, keywords) via `include` param |
 | `get_media_insights` | Get AI insights — topics, sentiment, summaries, action items |
 | `get_transcript` | Get full transcript with speaker labels and timestamps |
-| `update_transcription` | Edit the official transcript text of a media file by finding and replacing text |
 | `get_captions` | Get subtitle-formatted captions for a media file |
 | `update_transcript_speakers` | Rename speaker labels in a transcript |
 | `bulk_update_transcript_speakers` | Rename speaker labels across multiple media files in one call (max 500) |
 | `get_media_status` | Check processing status (pending → processed) |
 | `update_media_metadata` | Update name, description, tags, or folder |
+| `set_media_thumbnail` | Set a custom video thumbnail from an image link, base64 image bytes, or a frame at a given second (JPEG, PNG or WebP, up to 10 MB) |
 | `delete_media` | Permanently delete a media file |
 | `toggle_media_favorite` | Mark or unmark media as a favorite |
 | `reanalyze_media` | Re-run AI analysis with latest models |
 | `bulk_move_media` | Move multiple media files to a folder in one call |
+| `upload_and_analyze_batch` | Upload up to 25 URLs in one call, 5 at a time. Each URL is reported as uploaded or failed with its reason, so one bad link does not sink the batch. |
 
 </details>
 
@@ -428,23 +429,34 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | Tool | Description |
 |---|---|
 | `ask_ai_chat` | Ask AI questions about media, folders, or your whole workspace |
-| `get_analysis_quote` | Check if a file can be analysed as audio/video and what it costs |
 | `retry_ai_chat` | Retry a failed or incomplete AI Chat response |
 | `get_chat_history` | List recent AI Chat conversations |
 | `get_chat_messages` | Get full message history for conversations |
-| `delete_chat_message` | Delete a specific chat message |
-| `list_prompts` | List available AI prompt templates |
+| `delete_chat_conversation` | Delete a whole chat conversation and its messages |
+| `list_prompts` | List recent AI chat messages with their answers and sources |
 | `get_favorite_prompts` | Get all favorited prompts and answers |
 | `toggle_prompt_favorite` | Mark or unmark a chat message as favorite |
 | `update_chat_title` | Rename a chat conversation |
 | `submit_chat_feedback` | Rate a chat response (thumbs up/down) |
 | `get_chat_statistics` | Get AI Chat usage statistics |
 | `export_chat_answer` | Export a conversation or answer |
+| `get_analysis_quote` | Check if a file can be analysed as audio/video and what it costs |
 
 </details>
 
 <details>
-<summary>Folders & Views (11 tools)</summary>
+<summary>Search & analytics (3 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `search_media` | Deep search across transcripts, insights, and metadata with filters |
+| `get_media_statistics` | Get workspace-level stats — counts, storage, processing breakdown |
+| `list_supported_languages` | List all supported transcription languages |
+
+</details>
+
+<details>
+<summary>Folders & views (11 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -452,7 +464,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `get_folder_info` | Get folder details and contents |
 | `create_folder` | Create a new folder |
 | `clone_folder` | Duplicate a folder and its contents |
-| `update_folder` | Rename or update a folder |
+| `update_folder` | Rename or update a folder, or change which users and groups can access it |
 | `delete_folder` | Delete a folder (media is preserved) |
 | `get_all_folder_views` | List all saved views across folders |
 | `get_folder_views` | List views for a specific folder |
@@ -463,7 +475,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Recorder / Survey (10 tools)</summary>
+<summary>Recorders & surveys (10 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -481,34 +493,6 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Automations (20 tools)</summary>
-
-| Tool | Description |
-|---|---|
-| `list_automations` | List automation rules with paging and filters |
-| `build_automation` | Create or update an automation from a friendly spec, without the wire format |
-| `list_automation_names` | List automations as lightweight name + id pairs |
-| `get_automation` | Get automation details (trigger + step graph) |
-| `get_automation_runs` | Get an automation's run history |
-| `get_automation_run` | Get one run in full — every step, plus which way each branch went |
-| `get_automation_run_stats` | Aggregate run outcome counts over a period |
-| `test_automation` | Run an automation once against one media item (real side effects) |
-| `describe_automation_graph` | Show a saved automation's steps as an indented branch tree |
-| `validate_automation_graph` | Check a step graph for problems without saving it |
-| `create_automation` | Create an automation rule (V2 trigger + steps graph) |
-| `update_automation` | Update an automation (replaces trigger + steps) |
-| `toggle_automation_status` | Enable or disable an automation |
-| `bulk_update_automation_status` | Activate/deactivate multiple automations |
-| `bulk_assign_automation_folders` | Set folder scope for multiple automations |
-| `run_automations` | Manually run automations against media now |
-| `delete_automation` | Permanently delete an automation |
-| `list_automation_apps` | List catalog apps (native + integrations) |
-| `list_automation_triggers` | List catalog trigger types (optionally by app) |
-| `list_automation_actions` | List catalog action/step types (optionally by app) |
-
-</details>
-
-<details>
 <summary>Clips (4 tools)</summary>
 
 | Tool | Description |
@@ -521,7 +505,85 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Custom Fields (4 tools)</summary>
+<summary>Exports (2 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `export_media` | Export as PDF, DOCX, SRT, VTT, TXT, CSV, or a labels CSV (`csv-labels`) |
+| `export_multiple_media` | Batch export with optional merge into one file, including labels CSVs |
+
+</details>
+
+<details>
+<summary>Meeting assistant (5 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `list_meeting_events` | List scheduled and completed events |
+| `schedule_meeting_event` | Schedule AI assistant to join a meeting |
+| `remove_assistant_from_meeting` | Remove assistant from active meeting |
+| `delete_scheduled_assistant` | Cancel a scheduled meeting assistant |
+| `get_live_meeting_transcript` | Pull only the new sentences added to a live (or just-ended) meeting transcript since your previous call. Works on Zoom / Google Meet / MS Teams while the bot is recording. |
+
+</details>
+
+<details>
+<summary>Automations (20 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `list_automations` | List automation rules with paging and filters |
+| `get_automation` | Get automation details (trigger + step graph) |
+| `create_automation` | Create an automation rule (V2 trigger + steps graph) |
+| `update_automation` | Update an automation (replaces trigger + steps) |
+| `toggle_automation_status` | Enable or disable an automation |
+| `list_automation_names` | List names and ids of active automations that have an AI chat step |
+| `get_automation_runs` | Get an automation's run history |
+| `bulk_update_automation_status` | Activate/deactivate multiple automations |
+| `bulk_assign_automation_folders` | Set folder scope for multiple automations |
+| `run_automations` | Manually run automations against media now |
+| `delete_automation` | Permanently delete an automation |
+| `list_automation_apps` | List catalog apps: Speak built-ins plus third-party apps marked connected or not connected (read-only) |
+| `list_automation_triggers` | List catalog trigger types (optionally by app) |
+| `list_automation_actions` | List catalog action/step types (optionally by app) |
+| `build_automation` | Create or update an automation from a friendly spec, without the wire format |
+| `get_automation_run` | Get one run in full — every step, plus which way each branch went |
+| `get_automation_run_stats` | Aggregate run outcome counts over a period |
+| `test_automation` | Run an automation once against one media item (real side effects) |
+| `validate_automation_graph` | Check a step graph for problems without saving it |
+| `describe_automation_graph` | Show a saved automation's steps as an indented branch tree |
+
+</details>
+
+<details>
+<summary>Webhooks (7 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `create_webhook` | Create a webhook for event notifications |
+| `list_webhooks` | List all webhooks |
+| `update_webhook` | Update a webhook |
+| `delete_webhook` | Delete a webhook |
+| `provision_inbound_webhook` | Provision a standalone inbound webhook and get its public receive URL |
+| `get_inbound_webhook` | Get an inbound webhook's receive URL, sample payload, and trigger tokens |
+| `get_webhook_attempts` | Get the delivery log for an inbound webhook, with acknowledgement status |
+
+</details>
+
+<details>
+<summary>Text notes (4 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `create_text_note` | Create a text note for AI analysis (uses the plan allowance, then credits) |
+| `get_text_insight` | Get AI insights for a text note |
+| `reanalyze_text` | Re-run AI analysis on a text note |
+| `update_text_note` | Update a note's name or content (only a note not yet analyzed is analyzed) |
+
+</details>
+
+<details>
+<summary>Fields (4 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -533,22 +595,46 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Webhooks (7 tools)</summary>
+<summary>Labels & comments (16 tools)</summary>
 
 | Tool | Description |
 |---|---|
-| `create_webhook` | Create a webhook for event notifications |
-| `provision_inbound_webhook` | Provision a standalone inbound webhook and get its public receive URL |
-| `get_inbound_webhook` | Get an inbound webhook's receive URL, sample payload, and trigger tokens |
-| `get_webhook_attempts` | Get the delivery log for an inbound webhook, with acknowledgement status |
-| `list_webhooks` | List all webhooks |
-| `update_webhook` | Update a webhook |
-| `delete_webhook` | Delete a webhook |
+| `list_labels` | List workspace labels and groups as a tree |
+| `create_label` | Create a label or a label group |
+| `update_label` | Rename, recolor, describe, move or reorder a label |
+| `archive_label` | Archive a label (a group takes its labels along) |
+| `restore_label` | Restore an archived label or group |
+| `merge_labels` | Move every use of one label onto another |
+| `add_speak_label_sets` | Add ready-made Speak label groups |
+| `list_media_labels` | List the labels applied to a transcript |
+| `apply_label` | Label transcript words, found by quote or word range |
+| `update_media_label` | Change a span's labels, confirm it, or move it |
+| `remove_media_label` | Remove a labelled span |
+| `list_media_comments` | List a file's comment threads |
+| `add_comment` | Comment on the file or on words, or reply to a thread |
+| `update_comment` | Edit the text of your own comment |
+| `resolve_comment` | Resolve or reopen a thread |
+| `delete_comment` | Delete a comment |
 
 </details>
 
 <details>
-<summary>Users &amp; Teams (5 tools)</summary>
+<summary>Embed players (7 tools)</summary>
+
+| Tool | Description |
+|---|---|
+| `create_embed` | Create an embeddable player widget |
+| `update_embed` | Update embed settings |
+| `check_embed` | Check if embed exists for media |
+| `get_embed_iframe_url` | Get iframe URL for your website |
+| `list_embed_sessions` | Owner analytics: list visits to an embed with viewer, device, country and traffic filters |
+| `get_embed_session_summary` | Owner analytics: an embed's visit KPIs, daily trend, sources and per-media table |
+| `get_embed_session` | Owner analytics: one embed visit in full, with paged events |
+
+</details>
+
+<details>
+<summary>Users & teams (5 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -578,68 +664,70 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Meeting Assistant (5 tools)</summary>
+<summary>Voice agents (34 tools)</summary>
 
 | Tool | Description |
 |---|---|
-| `list_meeting_events` | List scheduled and completed events |
-| `schedule_meeting_event` | Schedule AI assistant to join a meeting |
-| `remove_assistant_from_meeting` | Remove assistant from active meeting |
-| `delete_scheduled_assistant` | Cancel a scheduled meeting assistant |
-| `get_live_meeting_transcript` | Pull only the new sentences added to a live (or just-ended) meeting transcript since your previous call. Works on Zoom / Google Meet / MS Teams while the bot is recording. |
+| `list_voice_agents` | List the company's voice agents (newest first) with their config |
+| `get_voice_agent` | Get a single voice agent by agentId |
+| `create_voice_agent` | Create a voice agent (name, personality, instructions, and voice are required) |
+| `update_voice_agent` | Update a voice agent; send only the fields you want to change |
+| `delete_voice_agent` | Delete a voice agent; its share link, questions, and test suite stop working (no restore tool) |
+| `create_voice_agent_from_prompt` | Create a new agent from a plain-English description; an LLM generates its name, instructions, and settings |
+| `generate_voice_agent_config` | Run the same prompt-to-config generation against an existing agent |
+| `get_voice_agent_setup_guide` | Discovery helper: the build order, which tool covers each piece, common mistakes |
+| `list_voice_avatars` | List the video avatars available to attach to a voice agent |
+| `list_voices` | List the text-to-speech voices available to a voice agent |
+| `list_voice_conversations` | List conversations handled by voice agents (filter by agentId) |
+| `get_voice_conversation` | Get a single conversation by conversationId |
+| `get_agent_analytics` | Owner analytics for one voice agent over a date range (KPIs, audience, outcomes, quality) |
+| `list_voice_questions` | List the questions configured on a voice agent, in ask order |
+| `get_voice_question` | Get a single question by fieldId |
+| `create_voice_question` | Attach a question template to a voice agent |
+| `update_voice_question` | Partially update a voice agent question |
+| `delete_voice_question` | Remove a question from a voice agent |
+| `reorder_voice_questions` | Set the order a voice agent asks its questions in |
+| `list_voice_question_templates` | List the shared and company-owned question template library |
+| `create_voice_question_template` | Create a company-scoped custom question template |
+| `get_voice_test_suite` | Get a voice agent's test suite (its scenarios and run settings) |
+| `update_voice_test_suite` | Create or update a voice agent's test suite (upserts; replaces scenarios) |
+| `generate_voice_test_suite` | Auto-generate a default test suite from the agent's name, personality and instructions |
+| `start_voice_test_run` | Start a test run: sends each enabled scenario's user messages to the agent as text and grades every criterion (no calls are placed; uses credits for the AI cost) |
+| `get_active_voice_test_run` | Get a voice agent's currently active run (queued, running, or paused) |
+| `pause_voice_test_run` | Pause a running or queued test run; takes effect after the current scenario |
+| `resume_voice_test_run` | Resume a paused test run from the next scenario |
+| `cancel_voice_test_run` | Cancel a test run at its next AI call; cost already used is charged; terminal |
+| `list_voice_test_runs` | List a voice agent's test runs, most recent first |
+| `get_voice_test_run` | Get a test run's full detail, including scenario results and recommendations |
+| `apply_voice_test_recommendation` | Apply a test run recommendation's quick action to the agent |
+| `get_voice_test_baseline` | Get a voice agent's best-scoring completed run, for regression comparison |
+| `get_voice_test_score_history` | Get completed-run score points for charting |
+
+A test run sends each enabled scenario's scripted user messages to the agent as text and grades every criterion. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. The ten run tools, from `start_voice_test_run` down, register by default; pass `voiceTestRuns: false` to `registerAllTools` to leave them off.
 
 </details>
 
 <details>
-<summary>Media Embed (4 tools)</summary>
+<summary>Voice agent insights (16 tools)</summary>
 
 | Tool | Description |
 |---|---|
-| `create_embed` | Create an embeddable player widget |
-| `update_embed` | Update embed settings |
-| `check_embed` | Check if embed exists for media |
-| `get_embed_iframe_url` | Get iframe URL for your website |
-
-</details>
-
-<details>
-<summary>Text Notes (4 tools)</summary>
-
-| Tool | Description |
-|---|---|
-| `create_text_note` | Create a text note for AI analysis |
-| `get_text_insight` | Get AI insights for a text note |
-| `reanalyze_text` | Re-run AI analysis on a text note |
-| `update_text_note` | Update note content (triggers re-analysis) |
-
-</details>
-
-<details>
-<summary>Exports (2 tools)</summary>
-
-| Tool | Description |
-|---|---|
-| `export_media` | Export as PDF, DOCX, SRT, VTT, TXT, or CSV |
-| `export_multiple_media` | Batch export with optional merge into one file |
-
-</details>
-
-<details>
-<summary>Media Statistics & Languages (2 tools)</summary>
-
-| Tool | Description |
-|---|---|
-| `get_media_statistics` | Get workspace-level stats — counts, storage, processing breakdown |
-| `list_supported_languages` | List all supported transcription languages |
-
-</details>
-
-<details>
-<summary>Search / Analytics (1 tool)</summary>
-
-| Tool | Description |
-|---|---|
-| `search_media` | Deep search across transcripts, insights, and metadata with filters |
+| `list_voice_kb_gaps` | List a voice agent's pending knowledge-base gaps from real calls |
+| `analyze_voice_kb_gaps` | Trigger knowledge-base gap analysis over an agent's recent calls |
+| `add_voice_kb_gap` | Write a gap's answer into the agent's knowledge base |
+| `dismiss_voice_kb_gap` | Dismiss a gap without writing anything |
+| `list_voice_faq_suggestions` | List a voice agent's pending FAQ suggestions clustered from real calls |
+| `generate_voice_faq_suggestions` | Trigger FAQ clustering over an agent's recent calls |
+| `add_voice_faq_suggestion` | Write an FAQ suggestion into the agent's knowledge base |
+| `update_voice_faq_suggestion` | Edit a pending FAQ suggestion's question and/or answer |
+| `dismiss_voice_faq_suggestion` | Dismiss an FAQ suggestion without writing anything |
+| `list_voice_agent_resources` | List the documents/links a voice agent searches during calls |
+| `create_voice_agent_resource` | Add one document/link to a voice agent's knowledge base |
+| `bulk_create_voice_agent_resources` | Add up to 100 documents/links in one call |
+| `update_voice_agent_resource` | Partially update a voice agent resource |
+| `delete_voice_agent_resource` | Soft-delete a voice agent resource |
+| `analyze_voice_instruction_gaps` | Advisory-only patch suggestions for an agent's own instructions |
+| `apply_voice_instruction_gap` | Insert a suggested patch into an agent's instructions |
 
 </details>
 

@@ -3,15 +3,17 @@ name: clips-and-captions
 description: Turn Speak AI recordings into shareable output. Use this when someone asks for a highlight clip, a soundbite, a reel, subtitles, a caption track, an SRT or VTT file, a transcript exported as PDF, DOCX, TXT, CSV, MD, HTML or JSON, a merged export across several recordings, or an embeddable player or transcript widget for a website. Walks through finding the moment in a timestamped transcript, cutting the clip, waiting for it to finish processing, exporting captions in a supported format, and publishing an embed. Covers search_media, list_media, get_media_status, get_transcript, get_captions, create_clip, get_clips, update_clip, delete_clip, export_media, export_multiple_media, create_embed, check_embed, update_embed and get_embed_iframe_url.
 license: MIT
 metadata:
-  server-version: "1.25.0"
+  server-version: "1.39.1"
   categories: "clips, exports, media, embed-other"
 ---
 
 # Clips and captions
 
+The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
+
 This skill covers the tools that produce something a person can watch, read, or
 publish. Four categories matter here: clips (4 tools), exports (2 tools), media
-(18 tools), and embed-other (4 tools).
+(19 tools), and embed-other (7 tools).
 
 Every step below needs a `mediaId`. Get one from `search_media` or `list_media`
 before you do anything else.
@@ -27,8 +29,6 @@ the whole library. It searches transcripts, insights, and metadata, and returns
 matching media with excerpts, tags, and sentiment.
 
 ```sh
-export SPEAK_API_KEY="speak_sk_example_000000000000"
-
 speakai-mcp call search_media '{
   "query": "pricing objection",
   "startDate": "2026-01-01T00:00:00Z",
@@ -229,9 +229,11 @@ before you create an embed for media you did not just create with them.
    page. It only takes `mediaId`, so it resolves single-media embeds, not
    folder embeds.
 4. Call `update_embed` with `embedId` to change appearance and behaviour. The
-   `meta` object holds the toggles: `backgroundImg`, `logo`, `primaryColor`,
-   `titleColor`, `chatWelcomeMessage`, `assistantTemplateId`, `isTitle`,
-   `isDescription`, `isRemarks`, `isDataVizDownloadable`, `isSEOIndexing`,
+   `meta` object holds the toggles: `backgroundImg`, `logo`, `logoDark`
+   (dark-mode logo; must be an uploaded logo, the MCP cannot upload
+   it), `theme` (`light` or `dark` forces the viewer theme), `backgroundColor`
+   (hex), `fontFamily` (a Google Fonts name), `primaryColor`, `titleColor`,
+   `chatWelcomeMessage`, `assistantTemplateId`, `isTitle`, `isDescription`, `isRemarks`, `isDataVizDownloadable`, `isSEOIndexing`,
    `isPromptAsk`, `isPromptHistory`, `isMediaExport`, `callToActionButtons`, and
    `features`. `update_embed` also accepts `mediaId`, `folderIds`,
    `privacyMode`, and `embedType`.

@@ -1,5 +1,7 @@
 /**
- * Static manifest of every Speak MCP tool name exposed by `registerAllTools`.
+ * Static manifest of every Speak MCP tool name exposed by `registerAllTools`
+ * with `{ localFileAccess: true }`. Without that option, local-disk tools such
+ * as `upload_local_file` are not registered, so a hosted server exposes fewer.
  *
  * This list is the single source of truth that consumers (e.g. speak-server's
  * orchestrator bridge) can import to route or validate tool calls without
@@ -47,6 +49,9 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "update_embed",
   "check_embed",
   "get_embed_iframe_url",
+  "list_embed_sessions",
+  "get_embed_session_summary",
+  "get_embed_session",
 
   // exports
   "export_media",
@@ -57,6 +62,26 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "create_field",
   "update_field",
   "update_multiple_fields",
+
+  // labels
+  "list_labels",
+  "create_label",
+  "update_label",
+  "archive_label",
+  "restore_label",
+  "merge_labels",
+  "add_speak_label_sets",
+  "list_media_labels",
+  "apply_label",
+  "update_media_label",
+  "remove_media_label",
+
+  // comments
+  "list_media_comments",
+  "add_comment",
+  "update_comment",
+  "resolve_comment",
+  "delete_comment",
 
   // folders
   "list_folders",
@@ -81,6 +106,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "search_media",
   "delete_media",
   "update_media_metadata",
+  "set_media_thumbnail",
   "toggle_media_favorite",
   "reanalyze_media",
   "get_captions",
@@ -106,7 +132,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "get_chat_history",
   "get_chat_messages",
   "update_chat_title",
-  "delete_chat_message",
+  "delete_chat_conversation",
   "submit_chat_feedback",
   "retry_ai_chat",
   "export_chat_answer",
@@ -162,6 +188,66 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "duplicate_dashboard",
   "share_dashboard",
   "get_dashboard_speakers_insight",
+
+  // voice: agents + conversations
+  "list_voice_agents",
+  "get_voice_agent",
+  "create_voice_agent",
+  "update_voice_agent",
+  "list_voice_avatars",
+  "list_voices",
+  "list_voice_conversations",
+  "get_voice_conversation",
+  "get_agent_analytics",
+
+  // voice: testing
+  "get_voice_test_suite",
+  "update_voice_test_suite",
+  "generate_voice_test_suite",
+  "start_voice_test_run",
+  "get_active_voice_test_run",
+  "pause_voice_test_run",
+  "resume_voice_test_run",
+  "cancel_voice_test_run",
+  "list_voice_test_runs",
+  "get_voice_test_run",
+  "apply_voice_test_recommendation",
+  "get_voice_test_baseline",
+  "get_voice_test_score_history",
+
+  // voice: agents round-out + discovery
+  "delete_voice_agent",
+  "create_voice_agent_from_prompt",
+  "generate_voice_agent_config",
+  "get_voice_agent_setup_guide",
+
+  // voice: questions
+  "list_voice_questions",
+  "get_voice_question",
+  "create_voice_question",
+  "update_voice_question",
+  "delete_voice_question",
+  "reorder_voice_questions",
+  "list_voice_question_templates",
+  "create_voice_question_template",
+
+  // voice: intelligence (kb gaps, faq suggestions, agent resources, instruction gaps)
+  "list_voice_kb_gaps",
+  "analyze_voice_kb_gaps",
+  "add_voice_kb_gap",
+  "dismiss_voice_kb_gap",
+  "list_voice_faq_suggestions",
+  "generate_voice_faq_suggestions",
+  "add_voice_faq_suggestion",
+  "update_voice_faq_suggestion",
+  "dismiss_voice_faq_suggestion",
+  "list_voice_agent_resources",
+  "create_voice_agent_resource",
+  "bulk_create_voice_agent_resources",
+  "update_voice_agent_resource",
+  "delete_voice_agent_resource",
+  "analyze_voice_instruction_gaps",
+  "apply_voice_instruction_gap",
 ] as const satisfies readonly string[];
 
 export type SpeakMcpToolName = (typeof SPEAK_MCP_TOOL_NAMES)[number];

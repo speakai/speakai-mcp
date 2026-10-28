@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 
 // Create a mock axios instance that tracks calls
 const mockGet = vi.fn().mockResolvedValue({ data: { data: {} } });
@@ -90,6 +91,36 @@ describe("Tools Integration Tests", () => {
       await callback({ mediaId: "abc123" });
 
       expect(mockDelete).toHaveBeenCalledWith("/v1/media/abc123");
+    });
+
+    it("set_media_thumbnail sends a link, sniffed image bytes, or a frame time it waits for", async () => {
+      const { register } = await import("../src/tools/media.js");
+      register(server, mockClient);
+      const callback = getToolCallback(server, "set_media_thumbnail");
+
+      await callback({ mediaId: "abc123", imageUrl: "https://example.com/a.png" });
+      expect(mockPut).toHaveBeenCalledWith("/v1/media/abc123/thumbnail", { url: "https://example.com/a.png" });
+
+      const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
+      await callback({ mediaId: "abc123", imageBase64: `data:image/jpeg;base64,${png.toString("base64")}` });
+      const [path, form, config] = mockPut.mock.calls[1];
+      expect(path).toBe("/v1/media/abc123/thumbnail");
+      expect(config).toEqual({ headers: { "Content-Type": "multipart/form-data" } });
+      const image = (form as FormData).get("image") as File;
+      expect(image.type).toBe("image/png");
+      expect(image.name).toBe("thumbnail.png");
+      expect(Buffer.from(await image.arrayBuffer())).toEqual(png);
+
+      vi.useFakeTimers();
+      mockGet
+        .mockResolvedValueOnce({ data: { data: { thumbnail: { pending: true } } } })
+        .mockResolvedValueOnce({ data: { data: { thumbnail: { url: "https://cdn/x.jpg", source: "custom" } } } });
+      const pending = callback({ mediaId: "abc123", atSeconds: 12.5 });
+      await vi.advanceTimersByTimeAsync(10_000);
+      const result = await pending;
+      expect(mockPut).toHaveBeenLastCalledWith("/v1/media/abc123/thumbnail", { seekSec: 12.5 });
+      expect(mockGet).toHaveBeenCalledWith("/v1/media/status/abc123");
+      expect(result.structuredContent.data).toEqual({ thumbnail: { url: "https://cdn/x.jpg", source: "custom" } });
     });
 
     it("get_media_status calls GET /v1/media/status/:id", async () => {
@@ -380,6 +411,117 @@ describe("Tools Integration Tests", () => {
       expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { isDefault: true });
     });
 
+    it("update_dashboard validates and sends reviewer, labels and comments settings", async () => {
+      await reg();
+      const settings = {
+        labels: { isEnabled: true, mode: "apply", labelGroupIds: ["grp_1"] },
+        comments: { isEnabled: true, mode: "reply" },
+      };
+      const schema = (server as any)._registeredTools.update_dashboard.inputSchema;
+      expect(schema.safeParse({ dashboardId: "d1", settings }).success).toBe(true);
+      expect(
+        schema.safeParse({ dashboardId: "d1", settings: { ...settings, comments: { isEnabled: true, mode: "edit" } } })
+          .success,
+      ).toBe(false);
+      // Reviewers are the feedback submitter names; a stale reviewerUserIds or reviewerNames is never sent.
+      const legacy = schema.parse({
+        dashboardId: "d1",
+        settings: { reviewerUserIds: ["64b7f0c2a1b2c3d4e5f60718"], reviewerNames: ["Reviewer A"] },
+      });
+      expect(legacy.settings).toEqual({});
+
+      await getToolCallback(server, "update_dashboard")({ dashboardId: "d1", settings });
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
+    });
+
+    it("update_dashboard accepts only include filterList rules with values", async () => {
+      await reg();
+      const schema = (server as any)._registeredTools.update_dashboard.inputSchema;
+      const rule = { fieldName: "be5d4bfc7e0e", fieldOperator: "include", fieldValue: ["Yes"] };
+      const parse = (r: Record<string, unknown>) => schema.safeParse({ dashboardId: "d1", filters: { filterList: [r] } }).success;
+      expect(parse(rule)).toBe(true);
+      expect(parse({ ...rule, fieldOperator: "notInclude" })).toBe(false);
+      expect(parse({ ...rule, fieldValue: [] })).toBe(false);
+      expect(parse({ fieldName: "be5d4bfc7e0e" })).toBe(false);
+    });
+
+    it("update_dashboard keeps settings.fieldEdits through schema parsing and sends it", async () => {
+      await reg();
+      const settings = { fieldEdits: { fieldIds: ["f1", "f2"] } };
+      const schema = (server as any)._registeredTools["update_dashboard"].inputSchema;
+      const parsed = schema.parse({ dashboardId: "d1", settings });
+      expect(parsed.settings).toEqual(settings);
+      expect(schema.safeParse({ dashboardId: "d1", settings: { fieldEdits: { fieldIds: Array(51).fill("f") } } }).success).toBe(false);
+      await getToolCallback(server, "update_dashboard")(parsed);
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings });
+    });
+
+    it("settings.profiles accepts valid groups, sends them unchanged and documents imageColumn", async () => {
+      await reg();
+      const schema = (server as any)._registeredTools["update_dashboard"].inputSchema;
+      const profiles = [
+        {
+          fieldId: "be5d4bfc7e0e",
+          label: "Speakers",
+          imageShape: "round",
+          entries: [
+            { name: "Ada Lovelace", description: "Plain text.", link: "https://example.org/ada" },
+            { id: "p2", name: "Sam", imageKey: "s3://bucket/k.png" },
+          ],
+        },
+        { fieldId: "c0ffee000001", label: "Products", imageShape: "square", entries: [{ name: "Kit" }] },
+      ];
+      const withoutRevision = await getToolCallback(server, "update_dashboard")(
+        schema.parse({ dashboardId: "d1", settings: { profiles } }),
+      );
+      expect(withoutRevision.isError).toBe(true);
+      expect(withoutRevision.content[0].text).toContain("revision");
+      expect(mockPut).not.toHaveBeenCalled();
+      const parsed = schema.parse({ dashboardId: "d1", settings: { profiles }, revision: 4 });
+      expect(parsed.settings).toEqual({ profiles });
+      await getToolCallback(server, "update_dashboard")(parsed);
+      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1", { settings: { profiles }, revision: 4 });
+      const group = (entries: unknown[], extra: Record<string, unknown> = {}) => ({
+        fieldId: "be5d4bfc7e0e",
+        label: "Speakers",
+        entries,
+        ...extra,
+      });
+      const okGroups = (groups: unknown[]) =>
+        schema.safeParse({ dashboardId: "d1", settings: { profiles: groups } }).success;
+      const ok = (entries: unknown[]) => okGroups([group(entries)]);
+      expect(ok([{ name: "A", description: "x".repeat(600) }])).toBe(true);
+      expect(ok([{ name: "A", description: "x".repeat(601) }])).toBe(false);
+      expect(ok([{ name: "" }])).toBe(false);
+      expect(ok([{ name: "x".repeat(81) }])).toBe(false);
+      expect(ok(Array.from({ length: 60 }, (_, i) => ({ name: `n${i}` })))).toBe(true);
+      expect(ok(Array.from({ length: 61 }, (_, i) => ({ name: `n${i}` })))).toBe(false);
+      expect(ok([{ name: "   " }])).toBe(false);
+      expect(ok([{ id: "ada-lovelace", name: "A" }])).toBe(true);
+      expect(ok([{ id: "Not A Slug", name: "A" }])).toBe(false);
+      expect(ok([{ id: "x".repeat(65), name: "A" }])).toBe(false);
+      expect(ok([{ name: "A", imageKey: "s3://b/" + "k".repeat(1024) }])).toBe(false);
+      expect(ok([{ name: "A", link: "javascript:alert(1)" }])).toBe(false);
+      expect(okGroups([group([]), group([])])).toBe(false);
+      expect(okGroups([group([], { label: "" })])).toBe(false);
+      expect(okGroups([group([], { imageShape: "hexagon" })])).toBe(false);
+      expect(
+        okGroups(Array.from({ length: 6 }, (_, i) => group([], { fieldId: `f${String(i).padStart(11, "0")}` }))),
+      ).toBe(false);
+      const trimmed = schema.parse({
+        dashboardId: "d1",
+        settings: { profiles: [group([{ name: "  Ada  ", imageUrl: "https://x.example/a.png" }])] },
+      });
+      expect(trimmed.settings.profiles[0].entries).toEqual([{ name: "Ada" }]);
+      const table = JSON.parse((await getToolCallback(server, "list_dashboard_widgets")({})).content[0].text)
+        .widgets.find((w: any) => w.type === "table").config;
+      expect(table).toContain("imageColumn");
+      const desc = (server as any)._registeredTools["update_dashboard"].description;
+      expect(desc).toContain("settings.profiles does not move media pages");
+      expect(desc).toContain("/v1/dashboards/:dashboardId/profile-image");
+      expect(desc).toContain("PUBLIC");
+    });
+
     it("update_dashboard sends the full spec with the revision for optimistic concurrency", async () => {
       await reg();
       await getToolCallback(server, "update_dashboard")({
@@ -429,6 +571,48 @@ describe("Tools Integration Tests", () => {
       expect(mockPost).toHaveBeenCalledWith("/v1/dashboards/insights/speakers", { folderScope: ["f1"] });
     });
 
+    it("list_dashboard_widgets documents session cards and notes actions", async () => {
+      await reg();
+      const result = await getToolCallback(server, "list_dashboard_widgets")({});
+      const data = JSON.parse(result.content[0].text);
+      const table = data.widgets.find((w: any) => w.type === "table").config;
+      const notes = data.widgets.find((w: any) => w.type === "notes").config;
+      for (const key of ["display", "cards", "card?:", "titleColumn", "subtitleColumns", "detailColumns", "showDuration", "openMedia", "layout", "rowBy", "rowOrder", "hero", "snap-scroll", "each 1-80 chars", "first page only"]) {
+        expect(table).toContain(key);
+      }
+      for (const key of ["actions", "openChat", "goToSection", "sectionId", "isPromptAsk", "max 3"]) {
+        expect(notes).toContain(key);
+      }
+      expect(JSON.stringify(data)).toContain("1-250");
+    });
+
+    it("dashboard folder source accepts 250 folder ids and rejects 251", async () => {
+      const { sourceInputSchema, MAX_DASHBOARD_SOURCE_FOLDERS } = await import("../src/tools/dashboards.js");
+      const ids = (n: number) => Array.from({ length: n }, (_, i) => `f${i}`);
+      expect(MAX_DASHBOARD_SOURCE_FOLDERS).toBe(250);
+      expect(sourceInputSchema.safeParse({ type: "folders", folderIds: ids(250) }).success).toBe(true);
+      expect(sourceInputSchema.safeParse({ type: "folders", folderIds: ids(251) }).success).toBe(false);
+    });
+
+    it("create_dashboard passes a cards table and a notes action through unchanged", async () => {
+      await reg();
+      const table = {
+        rowsAre: "records",
+        rowClick: "openMedia",
+        display: "cards",
+        columns: [{ header: "Session", field: "Title" }, { header: "Speaker", field: "Speaker" }],
+        card: { titleColumn: "Session", subtitleColumns: ["Speaker"], showDuration: true },
+      };
+      const notes = { content: "Start here", actions: [{ label: "Ask", action: "openChat" }] };
+      await getToolCallback(server, "create_dashboard")({
+        title: "D",
+        widgets: [{ type: "table", id: "t", config: table }, { type: "notes", id: "n", config: notes }],
+      });
+      const body = mockPost.mock.calls.at(-1)![1] as any;
+      expect(body.spec.widgets[0].config).toEqual(table);
+      expect(body.spec.widgets[1].config).toEqual(notes);
+    });
+
     it("list_dashboard_widgets returns the widget catalog and design rules (no API call)", async () => {
       await reg();
       const result = await getToolCallback(server, "list_dashboard_widgets")({});
@@ -467,6 +651,66 @@ describe("Tools Integration Tests", () => {
       expect(data.designRules.join(" ")).toContain("narrative");
       expect(data.designRules.join(" ")).toContain("every widget earns its place");
       expect(mockGet).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Voice agent tools", () => {
+    it("update_voice_agent forwards chatSettings to PUT /v1/voice/agents/:id unmodified", async () => {
+      const { register } = await import("../src/tools/voice.js");
+      register(server, mockClient);
+
+      const callback = getToolCallback(server, "update_voice_agent");
+      await callback({
+        agentId: "agent-1",
+        chatSettings: {
+          welcomeMessage: "New welcome",
+          maxResponseLength: 40,
+          responsePace: "normal",
+        },
+      });
+
+      expect(mockPut).toHaveBeenCalledWith("/v1/voice/agents/agent-1", {
+        chatSettings: {
+          welcomeMessage: "New welcome",
+          maxResponseLength: 40,
+          responsePace: "normal",
+        },
+      });
+    });
+
+    it("accepts conversationMode values that match speak-server's real enum (voice/avatar)", async () => {
+      const { register } = await import("../src/tools/voice.js");
+      register(server, mockClient);
+
+      const callback = getToolCallback(server, "update_voice_agent");
+      await callback({ agentId: "agent-1", conversationMode: "avatar" });
+
+      expect(mockPut).toHaveBeenCalledWith("/v1/voice/agents/agent-1", {
+        conversationMode: "avatar",
+      });
+    });
+
+    it("rejects the old mismatched conversationMode values at the schema level (MCP protocol validates before dispatching to the handler)", async () => {
+      const { voiceInputSchema } = await import("../src/tools/voice.js");
+      const schema = z.object(voiceInputSchema).partial();
+
+      expect(schema.safeParse({ conversationMode: "voice_only" }).success).toBe(false);
+      expect(schema.safeParse({ conversationMode: "video_avatar" }).success).toBe(false);
+      expect(schema.safeParse({ conversationMode: "avatar" }).success).toBe(true);
+      expect(schema.safeParse({ conversationMode: "voice" }).success).toBe(true);
+    });
+
+    it("get_agent_analytics sends its range and flags as query params to GET /v1/voice/analytics/agent", async () => {
+      const { register } = await import("../src/tools/voice.js");
+      register(server, mockClient);
+
+      const params = { agentId: "agent-1", start: "2026-09-01", end: "2026-10-01", tz: "America/Toronto", compare: true, includeTests: false };
+      await getToolCallback(server, "get_agent_analytics")(params);
+
+      expect(mockGet).toHaveBeenCalledWith("/v1/voice/analytics/agent", { params });
+      const schema = (server as any)._registeredTools["get_agent_analytics"].inputSchema;
+      expect(schema.safeParse({}).success).toBe(false);
+      expect(schema.safeParse({ agentId: "agent-1" }).success).toBe(true);
     });
   });
 });

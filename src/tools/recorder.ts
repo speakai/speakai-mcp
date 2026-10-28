@@ -48,7 +48,7 @@ const recorderConfigShape = {
   notification: z
     .record(z.unknown())
     .optional()
-    .describe("Notification toggles: { upload, client } — booleans"),
+    .describe("Notification toggles: { upload, client }, both booleans. upload emails the recorder owner (if they opted in to submission emails) and any users in notifyUsers about each new submission; client emails a confirmation to each respondent who gives an email."),
   meta: z
     .record(z.unknown())
     .optional()
@@ -89,7 +89,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "create_recorder",
-    "Create a new recorder or survey for collecting audio/video submissions.",
+    "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
     {
       name: z.string().describe("Display name for the recorder"),
       ...recorderConfigShape,
@@ -103,9 +103,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Recorder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -154,7 +154,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "clone_recorder",
-    "Duplicate an existing recorder including all its settings and questions.",
+    "Duplicate an existing recorder including all its settings and questions. The copy gets its own public link, accepts submissions right away and sends the same submission emails, webhooks and automations as any recorder. Fires the workspace's embed_recorder.created webhook if one is registered.",
     {
       recorderId: z.string().min(1).describe("ID of the recorder to clone"),
       name: z.string().optional().describe("Name for the cloned recorder"),
@@ -164,9 +164,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Clone Recorder",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -269,7 +269,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_recorder_settings",
-    "Update configuration settings for a recorder (branding, capture options, etc.). `name` must always be supplied.",
+    "Update configuration settings for a recorder (branding, capture options, etc.). Only the supplied settings change, and they apply to the recorder's live public page right away. `name` must always be supplied.",
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder"),
       name: z.string().describe("Display name for the recorder"),
@@ -278,9 +278,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Update Recorder Settings",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ recorderId, ...body }) => {
       try {
@@ -299,7 +299,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_recorder_questions",
-    "Update the survey questions and respondent-info settings for a recorder.",
+    "Update the survey questions and respondent-info settings for a recorder. The `questions` array replaces the recorder's existing questions, and changes apply to the recorder's live public page right away.",
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder"),
       name: z.boolean().optional().describe("Whether to collect the respondent's name"),
@@ -321,7 +321,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ recorderId, ...body }) => {
       try {
@@ -340,7 +340,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "delete_recorder",
-    "Permanently delete a recorder/survey. Existing recordings are preserved.",
+    "Permanently delete a recorder/survey. Its public link stops accepting submissions. Existing recordings are preserved. Fires the workspace's embed_recorder.deleted webhook if one is registered.",
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder to delete"),
     },
@@ -349,7 +349,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ recorderId }) => {
       try {

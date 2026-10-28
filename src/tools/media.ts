@@ -1,18 +1,27 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, ok, err } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 import {
   isVideoFile,
   getMimeType,
+  detectImageMimeType,
   SUPPORTED_URL_SOURCES,
   UNSUPPORTED_URL_SOURCES,
 } from "../media-utils.js";
 
 export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
 export const LIST_MEDIA_MAX_PAGE_SIZE = 100;
+const THUMBNAIL_MAX_BYTES = 10 * 1024 * 1024;
+const THUMBNAIL_POLL_TIMEOUT_MS = 60_000;
+const THUMBNAIL_POLL_INTERVAL_MS = 3_000;
+const THUMBNAIL_FILE_EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 
 /** Scopes a media name search to the name field; an unscoped search also scans every transcript. */
 export const toNameFilter = (text: string): string => (/^name:/i.test(text) ? text : `name:${text}`);
@@ -65,14 +74,14 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 2. Upload media
   registerSpeakTool(server, 
     "upload_media",
-    `Upload media from a URL — a direct/public file URL, a pre-signed S3 URL, or a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Processing is asynchronous — after uploading, use get_media_status to poll until state is 'processed' (typically 1-3 minutes for audio under 60 min), then use get_transcript and get_media_insights to retrieve results. For a single call that handles everything, use upload_and_analyze instead. For local files, use upload_local_file.`,
+    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and sends the media.created event to the workspace's webhooks and Slack channels if any are configured. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
       name: z.string().min(1).describe("Display name for the media file"),
       url: z
         .string()
         // A plain literal, not a template: the docs generator drops a tool's whole parameter
         // table when a description interpolates a value it cannot resolve statically.
-        .describe("Direct/public media file URL, pre-signed S3 URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
+        .describe("Direct public media file URL, a URL returned by get_signed_upload_url, or a page link from a platform listed in this tool's description. Page links are resolved server-side, so pass the URL the user gave you as-is."),
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]])
         .optional()
@@ -81,7 +90,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       sourceLanguage: z
         .string()
         .optional()
-        .describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL"'),
+        .describe('BCP-47 language code for transcription, e.g. "en-US" or "he-IL". Omit to use the default language on the user profile. An unsupported code falls back to automatic detection instead of failing.'),
       tags: z
         .string()
         .optional()
@@ -89,11 +98,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       folderId: z
         .string()
         .optional()
-        .describe("ID of the folder to place the media in"),
+        .describe("ID of the folder to place the media in. If the folder is not found, the media goes to the workspace's first folder."),
       callbackUrl: z
         .string()
         .optional()
-        .describe("Webhook callback URL for this specific upload"),
+        .describe("URL that replaces the workspace webhook's destination for this media's webhook events. It takes effect only when the workspace already has an active webhook for the event; on its own it does not create a webhook or send anything."),
       fields: z
         .array(
           z.object({
@@ -102,12 +111,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           })
         )
         .optional()
-        .describe("Custom field values to attach to the media"),
+        .describe("Custom field values to attach to the media. Field IDs that do not belong to the workspace are ignored without an error."),
     },
     {
       title: "Upload Media from URL",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -235,7 +244,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 4. Get media insights
   registerSpeakTool(server, 
     "get_media_insights",
-    "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead.",
+    "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },
@@ -307,7 +316,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
               .string()
               .min(1)
               .describe(
-                "Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. \"Speaker 0\", \"Vatsal Shah\"), or its numeric id from insight.speakers[].id (e.g. \"0\"). Not a fixed identifier — it changes when the speaker is renamed."
+                "Which speaker to rename. Accepts the speaker's CURRENT label exactly as it appears in the transcript (e.g. \"Speaker 0\", \"Jane Doe\"), or its numeric id from insight.speakers[].id (e.g. \"0\"). Not a fixed identifier — it changes when the speaker is renamed."
               ),
             name: z.string().min(1).describe("New display name to assign to the speaker"),
           })
@@ -388,7 +397,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 7. Get media status
   registerSpeakTool(server, 
     "get_media_status",
-    "Check the processing status of a media file. States: pending → transcribing → analyzing → processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results.",
+    "Check the processing status of a media file. States: pending → transcribing → analyzing → processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
     },
@@ -419,7 +428,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 8. Update media metadata
   registerSpeakTool(server, 
     "update_media_metadata",
-    "Update metadata fields (name, description, tags, status) for an existing media file.",
+    "Update metadata fields (name, description, tags, status) for an existing media file. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file"),
       name: z.string().describe("Display name for the media (required — the server replaces the metadata)"),
@@ -450,7 +459,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ mediaId, ...body }) => {
       try {
@@ -472,7 +481,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 9. Delete media
   registerSpeakTool(server, 
     "delete_media",
-    "Permanently delete a media file and all associated transcripts and insights.",
+    "Permanently delete a media file and all associated transcripts and insights. Sends the media.deleted event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file to delete"),
     },
@@ -481,7 +490,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ mediaId }) => {
       try {
@@ -605,7 +614,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Toggle Media Favorite",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: true,
       openWorldHint: false,
     },
@@ -629,7 +638,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 14. Re-analyze media
   registerSpeakTool(server, 
     "reanalyze_media",
-    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below.",
+    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts. Sends the media.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
       isInsights: z.boolean().optional().describe("Re-run insights analysis"),
@@ -640,9 +649,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Re-analyze Media",
       readOnlyHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async ({ mediaId, ...params }) => {
       try {
@@ -678,7 +687,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
               .string()
               .min(1)
               .describe(
-                "Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. \"Vatsal Shah\"). Only safe when that label already identifies the same person in every file listed — a default label like \"Speaker 1\", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed."
+                "Which speaker to rename, matched against every file in mediaIds. Use the speaker's CURRENT label (e.g. \"Jane Doe\"). Only safe when that label already identifies the same person in every file listed — a default label like \"Speaker 1\", and any numeric id, is a per-file position and means a different person in each file. Not a fixed identifier: it changes when the speaker is renamed."
               ),
             name: z.string().min(1).describe("New display name to assign to the speaker"),
           })
@@ -728,7 +737,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 16. Bulk move media to folder
   registerSpeakTool(server, 
     "bulk_move_media",
-    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
+    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
     {
       folderId: z.string().min(1).describe("Target folder ID to move media into"),
       mediaIds: z
@@ -741,7 +750,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: false,
+      openWorldHint: true,
     },
     async (body) => {
       try {
@@ -756,6 +765,89 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
           isError: true,
         };
+      }
+    }
+  );
+
+  registerSpeakTool(server,
+    "set_media_thumbnail",
+    "Set a custom thumbnail for a video. Send exactly one of imageUrl, imageBase64 or atSeconds. " +
+      "The image must be JPEG, PNG or WebP and at most 10 MB; the type is judged from the file bytes, not the name. " +
+      "atSeconds uses the video frame at that moment; this tool waits up to 60 seconds for the frame and returns its url, or says it is still processing (check later with get_media_status, which carries the thumbnail field). " +
+      "Each call replaces the current custom thumbnail, and there is no way back to the automatic one. " +
+      "Needs permission to edit the media. Errors: 400 bad input, unsupported image, blocked link or failed frame; 413 image too large; 409 a frame is already being made; 503 frame service busy, try again shortly.",
+    {
+      mediaId: z.string().min(1).describe("Unique identifier of the video"),
+      imageUrl: z
+        .string()
+        .url()
+        .refine((value) => /^https:\/\//i.test(value), "imageUrl must be an https URL")
+        .optional()
+        .describe("A public https link to a JPEG, PNG or WebP image of at most 10 MB. The server downloads it."),
+      imageBase64: z
+        .string()
+        .min(1)
+        .optional()
+        .describe("The image bytes in base64 (JPEG, PNG or WebP, at most 10 MB once decoded). A data:image/...;base64, prefix is allowed."),
+      atSeconds: z
+        .number()
+        .min(0)
+        .optional()
+        .describe("Use the video frame at this many seconds from the start. Values past the end use the last second."),
+    },
+    {
+      title: "Set Media Thumbnail",
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+    async ({ mediaId, imageUrl, imageBase64, atSeconds }) => {
+      const modes = [imageUrl, imageBase64, atSeconds].filter((value) => value !== undefined);
+      if (modes.length !== 1) {
+        return err(new Error("Send exactly one of imageUrl, imageBase64 or atSeconds."));
+      }
+      const path = `/v1/media/${mediaId}/thumbnail`;
+      try {
+        if (imageUrl !== undefined) {
+          const result = await api.put(path, { url: imageUrl });
+          return ok(result.data);
+        }
+        if (imageBase64 !== undefined) {
+          const bytes = Buffer.from(imageBase64.replace(/^data:[^,]*;base64,/i, ""), "base64");
+          if (bytes.length === 0) {
+            return err(new Error("imageBase64 decoded to an empty file."));
+          }
+          if (bytes.length > THUMBNAIL_MAX_BYTES) {
+            return err(new Error("The image is larger than 10 MB."));
+          }
+          const mimeType = detectImageMimeType(bytes);
+          if (!mimeType) {
+            return err(new Error("The image must be a JPEG, PNG or WebP file."));
+          }
+          const form = new FormData();
+          form.append("image", new Blob([bytes], { type: mimeType }), `thumbnail.${THUMBNAIL_FILE_EXTENSIONS[mimeType]}`);
+          const result = await api.put(path, form, { headers: { "Content-Type": "multipart/form-data" } });
+          return ok(result.data);
+        }
+        await api.put(path, { seekSec: atSeconds });
+        const deadline = Date.now() + THUMBNAIL_POLL_TIMEOUT_MS;
+        while (Date.now() < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, THUMBNAIL_POLL_INTERVAL_MS));
+          const detail = await api.get(`/v1/media/status/${mediaId}`);
+          const thumbnail = detail.data?.data?.thumbnail;
+          if (!thumbnail || thumbnail.pending) continue;
+          if (thumbnail?.error) {
+            return err(new Error(`The frame could not be used: ${thumbnail.error}`));
+          }
+          return ok({ thumbnail });
+        }
+        return ok({
+          thumbnail: { pending: true },
+          message: "The frame is still processing. Check the thumbnail field with get_media_status in a minute.",
+        });
+      } catch (error) {
+        return err(error);
       }
     }
   );
