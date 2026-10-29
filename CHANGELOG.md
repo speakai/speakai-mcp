@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.39.3 (2026-10-29)
+
+- Maintenance release
+
 ## v1.39.2 (2026-10-28)
 
 - fix(media): list_media and the CLI search media names only
