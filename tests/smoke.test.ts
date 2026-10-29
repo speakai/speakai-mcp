@@ -104,6 +104,8 @@ describe("MCP Server Smoke Tests", () => {
     const tools = getRegisteredTools(server);
     for (const [name, tool] of Object.entries(tools)) {
       expect(tool.outputSchema, `Tool ${name} missing outputSchema`).toBeTruthy();
+      expect(tool.annotations?.title, `Tool ${name} missing annotations.title`).toBeTruthy();
+      expect(tool.annotations?.title, `Tool ${name} title out of step`).toBe(tool.title);
       expect(
         tool.annotations?.readOnlyHint,
         `Tool ${name} missing readOnlyHint`

@@ -64,16 +64,14 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
   annotations: SpeakToolAnnotations,
   handler: ToolCallback<InputSchema>
 ): RegisteredTool {
-  const { title, ...toolAnnotations } = annotations;
-
   return server.registerTool(
     name,
     {
-      title,
+      title: annotations.title,
       description,
       inputSchema,
       outputSchema: passthroughOutputSchema,
-      annotations: toolAnnotations,
+      annotations,
     },
     (async (...args: Parameters<ToolCallback<InputSchema>>) => {
       const result = await handler(...args);
