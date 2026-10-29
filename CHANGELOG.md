@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.40.0 (2026-10-29)
+
+- feat(plugin): ship OpenAI review test cases and demo video in the package
+
 ## v1.39.5 (2026-10-29)
 
 - fix(tools): send each tool's title in its annotations too
