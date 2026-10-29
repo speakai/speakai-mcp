@@ -1,11 +1,17 @@
-# Speak AI plugin for Claude
+# Speak AI
 
-Connects Claude to Speak AI, so you can search and summarize your meetings, interviews and
-recordings, pull verbatim quotes, cut clips, run async voice and video surveys, and automate
-workflows without leaving the conversation. Eight skills teach Claude which Speak AI tools to
-use for each job and in what order.
+Speak AI transcribes and analyzes your meetings, interviews, sales calls, research sessions,
+webinars and podcasts. This plugin connects Claude to your Speak AI workspace, so you can search
+and summarize recordings, pull verbatim quotes, cut clips, run async voice and video surveys,
+send a meeting assistant to a call, and automate workflows without leaving the conversation.
+Eight skills teach Claude which Speak AI tools to use for each job and in what order.
 
 Full documentation: <https://docs.speakai.co/mcp/plugin>
+
+## What you need
+
+A Speak AI account. The first time Claude uses a Speak AI tool, it opens Speak AI's sign-in and
+consent screen. You approve access once, and there is no API key to copy or paste.
 
 ## What this plugin runs and connects to
 
@@ -13,13 +19,21 @@ Full documentation: <https://docs.speakai.co/mcp/plugin>
   tool call goes to that Speak AI endpoint over HTTPS and nowhere else.
 - **No local code.** The plugin starts no process, installs no package and runs no hooks or
   scripts on your machine.
-- **OAuth sign-in.** The first time a tool is used, Claude opens Speak AI's consent screen.
-  You approve access once; no API key is stored in the plugin or read from your environment.
+- **OAuth sign-in.** Access is granted through Speak AI's consent screen. No API key is stored
+  in the plugin or read from your environment.
 - **Skills** in `skills/`, which are Markdown instructions only.
 
-What the tools can do inside your Speak AI workspace depends on the permissions of the account
-you sign in with. Tools that delete, overwrite or send data outside Speak AI are marked as such,
-so Claude asks before running them.
+## Your data
+
+- The plugin sends your requests, and the details needed to carry them out, such as a search
+  query or a recording's id, only to Speak AI's server above.
+- Your recordings, transcripts and insights stay in your Speak AI workspace. Claude reads only
+  what a request needs, with the permissions of the account you sign in with.
+- Tools that delete, overwrite, spend credits or send data outside Speak AI, such as webhooks,
+  email or Slack notifications from automations, are marked as such, so Claude asks before
+  running them.
+- Speak AI's privacy policy: <https://speakai.co/privacy-policy/>. Terms of service:
+  <https://speakai.co/terms-of-service/>.
 
 ## Install
 
@@ -49,6 +63,7 @@ locally over stdio, install `@speakai/mcp-server` directly with an API key from
 
 - Find the last 10 customer interviews that mention pricing, group the feedback by theme, and cite the source recordings.
 - Summarize this week's team meetings into decisions, action items, owners, and unresolved risks.
+- Join my 2pm Zoom call, then give me the action items once the recording is processed.
 - Pull exact customer quotes about onboarding friction from recent research calls and format them for a product brief.
 - Find a strong 30-second highlight from the latest webinar, create a clip, and export captions.
 
@@ -57,10 +72,11 @@ locally over stdio, install `@speakai/mcp-server` directly with an API key from
 - If tools do not appear, run `/mcp` in Claude Code and check that the `speakai` server is connected.
 - If authentication fails, remove the connection and approve the consent screen again.
 
-## For maintainers
+## Help and links
 
-This folder holds only what Claude reads. The Agent Plugins, Codex and OpenAI package lives in
-`../speakai-mcp-portable/`. The version, tool counts and listing links are derived values, and
-`npm run sync` keeps both folders in step. The skills in this folder are the source; the copies
-in the portable folder are generated from them. Test locally with
-`claude --plugin-dir ./plugins/speakai-mcp`.
+- Documentation: <https://docs.speakai.co/mcp/>
+- Support: <https://docs.speakai.co/help/>
+- Speak AI: <https://speakai.co>
+
+Maintainers: the version and tool counts in this folder are derived values kept in step by
+`npm run sync`. The OpenAI and Codex package lives in `../speakai-mcp-portable/`.
