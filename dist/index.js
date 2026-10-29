@@ -216,15 +216,14 @@ function err(error) {
   };
 }
 function registerSpeakTool(server, name, description, inputSchema, annotations, handler) {
-  const { title, ...toolAnnotations } = annotations;
   return server.registerTool(
     name,
     {
-      title,
+      title: annotations.title,
       description,
       inputSchema,
       outputSchema: passthroughOutputSchema,
-      annotations: toolAnnotations
+      annotations
     },
     (async (...args2) => {
       const result = await handler(...args2);
