@@ -95,7 +95,7 @@
             },
             {
               "description": "Do not invoke Speak AI for calendar scheduling without meeting-assistant intent.",
-              "prompt": "Put a dentist appointment on my Google Calendar tomorrow at 2 PM.",
+              "prompt": "Put a team lunch on my Google Calendar tomorrow at noon.",
               "expected_behavior": "Speak AI is not called. The request is ordinary calendar scheduling and does not ask for the Speak AI meeting assistant."
             },
             {

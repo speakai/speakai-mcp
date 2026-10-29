@@ -379,7 +379,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
             if (spec.folderFromPayload) {
               // sourceKey must be a {{trigger.payload.*}} token (the canvas always
               // stores tokens; a bare key does not resolve at run time). Accept
-              // "clinicName", "payload.clinicName", or a full token.
+              // "teamName", "payload.teamName", or a full token.
               const rawKey = String(spec.folderFromPayload);
               const sourceKey = rawKey.includes("{{")
                 ? rawKey

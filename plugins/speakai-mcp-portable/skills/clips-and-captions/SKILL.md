@@ -279,5 +279,5 @@ file carries whatever the labels were at export time. Fix labels first with
 `update_transcript_speakers`, then export.
 
 **Redaction is opt-in.** Exports are not redacted unless you set `isRedacted`.
-If the user mentions customer names, health information, or anything regulated,
+If the user mentions customer names, personal details, or anything regulated,
 set it.
