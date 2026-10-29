@@ -230,7 +230,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
   describe("Prompt tools", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient);
+      register(server, mockClient, { aiChat: true });
     });
 
     it("ask_ai_chat sends all params", async () => {
@@ -631,7 +631,7 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
   describe("Prompt tools — schema rejects invalid inputs", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient);
+      register(server, mockClient, { aiChat: true });
     });
 
     it("ask_ai_chat schema rejects empty prompt", () => {

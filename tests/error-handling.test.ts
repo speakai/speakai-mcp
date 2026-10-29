@@ -220,7 +220,7 @@ describe("Error Handling & Resilience", () => {
 
     it("prompt tools handle errors", async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient);
+      register(server, mockClient, { aiChat: true });
 
       mockPost.mockRejectedValueOnce(axiosError(503, { message: "Service unavailable" }));
 

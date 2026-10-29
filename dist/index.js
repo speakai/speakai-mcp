@@ -4911,7 +4911,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "list_media",
-    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript, get_media_insights, or ask_ai_chat. For deep full-text search across transcripts, use search_media instead.",
+    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript or get_media_insights. For deep full-text search across transcripts, use search_media instead.",
     {
       mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO, MediaType.TEXT]).optional().describe('Filter by media type: "audio", "video", or "text"'),
       page: import_zod2.z.number().int().min(0).optional().describe("Page number for pagination (0-based, default: 0)"),
@@ -4970,7 +4970,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "get_media_insights",
-    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For asking custom questions about a media file, use ask_ai_chat instead. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
+    "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
     },
@@ -6781,7 +6781,7 @@ var prompt_exports = {};
 __export(prompt_exports, {
   register: () => register7
 });
-function register7(server, client) {
+function register7(server, client, options = {}) {
   const api = client ?? speakClient;
   const askAiChatDescription = [
     "Ask an AI-powered question about your media using Speak AI's AI Chat.",
@@ -6878,7 +6878,7 @@ function register7(server, client) {
       };
     }
   };
-  registerSpeakTool(
+  if (options.aiChat) registerSpeakTool(
     server,
     "ask_ai_chat",
     askAiChatDescription,
@@ -6886,7 +6886,7 @@ function register7(server, client) {
     askAiChatAnnotations,
     askAiChatHandler
   );
-  registerSpeakTool(
+  if (options.aiChat) registerSpeakTool(
     server,
     "get_analysis_quote",
     "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason \u2014 an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
@@ -6918,7 +6918,7 @@ function register7(server, client) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.aiChat) registerSpeakTool(
     server,
     "retry_ai_chat",
     "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
@@ -6950,7 +6950,7 @@ function register7(server, client) {
   registerSpeakTool(
     server,
     "get_chat_history",
-    "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_ai_chat or retrieve full messages via get_chat_messages.",
+    "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to retrieve full messages via get_chat_messages.",
     {
       limit: import_zod8.z.number().int().positive().optional().describe("Number of recent conversations to return (default: 10)")
     },
@@ -13155,7 +13155,7 @@ function registerPrompts(server) {
               ``,
               `Steps:`,
               `1. Use search_media to find relevant media matching this topic`,
-              `2. For the most relevant results, use ask_ai_chat with the matching mediaIds to ask: "${topic}"`,
+              `2. For the most relevant results, read the transcript with get_transcript and the insights with get_media_insights, looking for: "${topic}"`,
               `3. Synthesize findings across all results:`,
               `   - Common themes and patterns`,
               `   - Notable quotes or data points`,
@@ -14949,7 +14949,7 @@ if (isCliMode) {
             name: "speak-ai",
             version: "1.0.0"
           });
-          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true });
+          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
           registerResources2(server);
           registerPrompts2(server);
           const transport = new StdioServerTransport();

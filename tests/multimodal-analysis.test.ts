@@ -87,7 +87,7 @@ describe("ask_ai_chat — analysis fields", () => {
     mockPost.mockResolvedValue({ data: { data: { promptId: "p1", messageId: "m1" } } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/prompt.js");
-    register(server, mockClient);
+    register(server, mockClient, { aiChat: true });
   });
 
   // The strip trap, tested through the real parser rather than by inspecting the shape: zod
@@ -233,7 +233,7 @@ describe("get_analysis_quote", () => {
     mockGet.mockResolvedValue({ data: { data: { eligible: true, credits: 0.42, seconds: 900 } } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/prompt.js");
-    register(server, mockClient);
+    register(server, mockClient, { aiChat: true });
   });
 
   it("queries the quote endpoint with the media and mode", async () => {
