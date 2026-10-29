@@ -3,9 +3,9 @@
  * from plugins/speakai-mcp-portable.
  *
  * OpenAI reads the package identity from the root plugin.json, and an update must
- * keep the name OpenAI assigned to the existing listing. Everything else in the
- * repo keeps "speakai-mcp" (the Codex manifest, the Claude plugin and both
- * marketplaces), so only the ZIP's root plugin.json name is swapped. verify-plugin
+ * keep the name OpenAI assigned to the existing listing. The repo keeps its own
+ * names ("speakai-mcp" for the portable and Codex manifests, "speakai" for the
+ * Claude plugin), so only the ZIP's root plugin.json name is swapped. verify-plugin
  * runs first.
  *
  *   npx tsx scripts/build-openai-zip.ts

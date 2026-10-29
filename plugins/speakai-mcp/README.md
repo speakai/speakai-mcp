@@ -25,7 +25,7 @@ so Claude asks before running them.
 
 ```sh
 claude plugin marketplace add speakai/speakai-mcp
-claude plugin install speakai-mcp@speakai
+claude plugin install speakai@speakai
 ```
 
 The same remote server also works as a connector on claude.ai. If you need the server running

@@ -198,7 +198,7 @@ const RULES: Rule[] = [
     if (d.owner) d.owner.name = root.author.name;
     for (const plugin of d.plugins ?? []) {
       if (plugin.version) plugin.version = version;
-      if (plugin.name === root.name) {
+      if (plugin.source === "./plugins/speakai-mcp") {
         plugin.author = { name: root.author.name, email: root.author.email };
         plugin.keywords = root.keywords;
       }
