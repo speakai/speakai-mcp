@@ -978,54 +978,21 @@ AI: → list_media(from: "2026-04-18", mediaType: "audio")
 
 ### Authentication (REST API)
 
-The MCP server and CLI handle token management automatically. If you're calling the REST API directly, here's the full auth flow:
-
-**Step 1: Get an access token**
-
-```bash
-curl -X POST https://api.speakai.co/v1/auth/accessToken \
-  -H "Content-Type: application/json" \
-  -H "x-speakai-key: YOUR_API_KEY"
-```
-
-Response:
-
-```json
-{
-  "data": {
-    "email": "you@example.com",
-    "accessToken": "eyJhbG...",
-    "refreshToken": "eyJhbG..."
-  }
-}
-```
-
-**Step 2: Use the token on all subsequent requests**
+The MCP server and CLI handle authentication for you. If you call the REST API directly, send your Speak AI API key on every request, using either header:
 
 ```bash
 curl https://api.speakai.co/v1/media \
-  -H "x-speakai-key: YOUR_API_KEY" \
-  -H "x-access-token: ACCESS_TOKEN_FROM_STEP_1"
+  -H "x-speakai-key: YOUR_API_KEY"
 ```
-
-**Step 3: Refresh before expiry**
 
 ```bash
-curl -X POST https://api.speakai.co/v1/auth/refreshToken \
-  -H "Content-Type: application/json" \
-  -H "x-speakai-key: YOUR_API_KEY" \
-  -H "x-access-token: CURRENT_ACCESS_TOKEN" \
-  -d '{"refreshToken": "REFRESH_TOKEN_FROM_STEP_1"}'
+curl https://api.speakai.co/v1/media \
+  -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
-**Token Lifetimes:**
+There is no token to fetch or refresh. Create and revoke keys at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
 
-| Token | Expiry | How to Renew |
-|---|---|---|
-| Access token | 80 minutes | Refresh endpoint or re-authenticate |
-| Refresh token | 24 hours | Re-authenticate with API key |
-
-**Auth Rate Limits:** 5 requests per 30 seconds on both `/v1/auth/accessToken` and `/v1/auth/refreshToken`.
+Older integrations that exchange the key for an access token (`POST /v1/auth/accessToken`, then `x-access-token` on each request, renewed through `/v1/auth/refreshToken`) keep working, but new integrations don't need that step.
 
 ### Data model notes
 
