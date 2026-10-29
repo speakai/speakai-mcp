@@ -238,6 +238,7 @@ When you click **Allow** on the permission popup (or paste your Speak AI API key
 
 - Your recordings stay in your Speak AI workspace. They are not copied or stored by Anthropic or OpenAI.
 - The AI assistant only sees the specific data it requests for the question you asked.
+- When you approve the permission popup, Speak AI creates an API key in your account that is linked to that assistant and used only for its requests. You never need to create or paste one yourself. Revoking the connection also revokes that key.
 - You can disconnect at any time by either removing the connector inside your AI assistant, revoking the connection at [api.speakai.co/v1/oauth/connections](https://api.speakai.co/v1/oauth/connections), or rotating/revoking your API key at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
 
 For questions about data handling, see [speakai.co/privacy](https://speakai.co/privacy) or email [success@speakai.co](mailto:success@speakai.co).

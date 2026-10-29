@@ -14,7 +14,8 @@ assistants. Setup guides for each are at <https://docs.speakai.co/mcp/>.
 ## What you need
 
 A Speak AI account. The first time Claude uses a Speak AI tool, it opens Speak AI's sign-in and
-consent screen. You approve access once, and there is no API key to copy or paste.
+consent screen. You approve access once, and there is no API key to copy or paste: Speak AI
+creates a key linked to Claude in your account, and revoking the connection revokes it.
 
 ## What this plugin runs and connects to
 
