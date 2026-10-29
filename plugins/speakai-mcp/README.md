@@ -8,6 +8,9 @@ Eight skills teach Claude which Speak AI tools to use for each job and in what o
 
 Full documentation: <https://docs.speakai.co/mcp/plugin>
 
+The same Speak AI server also works in ChatGPT, Cursor, VS Code, Windsurf, Muse and other AI
+assistants. Setup guides for each are at <https://docs.speakai.co/mcp/>.
+
 ## What you need
 
 A Speak AI account. The first time Claude uses a Speak AI tool, it opens Speak AI's sign-in and
