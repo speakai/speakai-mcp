@@ -12004,7 +12004,7 @@ function register19(server, client, options = {}) {
     "create_voice_agent_from_prompt",
     "Create a new voice agent from a plain-English description, via an LLM call. Requires the OWNER or ADMIN role. Saves a draft agent, then generates and saves its name, personality, instructions, chat settings, and default voice, speech-to-text, and LLM settings. Does not assign a phone number. The response includes the new agentId plus either the generated agent, or needsFollowUp: true with a followUpQuestion when the prompt is too vague. In that case the draft agent still exists with placeholder settings; call generate_voice_agent_config on that agentId with more detail.",
     {
-      prompt: import_zod21.z.string().min(1).describe('Plain-English description of the agent to build, e.g. "a friendly dental clinic receptionist that books appointments and answers insurance questions".'),
+      prompt: import_zod21.z.string().min(1).describe('Plain-English description of the agent to build, e.g. "a friendly front desk agent for a software company that answers product questions and books demos".'),
       name: import_zod21.z.string().optional().describe("Initial name for the draft agent. Replaced by the generated name when generation succeeds; kept only if the response asks a follow-up question."),
       manualInstructions: import_zod21.z.string().optional().describe("Requirements the generated instructions must include. Generation still runs; when this is sent, no follow-up question is returned even if the prompt is vague.")
     },
