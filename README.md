@@ -260,14 +260,14 @@ Speak AI ships 189 tools your AI assistant can call. You don't need to memorize 
 
 | Ask | Tools used (auto) |
 |---|---|
-| "Find customer interviews about pricing and group the feedback by theme" | `search_media`, `ask_ai_chat` |
+| "Find customer interviews about pricing and group the feedback by theme" | `search_media`, `get_transcript` |
 | "Summarize this week's meetings into decisions, owners, and risks" | `list_media`, `get_media_insights` |
-| "Pull action items from yesterday's call" | `get_media_insights`, `ask_ai_chat` |
+| "Pull action items from yesterday's call" | `list_media`, `get_media_insights` |
 | "Schedule the AI to join my 2pm Zoom" | `schedule_meeting_event` |
 | "Pull the live transcript from my current MS Teams meeting since last fetch" | `list_meeting_events`, `get_live_meeting_transcript` |
 | "Find a 30-second webinar highlight and export captions" | `create_clip`, `export_media` |
 | "Export the transcript as a PDF and captions as SRT" | `export_media` |
-| "Compare Q1 sales calls against Q2 sales calls and summarize changed objections" | `search_media`, `ask_ai_chat` |
+| "Compare Q1 sales calls against Q2 sales calls and summarize changed objections" | `search_media`, `get_transcript` |
 
 Full tool catalog is in the developer reference below.
 
