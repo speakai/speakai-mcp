@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.40.1 (2026-10-29)
+
+- fix(plugin): use neutral examples so the listing does not read as healthcare
+
 ## v1.40.0 (2026-10-29)
 
 - feat(plugin): ship OpenAI review test cases and demo video in the package
