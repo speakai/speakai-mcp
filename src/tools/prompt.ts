@@ -2,10 +2,11 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
+import type { RegisterOptions } from "./index.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { AssistantType } from "@speakai/shared";
 
-export function register(server: McpServer, client?: AxiosInstance): void {
+export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
 
   // ── Chat (AI Chat) ──────────────────────────────────────────────────
@@ -197,7 +198,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   };
 
-  registerSpeakTool(
+  // Speak's assistant behind AI Chat can call other tools, so only servers that opt in expose it.
+  if (options.aiChat) registerSpeakTool(
     server,
     "ask_ai_chat",
     askAiChatDescription,
@@ -206,7 +208,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     askAiChatHandler
   );
 
-  registerSpeakTool(server,
+  if (options.aiChat) registerSpeakTool(server,
     "get_analysis_quote",
     "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. " +
       "Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason — an unavailable file is a normal result here, not an error. " +
@@ -245,7 +247,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  registerSpeakTool(server,
+  if (options.aiChat) registerSpeakTool(server,
     "retry_ai_chat",
     "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
     {
@@ -278,7 +280,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "get_chat_history",
-    "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to continue conversations via ask_ai_chat or retrieve full messages via get_chat_messages.",
+    "Get a list of recent AI Chat conversations. Returns conversation summaries with promptIds that can be used to retrieve full messages via get_chat_messages.",
     {
       limit: z
         .number()

@@ -1,6 +1,6 @@
 ---
 name: research-analysis
-description: Analyze interviews, user research calls, and customer conversations across many Speak AI recordings. Use this when you need themes across a set of calls, verbatim quotes with speaker names and timestamps, sentiment, or a comparison between two time periods, segments, or folders. Covers finding the right recordings with search_media and list_media, scoping a question to a folder or to specific media ids with ask_ai_chat, asking for citations, and pulling exact quotes out of transcripts. Triggers on requests like analyze these interviews, research synthesis, find the themes, what did customers say about pricing, pull quotes, compare Q1 and Q2 calls, sentiment across recordings, and code these interview transcripts.
+description: Analyze interviews, user research calls, and customer conversations across many Speak AI recordings. Use this when you need themes across a set of calls, verbatim quotes with speaker names and timestamps, sentiment, or a comparison between two time periods, segments, or folders. Covers finding the right recordings with search_media and list_media, reading the transcripts and insights of a folder or of specific media ids and doing the analysis yourself, citing every claim, and pulling exact quotes out of transcripts. Triggers on requests like analyze these interviews, research synthesis, find the themes, what did customers say about pricing, pull quotes, compare Q1 and Q2 calls, sentiment across recordings, and code these interview transcripts.
 license: MIT
 metadata:
   server: "@speakai/mcp-server"
@@ -14,8 +14,8 @@ The user's explicit instructions take priority over this skill. When they ask fo
 
 You use this skill when someone asks a research question that spans more than one
 recording. The work always follows the same shape. Find the right recordings, confirm
-they are ready to read, scope the question, ask it, then pull the exact words back out
-of the transcripts so the answer is defensible.
+they are ready to read, scope the set, read it and do the analysis yourself, then check
+the exact words against the transcripts so the answer is defensible.
 
 The Speak AI MCP server has 189 tools. This skill uses tools from five of the fifteen
 categories: search-analytics (3 tools), magic-prompt (13 tools), media (19 tools),
@@ -36,19 +36,17 @@ https://app.speakai.co/developers/apikeys.
   `Authorization: Bearer <speak-api-key>`.
 - **stdio mode and the CLI**: an API key configured on the user's machine, as described
   at <https://docs.speakai.co/mcp/authentication>. There is no header to set.
-- **The REST API directly**: two headers on every call, `x-speakai-key` and
-  `x-access-token`. It does not accept Bearer. You exchange your key for the access token
-  first.
+- **The REST API directly**: your API key on every call, in `x-speakai-key` or as
+  `Authorization: Bearer <key>`. There is no access token to fetch.
 
 You do not need raw REST for this skill, since the tools cover it. If you do call it
-directly, the token exchange is documented at <https://docs.speakai.co/mcp/authentication>.
+directly, authentication is documented at <https://docs.speakai.co/mcp/authentication>.
 
 ## Step 1. Find the right recordings
 
 This is the step people skip, and it is the step that decides whether the answer is
-right. Never ask a research question across the whole workspace on the first call. You
-will get an average of everything, and you will not be able to say which calls it came
-from.
+right. Never analyze the whole workspace on the first pass. You will end up with an
+average of everything, and you will not be able to say which calls each point came from.
 
 ### Which finder to use
 
@@ -57,16 +55,16 @@ from.
 | A topic, phrase, or theme, and you do not know which files contain it | `search_media` | Full text search across transcripts, insights, and metadata. Returns matching media with excerpts, sentiment, and tags. |
 | A folder, a date range, a name pattern, or a media type | `list_media` | Structured listing with filters, sorting, and pagination. Cheaper and more predictable than search. |
 | Nothing yet, and the user described a set in words | `list_folders` then `get_folder_info` | Research work is usually already organized into folders by study, quarter, or segment. |
-| The set already, and you want an answer about it | `ask_ai_chat` | This is the analysis step, not the finding step. |
+| The set already, and you want an answer about it | `get_transcript`, `get_media_insights`, or `list_media` with `include` | This is the reading step, not the finding step. |
 
-The important distinction: `search_media` and `list_media` return media ids. `ask_ai_chat`
-returns prose. If you call `ask_ai_chat` first, you are asking a model to both pick the
-evidence and interpret it, and you cannot audit either half. Find first, then ask.
+The important distinction: `search_media` and `list_media` return media ids. The analysis
+comes after, from the transcripts and insights of exactly those ids. If you start reading
+before you have fixed the set, you cannot say which recordings an answer covers. Find
+first, then read.
 
 Docs:
 https://docs.speakai.co/mcp/tools/search-analytics/search_media/
 https://docs.speakai.co/mcp/tools/media/list_media/
-https://docs.speakai.co/mcp/tools/magic-prompt/ask_ai_chat/
 
 ### Using search_media
 
@@ -142,77 +140,68 @@ https://docs.speakai.co/mcp/tools/media/get_media_status/
 https://docs.speakai.co/mcp/tools/media/get_media_insights/
 https://docs.speakai.co/mcp/tools/media/get_transcript/
 
-## Step 3. Scope the question
+## Step 3. Scope the set
 
-`ask_ai_chat` accepts three levels of scope. Pick the narrowest one that answers the
-question.
+Decide which recordings the analysis covers before you read anything. Pick the narrowest
+set that answers the question.
 
-- `mediaIds`: an array of specific files. Use this when you found the set in step 1.
-  This is the default choice for research work because you can name every source.
-- `folderIds` (array) or `folderId` (single): the whole folder. Use this when the folder
-  is the study and the user wants everything in it, including files added after you
-  looked. Cheaper than listing, but you cannot enumerate what it read.
-- Neither: the entire workspace. Use this only when the user explicitly asks about
-  everything, and say in your answer that the scope was the whole workspace.
+- Specific media ids. Use this when you found the set in step 1. This is the default
+  choice for research work because you can name every source.
+- A whole folder. Pass its `folderId` to `list_media` and page through. Use this when the
+  folder is the study and the user wants everything in it.
+- The entire workspace. Use this only when the user explicitly asks about everything,
+  and say in your answer that the scope was the whole workspace.
 
-Folder scope is the right call for a standing study where recordings keep arriving.
-Media id scope is the right call for a one time synthesis you will have to defend. When
-in doubt, list the media ids. Being able to answer "which calls is this from" is worth
-the extra call.
+Whatever the scope, keep the list of media ids you actually read. Being able to answer
+"which calls is this from" is the point of the exercise.
 
 If the study is not in a folder yet, create one with `create_folder` and move the files
 with `bulk_move_media`. That turns an ad hoc set into something the user can re-run
 later. Ask before you reorganize anything, since moving media changes what other people
 see.
 
-## Step 4. Ask the question and ask for citations
+## Step 4. Read the set and do the analysis
 
-```json
-{
-  "prompt": "List the recurring themes about onboarding across these interviews. For each theme, give the number of participants who raised it, then quote one verbatim line per theme and name the recording and the speaker it came from. Do not include a theme that only one participant raised.",
-  "mediaIds": ["med_example_0001", "med_example_0002", "med_example_0003"],
-  "assistantType": "researcher"
-}
-```
+Read the content of every recording in the set, then do the analysis yourself.
 
-Things worth setting:
+- `list_media` with the `folderId` or date range and `include: ["transcription"]` returns
+  transcripts inline. Keep `pageSize` around 10 and page through, as described in step 1.
+- `get_transcript` with a `mediaId` returns one transcript with speaker labels and
+  timestamps. Use it when you only need a few files, or when a file was too large to come
+  back inline.
+- `get_media_insights` with a `mediaId` returns that file's topics, sentiment, keywords,
+  action items, and summaries. It is a quick way to see what each recording is about
+  before you read it closely.
 
-- `assistantType`. Options are `general` (the default), `researcher`, `marketer`,
-  `sales`, `recruiter`, and `custom`. Use `researcher` for interview and study work.
-  With `custom` you must also pass `assistantTemplateId`, and you get template ids from
-  `list_prompts`.
-- `promptId`. The response returns one. Pass it back on the next call to keep the
-  conversation in context. Follow up questions that lose context produce answers that
-  contradict the first one.
-- `isIndividualPrompt`. When true, each media file is processed separately instead of
-  being combined into one context. This is how you get per participant answers you can
-  count, rather than one blended summary.
-- `startDate` and `endDate`, `tags`, and `speakers`. These narrow the media inside the
-  scope you already set.
-- `fieldId` or `fieldIds` (max 10) to scope the prompt to specific custom fields.
+Work through the question the user asked. For a theme analysis, for example: list the
+recurring themes, count how many participants raised each one, and quote one verbatim
+line per theme with the recording and speaker it came from. Leave out a theme that only
+one participant raised unless the user wants those too.
 
-Citations are something you have to request. Put the requirement in the `prompt` text,
-as in the example above: name the recording, name the speaker, quote the line. Then
-verify it in step 5. Do not pass a model claim through to the user as a quote without
-checking it against the transcript.
+Keep track of the source for every claim as you go: the recording name or media id, the
+speaker, and the timestamp. Citations are much harder to recover afterwards.
 
-To read the stored answer with its `references` and metadata, call `get_chat_messages`
-with the `promptId`. It also paginates with `page` and `pageSize` (default 25, max 500),
-and it accepts a `query` for searching text across past prompts and answers, which is a
-fast way to find analysis somebody already ran.
+When the set is too large to read in full, say so. Use `search_media` with a focused
+`query` to find the passages that matter, read those recordings in full, and tell the
+user which recordings you read and which you only saw through search excerpts or
+insights.
 
-If a call comes back failed or truncated, use `retry_ai_chat` with the `promptId` and
-the `messageId` rather than re-asking from scratch. Re-asking creates a second
-conversation and loses the thread.
+Someone may already have run this analysis in Speak's AI Chat. `get_chat_messages`
+accepts a `query` that searches text across past prompts and answers, and returns them
+with their `references`. It paginates with `page` and `pageSize` (default 25, max 500).
+Treat what you find there as a lead, and check it against the transcripts before you
+repeat it.
 
 Docs:
+https://docs.speakai.co/mcp/tools/media/get_transcript/
+https://docs.speakai.co/mcp/tools/media/get_media_insights/
 https://docs.speakai.co/mcp/tools/magic-prompt/get_chat_messages/
-https://docs.speakai.co/mcp/tools/magic-prompt/list_prompts/
-https://docs.speakai.co/mcp/tools/magic-prompt/retry_ai_chat/
 
 ## Step 5. Pull the exact quotes
 
 Verification is a separate step and it uses different tools.
+
+Before you present a quote, confirm it against the source.
 
 1. `get_transcript` with a `mediaId` returns the full transcript with speaker labels and
    timestamps. This is the source of truth for a verbatim quote.
@@ -241,18 +230,18 @@ https://docs.speakai.co/mcp/tools/media/bulk_update_transcript_speakers/
 
 There are three usable comparison patterns. Pick one and stay in it.
 
-**By date.** Run the same `prompt` twice with the same scope and different `startDate`
-and `endDate` values, then compare the two answers yourself. Do not ask a single call to
-compare two periods, because you cannot tell which period a given claim came from.
+**By date.** Build two sets with the same filters and different date ranges, using
+`from` and `to` on `list_media` or `startDate` and `endDate` on `search_media`. Analyze
+each set separately with the same questions, then compare the two results. Do not mix the
+periods while you read, because you will lose track of which period a claim came from.
 
-**By segment.** Keep each segment in its own folder and run the same prompt against each
-`folderId`. Where segments are marked with tags instead of folders, pass `tags` to
-`ask_ai_chat`, or filter with `search_media` and `filterList` on `tags` and feed the
-resulting media ids in.
+**By segment.** Keep each segment in its own folder and run the same analysis on each
+`folderId`. Where segments are marked with tags instead of folders, filter with
+`search_media` and `filterList` on `tags` and read the resulting media ids.
 
-**By participant.** Set `isIndividualPrompt` to true so each file is answered separately.
+**By participant.** Go through the recordings one at a time and note an answer for each.
 You get one answer per recording, which is what you need to count how many participants
-said a thing rather than trusting a summary that says "most".
+said a thing rather than writing a summary that says "most".
 
 Custom fields make segment comparisons repeatable. `list_fields` shows what already
 exists. `create_field` adds one, and a field can carry a `prompt` that populates it
@@ -278,14 +267,9 @@ https://docs.speakai.co/mcp/tools/folders-views/get_folder_info/
 
 ## Step 7. Save what is worth keeping
 
-- `toggle_prompt_favorite` marks an answer so the team can find it again.
-  `get_favorite_prompts` reads them back.
-- `update_chat_title` gives the conversation a name you can find in
-  `get_chat_history`.
-- `export_chat_answer` writes one answer out as `txt`, `docx`, `pdf`, or `md`. It needs
-  both `promptId` and `messageId`.
 - `create_folder_view` saves a column layout for a folder so the next person opens the
   study with the right fields visible. `get_folder_views` lists what already exists.
+- `toggle_media_favorite` flags the key recordings so the team can find them again.
 
 ## Bringing in written feedback
 
@@ -298,8 +282,7 @@ same shape of analysis a recording gets: topics, sentiment, keywords, entities.
 `update_text_note` edits the note's name, content, or metadata.
 
 Because a text note becomes media, it lands in the same folders, matches the same
-`search_media` queries, and can be scoped into the same `ask_ai_chat` question as the
-recordings. So a study can cover fifteen interviews and two hundred survey comments in one
+`search_media` queries, and can be read and analyzed alongside the recordings. So a study can cover fifteen interviews and two hundred survey comments in one
 answer rather than two disconnected ones.
 
 Analyze the note before asking about it. A note that has not finished analyzing returns
@@ -341,10 +324,9 @@ signal about one recording. Averaging it across a study and reporting a single n
 hides the split that the user is asking about. Report the range and the outliers, and
 name the recordings at each end.
 
-**Scope drift in a conversation.** `ask_ai_chat` keeps context when you pass `promptId`,
-which is what you want for follow ups. It also means a later question inherits the
-earlier scope. When the user changes the subject to a different set of recordings, start
-a new conversation rather than passing the old `promptId`.
+**Scope drift across questions.** A follow up question often moves to a different set
+of recordings. When the user changes the subject, go back to step 1 and fix the new set
+before you answer, rather than reusing the media ids from the earlier question.
 
 ## Tool reference
 
@@ -361,15 +343,7 @@ a new conversation rather than passing the old `promptId`.
 | `bulk_update_transcript_speakers` | media | Apply one speaker mapping across files |
 | `bulk_move_media` | media | Move a found set into a study folder |
 | `toggle_media_favorite` | media | Flag key recordings |
-| `ask_ai_chat` | magic-prompt | The analysis call, scoped by media, folder, or workspace |
-| `retry_ai_chat` | magic-prompt | Recover a failed or truncated answer |
-| `get_chat_messages` | magic-prompt | Read answers, references, and metadata, with pagination |
-| `get_chat_history` | magic-prompt | Find recent conversations and their promptIds |
-| `list_prompts` | magic-prompt | Template ids for `assistantType: "custom"` |
-| `toggle_prompt_favorite` | magic-prompt | Keep an answer |
-| `get_favorite_prompts` | magic-prompt | Read kept answers back |
-| `update_chat_title` | magic-prompt | Name a conversation |
-| `export_chat_answer` | magic-prompt | Export one answer as txt, docx, pdf, or md |
+| `get_chat_messages` | magic-prompt | Search and read past AI Chat answers and their references |
 | `list_folders` | folders-views | Discover studies and segments |
 | `get_folder_info` | folders-views | Folder detail and contents |
 | `create_folder` | folders-views | Make a study folder |

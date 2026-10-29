@@ -6,6 +6,8 @@ export interface RegisterOptions {
   localFileAccess?: boolean;
   /** Register the voice test-run tools (start, pause, resume, cancel, results). Defaults to true; pass false to leave them off. */
   voiceTestRuns?: boolean;
+  /** Register ask_ai_chat, retry_ai_chat and get_analysis_quote. Speak's assistant behind them can call other tools, so the hosted server leaves this off. */
+  aiChat?: boolean;
 }
 
 export declare function registerAllTools(

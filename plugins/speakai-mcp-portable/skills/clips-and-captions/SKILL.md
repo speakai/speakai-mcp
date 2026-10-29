@@ -106,14 +106,12 @@ speakai-mcp call create_clip '{
 }'
 ```
 
-The same call over HTTP. The REST API takes two headers, `x-speakai-key` and
-`x-access-token`, and does not accept a Bearer token. Get the access token by posting your
-API key to `/v1/auth/accessToken` first.
+The same call over HTTP. Send your API key on every call, in `x-speakai-key` or as
+`Authorization: Bearer <key>`. There is no access token to fetch.
 
 ```sh
 curl -X POST https://api.speakai.co/v1/clips \
   -H "x-speakai-key: speak_sk_example_000000000000" \
-  -H "x-access-token: eyJhbG-example-access-token" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Pricing objection highlights",

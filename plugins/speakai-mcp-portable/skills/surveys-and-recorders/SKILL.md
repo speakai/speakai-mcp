@@ -1,6 +1,6 @@
 ---
 name: surveys-and-recorders
-description: Run async voice and video surveys in Speak AI end to end. Use this when someone asks to collect recorded answers from customers, candidates, or users without booking calls, to set up a survey or recorder, to write or change its questions, to brand it, to get a shareable link to send out, to check whether it is still accepting submissions, to list what has come back, or to analyze the responses as a set. Covers create_recorder, update_recorder_questions, update_recorder_settings, generate_recorder_url, check_recorder_status, get_recorder_recordings, list_recorders, get_recorder_info, clone_recorder and delete_recorder, then hands off to the transcript and AI Chat tools once responses arrive.
+description: Run async voice and video surveys in Speak AI end to end. Use this when someone asks to collect recorded answers from customers, candidates, or users without booking calls, to set up a survey or recorder, to write or change its questions, to brand it, to get a shareable link to send out, to check whether it is still accepting submissions, to list what has come back, or to analyze the responses as a set. Covers create_recorder, update_recorder_questions, update_recorder_settings, generate_recorder_url, check_recorder_status, get_recorder_recordings, list_recorders, get_recorder_info, clone_recorder and delete_recorder, then hands off to the transcript and insight tools once responses arrive.
 metadata:
   server-version: "1.39.3"
   categories: "recorders-surveys, media, magic-prompt"
@@ -92,10 +92,11 @@ Do not report on a set while some of it is still processing. Say how many are re
 
 Once several responses are in, the question is what they say collectively.
 
-Scope `ask_ai_chat` to the folder holding the submissions, or pass the `mediaIds` of the
-responses, and ask for citations so each claim traces to a respondent. Set
-`isIndividualPrompt` to true when you want each response answered separately, which is what
-you want for counting how many people said a thing rather than a blended summary.
+Read the responses and do the analysis yourself. `list_media` with the `folderId` that
+holds the submissions and `include: ["transcription"]` returns their transcripts in one
+call; page through if there are more than one page. Cite the respondent for each claim so
+it traces back to a reply. When you need to count how many people said a thing, go through
+the responses one at a time and tally them, rather than writing a blended summary.
 
 For themes, quotes, and comparisons across a larger set, use the `research-analysis` skill.
 It covers scoping, citation, and pulling verbatim quotes properly.
@@ -134,7 +135,7 @@ Recorders: `create_recorder`, `list_recorders`, `get_recorder_info`, `clone_reco
 `get_recorder_recordings`, `generate_recorder_url`, `update_recorder_settings`,
 `update_recorder_questions`, `check_recorder_status`, `delete_recorder`.
 
-Follow-on: `get_media_status`, `get_transcript`, `get_media_insights`, `ask_ai_chat`,
+Follow-on: `get_media_status`, `get_transcript`, `get_media_insights`, `list_media`,
 `list_users`.
 
 Per-tool documentation: `https://docs.speakai.co/mcp/tools/recorders-surveys/<tool_name>/`

@@ -137,7 +137,7 @@ describe("Tools Integration Tests", () => {
   describe("Prompt/Chat tools", () => {
     it("ask_ai_chat calls POST /v1/prompt with all params", async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient);
+      register(server, mockClient, { aiChat: true });
 
       const callback = getToolCallback(server, "ask_ai_chat");
       await callback({
@@ -155,7 +155,7 @@ describe("Tools Integration Tests", () => {
 
     it("ask_ai_chat works without mediaIds (workspace-wide)", async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient);
+      register(server, mockClient, { aiChat: true });
 
       const callback = getToolCallback(server, "ask_ai_chat");
       await callback({ prompt: "What themes appear across all interviews?" });
@@ -167,7 +167,7 @@ describe("Tools Integration Tests", () => {
 
     it("get_chat_history calls GET /v1/prompt/history", async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient);
+      register(server, mockClient, { aiChat: true });
 
       const callback = getToolCallback(server, "get_chat_history");
       await callback({ limit: 5 });
@@ -179,7 +179,7 @@ describe("Tools Integration Tests", () => {
 
     it("list_prompts calls GET /v1/prompt", async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient);
+      register(server, mockClient, { aiChat: true });
 
       const callback = getToolCallback(server, "list_prompts");
       await callback({});

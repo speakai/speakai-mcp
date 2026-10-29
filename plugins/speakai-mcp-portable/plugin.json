@@ -56,7 +56,7 @@
         "commerce_description": "Speak AI does not sell products or process payments through this plugin."
       },
       "publication": {
-        "release_notes": "Tool safety annotations now follow OpenAI's published guidance. Tools that overwrite, cancel, change access, or send data outside Speak AI are marked destructive, and tools that reach public pages or arbitrary URLs are marked open-world. The hosted server no longer exposes local file upload. Adds an onboarding skill, listing icons, support and terms links, and skills that defer to the user's explicit instructions."
+        "release_notes": "Every operation the model can call is now its own tool with a description, input schema and annotations. AI Chat, which passed requests to Speak AI's own assistant and could call other tools, is no longer part of the hosted server, and the skills read transcripts and insights directly instead. Listing icons and logos now use the Speak AI wordmark, and REST calls authenticate with the API key alone."
       }
     }
   }

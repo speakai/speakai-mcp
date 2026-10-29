@@ -27,6 +27,7 @@ import * as voiceIntelligence from "./voice-intelligence.js";
 export interface RegisterOptions {
   localFileAccess?: boolean;
   voiceTestRuns?: boolean;
+  aiChat?: boolean;
 }
 
 type ToolModule = {
@@ -64,7 +65,8 @@ const modules: ToolModule[] = [
  * @param client - Optional custom axios client (for server-side use with per-request auth).
  *                 If omitted, uses the default client from env vars (STDIO mode).
  * @param options - Set localFileAccess only where the server runs on the user's machine. The voice
- *                  test-run tools register unless voiceTestRuns is false.
+ *                  test-run tools register unless voiceTestRuns is false. Set aiChat to register Speak's
+ *                  AI Chat tools, whose assistant can call other tools; the hosted server leaves it off.
  */
 export function registerAllTools(
   server: McpServer,

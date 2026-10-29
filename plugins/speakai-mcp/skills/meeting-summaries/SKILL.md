@@ -126,13 +126,15 @@ summary will be useless. Fix the labels first with `update_transcript_speakers` 
 one file, or `bulk_update_transcript_speakers` when the same people appear across
 several meetings. Ask the user who is who rather than guessing from context.
 
-### Step 6. Ask the summarizing question
+### Step 6. Write the summary
 
-Use `ask_ai_chat`. Pass `mediaIds` for specific meetings, `folderIds` for a whole
-folder, or omit both to reach across the workspace. It returns a `promptId`. Save it,
-because follow up questions continue the same conversation when you pass it back.
+Write the summary yourself from the transcript and insights you pulled in step 5. Start
+from the action items and summaries in `get_media_insights`, then check each one against
+the transcript so every owner and decision rests on what someone actually said. For
+several meetings, read each one the same way and keep track of which meeting each point
+came from.
 
-Ask for the structure you actually want. A prompt that works:
+Work through the transcript with the structure you actually want:
 
 > List every decision that was made, who made it, and what it changes. Then list every
 > action item with the owner and the due date if one was stated. Then list open
@@ -140,17 +142,8 @@ Ask for the structure you actually want. A prompt that works:
 > something was discussed but not decided, put it under open questions rather than
 > decisions.
 
-Docs: https://docs.speakai.co/mcp/tools/magic-prompt/ask_ai_chat/
-
-Supporting tools in the same category:
-
-- `list_prompts` lists the available templates. Use a template id with the
-  `assistantTemplateId` parameter when you set `assistantType` to `custom`.
-- `retry_ai_chat` retries a failed or incomplete answer. It requires both `promptId`
-  and `messageId`, so keep them from the original response. Use it once. If it fails
-  again, narrow the media set and ask a smaller question.
-- `get_chat_messages` returns the full message history for a conversation, including
-  references. Use it when the user asks where an answer came from.
+For a follow up question, go back to the transcript you already have instead of
+guessing. If the answer is not in it, say so.
 
 ### Step 7. Deliver it
 
@@ -160,16 +153,14 @@ For a document the user can circulate:
   txt, or csv.
 - `export_multiple_media` exports several meetings at once, optionally merged into a
   single file.
-- `export_chat_answer` exports the AI answer itself, which is the right choice when
-  the summary you wrote came out of `ask_ai_chat` rather than out of the raw
-  transcript.
+- The summary you wrote is plain text in your reply. Give it to the user directly so
+  they can paste it where they need it.
 
 Docs:
 - https://docs.speakai.co/mcp/tools/exports/export_media/
 - https://docs.speakai.co/mcp/tools/exports/export_multiple_media/
-- https://docs.speakai.co/mcp/tools/magic-prompt/export_chat_answer/
 
-Exports and chat answer exports produce a file the user may share. Confirm before you
+Exports produce a file the user may share. Confirm before you
 generate one.
 
 ## Weekly digest across many meetings
@@ -180,9 +171,11 @@ When the user asks for a summary of the week rather than of one call:
    a meetings folder. Pass the `include` parameter to bring transcripts back inline
    instead of calling `get_transcript` once per file.
 2. Drop anything that is not in `processed` state. Say which ones you skipped and why.
-3. One `ask_ai_chat` call over the whole set of media ids, not one call per meeting.
-   Ask it to group by theme and to name the source meeting for each decision.
-4. `export_chat_answer` if the user wants the digest as a file.
+3. Read the transcripts you brought back, plus `get_media_insights` for each meeting
+   when you want its action items and topics. Write one digest over the whole set,
+   grouped by theme, and name the source meeting for each decision.
+4. `export_multiple_media` if the user wants the underlying transcripts or insights
+   as a file.
 
 Docs: https://docs.speakai.co/mcp/tools/media/list_media/
 
@@ -247,9 +240,6 @@ Meeting assistant: `schedule_meeting_event`, `list_meeting_events`,
 Media: `get_media_status`, `get_transcript`, `get_media_insights`, `list_media`,
 `update_transcript_speakers`, `bulk_update_transcript_speakers`, `reanalyze_media`,
 `upload_and_analyze`.
-
-AI Chat: `ask_ai_chat`, `retry_ai_chat`, `get_chat_messages`, `list_prompts`,
-`export_chat_answer`.
 
 Exports: `export_media`, `export_multiple_media`.
 
