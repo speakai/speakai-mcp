@@ -224,20 +224,17 @@ check("every portable skill declares OpenAI metadata for the same endpoint", () 
 
 /* ------------------------------------------------- factual correctness ---- */
 
-// Only the MCP endpoint accepts Bearer. REST uses x-speakai-key and
-// x-access-token, which is the path src/client.ts implements.
-check("Bearer is used only against the MCP endpoint", () => {
+// The API accepts the API key on its own, in x-speakai-key or Authorization: Bearer, so
+// skills must not send agents through the old access-token exchange.
+check("skills authenticate REST calls with the API key alone", () => {
   const offenders: string[] = [];
   for (const dir of skillDirs) {
-    const lines = read(`skills/${dir}/SKILL.md`).split("\n");
-    lines.forEach((line, i) => {
-      if (!/Authorization:\s*Bearer/i.test(line)) return;
-      const context = lines.slice(Math.max(0, i - 3), i + 1).join("\n");
-      if (!context.includes("/v1/mcp")) offenders.push(`${dir}/SKILL.md:${i + 1}`);
+    read(`skills/${dir}/SKILL.md`).split("\n").forEach((line, i) => {
+      if (/x-access-token|\/v1\/auth\/(accessToken|refreshToken)/.test(line)) offenders.push(`${dir}/SKILL.md:${i + 1}`);
     });
   }
   return offenders.length
-    ? `REST takes x-speakai-key and x-access-token, not Bearer: ${offenders.join(", ")}`
+    ? `send the API key in x-speakai-key or Authorization: Bearer; no access token is needed: ${offenders.join(", ")}`
     : null;
 });
 

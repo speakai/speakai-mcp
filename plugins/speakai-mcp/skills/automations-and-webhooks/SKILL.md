@@ -186,13 +186,12 @@ Register an outbound webhook with `create_webhook`. It takes `callbackUrl`, whic
 be an HTTPS URL, an optional `events` array of event types, and an optional
 `description`.
 
-Over raw HTTP, the REST API takes `x-speakai-key` and `x-access-token`. It does not accept
-a Bearer token. Exchange your API key at `/v1/auth/accessToken` to get the access token.
+Over raw HTTP, send your API key on every call, in `x-speakai-key` or as
+`Authorization: Bearer <key>`. There is no access token to fetch.
 
 ```sh
 curl -X POST https://api.speakai.co/v1/webhook \
   -H "x-speakai-key: speak_sk_example_000000000000" \
-  -H "x-access-token: eyJhbG-example-access-token" \
   -H "Content-Type: application/json" \
   -d '{
     "callbackUrl": "https://example.com/hooks/speak",

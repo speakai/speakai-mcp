@@ -36,12 +36,11 @@ https://app.speakai.co/developers/apikeys.
   `Authorization: Bearer <speak-api-key>`.
 - **stdio mode and the CLI**: an API key configured on the user's machine, as described
   at <https://docs.speakai.co/mcp/authentication>. There is no header to set.
-- **The REST API directly**: two headers on every call, `x-speakai-key` and
-  `x-access-token`. It does not accept Bearer. You exchange your key for the access token
-  first.
+- **The REST API directly**: your API key on every call, in `x-speakai-key` or as
+  `Authorization: Bearer <key>`. There is no access token to fetch.
 
 You do not need raw REST for this skill, since the tools cover it. If you do call it
-directly, the token exchange is documented at <https://docs.speakai.co/mcp/authentication>.
+directly, authentication is documented at <https://docs.speakai.co/mcp/authentication>.
 
 ## Step 1. Find the right recordings
 
