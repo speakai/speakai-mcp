@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.39.4 (2026-10-29)
+
+- fix(plugin): use the Speak AI wordmark for the OpenAI and Codex logos
+
 ## v1.39.3 (2026-10-29)
 
 - Maintenance release
