@@ -30,7 +30,7 @@
         {
           "name": "upload_media",
           "title": "Upload Media from URL",
-          "description": "Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Requires an active subscription. Creates a media item and bills its duration against the workspace's minutes or credits. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.",
+          "description": "Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Creates a media item. The request fails if the file exceeds the plan's size limit or its duration cannot be read. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -39,7 +39,7 @@
         {
           "name": "upload_local_file",
           "title": "Upload Local File",
-          "description": "Upload a local file to Speak AI for transcription and analysis. Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry. Works with any audio or video file on the local filesystem. Each upload creates a media item and bills its duration against the workspace's minutes or credits. After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights.",
+          "description": "Upload a local file to Speak AI for transcription and analysis. Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry. Works with any audio or video file on the local filesystem. Each upload creates a media item. After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -48,7 +48,7 @@
         {
           "name": "upload_and_analyze",
           "title": "Upload and Analyze Media",
-          "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
+          "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -165,7 +165,7 @@
         {
           "name": "upload_and_analyze_batch",
           "title": "Upload and Analyze Several URLs",
-          "description": "Import up to 25 audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most 5 uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.",
+          "description": "Import up to 25 audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most 5 uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -635,7 +635,7 @@
         {
           "name": "schedule_meeting_event",
           "title": "Schedule AI Meeting Assistant",
-          "description": "Schedule the Speak AI meeting assistant to join and record an online meeting (Zoom, Google Meet, Microsoft Teams, or Webex). The assistant joins as a participant other attendees can see, at meetingDate or right away when meetingDate is omitted. Recorded minutes are charged to the account, and on trial plans each scheduled meeting uses one meeting from the allowance.",
+          "description": "Schedule the Speak AI meeting assistant to join and record an online meeting (Zoom, Google Meet, Microsoft Teams, or Webex). The assistant joins as a participant other attendees can see, at meetingDate or right away when meetingDate is omitted.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -697,7 +697,7 @@
         {
           "name": "create_automation",
           "title": "Create Automation",
-          "description": "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio, and use AI credits. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
+          "description": "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -760,7 +760,7 @@
         {
           "name": "run_automations",
           "title": "Run Automations",
-          "description": "Manually run one or more automations against one or more media items now (outside the normal trigger). Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without an error. The runs happen in the background and this returns only an acknowledgement, so check results with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook URLs, run actions in connected third-party apps, and use AI credits.",
+          "description": "Manually run one or more automations against one or more media items now (outside the normal trigger). Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without an error. The runs happen in the background and this returns only an acknowledgement, so check results with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -805,7 +805,7 @@
         {
           "name": "build_automation",
           "title": "Build Automation",
-          "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL and bill its duration, ai_chat steps use AI credits, slack notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
+          "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL, slack notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -832,7 +832,7 @@
         {
           "name": "test_automation",
           "title": "Test Automation",
-          "description": "Run one automation once against one media item to see which way it branches. This is a real run, not a dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks still fire, Composio actions still run against the connected third-party account, and AI steps use credits. Confirm with the user before testing an automation that sends anything outside Speak. It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens resolve to empty. Returns a runId; read the result with get_automation_run.",
+          "description": "Run one automation once against one media item to see which way it branches. This is a real run, not a dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks still fire, and Composio actions still run against the connected third-party account. Confirm with the user before testing an automation that sends anything outside Speak. It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens resolve to empty. Returns a runId; read the result with get_automation_run.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -938,7 +938,7 @@
         {
           "name": "create_text_note",
           "title": "Create Text Note",
-          "description": "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, then the workspace's credits; the request is refused when neither can cover it.",
+          "description": "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -1607,7 +1607,7 @@
         {
           "name": "start_voice_test_run",
           "title": "Start Voice Agent Test Run",
-          "description": "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run, and 402 if the workspace has no credits.",
+          "description": "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, and 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -1643,7 +1643,7 @@
         {
           "name": "cancel_voice_test_run",
           "title": "Cancel Voice Test Run",
-          "description": "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. The run stops at its next AI call; the AI cost already used is still charged. Terminal — a cancelled run can never be resumed.",
+          "description": "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. The run stops at its next AI call. Terminal — a cancelled run can never be resumed.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,

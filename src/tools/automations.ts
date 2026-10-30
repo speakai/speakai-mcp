@@ -421,7 +421,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and " +
       "then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any " +
       "address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into " +
-      "Speak, run actions in connected third-party apps through Composio, and use AI credits. An inbound-webhook " +
+      "Speak, run actions in connected third-party apps through Composio. An inbound-webhook " +
       "trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio " +
       "app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types " +
       "come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send " +
@@ -619,7 +619,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without " +
       "an error. The runs happen in the background and this returns only an acknowledgement, so check results " +
       "with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook " +
-      "URLs, run actions in connected third-party apps, and use AI credits.",
+      "URLs, and run actions in connected third-party apps.",
     {
       mediaIds: z.array(z.string().min(1)).min(1).describe("Media ids to run the automations against"),
       automationIds: z.array(z.string().min(1)).min(1).describe("Automation ids to run"),
@@ -752,7 +752,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "Run one automation once against one media item to see which way it branches. This is a real run, not a " +
       "dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed " +
       "and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks " +
-      "still fire, Composio actions still run against the connected third-party account, and AI steps use credits. " +
+      "still fire, and Composio actions still run against the connected third-party account. " +
       "Confirm with the user before testing an automation that sends anything outside Speak. " +
       "It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens " +
       "resolve to empty. Returns a runId; read the result with get_automation_run.",

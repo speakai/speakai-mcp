@@ -74,7 +74,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 2. Upload media
   registerSpeakTool(server, 
     "upload_media",
-    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item and bills its duration against the workspace's minutes or credits. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
+    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Creates a media item. The request fails if the file exceeds the plan's size limit or its duration cannot be read. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
       name: z.string().min(1).describe("Display name for the media file"),
       url: z

@@ -4867,7 +4867,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "upload_media",
-    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item and bills its duration against the workspace's minutes or credits. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
+    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Creates a media item. The request fails if the file exceeds the plan's size limit or its duration cannot be read. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
       name: import_zod2.z.string().min(1).describe("Display name for the media file"),
       url: import_zod2.z.string().describe("Direct public media file URL, a URL returned by get_signed_upload_url, or a page link from a platform listed in this tool's description. Page links are resolved server-side, so pass the URL the user gave you as-is."),
@@ -5535,7 +5535,7 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "create_text_note",
-    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, then the workspace's credits; the request is refused when neither can cover it.",
+    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
     {
       name: import_zod3.z.string().min(1).describe("Title/name for the text note"),
       text: import_zod3.z.string().optional().describe("Full text content to analyze"),
@@ -7293,7 +7293,7 @@ function register8(server, client) {
   registerSpeakTool(
     server,
     "schedule_meeting_event",
-    "Schedule the Speak AI meeting assistant to join and record an online meeting (Zoom, Google Meet, Microsoft Teams, or Webex). The assistant joins as a participant other attendees can see, at meetingDate or right away when meetingDate is omitted. Recorded minutes are charged to the account, and on trial plans each scheduled meeting uses one meeting from the allowance.",
+    "Schedule the Speak AI meeting assistant to join and record an online meeting (Zoom, Google Meet, Microsoft Teams, or Webex). The assistant joins as a participant other attendees can see, at meetingDate or right away when meetingDate is omitted.",
     {
       title: import_zod9.z.string().min(1).describe("Display title for the event"),
       meetingURL: import_zod9.z.string().min(1).describe("URL of the meeting to join"),
@@ -8961,7 +8961,7 @@ function register12(server, client) {
   registerSpeakTool(
     server,
     "create_automation",
-    "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio, and use AI credits. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
+    "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
     writeSchema,
     {
       title: "Create Automation",
@@ -9127,7 +9127,7 @@ function register12(server, client) {
   registerSpeakTool(
     server,
     "run_automations",
-    "Manually run one or more automations against one or more media items now (outside the normal trigger). Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without an error. The runs happen in the background and this returns only an acknowledgement, so check results with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook URLs, run actions in connected third-party apps, and use AI credits.",
+    "Manually run one or more automations against one or more media items now (outside the normal trigger). Only active automations run; inactive or unknown automation ids and unknown media ids are skipped without an error. The runs happen in the background and this returns only an acknowledgement, so check results with get_automation_runs. Every step executes for real: it can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps.",
     {
       mediaIds: import_zod14.z.array(import_zod14.z.string().min(1)).min(1).describe("Media ids to run the automations against"),
       automationIds: import_zod14.z.array(import_zod14.z.string().min(1)).min(1).describe("Automation ids to run")
@@ -9247,7 +9247,7 @@ function register12(server, client) {
   registerSpeakTool(
     server,
     "test_automation",
-    "Run one automation once against one media item to see which way it branches. This is a real run, not a dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks still fire, Composio actions still run against the connected third-party account, and AI steps use credits. Confirm with the user before testing an automation that sends anything outside Speak. It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens resolve to empty. Returns a runId; read the result with get_automation_run.",
+    "Run one automation once against one media item to see which way it branches. This is a real run, not a dry run, and it works on inactive automations too. Only the run's own status notifications are suppressed and translation steps are skipped. Notify steps still send their email or Slack message, outbound webhooks still fire, and Composio actions still run against the connected third-party account. Confirm with the user before testing an automation that sends anything outside Speak. It needs a mediaId and sends no webhook payload, so on an inbound-webhook automation the payload tokens resolve to empty. Returns a runId; read the result with get_automation_run.",
     {
       automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation to test"),
       mediaId: import_zod14.z.string().min(1).describe("Media item to run the automation against")
@@ -10053,7 +10053,7 @@ function register16(server, client, options = {}) {
   registerSpeakTool(
     server,
     "build_automation",
-    "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL and bill its duration, ai_chat steps use AI credits, slack notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
+    "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL, slack notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
     buildAutomationSchema,
     {
       title: "Build Automation",
@@ -10382,7 +10382,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
   registerSpeakTool(
     server,
     "upload_and_analyze",
-    `Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.`,
+    `Upload and transcribe media from a URL \u2014 a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports \u2014 long blocking calls die at proxy idle timeouts.`,
     {
       // A plain literal, not a template: the docs generator drops a tool's whole parameter
       // table when a description interpolates a value it cannot resolve statically.
@@ -10444,7 +10444,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
   registerSpeakTool(
     server,
     "upload_and_analyze_batch",
-    `Import up to ${MAX_BATCH_URLS} audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most ${MAX_BATCH_CONCURRENCY} uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.`,
+    `Import up to ${MAX_BATCH_URLS} audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most ${MAX_BATCH_CONCURRENCY} uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.`,
     {
       urls: import_zod18.z.array(import_zod18.z.string().min(1)).min(1).max(MAX_BATCH_URLS).describe("The URLs to import, up to 25. Pass each one exactly as the user gave it; page links are resolved server-side. Exact duplicate URLs are sent once."),
       mediaType: import_zod18.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Applies to every URL in the batch. Send it only when the user has said which they want for all of them \u2014 "audio" if they asked for audio only, "video" if they called them videos. Otherwise omit it and the server decides per URL. Mixed batches: leave it off, or split into two calls.'),
@@ -10526,7 +10526,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       "Upload a local file to Speak AI for transcription and analysis.",
       "Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry.",
       "Works with any audio or video file on the local filesystem.",
-      "Each upload creates a media item and bills its duration against the workspace's minutes or credits.",
+      "Each upload creates a media item.",
       "After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights."
     ].join(" "),
     {
@@ -12086,7 +12086,7 @@ function register19(server, client, options = {}) {
               "generate_voice_test_suite",
               ...options.voiceTestRuns === false ? [] : ["start_voice_test_run", "get_active_voice_test_run"]
             ],
-            notes: options.voiceTestRuns === false ? "Scripted test scenarios for the agent. This server does not expose the run tools." : "Scripted scenarios and a run history. A run sends each enabled scenario's user messages to the agent as text and grades every criterion; it uses credits for the AI cost. Poll get_active_voice_test_run for progress."
+            notes: options.voiceTestRuns === false ? "Scripted test scenarios for the agent. This server does not expose the run tools." : "Scripted scenarios and a run history. A run sends each enabled scenario's user messages to the agent as text and grades every criterion. Poll get_active_voice_test_run for progress."
           },
           {
             area: "Feedback / self-improvement (Intelligence)",
@@ -12220,7 +12220,7 @@ function register20(server, client, options = {}) {
   registerSpeakTool(
     server,
     "start_voice_test_run",
-    "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run, and 402 if the workspace has no credits.",
+    "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, and 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run.",
     { agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Start Voice Agent Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
@@ -12286,7 +12286,7 @@ function register20(server, client, options = {}) {
   registerSpeakTool(
     server,
     "cancel_voice_test_run",
-    "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. The run stops at its next AI call; the AI cost already used is still charged. Terminal \u2014 a cancelled run can never be resumed.",
+    "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. The run stops at its next AI call. Terminal \u2014 a cancelled run can never be resumed.",
     {
       agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: import_zod22.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")

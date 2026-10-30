@@ -91,7 +91,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server,
     "start_voice_test_run",
-    "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run, and 402 if the workspace has no credits.",
+    "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, and 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run.",
     { agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
     { title: "Start Voice Agent Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
@@ -157,7 +157,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server,
     "cancel_voice_test_run",
-    "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. The run stops at its next AI call; the AI cost already used is still charged. Terminal — a cancelled run can never be resumed.",
+    "Cancel a voice agent test run. Requires the OWNER or ADMIN role. Valid from queued, running, or paused. The run stops at its next AI call. Terminal — a cancelled run can never be resumed.",
     {
       agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)"),
