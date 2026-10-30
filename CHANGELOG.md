@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.41.1 (2026-10-30)
+
+- fix(types): declare the automations and voiceTestRunDetails options
+
 ## v1.41.0 (2026-10-30)
 
 - fix(tools): describe embed session tools as viewing analytics
