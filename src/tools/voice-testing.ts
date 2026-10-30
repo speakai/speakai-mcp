@@ -93,7 +93,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     "start_voice_test_run",
     "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run, and 402 if the workspace has no credits.",
     { agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Start Voice Agent Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Start Voice Agent Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run`);
@@ -144,7 +144,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       agentId: z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)"),
     },
-    { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/resume`);

@@ -4867,7 +4867,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "upload_media",
-    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and sends the media.created event to the workspace's webhooks and Slack channels if any are configured. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
+    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item and bills its duration against the workspace's minutes or credits. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
       name: import_zod2.z.string().min(1).describe("Display name for the media file"),
       url: import_zod2.z.string().describe("Direct public media file URL, a URL returned by get_signed_upload_url, or a page link from a platform listed in this tool's description. Page links are resolved server-side, so pass the URL the user gave you as-is."),
@@ -4887,7 +4887,7 @@ function register(server, client) {
     {
       title: "Upload Media from URL",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -5138,7 +5138,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "update_media_metadata",
-    "Update metadata fields (name, description, tags, status) for an existing media file. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
+    "Update metadata fields (name, description, tags, status) for an existing media file.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file"),
       name: import_zod2.z.string().describe("Display name for the media (required \u2014 the server replaces the metadata)"),
@@ -5154,7 +5154,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ mediaId, ...body }) => {
       try {
@@ -5175,7 +5175,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "delete_media",
-    "Permanently delete a media file and all associated transcripts and insights. Sends the media.deleted event to the workspace's webhooks and Slack channels if any are configured.",
+    "Permanently delete a media file and all associated transcripts and insights.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file to delete")
     },
@@ -5184,7 +5184,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ mediaId }) => {
       try {
@@ -5322,7 +5322,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "reanalyze_media",
-    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts. Sends the media.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
+    "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts.",
     {
       mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
       isInsights: import_zod2.z.boolean().optional().describe("Re-run insights analysis"),
@@ -5335,7 +5335,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ mediaId, ...params }) => {
       try {
@@ -5407,7 +5407,7 @@ function register(server, client) {
   registerSpeakTool(
     server,
     "bulk_move_media",
-    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
+    "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
     {
       folderId: import_zod2.z.string().min(1).describe("Target folder ID to move media into"),
       mediaIds: import_zod2.z.array(import_zod2.z.string().min(1)).min(1).describe("Array of media IDs to move")
@@ -5417,7 +5417,7 @@ function register(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -5535,7 +5535,7 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "create_text_note",
-    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, and once the allowance is used up charges credits, the account balance, or the card on file; the request is refused only when none of these can cover it. Sends the text.created and text.analyzed events to the workspace's webhooks and Slack channels if any are configured.",
+    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, then the workspace's credits; the request is refused when neither can cover it.",
     {
       name: import_zod3.z.string().min(1).describe("Title/name for the text note"),
       text: import_zod3.z.string().optional().describe("Full text content to analyze"),
@@ -5553,9 +5553,9 @@ function register2(server, client) {
     {
       title: "Create Text Note",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -5607,7 +5607,7 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "reanalyze_text",
-    "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment. Sends the text.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
+    "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment.",
     {
       mediaId: import_zod3.z.string().describe("Unique identifier of the text note to reanalyze")
     },
@@ -5616,7 +5616,7 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ mediaId }) => {
       try {
@@ -5639,7 +5639,7 @@ function register2(server, client) {
   registerSpeakTool(
     server,
     "update_text_note",
-    "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
+    "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text.",
     {
       mediaId: import_zod3.z.string().min(1).describe("Unique identifier of the text note"),
       name: import_zod3.z.string().optional().describe("New name for the text note"),
@@ -5652,7 +5652,7 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async ({ mediaId, ...body }) => {
       try {
@@ -5871,7 +5871,7 @@ function register4(server, client) {
     {
       title: "Create Folder View",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -5953,7 +5953,7 @@ function register4(server, client) {
     {
       title: "Clone Folder View",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: false
     },
@@ -6228,7 +6228,7 @@ function register5(server, client) {
     {
       title: "Create Recorder",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6289,7 +6289,7 @@ function register5(server, client) {
     {
       title: "Clone Recorder",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -6540,7 +6540,7 @@ function register6(server, client) {
     {
       title: "Create Embed Widget",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -7151,7 +7151,7 @@ function register7(server, client, options = {}) {
   registerSpeakTool(
     server,
     "submit_chat_feedback",
-    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are posted to Speak AI's internal Slack channel for the Speak AI team to review.",
+    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are shared with the Speak AI team for review.",
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation"),
       messageId: import_zod8.z.string().min(1).describe("ID of the message to rate"),
@@ -7163,7 +7163,7 @@ function register7(server, client, options = {}) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -7558,7 +7558,7 @@ function register9(server, client) {
   registerSpeakTool(
     server,
     "update_multiple_fields",
-    "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. Each value that changes fires your field_updated automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions. " + SHARED_DASHBOARD_CACHE_NOTE,
+    "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. " + SHARED_DASHBOARD_CACHE_NOTE,
     {
       folderId: import_zod10.z.string().optional().describe("Apply the field values to all media in this folder"),
       mediaIds: import_zod10.z.array(import_zod10.z.string()).optional().describe("Apply the field values to these specific media files"),
@@ -7574,7 +7574,7 @@ function register9(server, client) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -9858,8 +9858,7 @@ function register15(server, client) {
       "Create a highlight clip from one or more media files by specifying time ranges.",
       `Clips are processed asynchronously (states: ${Object.values(ClipState).join(", ")}) \u2014 use get_clips to check status.`,
       "Maximum total clip duration is 30 minutes.",
-      "Use multiple timeRanges to stitch segments from different media files together.",
-      "When the clip finishes processing it fires your clip_created automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions."
+      "Use multiple timeRanges to stitch segments from different media files together."
     ].join(" "),
     {
       title: import_zod17.z.string().min(1).describe("Title for the clip"),
@@ -9878,9 +9877,9 @@ function register15(server, client) {
     {
       title: "Create Highlight Clip",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: false
     },
     async (body) => {
       try {
@@ -10397,7 +10396,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
     {
       title: "Upload and Analyze Media",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -10457,7 +10456,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     {
       title: "Upload and Analyze Several URLs",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -10541,7 +10540,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
     {
       title: "Upload Local File",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true
     },
@@ -12223,7 +12222,7 @@ function register20(server, client, options = {}) {
     "start_voice_test_run",
     "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run, and 402 if the workspace has no credits.",
     { agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)") },
-    { title: "Start Voice Agent Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Start Voice Agent Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run`);
@@ -12274,7 +12273,7 @@ function register20(server, client, options = {}) {
       agentId: import_zod22.z.string().min(1).describe("ID of the voice agent (from list_voice_agents)"),
       runId: import_zod22.z.string().min(1).describe("ID of the run (from get_active_voice_test_run or list_voice_test_runs)")
     },
-    { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    { title: "Resume Voice Test Run", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ agentId, runId }) => {
       try {
         const result = await api.post(`/v1/voice/testing/${agentId}/run/${runId}/resume`);

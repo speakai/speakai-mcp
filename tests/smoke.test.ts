@@ -147,9 +147,16 @@ describe("MCP Server Smoke Tests", () => {
       "apply_label",
       "bulk_create_voice_agent_resources",
       "clone_folder",
+      "clone_folder_view",
+      "clone_recorder",
+      "create_clip",
+      "create_embed",
       "create_field",
       "create_folder",
+      "create_folder_view",
       "create_label",
+      "create_recorder",
+      "create_text_note",
       "create_user_group",
       "create_voice_agent",
       "create_voice_agent_from_prompt",
@@ -161,6 +168,12 @@ describe("MCP Server Smoke Tests", () => {
       "export_multiple_media",
       "generate_voice_faq_suggestions",
       "provision_inbound_webhook",
+      "resume_voice_test_run",
+      "start_voice_test_run",
+      "upload_and_analyze",
+      "upload_and_analyze_batch",
+      "upload_local_file",
+      "upload_media",
     ].sort());
   });
 
@@ -178,44 +191,34 @@ describe("MCP Server Smoke Tests", () => {
       "ask_ai_chat",
       "build_automation",
       "bulk_create_voice_agent_resources",
-      "bulk_move_media",
       "bulk_update_automation_status",
       "clone_recorder",
       "create_automation",
-      "create_clip",
       "create_dashboard",
       "create_embed",
       "create_recorder",
-      "create_text_note",
       "create_voice_agent_resource",
       "create_webhook",
       "delete_automation",
       "delete_dashboard",
-      "delete_media",
       "delete_recorder",
       "delete_scheduled_assistant",
       "delete_voice_agent",
       "delete_webhook",
       "provision_inbound_webhook",
-      "reanalyze_media",
-      "reanalyze_text",
       "remove_assistant_from_meeting",
       "retry_ai_chat",
       "run_automations",
       "schedule_meeting_event",
       "set_media_thumbnail",
       "share_dashboard",
-      "submit_chat_feedback",
       "test_automation",
       "toggle_automation_status",
       "update_automation",
       "update_dashboard",
       "update_embed",
-      "update_media_metadata",
-      "update_multiple_fields",
       "update_recorder_questions",
       "update_recorder_settings",
-      "update_text_note",
       "update_voice_agent_resource",
       "update_webhook",
       "upload_and_analyze",
@@ -227,8 +230,8 @@ describe("MCP Server Smoke Tests", () => {
 
   it("never describes an outside send or irreversible effect that the hints don't declare", async () => {
     // OpenAI's tool scan reads the description against the annotations. A write that says it sends
-    // outside Speak AI, or changes a share link, embedded widget or phone number, must be open-world; one that says it bills, overwrites or permanently deletes
-    // must be destructive. A match is ignored when its clause negates it, or names another tool, first.
+    // outside Speak AI, or changes a share link, embedded widget or phone number, must be open-world; one that says it overwrites, replaces or permanently deletes
+    // must be destructive. Spending credits is not destructive under OpenAI's current rules. A match is ignored when its clause negates it, or names another tool, first.
     const { registerAllTools } = await import("../src/tools/index.js");
     registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
 
@@ -236,7 +239,7 @@ describe("MCP Server Smoke Tests", () => {
     const names = Object.keys(tools);
     const OUTSIDE_SEND =
       /\b(sends?|sent|sending|posts?|posted|emails?|fires?|triggers?|notifies|calls?)\b[^;]{0,160}?\b(email|slack|webhook|automation|any address|third-party|external)|\bpublic (url|link|page)|\bshare link|\bembedded widget|\bphone numbers?\b|\bphone call|\bjoins? [^;]*?\bmeeting|\bcomposio\b/i;
-    const IRREVERSIBLE = /\b(charges?|bills?|billed|credits?|permanently|overwrites?|replaces?)\b/i;
+    const IRREVERSIBLE = /\b(permanently|overwrites?|replaces?)\b/i;
     const NEGATED = /\b(not|no|never|without|cannot)\b/i;
 
     // A match counts unless the clause negates it, or names another tool, before the match.

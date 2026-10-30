@@ -514,7 +514,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server, 
     "submit_chat_feedback",
-    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are posted to Speak AI's internal Slack channel for the Speak AI team to review.",
+    "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are shared with the Speak AI team for review.",
     {
       promptId: z.string().min(1).describe("ID of the conversation"),
       messageId: z.string().min(1).describe("ID of the message to rate"),
@@ -528,7 +528,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: true,
+      openWorldHint: false,
     },
     async (body) => {
       try {

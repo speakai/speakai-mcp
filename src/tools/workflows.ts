@@ -650,7 +650,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     {
       title: "Upload and Analyze Media",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -734,7 +734,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     {
       title: "Upload and Analyze Several URLs",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -834,7 +834,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     {
       title: "Upload Local File",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true,
     },
