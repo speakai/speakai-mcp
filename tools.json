@@ -30,9 +30,9 @@
         {
           "name": "upload_media",
           "title": "Upload Media from URL",
-          "description": "Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and sends the media.created event to the workspace's webhooks and Slack channels if any are configured. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.",
+          "description": "Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Requires an active subscription. Creates a media item and bills its duration against the workspace's minutes or credits. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -41,7 +41,7 @@
           "title": "Upload Local File",
           "description": "Upload a local file to Speak AI for transcription and analysis. Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry. Works with any audio or video file on the local filesystem. Each upload creates a media item and bills its duration against the workspace's minutes or credits. After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -50,7 +50,7 @@
           "title": "Upload and Analyze Media",
           "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -120,20 +120,20 @@
         {
           "name": "update_media_metadata",
           "title": "Update Media Metadata",
-          "description": "Update metadata fields (name, description, tags, status) for an existing media file. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
+          "description": "Update metadata fields (name, description, tags, status) for an existing media file.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "delete_media",
           "title": "Delete Media File",
-          "description": "Permanently delete a media file and all associated transcripts and insights. Sends the media.deleted event to the workspace's webhooks and Slack channels if any are configured.",
+          "description": "Permanently delete a media file and all associated transcripts and insights.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "toggle_media_favorite",
@@ -147,27 +147,27 @@
         {
           "name": "reanalyze_media",
           "title": "Re-analyze Media",
-          "description": "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts. Sends the media.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
+          "description": "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "bulk_move_media",
           "title": "Bulk Move Media Files",
-          "description": "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
+          "description": "Move multiple media files to a folder in a single operation. Use this for batch reorganization instead of updating media one by one.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "upload_and_analyze_batch",
           "title": "Upload and Analyze Several URLs",
           "description": "Import up to 25 audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most 5 uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item and bills its duration against the workspace's minutes or credits. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -272,11 +272,11 @@
         {
           "name": "submit_chat_feedback",
           "title": "Submit Chat Feedback",
-          "description": "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are posted to Speak AI's internal Slack channel for the Speak AI team to review.",
+          "description": "Submit feedback on a chat response (thumbs up/down). Replaces any earlier feedback on that message, and the score and reason are shared with the Speak AI team for review.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "get_chat_statistics",
@@ -425,7 +425,7 @@
           "title": "Create Folder View",
           "description": "Create a new saved view for a folder with a custom set of display columns.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -443,7 +443,7 @@
           "title": "Clone Folder View",
           "description": "Duplicate an existing folder view into a target folder.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": false
         }
@@ -460,7 +460,7 @@
           "title": "Create Recorder",
           "description": "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -487,7 +487,7 @@
           "title": "Clone Recorder",
           "description": "Duplicate an existing recorder including all its settings and questions. The copy gets its own public link, accepts submissions right away and sends the same submission emails, webhooks and automations as any recorder. Fires the workspace's embed_recorder.created webhook if one is registered.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -556,11 +556,11 @@
         {
           "name": "create_clip",
           "title": "Create Highlight Clip",
-          "description": "Create a highlight clip from one or more media files by specifying time ranges. Clips are processed asynchronously (states: queued, processing, completed, failed) — use get_clips to check status. Maximum total clip duration is 30 minutes. Use multiple timeRanges to stitch segments from different media files together. When the clip finishes processing it fires your clip_created automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions.",
+          "description": "Create a highlight clip from one or more media files by specifying time ranges. Clips are processed asynchronously (states: queued, processing, completed, failed) — use get_clips to check status. Maximum total clip duration is 30 minutes. Use multiple timeRanges to stitch segments from different media files together.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "get_clips",
@@ -938,11 +938,11 @@
         {
           "name": "create_text_note",
           "title": "Create Text Note",
-          "description": "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, and once the allowance is used up charges credits, the account balance, or the card on file; the request is refused only when none of these can cover it. Sends the text.created and text.analyzed events to the workspace's webhooks and Slack channels if any are configured.",
+          "description": "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. Uses one text note from the plan allowance, then the workspace's credits; the request is refused when neither can cover it.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "get_text_insight",
@@ -956,20 +956,20 @@
         {
           "name": "reanalyze_text",
           "title": "Re-analyze Text Note",
-          "description": "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment. Sends the text.reanalyzed event to the workspace's webhooks and Slack channels if any are configured.",
+          "description": "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
-          "openWorldHint": true
+          "openWorldHint": false
         },
         {
           "name": "update_text_note",
           "title": "Update Text Note",
-          "description": "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text. Sends the media.updated event to the workspace's webhooks and Slack channels if any are configured.",
+          "description": "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         }
       ]
     },
@@ -1009,11 +1009,11 @@
         {
           "name": "update_multiple_fields",
           "title": "Bulk Update Custom Field Values",
-          "description": "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. Each value that changes fires your field_updated automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions. Shared dashboard links cache widget data, so field and media edits can take up to about 5 minutes to show for date ranges that include today (15 at most) and up to about 17 minutes for past ranges (60 at most); any dashboard update refreshes it at once.",
+          "description": "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. Shared dashboard links cache widget data, so field and media edits can take up to about 5 minutes to show for date ranges that include today (15 at most) and up to about 17 minutes for past ranges (60 at most); any dashboard update refreshes it at once.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
-          "openWorldHint": true
+          "openWorldHint": false
         }
       ]
     },
@@ -1180,7 +1180,7 @@
           "title": "Create Embed Widget",
           "description": "Create an embeddable player/transcript widget for a media file or a set of folders. Provide `mediaId` for a single-media embed, or `folderIds` for a folder/library embed. If an embed already exists for that media or folder set, it is returned instead. A single-media embed is viewable by anyone with the link while the media's privacy mode is public (the default); a folder embed is created with an auto-generated password. Use update_embed to change privacy or the password, or to show labels and comments (meta isLabels, isComments; off by default), or to brand a shared dashboard (meta logo, logoDark, theme, backgroundColor, primaryColor, titleColor, fontFamily).",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": true
         },
@@ -1609,7 +1609,7 @@
           "title": "Start Voice Agent Test Run",
           "description": "Start a test run of a voice agent's scripted test suite. The run sends each enabled scenario's user messages to the agent as text, in order, and grades every criterion; it does not place phone calls. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. Requires the OWNER or ADMIN role. Returns the run in queued status; poll get_active_voice_test_run for progress and results. Returns 404 if the agent or its test suite does not exist, 409 if the suite has no enabled scenarios or the agent already has a queued, running, or paused run, and 402 if the workspace has no credits.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": false
         },
@@ -1636,7 +1636,7 @@
           "title": "Resume Voice Test Run",
           "description": "Resume a paused voice agent test run, transitioning it back to running. Requires the OWNER or ADMIN role. Valid only from paused. The run continues from the next scenario.",
           "readOnlyHint": false,
-          "destructiveHint": true,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": false
         },
