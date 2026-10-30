@@ -414,7 +414,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
             ],
             notes: options.voiceTestRuns === false
               ? "Scripted test scenarios for the agent. This server does not expose the run tools."
-              : "Scripted scenarios and a run history. A run sends each enabled scenario's user messages to the agent as text and grades every criterion; it uses credits for the AI cost. Poll get_active_voice_test_run for progress.",
+              : "Scripted scenarios and a run history. A run sends each enabled scenario's user messages to the agent as text and grades every criterion. Poll get_active_voice_test_run for progress.",
           },
           {
             area: "Feedback / self-improvement (Intelligence)",
