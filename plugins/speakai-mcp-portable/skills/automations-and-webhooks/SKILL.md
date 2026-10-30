@@ -2,7 +2,7 @@
 name: automations-and-webhooks
 description: Receive Speak AI events on your own server with outbound webhooks, and explain where automations live. Use this when the user wants Speak to notify their system when a recording is created, processed or updated, wants to register, list, update or delete a webhook, needs to handle webhook deliveries reliably, or asks to build or run an automation. Covers create_webhook, list_webhooks, update_webhook and delete_webhook, the delivery body and idempotent handling with deliveryId, and points automation requests to the Speak AI web app. Keywords include webhook, outbound webhook, callback URL, event delivery, retry, idempotency, automation, workflow, trigger.
 metadata:
-  server-version: "1.40.3"
+  server-version: "1.41.0"
   categories: "webhooks"
   tool_count: "4"
 ---

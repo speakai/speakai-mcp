@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.41.0 (2026-10-30)
+
+- fix(tools): describe embed session tools as viewing analytics
+
 ## v1.40.3 (2026-10-30)
 
 - fix(tools): drop billing and credit wording from tool descriptions
