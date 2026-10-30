@@ -1214,7 +1214,7 @@
         {
           "name": "list_embed_sessions",
           "title": "List Embed Sessions",
-          "description": "Owner analytics for an embed: list the visits (sessions) to one embed, newest first by default. Each session has its start and last activity time, whether it is still live, total and active time, media opened, time watched, questions asked, the viewer's email and name when they identified themselves, their country, browser, device and referrer, campaign tags, and whether it was a bot. Returns sessions with totalCount, page and pageSize. Use get_embed_session with a session's _id for its full timeline.",
+          "description": "Viewing analytics for an embed the user owns: list the visits (sessions) to one embed, newest first by default. Each visit shows when it started and was last active, whether it is still live, total and active time, media opened, time watched, questions asked, traffic source and campaign tags, whether it was a bot, and the viewer's identity if they chose to share it. Returns sessions with totalCount, page and pageSize. Use get_embed_session with a session's _id for its full timeline.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -1232,7 +1232,7 @@
         {
           "name": "get_embed_session",
           "title": "Get Embed Session",
-          "description": "Owner analytics for an embed: one visit in full. Returns the session with the media it opened (time watched, plays, seeks, furthest position, completed), the questions asked in chat, and a paged list of its events in time order, plus how many sessions the same viewer or browser has had on this embed. Use eventsPage and eventsPageSize to read long timelines.",
+          "description": "Viewing analytics for an embed the user owns: one visit in full. Returns the visit with the media it opened (time watched, plays, seeks, furthest position, completed), the questions asked in chat, and a paged list of its events in time order, plus how many earlier visits the same viewer has made to this embed. Use eventsPage and eventsPageSize to read long timelines.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
