@@ -4688,13 +4688,11 @@ var init_notificationEvent3 = __esm({
 });
 
 // node_modules/@speakai/shared/dist/utils/embedSession.js
-var EMBED_SESSION_ID_PATTERN, EMBED_VIEWER_ID_PATTERN, EMBED_SESSION_LIMITS;
+var EMBED_SESSION_LIMITS;
 var init_embedSession3 = __esm({
   "node_modules/@speakai/shared/dist/utils/embedSession.js"() {
     "use strict";
     init_embedSession();
-    EMBED_SESSION_ID_PATTERN = /^[A-Za-z0-9-]{16,64}$/;
-    EMBED_VIEWER_ID_PATTERN = /^[a-f0-9]{32}$/;
     EMBED_SESSION_LIMITS = {
       flushIntervalMs: 3e4,
       idleAfterMs: 6e4,
@@ -6661,13 +6659,9 @@ function register6(server, client) {
       ...embedSessionRangeSchema,
       page: import_zod7.z.number().int().min(0).optional().describe("0-based page index (default 0)"),
       pageSize: import_zod7.z.number().int().min(1).max(EMBED_SESSION_LIMITS.maxListPageSize).optional().describe(`Sessions per page (default ${EMBED_SESSION_LIMITS.listPageSize}, max ${EMBED_SESSION_LIMITS.maxListPageSize})`),
-      search: import_zod7.z.string().max(EMBED_SESSION_LIMITS.maxSearchLength).optional().describe("Match what a viewer shared about themselves (any part) or the start of a visitorId"),
-      viewer: import_zod7.z.enum(Object.values(EmbedSessionViewerFilter)).optional().describe("identified keeps viewers who chose to identify themselves, anonymous keeps the rest (default all)"),
       device: import_zod7.z.enum(Object.values(EmbedSessionDeviceFilter)).optional().describe("Filter by device type (default all)"),
       country: import_zod7.z.string().optional().describe("Exact country name as shown in a session's client.country"),
       includeLegacy: import_zod7.z.boolean().optional().describe("Also include visits recorded before session tracking started (default false)"),
-      viewerId: import_zod7.z.string().regex(EMBED_VIEWER_ID_PATTERN).optional().describe("Only sessions of one identified viewer (viewerId from a session)"),
-      visitorId: import_zod7.z.string().regex(EMBED_SESSION_ID_PATTERN).optional().describe("Only sessions from one browser (visitorId from a session)"),
       mediaId: import_zod7.z.string().optional().describe("Only sessions that opened this media file"),
       sort: import_zod7.z.enum(Object.values(EmbedSessionSort)).optional().describe(`Sort order (default ${EmbedSessionSort.STARTED_DESC})`)
     },
@@ -6727,7 +6721,7 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "get_embed_session",
-    "Viewing analytics for an embed the user owns: one visit in full. Returns the visit with the media it opened (time watched, plays, seeks, furthest position, completed), the questions asked in chat, and a paged list of its events in time order, plus how many earlier visits the same viewer has made to this embed. Use eventsPage and eventsPageSize to read long timelines.",
+    "Viewing analytics for an embed the user owns: one visit in full. Returns the visit with the media it opened, how much was watched, the questions asked in chat, and a paged list of the visit's events. Use eventsPage and eventsPageSize to read long timelines.",
     {
       embedId: embedIdSchema,
       id: objectIdSchema.describe("The session's _id (24 hex characters) from list_embed_sessions, not its sessionId"),

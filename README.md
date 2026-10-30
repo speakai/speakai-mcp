@@ -645,7 +645,7 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 | `update_embed` | Update embed settings |
 | `check_embed` | Check if embed exists for media |
 | `get_embed_iframe_url` | Get iframe URL for your website |
-| `list_embed_sessions` | Owner analytics: list visits to an embed with viewer, device, country and traffic filters |
+| `list_embed_sessions` | Owner analytics: list visits to an embed with device, country, media and traffic filters |
 | `get_embed_session_summary` | Owner analytics: an embed's visit KPIs, daily trend, sources and per-media table |
 | `get_embed_session` | Owner analytics: one embed visit in full, with paged events |
 
