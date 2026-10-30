@@ -183,9 +183,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "list_embed_sessions",
-    "Owner analytics for an embed: list the visits (sessions) to one embed, newest first by default. " +
-      "Each session has its start and last activity time, whether it is still live, total and active time, media opened, time watched, questions asked, " +
-      "the viewer's email and name when they identified themselves, their country, browser, device and referrer, campaign tags, and whether it was a bot. " +
+    "Viewing analytics for an embed the user owns: list the visits (sessions) to one embed, newest first by default. " +
+      "Each visit shows when it started and was last active, whether it is still live, total and active time, media opened, time watched, questions asked, " +
+      "traffic source and campaign tags, whether it was a bot, and the viewer's identity if they chose to share it. " +
       "Returns sessions with totalCount, page and pageSize. Use get_embed_session with a session's _id for its full timeline.",
     {
       embedId: embedIdSchema,
@@ -202,11 +202,11 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .string()
         .max(EMBED_SESSION_LIMITS.maxSearchLength)
         .optional()
-        .describe("Match a viewer email (any part) or the start of a visitorId"),
+        .describe("Match what a viewer shared about themselves (any part) or the start of a visitorId"),
       viewer: z
         .enum(Object.values(EmbedSessionViewerFilter) as [string, ...string[]])
         .optional()
-        .describe("identified keeps viewers who gave their email, anonymous keeps the rest (default all)"),
+        .describe("identified keeps viewers who chose to identify themselves, anonymous keeps the rest (default all)"),
       device: z
         .enum(Object.values(EmbedSessionDeviceFilter) as [string, ...string[]])
         .optional()
@@ -296,8 +296,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "get_embed_session",
-    "Owner analytics for an embed: one visit in full. Returns the session with the media it opened (time watched, plays, seeks, furthest position, completed), " +
-      "the questions asked in chat, and a paged list of its events in time order, plus how many sessions the same viewer or browser has had on this embed. " +
+    "Viewing analytics for an embed the user owns: one visit in full. Returns the visit with the media it opened (time watched, plays, seeks, furthest position, completed), " +
+      "the questions asked in chat, and a paged list of its events in time order, plus how many earlier visits the same viewer has made to this embed. " +
       "Use eventsPage and eventsPageSize to read long timelines.",
     {
       embedId: embedIdSchema,

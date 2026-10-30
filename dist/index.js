@@ -5555,7 +5555,7 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -6655,14 +6655,14 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "list_embed_sessions",
-    "Owner analytics for an embed: list the visits (sessions) to one embed, newest first by default. Each session has its start and last activity time, whether it is still live, total and active time, media opened, time watched, questions asked, the viewer's email and name when they identified themselves, their country, browser, device and referrer, campaign tags, and whether it was a bot. Returns sessions with totalCount, page and pageSize. Use get_embed_session with a session's _id for its full timeline.",
+    "Viewing analytics for an embed the user owns: list the visits (sessions) to one embed, newest first by default. Each visit shows when it started and was last active, whether it is still live, total and active time, media opened, time watched, questions asked, traffic source and campaign tags, whether it was a bot, and the viewer's identity if they chose to share it. Returns sessions with totalCount, page and pageSize. Use get_embed_session with a session's _id for its full timeline.",
     {
       embedId: embedIdSchema,
       ...embedSessionRangeSchema,
       page: import_zod7.z.number().int().min(0).optional().describe("0-based page index (default 0)"),
       pageSize: import_zod7.z.number().int().min(1).max(EMBED_SESSION_LIMITS.maxListPageSize).optional().describe(`Sessions per page (default ${EMBED_SESSION_LIMITS.listPageSize}, max ${EMBED_SESSION_LIMITS.maxListPageSize})`),
-      search: import_zod7.z.string().max(EMBED_SESSION_LIMITS.maxSearchLength).optional().describe("Match a viewer email (any part) or the start of a visitorId"),
-      viewer: import_zod7.z.enum(Object.values(EmbedSessionViewerFilter)).optional().describe("identified keeps viewers who gave their email, anonymous keeps the rest (default all)"),
+      search: import_zod7.z.string().max(EMBED_SESSION_LIMITS.maxSearchLength).optional().describe("Match what a viewer shared about themselves (any part) or the start of a visitorId"),
+      viewer: import_zod7.z.enum(Object.values(EmbedSessionViewerFilter)).optional().describe("identified keeps viewers who chose to identify themselves, anonymous keeps the rest (default all)"),
       device: import_zod7.z.enum(Object.values(EmbedSessionDeviceFilter)).optional().describe("Filter by device type (default all)"),
       country: import_zod7.z.string().optional().describe("Exact country name as shown in a session's client.country"),
       includeLegacy: import_zod7.z.boolean().optional().describe("Also include visits recorded before session tracking started (default false)"),
@@ -6727,7 +6727,7 @@ function register6(server, client) {
   registerSpeakTool(
     server,
     "get_embed_session",
-    "Owner analytics for an embed: one visit in full. Returns the session with the media it opened (time watched, plays, seeks, furthest position, completed), the questions asked in chat, and a paged list of its events in time order, plus how many sessions the same viewer or browser has had on this embed. Use eventsPage and eventsPageSize to read long timelines.",
+    "Viewing analytics for an embed the user owns: one visit in full. Returns the visit with the media it opened (time watched, plays, seeks, furthest position, completed), the questions asked in chat, and a paged list of its events in time order, plus how many earlier visits the same viewer has made to this embed. Use eventsPage and eventsPageSize to read long timelines.",
     {
       embedId: embedIdSchema,
       id: objectIdSchema.describe("The session's _id (24 hex characters) from list_embed_sessions, not its sessionId"),
@@ -8837,7 +8837,8 @@ async function withInboundWebhookInfo(api, responseData, automationId) {
     return responseData;
   }
 }
-function register12(server, client) {
+function register12(server, client, options = {}) {
+  if (!options.automations) return;
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -9524,7 +9525,7 @@ var webhooks_exports = {};
 __export(webhooks_exports, {
   register: () => register13
 });
-function register13(server, client) {
+function register13(server, client, options = {}) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -9613,7 +9614,7 @@ function register13(server, client) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.automations) registerSpeakTool(
     server,
     "provision_inbound_webhook",
     "Provision a standalone inbound webhook and get its public receive URL (inboundUrl) BEFORE creating an automation. Webhook-first flow: provision, send a test payload to the URL (append ?test=1 to only capture a sample without running anything), inspect mappable payload paths with get_inbound_webhook, then pass the webhookId as trigger.webhookId to create_automation.",
@@ -9649,7 +9650,7 @@ function register13(server, client) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.automations) registerSpeakTool(
     server,
     "get_inbound_webhook",
     "Get an inbound webhook's public receive URL, captured sample payload, and the ready-to-paste {{trigger.payload.*}} tokens for mapping payload values into automation steps (speak-upload name/sourceUrl, fieldsMap custom-field values, notify/outbound-webhook templates). Pass either the webhookId or the automationId of an inbound-webhook automation. If no sample has been captured yet, send a test payload to the inboundUrl first (append ?test=1 to capture without running the automation).",
@@ -9703,7 +9704,7 @@ function register13(server, client) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.automations) registerSpeakTool(
     server,
     "get_webhook_attempts",
     "Get the delivery log for an inbound webhook: each received request with its HTTP acknowledgement status (200 = sample captured, 202 = accepted and run started, 401/403 = rejected) and the automation run it started. Use get_automation_runs for the run outcomes themselves.",
@@ -10050,7 +10051,7 @@ function resolveField(ref, fields) {
 }
 function register16(server, client, options = {}) {
   const api = client ?? speakClient;
-  registerSpeakTool(
+  if (options.automations) registerSpeakTool(
     server,
     "build_automation",
     "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL, slack notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
@@ -12319,7 +12320,7 @@ function register20(server, client, options = {}) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.voiceTestRunDetails) registerSpeakTool(
     server,
     "get_voice_test_run",
     "Get a test run's full detail, including scenarioResults and recommendations. Scoped to your company; agentId is not used to filter this lookup, only runId.",
@@ -12337,7 +12338,7 @@ function register20(server, client, options = {}) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.voiceTestRunDetails) registerSpeakTool(
     server,
     "apply_voice_test_recommendation",
     "Apply a test run recommendation's quick action to the agent (e.g. patch_instructions appends the suggested fix to the agent's instructions). Requires the OWNER or ADMIN role.",
@@ -14947,7 +14948,7 @@ if (isCliMode) {
             name: "speak-ai",
             version: "1.0.0"
           });
-          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
+          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
           registerResources2(server);
           registerPrompts2(server);
           const transport = new StdioServerTransport();

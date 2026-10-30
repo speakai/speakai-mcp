@@ -458,6 +458,8 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 
 `ask_ai_chat`, `retry_ai_chat` and `get_analysis_quote` register only with `aiChat: true`. The stdio server includes them; the hosted endpoint does not, because Speak's assistant behind AI Chat can call other tools.
 
+The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbound_webhook` and `get_webhook_attempts` register only with `automations: true`, and `get_voice_test_run` and `apply_voice_test_recommendation` only with `voiceTestRunDetails: true`. The stdio server includes them; the hosted endpoint does not, because automation steps can run actions in connected third-party apps. On the hosted endpoint, set up automations in the Speak AI web app.
+
 </details>
 
 <details>

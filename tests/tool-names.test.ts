@@ -34,7 +34,7 @@ describe("SPEAK_MCP_TOOL_NAMES manifest", () => {
     const { SPEAK_MCP_TOOL_NAMES } = await import("../src/tool-names.js");
 
     const server = new McpServer({ name: "test", version: "1.0.0" });
-    registerAllTools(server, mockClient, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
+    registerAllTools(server, mockClient, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const registered = Object.keys((server as any)._registeredTools).sort();
     const manifest = [...SPEAK_MCP_TOOL_NAMES].sort();

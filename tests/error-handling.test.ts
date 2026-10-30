@@ -51,7 +51,7 @@ describe("Error Handling & Resilience", () => {
   describe("HTTP error responses", () => {
     it("handles 401 Unauthorized gracefully", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockRejectedValueOnce(axiosError(401, { message: "Invalid API key" }));
 
@@ -65,7 +65,7 @@ describe("Error Handling & Resilience", () => {
 
     it("handles 403 Forbidden gracefully", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockRejectedValueOnce(axiosError(403, { message: "Insufficient permissions" }));
 
@@ -78,7 +78,7 @@ describe("Error Handling & Resilience", () => {
 
     it("handles 404 Not Found gracefully", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockRejectedValueOnce(axiosError(404, { message: "Media not found" }));
 
@@ -91,7 +91,7 @@ describe("Error Handling & Resilience", () => {
 
     it("handles 429 Rate Limited gracefully", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockPost.mockRejectedValueOnce(
         axiosError(429, { message: "Rate limit exceeded" }, { "retry-after": "5" })
@@ -110,7 +110,7 @@ describe("Error Handling & Resilience", () => {
 
     it("handles 500 Internal Server Error gracefully", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockRejectedValueOnce(axiosError(500, { message: "Internal server error" }));
 
@@ -125,7 +125,7 @@ describe("Error Handling & Resilience", () => {
   describe("Network errors", () => {
     it("handles connection timeout", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockRejectedValueOnce(new Error("timeout of 60000ms exceeded"));
 
@@ -138,7 +138,7 @@ describe("Error Handling & Resilience", () => {
 
     it("handles DNS resolution failure", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockRejectedValueOnce(new Error("getaddrinfo ENOTFOUND api.speakai.co"));
 
@@ -151,7 +151,7 @@ describe("Error Handling & Resilience", () => {
 
     it("handles connection refused", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockRejectedValueOnce(new Error("connect ECONNREFUSED 127.0.0.1:443"));
 
@@ -166,7 +166,7 @@ describe("Error Handling & Resilience", () => {
   describe("Malformed API responses", () => {
     it("handles null response data without crashing", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockResolvedValueOnce({ data: null });
 
@@ -180,7 +180,7 @@ describe("Error Handling & Resilience", () => {
 
     it("handles empty object response", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockResolvedValueOnce({ data: {} });
 
@@ -192,7 +192,7 @@ describe("Error Handling & Resilience", () => {
 
     it("handles response with unexpected structure", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockResolvedValueOnce({ data: { unexpected: "shape" } });
 
@@ -207,7 +207,7 @@ describe("Error Handling & Resilience", () => {
   describe("Error across tool categories", () => {
     it("folder tools handle errors", async () => {
       const { register } = await import("../src/tools/folders.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockGet.mockRejectedValueOnce(axiosError(500, { error: "db down" }));
 
@@ -220,7 +220,7 @@ describe("Error Handling & Resilience", () => {
 
     it("prompt tools handle errors", async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true });
+      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
 
       mockPost.mockRejectedValueOnce(axiosError(503, { message: "Service unavailable" }));
 
@@ -233,7 +233,7 @@ describe("Error Handling & Resilience", () => {
 
     it("clip tools handle errors", async () => {
       const { register } = await import("../src/tools/clips.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockPost.mockRejectedValueOnce(axiosError(400, { message: "Invalid time range" }));
 
@@ -250,7 +250,7 @@ describe("Error Handling & Resilience", () => {
 
     it("search tools handle errors", async () => {
       const { register } = await import("../src/tools/analytics.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       mockPost.mockRejectedValueOnce(new Error("Network error"));
 

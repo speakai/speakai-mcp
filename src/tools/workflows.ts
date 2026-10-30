@@ -210,7 +210,7 @@ const buildAutomationSchema: z.ZodRawShape = {
 export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
 
-  registerSpeakTool(server,
+  if (options.automations) registerSpeakTool(server,
     "build_automation",
     "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the " +
       "wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), " +

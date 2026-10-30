@@ -57,7 +57,7 @@ describe("Automations tools", () => {
     mockDelete.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/automations.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("list_automations calls GET /v1/automations", async () => {
@@ -261,7 +261,7 @@ describe("Embed tools", () => {
     mockPut.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/embed.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("create_embed calls POST /v1/embed", async () => {
@@ -345,7 +345,7 @@ describe("Export tools", () => {
     mockPost.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/exports.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("export_media calls POST /v1/media/export/:id/:fileType", async () => {
@@ -396,7 +396,7 @@ describe("Fields tools", () => {
     mockPut.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/fields.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("list_fields calls GET /v1/fields", async () => {
@@ -462,7 +462,7 @@ describe("Meeting tools", () => {
     mockDelete.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/meeting.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("list_meeting_events calls GET /v1/meeting-assistant/events", async () => {
@@ -519,7 +519,7 @@ describe("Recorder tools", () => {
     mockDelete.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/recorder.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("check_recorder_status calls GET /v1/recorder/status/:token", async () => {
@@ -610,7 +610,7 @@ describe("Text tools", () => {
     mockPut.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/text.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("create_text_note calls POST /v1/text/create and mirrors text into rawText", async () => {
@@ -675,7 +675,7 @@ describe("Webhook tools", () => {
     mockDelete.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/webhooks.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("create_webhook calls POST /v1/webhook", async () => {
@@ -1105,7 +1105,7 @@ describe("Prompt tools — remaining untested endpoints", () => {
     mockDelete.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/prompt.js");
-    register(server, mockClient, { aiChat: true });
+    register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
   });
 
   it("retry_ai_chat calls POST /v1/prompt/retry", async () => {
@@ -1190,7 +1190,7 @@ describe("Clips tools — remaining untested endpoints", () => {
     mockDelete.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/clips.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("get_clips calls GET /v1/clips with optional mediaId", async () => {
@@ -1223,7 +1223,7 @@ describe("Folder tools", () => {
     mockDelete.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/folders.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("get_folder_info calls GET /v1/folder/:folderId", async () => {
@@ -1323,7 +1323,7 @@ describe("Media tools — additional endpoints", () => {
     mockDelete.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/media.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("get_signed_upload_url calls GET /v1/media/upload/signedurl with params", async () => {
@@ -1423,7 +1423,7 @@ describe("build_automation workflow", () => {
     mockPut.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/workflows.js");
-    register(server, mockClient);
+    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
   it("resolves folder/field names, converts payload shorthand, and assembles the wire body", async () => {

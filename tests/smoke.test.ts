@@ -32,14 +32,14 @@ describe("MCP Server Smoke Tests", () => {
 
   it("registers all 189 MCP tools without errors", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    expect(() => registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true })).not.toThrow();
+    expect(() => registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true })).not.toThrow();
 
     const tools = getRegisteredTools(server);
     const toolNames = Object.keys(tools);
     expect(toolNames).toHaveLength(189);
   });
 
-  it("exposes the voice test-run tools but not local-disk or AI Chat tools on the hosted server", async () => {
+  it("leaves local-disk, AI Chat, automation and voice test-run detail tools off the hosted server", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
     registerAllTools(server);
 
@@ -48,9 +48,22 @@ describe("MCP Server Smoke Tests", () => {
     for (const chatTool of ["ask_ai_chat", "retry_ai_chat", "get_analysis_quote"]) {
       expect(toolNames).not.toContain(chatTool);
     }
+    for (const gated of [
+      "create_automation",
+      "build_automation",
+      "run_automations",
+      "list_automation_actions",
+      "provision_inbound_webhook",
+      "get_webhook_attempts",
+      "get_voice_test_run",
+      "apply_voice_test_recommendation",
+    ]) {
+      expect(toolNames).not.toContain(gated);
+    }
     expect(toolNames).toContain("get_chat_history");
+    expect(toolNames).toContain("create_webhook");
     expect(toolNames).toContain("start_voice_test_run");
-    expect(toolNames).toHaveLength(185);
+    expect(toolNames).toHaveLength(160);
   });
 
   it("leaves the voice test-run tools off when voiceTestRuns is false", async () => {
@@ -73,12 +86,12 @@ describe("MCP Server Smoke Tests", () => {
       expect(toolNames).not.toContain(runTool);
     }
     expect(toolNames).toContain("get_voice_test_suite");
-    expect(toolNames).toHaveLength(175);
+    expect(toolNames).toHaveLength(152);
   });
 
   it("registers all tools with unique names", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);
@@ -88,7 +101,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("every tool has a non-empty description", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     for (const [name, tool] of Object.entries(tools)) {
@@ -99,7 +112,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("every tool declares Apps SDK annotations and an output schema", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     for (const [name, tool] of Object.entries(tools)) {
@@ -130,7 +143,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("only marks writes non-destructive when they are purely additive", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     const additiveWrites = Object.entries(tools)
@@ -179,7 +192,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("only marks tools open-world when they affect public or external systems", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     const openWorldTools = Object.entries(tools)
@@ -197,6 +210,7 @@ describe("MCP Server Smoke Tests", () => {
       "create_dashboard",
       "create_embed",
       "create_recorder",
+      "create_text_note",
       "create_voice_agent_resource",
       "create_webhook",
       "delete_automation",
@@ -233,7 +247,7 @@ describe("MCP Server Smoke Tests", () => {
     // outside Speak AI, or changes a share link, embedded widget or phone number, must be open-world; one that says it overwrites, replaces or permanently deletes
     // must be destructive. Spending credits is not destructive under OpenAI's current rules. A match is ignored when its clause negates it, or names another tool, first.
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);
@@ -476,7 +490,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("includes expected tool categories", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);

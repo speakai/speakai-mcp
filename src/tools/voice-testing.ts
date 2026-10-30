@@ -191,7 +191,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     }
   );
 
-  registerSpeakTool(server,
+  if (options.voiceTestRunDetails) registerSpeakTool(server,
     "get_voice_test_run",
     "Get a test run's full detail, including scenarioResults and recommendations. Scoped to your company; agentId is not used to filter this lookup, only runId.",
     {
@@ -209,7 +209,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     }
   );
 
-  registerSpeakTool(server,
+  if (options.voiceTestRunDetails) registerSpeakTool(server,
     "apply_voice_test_recommendation",
     "Apply a test run recommendation's quick action to the agent (e.g. patch_instructions appends the suggested fix to the agent's instructions). Requires the OWNER or ADMIN role.",
     {
