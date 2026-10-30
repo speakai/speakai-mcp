@@ -45,7 +45,7 @@ describe("Tools Integration Tests", () => {
   describe("Media tools", () => {
     it("upload_media calls POST /v1/media/upload", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "upload_media");
       await callback({
@@ -63,7 +63,7 @@ describe("Tools Integration Tests", () => {
 
     it("list_media calls GET /v1/media with params", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "list_media");
       await callback({ mediaType: "audio", page: 1, pageSize: 10 });
@@ -75,7 +75,7 @@ describe("Tools Integration Tests", () => {
 
     it("get_transcript calls GET /v1/media/transcript/:id", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "get_transcript");
       await callback({ mediaId: "abc123" });
@@ -85,7 +85,7 @@ describe("Tools Integration Tests", () => {
 
     it("delete_media calls DELETE /v1/media/:id", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "delete_media");
       await callback({ mediaId: "abc123" });
@@ -95,7 +95,7 @@ describe("Tools Integration Tests", () => {
 
     it("set_media_thumbnail sends a link, sniffed image bytes, or a frame time it waits for", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
       const callback = getToolCallback(server, "set_media_thumbnail");
 
       await callback({ mediaId: "abc123", imageUrl: "https://example.com/a.png" });
@@ -125,7 +125,7 @@ describe("Tools Integration Tests", () => {
 
     it("get_media_status calls GET /v1/media/status/:id", async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "get_media_status");
       await callback({ mediaId: "abc123" });
@@ -137,7 +137,7 @@ describe("Tools Integration Tests", () => {
   describe("Prompt/Chat tools", () => {
     it("ask_ai_chat calls POST /v1/prompt with all params", async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true });
+      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "ask_ai_chat");
       await callback({
@@ -155,7 +155,7 @@ describe("Tools Integration Tests", () => {
 
     it("ask_ai_chat works without mediaIds (workspace-wide)", async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true });
+      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "ask_ai_chat");
       await callback({ prompt: "What themes appear across all interviews?" });
@@ -167,7 +167,7 @@ describe("Tools Integration Tests", () => {
 
     it("get_chat_history calls GET /v1/prompt/history", async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true });
+      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "get_chat_history");
       await callback({ limit: 5 });
@@ -179,7 +179,7 @@ describe("Tools Integration Tests", () => {
 
     it("list_prompts calls GET /v1/prompt", async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true });
+      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "list_prompts");
       await callback({});
@@ -193,7 +193,7 @@ describe("Tools Integration Tests", () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date("2026-04-25T12:34:56.789Z"));
       const { register } = await import("../src/tools/analytics.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "search_media");
       await callback({ query: "pricing concerns", startDate: "2026-01-01" });
@@ -209,7 +209,7 @@ describe("Tools Integration Tests", () => {
   describe("Clips tools", () => {
     it("create_clip calls POST /v1/clips", async () => {
       const { register } = await import("../src/tools/clips.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "create_clip");
       await callback({
@@ -227,7 +227,7 @@ describe("Tools Integration Tests", () => {
 
     it("delete_clip calls DELETE /v1/clips/:id", async () => {
       const { register } = await import("../src/tools/clips.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "delete_clip");
       await callback({ clipId: "clip123" });
@@ -241,7 +241,7 @@ describe("Tools Integration Tests", () => {
       mockGet.mockRejectedValueOnce(new Error("Network error"));
 
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "get_transcript");
       const result = await callback({ mediaId: "bad-id" });
@@ -256,7 +256,7 @@ describe("Tools Integration Tests", () => {
       });
 
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "get_media_status");
       const result = await callback({ mediaId: "abc" });
@@ -271,7 +271,7 @@ describe("Tools Integration Tests", () => {
   describe("User-group tools", () => {
     async function reg() {
       const { register } = await import("../src/tools/users.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     }
 
     it("list_users calls GET /v1/admin/users with params", async () => {
@@ -311,7 +311,7 @@ describe("Tools Integration Tests", () => {
   describe("Dashboard tools", () => {
     async function reg() {
       const { register } = await import("../src/tools/dashboards.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     }
 
     it("list_dashboards calls GET /v1/dashboards", async () => {
@@ -657,7 +657,7 @@ describe("Tools Integration Tests", () => {
   describe("Voice agent tools", () => {
     it("update_voice_agent forwards chatSettings to PUT /v1/voice/agents/:id unmodified", async () => {
       const { register } = await import("../src/tools/voice.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "update_voice_agent");
       await callback({
@@ -680,7 +680,7 @@ describe("Tools Integration Tests", () => {
 
     it("accepts conversationMode values that match speak-server's real enum (voice/avatar)", async () => {
       const { register } = await import("../src/tools/voice.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "update_voice_agent");
       await callback({ agentId: "agent-1", conversationMode: "avatar" });
@@ -702,7 +702,7 @@ describe("Tools Integration Tests", () => {
 
     it("get_agent_analytics sends its range and flags as query params to GET /v1/voice/analytics/agent", async () => {
       const { register } = await import("../src/tools/voice.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const params = { agentId: "agent-1", start: "2026-09-01", end: "2026-10-01", tz: "America/Toronto", compare: true, includeTests: false };
       await getToolCallback(server, "get_agent_analytics")(params);

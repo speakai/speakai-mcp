@@ -5555,7 +5555,7 @@ function register2(server, client) {
       readOnlyHint: false,
       destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: false
+      openWorldHint: true
     },
     async (body) => {
       try {
@@ -8837,7 +8837,8 @@ async function withInboundWebhookInfo(api, responseData, automationId) {
     return responseData;
   }
 }
-function register12(server, client) {
+function register12(server, client, options = {}) {
+  if (!options.automations) return;
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -9524,7 +9525,7 @@ var webhooks_exports = {};
 __export(webhooks_exports, {
   register: () => register13
 });
-function register13(server, client) {
+function register13(server, client, options = {}) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -9613,7 +9614,7 @@ function register13(server, client) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.automations) registerSpeakTool(
     server,
     "provision_inbound_webhook",
     "Provision a standalone inbound webhook and get its public receive URL (inboundUrl) BEFORE creating an automation. Webhook-first flow: provision, send a test payload to the URL (append ?test=1 to only capture a sample without running anything), inspect mappable payload paths with get_inbound_webhook, then pass the webhookId as trigger.webhookId to create_automation.",
@@ -9649,7 +9650,7 @@ function register13(server, client) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.automations) registerSpeakTool(
     server,
     "get_inbound_webhook",
     "Get an inbound webhook's public receive URL, captured sample payload, and the ready-to-paste {{trigger.payload.*}} tokens for mapping payload values into automation steps (speak-upload name/sourceUrl, fieldsMap custom-field values, notify/outbound-webhook templates). Pass either the webhookId or the automationId of an inbound-webhook automation. If no sample has been captured yet, send a test payload to the inboundUrl first (append ?test=1 to capture without running the automation).",
@@ -9703,7 +9704,7 @@ function register13(server, client) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.automations) registerSpeakTool(
     server,
     "get_webhook_attempts",
     "Get the delivery log for an inbound webhook: each received request with its HTTP acknowledgement status (200 = sample captured, 202 = accepted and run started, 401/403 = rejected) and the automation run it started. Use get_automation_runs for the run outcomes themselves.",
@@ -10050,7 +10051,7 @@ function resolveField(ref, fields) {
 }
 function register16(server, client, options = {}) {
   const api = client ?? speakClient;
-  registerSpeakTool(
+  if (options.automations) registerSpeakTool(
     server,
     "build_automation",
     "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL, slack notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
@@ -12319,7 +12320,7 @@ function register20(server, client, options = {}) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.voiceTestRunDetails) registerSpeakTool(
     server,
     "get_voice_test_run",
     "Get a test run's full detail, including scenarioResults and recommendations. Scoped to your company; agentId is not used to filter this lookup, only runId.",
@@ -12337,7 +12338,7 @@ function register20(server, client, options = {}) {
       }
     }
   );
-  registerSpeakTool(
+  if (options.voiceTestRunDetails) registerSpeakTool(
     server,
     "apply_voice_test_recommendation",
     "Apply a test run recommendation's quick action to the agent (e.g. patch_instructions appends the suggested fix to the agent's instructions). Requires the OWNER or ADMIN role.",
@@ -14947,7 +14948,7 @@ if (isCliMode) {
             name: "speak-ai",
             version: "1.0.0"
           });
-          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true });
+          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
           registerResources2(server);
           registerPrompts2(server);
           const transport = new StdioServerTransport();

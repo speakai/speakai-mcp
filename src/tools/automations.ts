@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import type { RegisterOptions } from "./index.js";
 import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import {
@@ -290,7 +291,8 @@ async function withInboundWebhookInfo(
   }
 }
 
-export function register(server: McpServer, client?: AxiosInstance): void {
+export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
+  if (!options.automations) return;
   const api = client ?? speakClient;
 
   registerSpeakTool(server,

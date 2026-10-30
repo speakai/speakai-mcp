@@ -54,7 +54,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
   describe("Media tools", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
     describe("upload_media", () => {
@@ -230,7 +230,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
   describe("Prompt tools", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true });
+      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
     });
 
     it("ask_ai_chat sends all params", async () => {
@@ -265,7 +265,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
   describe("Folder tools", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/folders.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
     it("create_folder sends name and optional parent", async () => {
@@ -324,7 +324,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
   describe("Clip tools", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/clips.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
     it("create_clip sends full payload", async () => {
@@ -351,7 +351,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
   describe("Search tools", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/analytics.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
     it("search_media sends query with date filters", async () => {
@@ -386,7 +386,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       mockGet.mockResolvedValueOnce({ data: { items: [1, 2, 3] } });
 
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "list_media");
       const result = await callback({});
@@ -401,7 +401,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       mockGet.mockRejectedValueOnce(new Error("boom"));
 
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "get_transcript");
       const result = await callback({ mediaId: "x" });
@@ -419,7 +419,7 @@ describe("Input Validation — Zod Schema Boundary Tests", () => {
       });
 
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 
       const callback = getToolCallback(server, "get_media_status");
       const result = await callback({ mediaId: "123" });
@@ -444,7 +444,7 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
   describe("Media tools — schema rejects invalid inputs", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
     it("upload_media schema rejects empty name", () => {
@@ -554,7 +554,7 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
   describe("Folder tools — schema rejects invalid inputs", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/folders.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
     it("create_folder schema rejects empty name", () => {
@@ -579,7 +579,7 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
   describe("Export tools — schema rejects invalid inputs", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/exports.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
     it("export_media schema rejects invalid fileType", () => {
@@ -606,7 +606,7 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
   describe("Webhook tools — schema rejects invalid inputs", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/webhooks.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
     it("create_webhook schema rejects non-URL string", () => {
@@ -631,7 +631,7 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
   describe("Prompt tools — schema rejects invalid inputs", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true });
+      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
     });
 
     it("ask_ai_chat schema rejects empty prompt", () => {
@@ -662,7 +662,7 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
   describe("Voice intelligence tools", () => {
     beforeEach(async () => {
       const { register } = await import("../src/tools/voice-intelligence.js");
-      register(server, mockClient);
+      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
     // Mirrors analyzeGapsBody in speak-server: 20 anchors of 500 and 20 summaries of 2000.

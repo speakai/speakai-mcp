@@ -942,7 +942,7 @@
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
-          "openWorldHint": false
+          "openWorldHint": true
         },
         {
           "name": "get_text_insight",

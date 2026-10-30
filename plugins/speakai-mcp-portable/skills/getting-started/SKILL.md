@@ -84,8 +84,8 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 | `clips` | 4 | Highlight clips | `create_clip`, `get_clips` |
 | `exports` | 2 | Transcript and insight exports | `export_media`, `export_multiple_media` |
 | `meeting-bot` | 5 | The assistant that joins live meetings | `schedule_meeting_event`, `get_live_meeting_transcript` |
-| `automations` | 15 | Triggers, actions, runs, and app catalog | `list_automations`, `build_automation`, `get_automation_runs` |
-| `webhooks` | 7 | Outbound and inbound webhooks, delivery attempts | `list_webhooks`, `create_webhook`, `get_webhook_attempts` |
+| `automations` | 15 | Triggers, actions, runs, and app catalog. Available only on the local stdio server (`npx @speakai/mcp-server`); on the hosted server, set up automations in the Speak AI web app | `list_automations`, `build_automation`, `get_automation_runs` |
+| `webhooks` | 7 | Outbound webhooks. Inbound webhooks and delivery attempts are available only on the local stdio server | `list_webhooks`, `create_webhook`, `update_webhook` |
 | `text-notes` | 4 | Analyze pasted text like a recording | `create_text_note`, `get_text_insight` |
 | `custom-fields` | 4 | Structured metadata on media | `list_fields`, `update_multiple_fields` |
 | `labels-comments` | 16 | Labels on transcript words and comment threads | `list_labels`, `apply_label`, `add_comment` |
@@ -247,23 +247,20 @@ proceed.
 State the action, the exact ids, and the consequence, then wait for a clear yes.
 
 - **Deletes:** `delete_media`, `delete_folder`, `delete_clip`, `delete_recorder`,
-  `delete_webhook`, `delete_automation`, `delete_dashboard`, `delete_chat_conversation`,
+  `delete_webhook`, `delete_dashboard`, `delete_chat_conversation`,
   `delete_user_group`, `delete_scheduled_assistant`. `delete_media` is permanent.
 - **Bulk changes:** `bulk_move_media`, `bulk_update_transcript_speakers`,
-  `bulk_update_automation_status`, `bulk_assign_automation_folders`,
   `update_multiple_fields`, `export_multiple_media`. Show counts and the first few
   affected records first.
 - **Things that keep running after the chat ends:** `create_webhook`, `update_webhook`,
-  `provision_inbound_webhook`, `create_automation`, `update_automation`,
-  `toggle_automation_status`, `run_automations`, `schedule_meeting_event`,
+  `schedule_meeting_event`,
   `create_recorder`, `update_recorder_settings`, `update_recorder_questions`.
 - **Anything that produces a shareable link:** `generate_recorder_url`, `create_embed`,
   `update_embed`, `get_embed_iframe_url`, `share_dashboard`, `export_chat_answer`.
-- **Reprocessing:** `reanalyze_media` and `reanalyze_text` can cost money and overwrite
-  existing AI output.
+- **Reprocessing:** `reanalyze_media` and `reanalyze_text` overwrite existing AI output.
 
 When you do make a lasting change, close the reply with how to undo it:
-`delete_webhook` for webhooks, `toggle_automation_status` for automations,
+`delete_webhook` for webhooks,
 `delete_recorder` for recorders and their public links, `delete_scheduled_assistant` for
 meeting events, and `update_embed` or `delete_clip` for shared assets.
 
