@@ -8,6 +8,10 @@ export interface RegisterOptions {
   voiceTestRuns?: boolean;
   /** Register ask_ai_chat, retry_ai_chat and get_analysis_quote. Speak's assistant behind them can call other tools, so the hosted server leaves this off. */
   aiChat?: boolean;
+  /** Register the automation tools, build_automation and the inbound-webhook tools. Automation steps can run actions in connected third-party apps, so the hosted server leaves this off. */
+  automations?: boolean;
+  /** Register get_voice_test_run and apply_voice_test_recommendation. The hosted server leaves this off. */
+  voiceTestRunDetails?: boolean;
 }
 
 export declare function registerAllTools(

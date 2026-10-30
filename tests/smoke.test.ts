@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { readFileSync } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Mock axios to prevent real HTTP calls during registration
 vi.mock("axios", () => {
@@ -87,6 +90,15 @@ describe("MCP Server Smoke Tests", () => {
     }
     expect(toolNames).toContain("get_voice_test_suite");
     expect(toolNames).toHaveLength(152);
+  });
+
+  it("declares every registerAllTools option in the published types", () => {
+    const optionKeys = (text: string) =>
+      [...(text.match(/interface RegisterOptions \{([\s\S]*?)\n\}/)?.[1] ?? "").matchAll(/^\s*(\w+)\?:/gm)].map((m) => m[1]).sort();
+    const source = optionKeys(readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "../src/tools/index.ts"), "utf8"));
+    const published = optionKeys(readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "../src/types.d.ts"), "utf8"));
+    expect(source.length).toBeGreaterThan(0);
+    expect(published).toEqual(source);
   });
 
   it("registers all tools with unique names", async () => {
