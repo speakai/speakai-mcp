@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.40.2 (2026-10-30)
+
+- fix(tools): align tool annotations with OpenAI's current hint rules
+
 ## v1.40.1 (2026-10-29)
 
 - fix(plugin): use neutral examples so the listing does not read as healthcare
