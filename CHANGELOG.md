@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.40.3 (2026-10-30)
+
+- fix(tools): drop billing and credit wording from tool descriptions
+
 ## v1.40.2 (2026-10-30)
 
 - fix(tools): align tool annotations with OpenAI's current hint rules
