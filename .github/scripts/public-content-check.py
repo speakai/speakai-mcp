@@ -14,10 +14,12 @@ the public repos below or a product word in NAME_ALLOW, internal and preview lin
 agent tooling paths and files, Slack, Sentry and security report links, AWS account ids and ARNs, and
 credential-shaped strings. It prints the file, the line, the kind and an id, never the matched text.
 A pull request that changes this script, its workflow, the allow file or .gitattributes gets a check-change
-finding that only a public-ok line clears. Files that are not valid UTF-8 are reported for a look by hand,
-except common binary types by extension (BINARY_EXTENSIONS).
+finding that only a public-ok line clears. UTF-16 and UTF-32 text is decoded and read. A file that is not text
+is reported for a look by hand, except one with a binary extension (BINARY_EXTENSIONS), which is skipped; the
+credential patterns still run over the raw bytes of every changed file.
 Not checked: customer names; this needs a private list. Also not checked: names that do not start with speak,
-and the content of skipped binary types.
+names inside skipped binary files, and text in other encodings (such as Latin-1 or Shift JIS), which is reported
+as not text.
 
 Waiver: a line `public-ok: <id> <reason>` in the PR description passes the findings with that id. A credential
 cannot be waived. Files that are meant to be public but have a flagged name (a neutral CLAUDE.md, a plugin
@@ -155,6 +157,26 @@ def is_utf8(data, cut_short):
     return True
 
 
+def decode_text(data, cut_short):
+    """The text of UTF-8, UTF-16 or UTF-32 bytes (found by BOM or by where the NUL bytes fall), else None."""
+    for bom, codec in ((b"\xff\xfe\x00\x00", "utf-32"), (b"\x00\x00\xfe\xff", "utf-32"),
+                       (b"\xff\xfe", "utf-16"), (b"\xfe\xff", "utf-16")):
+        if data.startswith(bom):
+            break
+    else:
+        sample = data[:4000]
+        nul_at = [sample[k::4].count(0) * 4 >= len(sample) * 0.9 for k in range(4)]
+        codec = ("utf-32-le" if nul_at[1:] == [True] * 3 else "utf-32-be" if nul_at[:3] == [True] * 3
+                 else "utf-16-le" if nul_at[1] and nul_at[3] else "utf-16-be" if nul_at[0] and nul_at[2] else "")
+        if not codec:
+            return data.decode("utf-8", errors="replace") if is_utf8(data, cut_short) else None
+    unit = 4 if "32" in codec else 2
+    try:
+        return data[:len(data) - len(data) % unit].decode(codec)
+    except UnicodeDecodeError:
+        return None
+
+
 def resolves(ref):
     return bool(ref) and subprocess.run(["git", "rev-parse", "--verify", "-q", ref + "^{commit}"],
                                         capture_output=True).returncode == 0
@@ -206,16 +228,17 @@ class Scan(object):
 
     def file(self, path, lines=None):
         """Scans a file in the work tree: every line, or only the given {line number: text}."""
-        if path.lower().endswith(BINARY_EXTENSIONS):
-            return
         if lines is None:
-            try:
-                with open(os.path.join(self.root, path), "rb") as fh:
-                    data = fh.read(MAX_FILE_BYTES)
-            except OSError:
+            data = self.read_bytes(path)
+            if data is None:
                 return
-            self.check_utf8(path, data, len(data) == MAX_FILE_BYTES)
-            lines = dict(enumerate(data.decode("utf-8", errors="replace").splitlines(), 1))
+            self.raw_credentials(path, data)
+            text = decode_text(data, len(data) == MAX_FILE_BYTES)
+            if text is None and path.lower().endswith(BINARY_EXTENSIONS):
+                return
+            if text is None and not self.is_allowed(path):
+                self.add(path, 0, "unreadable", "an added file that is not text, to check by hand")
+            lines = dict(enumerate((text or data.decode("utf-8", errors="replace")).splitlines(), 1))
         own_rules = set()
         text = read_text(os.path.join(self.root, path)) if path == SELF_PATH else ""
         if text and "\n# BEGIN patterns" in text and "\n# END patterns" in text:
@@ -227,9 +250,19 @@ class Scan(object):
             for fid, label in (f for f in found if f[0] in UNWAIVABLE) if n in own_rules else found:
                 self.add(path, n, fid, label)
 
-    def check_utf8(self, path, data, cut_short):
-        if not is_utf8(data, cut_short) and not self.is_allowed(path):
-            self.add(path, 0, "unreadable", "an added file that is not text, to check by hand")
+    def read_bytes(self, path):
+        try:
+            with open(os.path.join(self.root, path), "rb") as fh:
+                return fh.read(MAX_FILE_BYTES)
+        except OSError:
+            return None
+
+    def raw_credentials(self, path, data):
+        """Credential patterns over the raw bytes, so no encoding or skipped type can hide a key."""
+        for n, line in enumerate(data.decode("latin-1").split("\n"), 1):
+            for fid, pattern, label in RAW_PATTERNS:
+                if fid in UNWAIVABLE and pattern.search(line):
+                    self.add(path, n, fid, label)
 
     def names(self, paths):
         for path in paths:
@@ -249,17 +282,21 @@ class Scan(object):
         for path in changed:
             if path in POLICY_FILES:
                 self.add(path, 0, "check-change", "a change to the content check or its allow list")
-            if path.lower().endswith(BINARY_EXTENSIONS):
+            data = self.read_bytes(path)
+            # A file with NUL bytes or that is not UTF-8 (UTF-16, binary, not text) is read whole, not by diff lines.
+            if data is not None and (b"\x00" in data or not is_utf8(data, len(data) == MAX_FILE_BYTES)):
+                self.file(path)
                 continue
+            if data is not None:
+                self.raw_credentials(path, data)
             # --text reads files git would call binary, so a NUL byte cannot hide added text.
-            data = git_bytes("diff", "--text", "--no-color", "--no-ext-diff", "-U0", spec, "--", path)
-            lines = added_lines(data.decode("utf-8", errors="replace"))
+            lines = added_lines(git("diff", "--text", "--no-color", "--no-ext-diff", "-U0", spec, "--", path))
             if lines is None:
                 self.file(path)
             else:
-                self.check_utf8(path, data, False)
                 self.file(path, lines)
-        self.names([p for p in git("diff", "--name-only", "--diff-filter=A", "-z", spec).split("\0") if p])
+        # Renamed and copied files count as added names too.
+        self.names(changed)
 
     def commits(self, rev_range):
         for entry in git("log", "--format=%H%n%B%x1e", rev_range).split("\x1e"):
