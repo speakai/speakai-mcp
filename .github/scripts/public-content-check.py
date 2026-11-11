@@ -13,11 +13,16 @@ It flags any word speak-<name> or speakai-<name> and any github.com/speakai/<nam
 the public repos below or a product word in NAME_ALLOW, internal and preview links, local paths, a PRD: line,
 agent tooling paths and files, Slack, Sentry and security report links, AWS account ids and ARNs, and
 credential-shaped strings. It prints the file, the line, the kind and an id, never the matched text.
-Not checked: customer names; this needs a private list.
+A pull request that changes this script, its workflow, the allow file or .gitattributes gets a check-change
+finding that only a public-ok line clears. Files that are not valid UTF-8 are reported for a look by hand,
+except common binary types by extension (BINARY_EXTENSIONS).
+Not checked: customer names; this needs a private list. Also not checked: names that do not start with speak,
+and the content of skipped binary types.
 
 Waiver: a line `public-ok: <id> <reason>` in the PR description passes the findings with that id. A credential
 cannot be waived. Files that are meant to be public but have a flagged name (a neutral CLAUDE.md, a plugin
-manifest folder) go in .github/public-content-allow.txt, one glob per line.
+manifest folder) go in .github/public-content-allow.txt, one glob per line; a pull request uses the base
+branch's copy, so it cannot allow its own files.
 """
 import fnmatch
 import json
@@ -47,6 +52,11 @@ NAME_ALLOW = frozenset((
 ))
 ALLOW_FILE = ".github/public-content-allow.txt"
 SELF_PATH = ".github/scripts/public-content-check.py"
+# A change to the check, its allow list or how git reads files needs a person's explicit waiver.
+POLICY_FILES = (ALLOW_FILE, SELF_PATH, ".github/workflows/public-content-check.yml", ".gitattributes")
+# Real binaries are skipped quietly; any other file that is not valid UTF-8 is reported for a look.
+BINARY_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".woff", ".woff2", ".ttf", ".otf", ".eot",
+                     ".pdf", ".mp3", ".mp4", ".wav", ".webm", ".mov", ".zip", ".gz", ".tgz")
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 MAX_FILE_BYTES = 2000000
 UNWAIVABLE = ("credential",)
@@ -57,6 +67,7 @@ DASHES = re.compile("[_‐-―−﹘﹣－]")
 LOOK_ALIKES = str.maketrans("аеорсухіѕԁӏкмтнвј"
                             "αορεκντυι",
                             "aeopcyxisdlkmthbjaopekntui")
+# BEGIN patterns: in this file, lines up to END patterns are checked for credentials only.
 # A hyphenated word that starts with the product or org name, not inside a longer word or a path segment.
 REPO_WORD = re.compile(r"(?<![a-z0-9.-])speak(?:ai)?(?:-[a-z0-9]+)+")
 GITHUB_LINK = re.compile(r"github\.com/+%s/+([\w.-]+)" % ORG)
@@ -92,6 +103,7 @@ PATH_RULES = (
     ("agent-files", re.compile(r"(?:^|/)(?:AGENTS|CLAUDE)\.md$|(?:^|/)\.cursorrules$"), "an agent instructions file"),
     ("plans", re.compile(r"^plans/"), "a plans folder"),
 )
+# END patterns
 ENV_FILE = re.compile(r"(?:^|/)\.env(?:\.[\w.-]+)?$")
 ENV_TEMPLATE = re.compile(r"\.(?:example|sample|template|dist)$")
 ENV_VALUE = re.compile(r"^\s*(?:export\s+)?[A-Za-z_]\w*\s*=\s*\S", re.M)
@@ -122,11 +134,25 @@ def line_findings(line):
     return list(dict.fromkeys(found))
 
 
-def git(*args):
-    out = subprocess.run(["git", "-c", "core.quotePath=false"] + list(args), capture_output=True)
+def git_bytes(*args):
+    out = subprocess.run(["git", "-c", "core.quotePath=false", "--literal-pathspecs"] + list(args), capture_output=True)
     if out.returncode != 0:
-        raise SystemExit("public-content-check: git %s failed: %s" % (" ".join(args), out.stderr.decode(errors="replace")[:300]))
-    return out.stdout.decode("utf-8", errors="replace")
+        raise SystemExit("public-content-check: git %s failed, so the check cannot pass: %s"
+                         % (" ".join(args), out.stderr.decode(errors="replace")[:300]))
+    return out.stdout
+
+
+def git(*args):
+    return git_bytes(*args).decode("utf-8", errors="replace")
+
+
+def is_utf8(data, cut_short):
+    """True when the bytes are UTF-8; a file read only in part may end inside a character."""
+    try:
+        data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        return cut_short and exc.start >= len(data) - 3
+    return True
 
 
 def resolves(ref):
@@ -135,24 +161,22 @@ def resolves(ref):
 
 
 def added_lines(diff_text):
-    """{path: {new line number: text}} for the added lines of a unified diff."""
-    files, lines, header, new_line = {}, None, False, 0
+    """{new line number: text} for the added lines of a one-file diff; None when it has no hunk."""
+    lines, new_line, seen_hunk = {}, 0, False
     for row in diff_text.splitlines():
-        if row.startswith("diff --git "):
-            lines, header = None, True
-        elif header and row.startswith("+++ "):
-            lines = files.setdefault(row[6:], {}) if row.startswith("+++ b/") else None
-        elif row.startswith("@@"):
+        if row.startswith("@@"):
             m = re.match(r"@@ -\S+ \+(\d+)", row)
-            new_line, header = (int(m.group(1)) if m else 0), False
-        elif header or lines is None:
+            if not m:
+                raise SystemExit("public-content-check: cannot read a diff hunk header, so the check cannot pass: %r" % row[:80])
+            new_line, seen_hunk = int(m.group(1)), True
+        elif not seen_hunk:
             continue
         elif row.startswith("+"):
             lines[new_line] = row[1:]
             new_line += 1
         elif row.startswith(" "):
             new_line += 1
-    return files
+    return lines if seen_hunk else None
 
 
 def read_text(path):
@@ -161,12 +185,16 @@ def read_text(path):
             data = fh.read(MAX_FILE_BYTES)
     except OSError:
         return None
-    return None if b"\x00" in data[:8000] else data.decode("utf-8", errors="replace")
+    return data.decode("utf-8", errors="replace")
 
 
 class Scan(object):
-    def __init__(self, root):
+    def __init__(self, root, allow_text):
         self.root, self.records, self.notes = root, {}, []
+        self.allowed = [g.strip() for g in (allow_text or "").splitlines() if g.strip() and not g.strip().startswith("#")]
+
+    def is_allowed(self, path):
+        return any(fnmatch.fnmatch(path, g) or (g.endswith("/") and path.startswith(g)) for g in self.allowed)
 
     def add(self, where, line_no, fid, label):
         self.records.setdefault((where, line_no, fid), label)
@@ -178,20 +206,34 @@ class Scan(object):
 
     def file(self, path, lines=None):
         """Scans a file in the work tree: every line, or only the given {line number: text}."""
-        if path == SELF_PATH:
+        if path.lower().endswith(BINARY_EXTENSIONS):
             return
         if lines is None:
-            text = read_text(os.path.join(self.root, path))
-            lines = dict(enumerate(text.splitlines(), 1)) if text is not None else {}
+            try:
+                with open(os.path.join(self.root, path), "rb") as fh:
+                    data = fh.read(MAX_FILE_BYTES)
+            except OSError:
+                return
+            self.check_utf8(path, data, len(data) == MAX_FILE_BYTES)
+            lines = dict(enumerate(data.decode("utf-8", errors="replace").splitlines(), 1))
+        own_rules = set()
+        text = read_text(os.path.join(self.root, path)) if path == SELF_PATH else ""
+        if text and "\n# BEGIN patterns" in text and "\n# END patterns" in text:
+            start = text.count("\n", 0, text.find("\n# BEGIN patterns")) + 2
+            end = text.count("\n", 0, text.find("\n# END patterns")) + 2
+            own_rules = set(range(start, end + 1))
         for n, line in lines.items():
-            for fid, label in line_findings(line):
+            found = line_findings(line)
+            for fid, label in (f for f in found if f[0] in UNWAIVABLE) if n in own_rules else found:
                 self.add(path, n, fid, label)
 
+    def check_utf8(self, path, data, cut_short):
+        if not is_utf8(data, cut_short) and not self.is_allowed(path):
+            self.add(path, 0, "unreadable", "an added file that is not text, to check by hand")
+
     def names(self, paths):
-        allowed = [g.strip() for g in (read_text(os.path.join(self.root, ALLOW_FILE)) or "").splitlines()
-                   if g.strip() and not g.strip().startswith("#")]
         for path in paths:
-            if any(fnmatch.fnmatch(path, g) or (g.endswith("/") and path.startswith(g)) for g in allowed):
+            if self.is_allowed(path):
                 continue
             for fid, pattern, label in PATH_RULES:
                 if pattern.search(path):
@@ -202,10 +244,22 @@ class Scan(object):
                     self.add(path, 0, "env-file", "a .env file with values")
 
     def diff(self, spec):
-        """Scans the added and changed lines of `git diff <spec>` and the names of added files."""
-        for path, lines in added_lines(git("diff", "--no-color", "--no-ext-diff", "-U0", "-M", spec)).items():
-            self.file(path, lines)
-        self.names([p for p in git("diff", "--name-only", "--diff-filter=ACR", "-M", "-z", spec).split("\0") if p])
+        """Scans the added and changed lines of `git diff <spec>`, path by path, and the names of added files."""
+        changed = [p for p in git("diff", "--name-only", "--diff-filter=d", "-z", spec).split("\0") if p]
+        for path in changed:
+            if path in POLICY_FILES:
+                self.add(path, 0, "check-change", "a change to the content check or its allow list")
+            if path.lower().endswith(BINARY_EXTENSIONS):
+                continue
+            # --text reads files git would call binary, so a NUL byte cannot hide added text.
+            data = git_bytes("diff", "--text", "--no-color", "--no-ext-diff", "-U0", spec, "--", path)
+            lines = added_lines(data.decode("utf-8", errors="replace"))
+            if lines is None:
+                self.file(path)
+            else:
+                self.check_utf8(path, data, False)
+                self.file(path, lines)
+        self.names([p for p in git("diff", "--name-only", "--diff-filter=A", "-z", spec).split("\0") if p])
 
     def commits(self, rev_range):
         for entry in git("log", "--format=%H%n%B%x1e", rev_range).split("\x1e"):
@@ -270,20 +324,29 @@ def main(argv):
     root = git("rev-parse", "--show-toplevel").strip()
     os.chdir(root)
     event_name = os.environ.get("GITHUB_EVENT_NAME", "")
-    scan, waivers = Scan(root), set()
     event = {}
     if os.environ.get("GITHUB_EVENT_PATH"):
         with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as fh:
             event = json.load(fh)
+    base = ""
+    if event_name == "pull_request":
+        pr = event["pull_request"]
+        base = "origin/" + pr["base"]["ref"]
+        base = base if resolves(base) else pr["base"]["ref"] if resolves(pr["base"]["ref"]) else pr["base"]["sha"]
+    # A pull request uses the base branch's allow list, so it cannot allow its own files.
+    allow_text = read_text(os.path.join(root, ALLOW_FILE))
+    if base and allow_text is not None:
+        if subprocess.run(["git", "cat-file", "-e", "%s:%s" % (base, ALLOW_FILE)], capture_output=True).returncode == 0:
+            allow_text = git("show", "%s:%s" % (base, ALLOW_FILE))
+        else:
+            print("::notice::The base branch has no %s yet, so this pull request's copy is used." % ALLOW_FILE)
+    scan, waivers = Scan(root, allow_text), set()
     if "--all" in argv:
         files = [p for p in git("ls-files", "-z").split("\0") if p]
         for path in files:
             scan.file(path)
         scan.names(files)
     elif event_name == "pull_request":
-        pr = event["pull_request"]
-        base = "origin/" + pr["base"]["ref"]
-        base = base if resolves(base) else pr["base"]["ref"] if resolves(pr["base"]["ref"]) else pr["base"]["sha"]
         head = pr["head"]["sha"] if resolves(pr["head"]["sha"]) else "HEAD"
         scan.diff("%s...HEAD" % base)
         scan.commits("%s..%s" % (base, head))
