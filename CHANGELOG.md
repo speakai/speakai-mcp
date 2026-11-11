@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.41.3 (2026-11-11)
+
+- fix(types): stop tsc running out of memory and typecheck in CI
+
 ## v1.41.2 (2026-11-11)
 
 - Maintenance release
