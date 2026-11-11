@@ -678,7 +678,7 @@ describe("Tools Integration Tests", () => {
       });
     });
 
-    it("accepts conversationMode values that match speak-server's real enum (voice/avatar)", async () => {
+    it("accepts conversationMode values that match the API server's real enum (voice/avatar)", async () => {
       const { register } = await import("../src/tools/voice.js");
       register(server, mockClient, { automations: true, voiceTestRunDetails: true });
 

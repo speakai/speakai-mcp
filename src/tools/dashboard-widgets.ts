@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 
 // Faithful port of the dashboard spec widget contract (@speakai/shared
-// schemas/dashboard-spec + speak-client's widget-meta.ts): same 11 widget types,
+// schemas/dashboard-spec + the web app's widget metadata): same 11 widget types,
 // same per-type grid geometry, and the same two-per-row auto-layout, so
 // MCP-created widgets match UI-built ones. Keep in sync with the shared schema.
 
@@ -46,7 +46,7 @@ interface WidgetMeta {
   titleDefault: string;
 }
 
-// Default grid geometry per type (mirrors speak-client widget-meta.ts). The
+// Default grid geometry per type (mirrors the web app's widget metadata). The
 // spec's layout schema is strict {x, y, w, h} — minW/minH are render-only in
 // the UI and must never be sent to the server.
 const WIDGET_META: Record<WidgetType, WidgetMeta> = {
@@ -96,7 +96,7 @@ export interface DashboardWidget {
   layout: WidgetLayout;
 }
 
-// Valid default config per type, mirroring speak-client's
+// Valid default config per type, mirroring the web app's
 // defaultWidgetConfig — every widget built without an explicit config must
 // parse against the shared spec schema as-is.
 function defaultWidgetConfig(type: WidgetType): Record<string, unknown> {
@@ -208,7 +208,7 @@ export function buildDashboardWidgets(
 }
 
 /**
- * Two-per-row auto-layout for one section group, mirroring speak-client's
+ * Two-per-row auto-layout for one section group, mirroring the web app's
  * layoutTemplateEntries: full-width types occupy a full row, half-width types
  * pair up. Widgets that arrived with an explicit layout are left untouched;
  * auto-placed ones start below the lowest explicit widget in the group.
@@ -427,8 +427,8 @@ export const SPEC_VOCABULARY = {
     "widgets in no section form the implicit Overview group.",
 } as const;
 
-// Design rules mirroring speak-server's in-app dashboard generation prompt
-// (@speak-dashboards/chat/generationPrompt.ts), so a dashboard built via MCP
+// Design rules mirroring the API server's in-app dashboard generation
+// prompt, so a dashboard built via MCP
 // reads like one built by the in-app AI. Keep the two lists aligned.
 export const DESIGN_RULES = [
   "Lead with a narrative widget: on a new dashboard, make it the first widget of the first section — it is the headline insight.",

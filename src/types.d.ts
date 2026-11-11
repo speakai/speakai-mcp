@@ -30,7 +30,7 @@ export declare function formatAxiosError(error: unknown): string;
 
 /**
  * Static manifest of every Speak MCP tool name exposed by `registerAllTools`.
- * Consumers (e.g. speak-server's orchestrator bridge) can import this to route
+ * Consumers (e.g. the API server's orchestrator bridge) can import this to route
  * or validate tool calls without spinning up an `McpServer` instance.
  */
 export declare const SPEAK_MCP_TOOL_NAMES: readonly string[];

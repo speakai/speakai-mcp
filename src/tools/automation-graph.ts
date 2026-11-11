@@ -6,9 +6,9 @@
  * `branch` marker). Three functions bridge the two, and all three are deliberate ports
  * of code that already exists elsewhere rather than fresh implementations:
  *
- * - `compileGraph`   ← speak-client `flattenCanvasForWrite` / `legTails`
- * - `hydrateLegs`    ← speak-client `hydrateCanvasLegs`
- * - `resolveIncomingTypes` ← speak-server `catalogService.resolveIncomingTypes`
+ * - `compileGraph`   ← the web app's `flattenCanvasForWrite` / `legTails`
+ * - `hydrateLegs`    ← the web app's `hydrateCanvasLegs`
+ * - `resolveIncomingTypes` ← the API server's `catalogService.resolveIncomingTypes`
  *
  * Porting is the point. The shapes the canvas produces are exactly the shapes that
  * survive a reload in the canvas, and the shapes the server's edge-based IO resolution
@@ -53,7 +53,7 @@ export interface GraphNode {
 }
 
 // ── IO types ────────────────────────────────────────────────────────────────
-// Mirrors speak-server's AutomationIOType + the ACTIONS catalog. Kept as a literal
+// Mirrors the API server's AutomationIOType + the ACTIONS catalog. Kept as a literal
 // table rather than fetched: it is the contract the save gate validates against, and
 // a network round-trip here would make local validation unavailable exactly when a
 // caller most needs it (before their first successful save).
@@ -91,7 +91,7 @@ export const TRIGGER_OUT: Record<string, IOType> = {
   clip_created: "data",
 };
 
-/** Canonical rule fields per IO type (speak-server FILTER_FIELDS_BY_IOTYPE). */
+/** Canonical rule fields per IO type (the API server's FILTER_FIELDS_BY_IOTYPE). */
 const FILTER_FIELDS_BY_IOTYPE: Record<IOType, string[]> = {
   media: ["name", "duration", "sourceLanguage", "tags", "transcript", "speakers"],
   file: ["name"],
