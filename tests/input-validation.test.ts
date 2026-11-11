@@ -665,7 +665,7 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
       register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
-    // Mirrors analyzeGapsBody in speak-server: 20 anchors of 500 and 20 summaries of 2000.
+    // Mirrors analyzeGapsBody in the API server: 20 anchors of 500 and 20 summaries of 2000.
     it("analyze_voice_instruction_gaps schema accepts inputs at the server caps", () => {
       const schema = getToolInputSchema(server, "analyze_voice_instruction_gaps");
       const result = schema.safeParse({

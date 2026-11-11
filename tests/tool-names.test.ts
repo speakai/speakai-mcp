@@ -3,7 +3,7 @@
  * registered by `registerAllTools`. If a tool is added, removed, or renamed
  * in `src/tools/*.ts` without updating `src/tool-names.ts`, this test fails.
  *
- * Consumers (e.g. speak-server's orchestrator bridge) depend on this manifest
+ * Consumers (e.g. the API server's orchestrator bridge) depend on this manifest
  * as a single source of truth, so drift here is a release blocker.
  */
 import { describe, it, expect, vi } from "vitest";

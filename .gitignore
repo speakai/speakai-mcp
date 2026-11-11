@@ -9,3 +9,9 @@ coverage
 .npmrc
 docs/
 .openai-package/
+
+# Local agent tooling
+.claude/
+.codex/
+AGENTS.md
+plans/

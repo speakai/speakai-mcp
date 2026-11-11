@@ -17,8 +17,8 @@ import {
   type WireStep,
 } from "./automation-graph.js";
 
-// Shared write-schema fields for create/update. The server (speak-server
-// @speak-automations) validates these with Joi `automationCreateUpdate` and
+// Shared write-schema fields for create/update. The API server's
+// automations module validates these with Joi `automationCreateUpdate` and
 // runs them through the V2 graph engine — see the `steps` note below.
 const TOKEN_SYNTAX_NOTE =
   "Token syntax (usable in fields marked 'tokens allowed'): " +

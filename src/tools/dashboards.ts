@@ -36,7 +36,7 @@ import {
 
 export const MAX_DASHBOARD_SOURCE_FOLDERS = 250;
 
-// Analytics dashboards (speak-server @speak-dashboards, mounted at /v1/dashboards).
+// Analytics dashboards (the API server's dashboards module, mounted at /v1/dashboards).
 // `dashboardId` everywhere is the string business id (returned by list/get/create),
 // NOT the Mongo _id. Writes use the dashboard spec envelope: the request body is
 // { spec: { title, description?, source, dateRange, sections, widgets, revision? },

@@ -3,7 +3,7 @@
  * with `{ localFileAccess: true }`. Without that option, local-disk tools such
  * as `upload_local_file` are not registered, so a hosted server exposes fewer.
  *
- * This list is the single source of truth that consumers (e.g. speak-server's
+ * This list is the single source of truth that consumers (e.g. the API server's
  * orchestrator bridge) can import to route or validate tool calls without
  * spinning up an `McpServer` instance and inspecting its private
  * `_registeredTools` map.
