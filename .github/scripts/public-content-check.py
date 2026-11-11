@@ -14,13 +14,14 @@ the public repos below or a product word in NAME_ALLOW, internal and preview lin
 agent tooling paths and files, Slack, Sentry and security report links, AWS account ids and ARNs, and
 credential-shaped strings. It prints the file, the line, the kind and an id, never the matched text.
 A pull request that changes this script, its workflow, the allow file or .gitattributes gets a check-change
-finding that only a public-ok line clears. A changed file that is not UTF-8 is reported for a look by hand, and
-its raw bytes (NUL bytes removed) are also checked line by line; one with a binary extension (BINARY_EXTENSIONS)
-whose bytes are not text is skipped, except for the credential patterns. A changed file over MAX_FILE_BYTES is
-reported as too large to check; its added diff lines are still checked.
+finding that only a public-ok line clears. A changed file with NUL bytes or that is not UTF-8 is reported for a
+look by hand, and its raw bytes (NUL removed) are checked line by line; one with a binary extension
+(BINARY_EXTENSIONS) whose bytes do not look like text is skipped. The credential patterns run over every changed
+file to its end, whatever its type or size, and are never waived or allow-listed. A changed file over
+MAX_FILE_BYTES is reported as too large; its first MAX_FILE_BYTES and its added diff lines are still checked.
 Not checked: customer names; this needs a private list. Also not checked: names that do not start with speak,
-names inside skipped binary files, and non-ASCII text in encodings other than UTF-8 (UTF-16, Latin-1, Shift JIS);
-those files are reported as not text.
+names inside skipped binary files and past MAX_FILE_BYTES outside the added lines, and non-ASCII text in
+encodings other than UTF-8 (UTF-16, Latin-1, Shift JIS); those files are reported as not text.
 
 Waiver: a line `public-ok: <id> <reason>` in the PR description passes the findings with that id. A credential
 cannot be waived. Files that are meant to be public but have a flagged name (a neutral CLAUDE.md, a plugin
@@ -62,6 +63,8 @@ BINARY_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".woff", 
                      ".pdf", ".mp3", ".mp4", ".wav", ".webm", ".mov", ".zip", ".gz", ".tgz")
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 MAX_FILE_BYTES = 2000000
+# The credential scan reads every changed file to its end in chunks; a match across a chunk edge is kept.
+CHUNK_BYTES, CHUNK_OVERLAP = 1000000, 4096
 UNWAIVABLE = ("credential",)
 WAIVER = re.compile(r"public-ok:\s*([\w:.-]+)\s+\S", re.I)
 # Copied from the agent-side leak check so both read text the same way; a test keeps them equal.
@@ -158,6 +161,17 @@ def is_utf8(data):
     return True
 
 
+def is_plain_text(data):
+    return b"\x00" not in data and is_utf8(data)
+
+
+def looks_like_text(data):
+    """UTF-8 and mostly printable once NUL bytes are removed (ASCII inside UTF-16, a text file named .png)."""
+    data = data.replace(b"\x00", b"")
+    printable = sum(1 for b in data if b >= 0x20 or b in (9, 10, 13))
+    return is_utf8(data) and printable >= 0.9 * max(len(data), 1)
+
+
 def resolves(ref):
     return bool(ref) and subprocess.run(["git", "rev-parse", "--verify", "-q", ref + "^{commit}"],
                                         capture_output=True).returncode == 0
@@ -166,7 +180,7 @@ def resolves(ref):
 def added_lines(diff_text):
     """{new line number: text} for the added lines of a one-file diff; None when it has no hunk."""
     lines, new_line, seen_hunk = {}, 0, False
-    for row in diff_text.splitlines():
+    for row in diff_text.split("\n"):
         if row.startswith("@@"):
             m = re.match(r"@@ -\S+ \+(\d+)", row)
             if not m:
@@ -210,18 +224,18 @@ class Scan(object):
     def file(self, path, lines=None):
         """Scans a file in the work tree: every line, or only the given {line number: text}."""
         if lines is None:
+            self.credentials(path)
             data = self.read_bytes(path)
             if data is None:
                 return
-            if is_utf8(data):
-                lines = dict(enumerate(data.decode("utf-8").splitlines(), 1))
-            elif path.lower().endswith(BINARY_EXTENSIONS):
-                self.raw_lines(path, data, credentials_only=True)
+            if is_plain_text(data):
+                lines = dict(enumerate(data.decode("utf-8").split("\n"), 1))
+            elif path.lower().endswith(BINARY_EXTENSIONS) and not looks_like_text(data):
                 return
             else:
                 if not self.is_allowed(path):
                     self.add(path, 0, "unreadable", "an added file that is not text, to check by hand")
-                self.raw_lines(path, data, credentials_only=False)
+                self.raw_lines(path, data)
                 return
         own_rules = set()
         text = read_text(os.path.join(self.root, path)) if path == SELF_PATH else ""
@@ -235,7 +249,7 @@ class Scan(object):
                 self.add(path, n, fid, label)
 
     def read_bytes(self, path):
-        """The file's bytes; None when it cannot be read or is too large (reported, never read in part)."""
+        """The file's bytes, or None. A file over the cap is reported, and its first whole lines are still read."""
         try:
             with open(os.path.join(self.root, path), "rb") as fh:
                 data = fh.read(MAX_FILE_BYTES + 1)
@@ -244,15 +258,43 @@ class Scan(object):
         if len(data) <= MAX_FILE_BYTES:
             return data
         if not self.is_allowed(path):
-            self.add(path, 0, "too-large", "a changed file too large to check, to check by hand")
-        return None
+            self.add(path, 0, "too-large", "a changed file too large to check for names and links, to check by hand")
+        data = data[:MAX_FILE_BYTES]
+        return data[:data.rfind(b"\n") + 1] or data
 
-    def raw_lines(self, path, data, credentials_only):
+    def raw_lines(self, path, data):
         """The line patterns over the raw bytes with NUL bytes removed, so ASCII inside UTF-16 is still read."""
         for n, line in enumerate(data.replace(b"\x00", b"").decode("latin-1").split("\n"), 1):
-            found = line_findings(line)
-            for fid, label in (f for f in found if f[0] in UNWAIVABLE) if credentials_only else found:
+            for fid, label in line_findings(line):
                 self.add(path, n, fid, label)
+
+    def credentials(self, path):
+        """Credential patterns over the whole file, any type or size, NUL bytes removed; never allow-listed."""
+        try:
+            fh = open(os.path.join(self.root, path), "rb")
+        except OSError:
+            return
+        with fh:
+            line_no, rest = 1, b""
+            while True:
+                chunk = fh.read(CHUNK_BYTES)
+                rows = (rest + chunk.replace(b"\x00", b"")).split(b"\n")
+                rest = rows.pop() if chunk else b""
+                for row in rows:
+                    self.credential_row(path, line_no, row)
+                    line_no += 1
+                if not chunk:
+                    return
+                if len(rest) > CHUNK_BYTES:
+                    # A very long line: check what is read so far and keep the tail for a match on the edge.
+                    self.credential_row(path, line_no, rest)
+                    rest = rest[-CHUNK_OVERLAP:]
+
+    def credential_row(self, path, line_no, row):
+        line = row.decode("latin-1")
+        for fid, pattern, label in RAW_PATTERNS:
+            if fid in UNWAIVABLE and pattern.search(line):
+                self.add(path, line_no, fid, label)
 
     def names(self, paths):
         for path in paths:
@@ -272,15 +314,16 @@ class Scan(object):
         for path in changed:
             if path in POLICY_FILES:
                 self.add(path, 0, "check-change", "a change to the content check or its allow list")
+            self.credentials(path)
             data = self.read_bytes(path)
-            # A file that is not UTF-8 is also read whole: reported, skipped as a real binary, or read raw.
-            if data is not None and not is_utf8(data):
+            # A file with NUL bytes or that is not UTF-8 is also read whole: reported and read raw, or a real binary.
+            if data is not None and not is_plain_text(data):
                 self.file(path)
             # --text reads files git would call binary, so a NUL byte cannot hide added text.
             lines = added_lines(git("diff", "--text", "--no-color", "--no-ext-diff", "-U0", spec, "--", path))
             if lines is not None:
                 self.file(path, lines)
-            elif data is not None and is_utf8(data):
+            elif data is not None and is_plain_text(data):
                 self.file(path)
         # Renamed and copied files count as added names too.
         self.names(changed)
