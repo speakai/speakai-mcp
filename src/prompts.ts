@@ -2,8 +2,22 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { SUPPORTED_URL_SOURCES } from "./media-utils.js";
 
+type PromptMessages = { messages: Array<{ role: "user" | "assistant"; content: { type: "text"; text: string } }> };
+
+// The SDK's prompt() generics compare zod 3 and zod 4 shapes and fail to typecheck; this keeps the callback args typed.
+function registerPrompt<Args extends z.ZodRawShape>(
+  server: McpServer,
+  name: string,
+  description: string,
+  args: Args,
+  callback: (args: z.infer<z.ZodObject<Args>>) => PromptMessages | Promise<PromptMessages>
+): void {
+  (server.prompt.bind(server) as (name: string, description: string, args: Args, cb: unknown) => void)(name, description, args, callback);
+}
+
 export function registerPrompts(server: McpServer): void {
-  server.prompt(
+  registerPrompt(
+    server,
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis — transcript, insights, action items, and key takeaways.",
     {
@@ -40,7 +54,8 @@ export function registerPrompts(server: McpServer): void {
     })
   );
 
-  server.prompt(
+  registerPrompt(
+    server,
     "research-across-media",
     "Search for themes, patterns, or topics across multiple recordings or your entire media library.",
     {
@@ -75,7 +90,8 @@ export function registerPrompts(server: McpServer): void {
     })
   );
 
-  server.prompt(
+  registerPrompt(
+    server,
     "meeting-brief",
     "Prepare a brief from recent meetings — pull transcripts, extract decisions, and summarize open items.",
     {

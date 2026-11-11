@@ -62,9 +62,11 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
   description: string,
   inputSchema: InputSchema,
   annotations: SpeakToolAnnotations,
-  handler: ToolCallback<InputSchema>
+  handler: (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) => ToolResult | Promise<ToolResult>
 ): RegisteredTool {
-  return server.registerTool(
+  // The SDK's registerTool and ToolCallback generics compare zod 3 and zod 4 shapes per tool and run tsc out of memory.
+  const registerTool = server.registerTool.bind(server) as (name: string, config: object, cb: unknown) => RegisteredTool;
+  return registerTool(
     name,
     {
       title: annotations.title,
@@ -73,14 +75,14 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
       outputSchema: passthroughOutputSchema,
       annotations,
     },
-    (async (...args: Parameters<ToolCallback<InputSchema>>) => {
-      const result = await handler(...args);
+    async (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) => {
+      const result = await handler(args, extra);
       if (result.isError || result.structuredContent) {
         return result;
       }
 
       const textContent = result.content?.find(
-        (item) => item.type === "text" && typeof item.text === "string"
+        (item): item is Extract<ToolResultContent, { type: "text" }> => item.type === "text"
       );
       if (!textContent) {
         return { ...result, structuredContent: { data: null } };
@@ -91,6 +93,6 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
       } catch {
         return { ...result, structuredContent: { data: textContent.text } };
       }
-    }) as ToolCallback<InputSchema>
+    }
   );
 }
