@@ -216,7 +216,8 @@ function err(error) {
   };
 }
 function registerSpeakTool(server, name, description, inputSchema, annotations, handler) {
-  return server.registerTool(
+  const registerTool = server.registerTool.bind(server);
+  return registerTool(
     name,
     {
       title: annotations.title,
@@ -225,13 +226,13 @@ function registerSpeakTool(server, name, description, inputSchema, annotations, 
       outputSchema: passthroughOutputSchema,
       annotations
     },
-    (async (...args2) => {
-      const result = await handler(...args2);
+    async (args2, extra) => {
+      const result = await handler(args2, extra);
       if (result.isError || result.structuredContent) {
         return result;
       }
       const textContent = result.content?.find(
-        (item) => item.type === "text" && typeof item.text === "string"
+        (item) => item.type === "text"
       );
       if (!textContent) {
         return { ...result, structuredContent: { data: null } };
@@ -241,7 +242,7 @@ function registerSpeakTool(server, name, description, inputSchema, annotations, 
       } catch {
         return { ...result, structuredContent: { data: textContent.text } };
       }
-    })
+    }
   );
 }
 var import_zod, passthroughOutputSchema, fieldIdSchema, SHARED_DASHBOARD_CACHE_NOTE;
@@ -13097,8 +13098,12 @@ var prompts_exports = {};
 __export(prompts_exports, {
   registerPrompts: () => registerPrompts
 });
+function registerPrompt(server, name, description, args2, callback) {
+  server.prompt.bind(server)(name, description, args2, callback);
+}
 function registerPrompts(server) {
-  server.prompt(
+  registerPrompt(
+    server,
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
     {
@@ -13134,7 +13139,8 @@ function registerPrompts(server) {
       ]
     })
   );
-  server.prompt(
+  registerPrompt(
+    server,
     "research-across-media",
     "Search for themes, patterns, or topics across multiple recordings or your entire media library.",
     {
@@ -13168,7 +13174,8 @@ function registerPrompts(server) {
       ]
     })
   );
-  server.prompt(
+  registerPrompt(
+    server,
     "meeting-brief",
     "Prepare a brief from recent meetings \u2014 pull transcripts, extract decisions, and summarize open items.",
     {

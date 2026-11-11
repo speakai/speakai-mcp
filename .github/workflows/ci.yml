@@ -28,5 +28,8 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Run tests with coverage
         run: npm run test:coverage
