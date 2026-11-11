@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.41.2 (2026-11-11)
+
+- Maintenance release
+
 ## v1.41.1 (2026-10-30)
 
 - fix(types): declare the automations and voiceTestRunDetails options
