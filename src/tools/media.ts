@@ -74,7 +74,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 2. Upload media
   registerSpeakTool(server, 
     "upload_media",
-    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the workspace's minutes or credits, and sends the media.created event to the workspace's webhooks and Slack channels if any are configured. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights. ${CREDIT_REFUSAL_NOTE}`,
+    `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Requires an active subscription. Creates a media item, bills its duration against the account's minutes or credits, and sends the media.created event to the account's webhooks and Slack channels if any are configured. The request fails if the file exceeds the plan's size limit or its duration cannot be read, and no mediaId is returned if the balance is insufficient. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights. ${CREDIT_REFUSAL_NOTE}`,
     {
       name: z.string().min(1).describe("Display name for the media file"),
       url: z
@@ -638,7 +638,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // 14. Re-analyze media
   registerSpeakTool(server, 
     "reanalyze_media",
-    `Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts. Sends the media.reanalyzed event to the workspace's webhooks and Slack channels if any are configured. ${CREDIT_REFUSAL_NOTE}`,
+    `Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts. Sends the media.reanalyzed event to the account's webhooks and Slack channels if any are configured. ${CREDIT_REFUSAL_NOTE}`,
     {
       mediaId: z.string().min(1).describe("Unique identifier of the media file to re-analyze"),
       isInsights: z.boolean().optional().describe("Re-run insights analysis"),

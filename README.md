@@ -634,7 +634,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Users & teams (6 tools)</summary>
+<summary>Users & teams (5 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -643,7 +643,6 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `create_user_group` | Create a user group and assign members |
 | `update_user_group` | Update a group's name and members (full replace) |
 | `delete_user_group` | Delete a user group |
-| `get_billing_status` | Plan, remaining credits, renewal or trial end, and upgrade or top-up checkout links |
 
 </details>
 
@@ -729,6 +728,15 @@ A test run sends each enabled scenario's scripted user messages to the agent as 
 | `delete_voice_agent_resource` | Soft-delete a voice agent resource |
 | `analyze_voice_instruction_gaps` | Advisory-only patch suggestions for an agent's own instructions |
 | `apply_voice_instruction_gap` | Insert a suggested patch into an agent's instructions |
+
+</details>
+
+<details>
+<summary>Billing (1 tool)</summary>
+
+| Tool | Description |
+|---|---|
+| `get_billing_status` | Plan, remaining credits, renewal or trial end, pending payment, and upgrade or top-up checkout links (checkout links only for people who can manage billing) |
 
 </details>
 
@@ -1048,7 +1056,7 @@ All tool errors follow this structure:
 | `404` | Resource not found |
 | `429` | Rate limit exceeded |
 
-When the account cannot pay for the work (out of credits, trial ended, payment method needed, plan feature or pending payment), the tool error leads with the API's `userMessage`, followed by a `Continue here: <checkoutUrl>` line when there is one. `structuredContent.data` carries the full reply: `reason`, `billing`, `options` and `agentNotes`. Show the message to the user and retry only after they confirm. Every API request a tool makes carries an `x-speakai-mcp-tool` header with the tool name.
+When the account cannot pay for the work, the tool error leads with the API's `userMessage`, followed by a `Continue here: <checkoutUrl>` line when there is one. `structuredContent.data` carries the full reply: `reason` (`OUT_OF_CREDITS`, `TRIAL_ENDED`, `PAYMENT_METHOD_REQUIRED`, `PLAN_FEATURE` or `PENDING_PAYMENT`; left out for public visitors), `billing` (`plan`: `free_trial`, `pay_as_you_go`, `pro` or `custom`; `creditsRemaining`, `creditsNeeded`, `trialEndsAt`, `canManageBilling`), `options` (each with `id` `pro` or `top_up`, `recommended`, `amount`, `currency`, `interval`, `perUser`, `credits`, `autoReload`, `url`) and `agentNotes`. `checkoutUrl` is left out when the person cannot manage billing. Show the message to the user and retry only after they confirm. Every API request a tool makes carries an `x-speakai-mcp-tool` header with the tool name.
 
 ### Development
 

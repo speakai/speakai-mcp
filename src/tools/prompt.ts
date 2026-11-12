@@ -12,7 +12,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   const askAiChatDescription = [
     "Ask an AI-powered question about your media using Speak AI's AI Chat.",
-    "Supports querying a single file, multiple files, entire folders, or your whole workspace.",
+    "Supports querying a single file, multiple files, entire folders, or your whole account.",
     "Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media.",
     "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
     "To continue a conversation, pass the promptId from a previous response.",

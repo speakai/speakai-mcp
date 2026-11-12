@@ -219,7 +219,6 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "create_user_group",
       "update_user_group",
       "delete_user_group",
-      "get_billing_status",
     ],
   },
   {
@@ -297,6 +296,13 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "delete_voice_agent_resource",
       "analyze_voice_instruction_gaps",
       "apply_voice_instruction_gap",
+    ],
+  },
+  {
+    id: "billing",
+    name: "Billing",
+    tools: [
+      "get_billing_status",
     ],
   },
 ] as const satisfies readonly { id: string; name: string; tools: readonly string[] }[];

@@ -194,7 +194,6 @@ const newCategories = [
       "create_user_group",
       "update_user_group",
       "delete_user_group",
-      "get_billing_status",
     ],
   },
   {
@@ -213,6 +212,13 @@ const newCategories = [
       "share_dashboard",
       "get_dashboard_speakers_insight",
     ],
+  },
+  {
+    id: "billing",
+    name: "Billing",
+    iconKey: "billing",
+    shortDescription: "Check the account's plan and remaining credits, with upgrade and top-up links.",
+    tools: ["get_billing_status"],
   },
 ];
 
