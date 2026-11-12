@@ -99,7 +99,7 @@ owner of an action item, and for `list_user_groups`, `create_user_group`,
 `update_user_group` and `delete_user_group` when a user asks to change who is grouped with
 whom. Group changes affect other people's access, so confirm before running one.
 
-### Resources (5)
+### Resources
 
 Read these directly when you only need a list or a single document. They cost less than
 a tool call.
@@ -110,7 +110,7 @@ a tool call.
 - `speakai://media/{mediaId}/transcript`
 - `speakai://media/{mediaId}/insights`
 
-### Prompts (3)
+### Prompts
 
 Prefer these over hand-built tool chains when the request matches.
 

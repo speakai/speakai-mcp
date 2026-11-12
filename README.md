@@ -272,7 +272,7 @@ Get a Speak AI API key at [app.speakai.co/developers/apikeys](https://app.speaka
 
 The `@speakai/mcp-server` npm package provides:
 
-- A CLI (`speakai-mcp`) for scripting and pipelines (30 commands).
+- A CLI (`speakai-mcp`) for scripting and pipelines.
 - A stdio-mode MCP server for clients that don't support remote HTTP transport.
 - An auto-setup wizard that detects installed MCP clients and configures them.
 
@@ -740,7 +740,7 @@ A test run sends each enabled scenario's scripted user messages to the agent as 
 
 </details>
 
-### MCP Resources (5)
+### MCP Resources
 
 Resources provide direct data access without tool calls. Clients can read these URIs directly.
 
@@ -752,7 +752,7 @@ Resources provide direct data access without tool calls. Clients can read these 
 | Transcript | `speakai://media/{mediaId}/transcript` | Full transcript for a specific media file |
 | Insights | `speakai://media/{mediaId}/insights` | AI-generated insights for a specific media file |
 
-### MCP Prompts (3)
+### MCP Prompts
 
 Pre-built workflow prompts that agents can invoke to run multi-step tasks.
 
@@ -786,7 +786,7 @@ Parameters: days (optional, default: 7), folder (optional)
 
 **Example:** "Use the meeting-brief prompt with days=14 to cover the last two weeks"
 
-### CLI (30 Commands)
+### CLI
 
 Install globally and configure once:
 

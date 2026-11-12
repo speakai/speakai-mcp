@@ -289,8 +289,8 @@ export function syncDerivedSurfaces(write: boolean) {
 
   /**
  * tools.json is the only place that states how many tools there are. Hand-written
- * text must not carry a total or a per-category count, because it goes stale with
- * every new tool. README `<summary>` rows are excluded, since the rule above derives those.
+ * text must not carry a count of tools, categories, resources, prompts or CLI
+ * commands, because it goes stale with every release. README `<summary>` rows are excluded, since the rule above derives those.
  */
   const AUDIT_FILES = [
   "README.md",
@@ -311,7 +311,9 @@ export function syncDerivedSurfaces(write: boolean) {
   }
   text.split("\n").forEach((line, i) => {
     if (line.includes("<summary>")) return;
-    for (const m of line.matchAll(/\b\d+ (?:Speak AI |MCP )?(?:tools?|categories)\b|### MCP Tools \(\d+\)/g)) {
+    const counts =
+      /\b\d+ (?:Speak AI |MCP |built-in )?(?:tools?|categories|resources?|prompts?|commands?)\b|^#+ .*\(\d+(?: \w+)?\)\s*$/g;
+    for (const m of line.matchAll(counts)) {
       stale.push(`  ${file}:${i + 1}  "${m[0]}" states a count; drop the number (tools.json is the source of truth)`);
     }
   });
