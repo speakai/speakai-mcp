@@ -132,7 +132,6 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
         } catch {
           return { ...result, structuredContent: { data: textContent.text } };
         }
-        // Covers a client that bypassed instrumentSpeakClient and passed a refusal through as success.
         const refusal = getApiRefusal(data);
         if (refusal) return refusalResult(refusal);
         return { ...result, structuredContent: { data } };
