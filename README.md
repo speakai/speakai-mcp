@@ -242,7 +242,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 189 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
+Speak AI ships 190 tools your AI assistant can call. You don't memorize them — Claude/ChatGPT pick the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -394,7 +394,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (189)
+### MCP Tools (190)
 
 <details>
 <summary>Media (19 tools)</summary>
@@ -634,7 +634,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 </details>
 
 <details>
-<summary>Users & teams (5 tools)</summary>
+<summary>Users & teams (6 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -643,6 +643,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `create_user_group` | Create a user group and assign members |
 | `update_user_group` | Update a group's name and members (full replace) |
 | `delete_user_group` | Delete a user group |
+| `get_billing_status` | Plan, remaining credits, renewal or trial end, and upgrade or top-up checkout links |
 
 </details>
 
@@ -1046,6 +1047,8 @@ All tool errors follow this structure:
 | `403` | Insufficient permissions |
 | `404` | Resource not found |
 | `429` | Rate limit exceeded |
+
+When the account cannot pay for the work (out of credits, trial ended, payment method needed, plan feature or pending payment), the tool error leads with the API's `userMessage`, followed by a `Continue here: <checkoutUrl>` line when there is one. `structuredContent.data` carries the full reply: `reason`, `billing`, `options` and `agentNotes`. Show the message to the user and retry only after they confirm. Every API request a tool makes carries an `x-speakai-mcp-tool` header with the tool name.
 
 ### Development
 

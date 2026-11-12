@@ -23,6 +23,8 @@ import * as voice from "./voice.js";
 import * as voiceTesting from "./voice-testing.js";
 import * as voiceQuestions from "./voice-questions.js";
 import * as voiceIntelligence from "./voice-intelligence.js";
+import * as billing from "./billing.js";
+import { instrumentSpeakClient } from "../client.js";
 
 export interface RegisterOptions {
   localFileAccess?: boolean;
@@ -56,6 +58,7 @@ const modules: ToolModule[] = [
   voiceTesting,
   voiceQuestions,
   voiceIntelligence,
+  billing,
 ];
 
 /**
@@ -71,6 +74,7 @@ export function registerAllTools(
   client?: AxiosInstance,
   options: RegisterOptions = {}
 ): void {
+  if (client) instrumentSpeakClient(client);
   for (const mod of modules) {
     mod.register(server, client, options);
   }

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, CREDIT_REFUSAL_NOTE } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { AssistantType } from "@speakai/shared";
 
@@ -22,6 +22,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "call get_analysis_quote first to check eligibility and price.",
     "Each question is charged to the account's chat usage.",
     "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
+    CREDIT_REFUSAL_NOTE,
   ].join(" ");
 
   const askAiChatInputSchema = {
@@ -210,7 +211,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "get_analysis_quote",
     "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. " +
       "Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason — an unavailable file is a normal result here, not an error. " +
-      "This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
+      "This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run. " +
+      "Compare credits with the remaining balance from get_billing_status to warn the user before a run would use up their credits.",
     {
       mediaId: z.string().min(1).describe("Media file to price"),
       analysisInput: z
@@ -247,7 +249,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "retry_ai_chat",
-    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
+    `Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps. ${CREDIT_REFUSAL_NOTE}`,
     {
       promptId: z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: z.string().min(1).describe("ID of the specific message to retry"),

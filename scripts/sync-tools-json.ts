@@ -188,7 +188,14 @@ const newCategories = [
     name: "Users & teams",
     iconKey: "users-team",
     shortDescription: "List workspace members and manage user groups.",
-    tools: ["list_users", "list_user_groups", "create_user_group", "update_user_group", "delete_user_group"],
+    tools: [
+      "list_users",
+      "list_user_groups",
+      "create_user_group",
+      "update_user_group",
+      "delete_user_group",
+      "get_billing_status",
+    ],
   },
   {
     id: "dashboards",

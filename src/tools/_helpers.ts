@@ -4,7 +4,14 @@ import type {
   ToolCallback,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { formatAxiosError } from "../client.js";
+import {
+  type ApiRefusal,
+  formatAxiosError,
+  formatRefusal,
+  getApiRefusal,
+  isFailedBody,
+  runToolCall,
+} from "../client.js";
 
 export const passthroughOutputSchema = {
   data: z.unknown().describe("Response payload from the Speak AI API"),
@@ -24,6 +31,10 @@ export const SHARED_DASHBOARD_CACHE_NOTE =
   "for date ranges that include today (15 at most) and up to about 17 minutes for past ranges (60 at most); " +
   "any dashboard update refreshes it at once.";
 
+export const CREDIT_REFUSAL_NOTE =
+  "If the account is out of credits the result explains why and how to continue; show userMessage to the user " +
+  "and retry only after they confirm. get_billing_status shows the remaining credits, so you can warn the user before a large job.";
+
 type ToolResultContent =
   | { type: "text"; text: string }
   | { type: "image"; data: string; mimeType: string };
@@ -34,14 +45,37 @@ export interface ToolResult {
   isError?: boolean;
 }
 
-export function ok(data: unknown): ToolResult {
+export function refusalResult(refusal: ApiRefusal): ToolResult {
   return {
-    content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
-    structuredContent: { data },
+    content: [{ type: "text", text: formatRefusal(refusal) }],
+    structuredContent: { data: refusal },
+    isError: true,
   };
 }
 
+function failedBodyResult(data: unknown): ToolResult | undefined {
+  const refusal = getApiRefusal(data);
+  if (refusal) return refusalResult(refusal);
+  if (!isFailedBody(data)) return undefined;
+  return {
+    content: [{ type: "text", text: `Error: ${JSON.stringify(data, null, 2)}` }],
+    structuredContent: { data },
+    isError: true,
+  };
+}
+
+export function ok(data: unknown): ToolResult {
+  return (
+    failedBodyResult(data) ?? {
+      content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+      structuredContent: { data },
+    }
+  );
+}
+
 export function err(error: unknown): ToolResult {
+  const refusal = getApiRefusal(error);
+  if (refusal) return refusalResult(refusal);
   return {
     content: [{ type: "text", text: `Error: ${formatAxiosError(error)}` }],
     isError: true,
@@ -75,24 +109,33 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
       outputSchema: passthroughOutputSchema,
       annotations: toolAnnotations,
     },
-    (async (...args: Parameters<ToolCallback<InputSchema>>) => {
-      const result = await handler(...args);
-      if (result.isError || result.structuredContent) {
-        return result;
-      }
+    (async (...args: Parameters<ToolCallback<InputSchema>>) =>
+      runToolCall(name, async (context) => {
+        const result = await handler(...args);
+        if (result.isError && context.refusal) {
+          return refusalResult(context.refusal);
+        }
+        if (result.isError || result.structuredContent) {
+          return result;
+        }
 
-      const textContent = result.content?.find(
-        (item) => item.type === "text" && typeof item.text === "string"
-      );
-      if (!textContent) {
-        return { ...result, structuredContent: { data: null } };
-      }
+        const textContent = result.content?.find(
+          (item) => item.type === "text" && typeof item.text === "string"
+        );
+        if (!textContent) {
+          return { ...result, structuredContent: { data: null } };
+        }
 
-      try {
-        return { ...result, structuredContent: { data: JSON.parse(textContent.text) } };
-      } catch {
-        return { ...result, structuredContent: { data: textContent.text } };
-      }
-    }) as ToolCallback<InputSchema>
+        let data: unknown;
+        try {
+          data = JSON.parse(textContent.text);
+        } catch {
+          return { ...result, structuredContent: { data: textContent.text } };
+        }
+        // Covers a client that bypassed instrumentSpeakClient and passed a refusal through as success.
+        const refusal = getApiRefusal(data);
+        if (refusal) return refusalResult(refusal);
+        return { ...result, structuredContent: { data } };
+      })) as ToolCallback<InputSchema>
   );
 }

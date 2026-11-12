@@ -219,6 +219,7 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "create_user_group",
       "update_user_group",
       "delete_user_group",
+      "get_billing_status",
     ],
   },
   {
