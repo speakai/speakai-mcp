@@ -6517,7 +6517,7 @@ var init_recorder3 = __esm({
       ),
       notification: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client }, both booleans. upload emails the recorder owner (if they opted in to submission emails) and any users in notifyUsers about each new submission; client emails a confirmation to each respondent who gives an email."),
       meta: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
-        "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }"
+        "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, showDescriptionWhileRecording, hideSubmitButton, submitButtonLabel, countdown, hideImages }. showDescriptionWhileRecording keeps the recorder description on screen while the person records, so a question or list of prompts in the description stays visible."
       )
     };
   }

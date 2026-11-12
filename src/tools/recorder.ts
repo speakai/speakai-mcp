@@ -53,7 +53,7 @@ const recorderConfigShape = {
     .record(z.unknown())
     .optional()
     .describe(
-      "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }",
+      "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, showDescriptionWhileRecording, hideSubmitButton, submitButtonLabel, countdown, hideImages }. showDescriptionWhileRecording keeps the recorder description on screen while the person records, so a question or list of prompts in the description stays visible.",
     ),
 };
 
