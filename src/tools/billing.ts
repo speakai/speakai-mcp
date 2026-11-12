@@ -9,9 +9,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   registerSpeakTool(server,
     "get_billing_status",
     "Show the account's billing status: plan (free_trial, pay_as_you_go, pro or custom), creditsRemaining, renewsAt, trialEndsAt, " +
-      "pendingPayment, canManageBilling and manageUrl, plus options (each with id 'pro' or 'top_up', recommended, amount, currency, interval, " +
-      "perUser, credits, autoReload and a checkout url) and checkoutUrl for the recommended option. " +
-      "checkoutUrl is left out when the current user cannot manage billing; then ask them to contact whoever manages billing on the account. " +
+      "pendingPayment, canManageBilling and manageUrl, plus options: 'pro' has only id, recommended and a checkout url (no price), " +
+      "and 'top_up' has id, recommended, amount, currency, credits, autoReload and a checkout url. " +
+      "checkoutUrl links to the recommended option and is left out when the current user cannot manage billing; then ask them to contact whoever manages billing on the account. " +
       "Read-only and free to call. Use it to warn the user before an upload, analysis or chat would run past the remaining credits, " +
       "or after a tool reports that the account is out of credits. Share the links with the user and let them decide; never complete a purchase for them.",
     {},
