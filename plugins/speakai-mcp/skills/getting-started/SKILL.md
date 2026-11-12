@@ -1,6 +1,6 @@
 ---
 name: getting-started
-description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the 190 MCP tools across 15 categories, the 5 resources, the 3 built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
+description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the MCP tools and their categories, the resources, the built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
 metadata:
   server-version: "1.39.1"
   openclaw-homepage: "https://docs.speakai.co/mcp"
@@ -12,7 +12,7 @@ metadata:
 The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
 
 Speak AI transcribes and analyzes audio, video, and text. The MCP server gives you
-**190 tools, 5 resources, and 3 prompts** over one workspace of recordings, transcripts,
+**tools, resources, and prompts** over one workspace of recordings, transcripts,
 AI insights, folders, recorders, automations, and dashboards.
 
 Recordings stay in the user's Speak AI workspace. You only read what the user's
@@ -69,7 +69,7 @@ Use this for CLI agents, scripts, and clients without remote MCP support. It run
 same package installs a CLI named `speakai-mcp` that mirrors the tool surface. Setup,
 version pinning and key handling are documented at <https://docs.speakai.co/mcp/authentication>.
 
-## What the 190 tools cover
+## What the tools cover
 
 Pick the narrowest tool that answers the request. Per-tool documentation lives at
 `https://docs.speakai.co/mcp/tools/<category-id>/<tool_name>/`.

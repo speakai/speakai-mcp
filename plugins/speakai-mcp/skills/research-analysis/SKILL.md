@@ -17,9 +17,8 @@ recording. The work always follows the same shape. Find the right recordings, co
 they are ready to read, scope the question, ask it, then pull the exact words back out
 of the transcripts so the answer is defensible.
 
-The Speak AI MCP server has 190 tools. This skill uses tools from five of the fifteen
-categories: search-analytics (3 tools), magic-prompt (13 tools), media (19 tools),
-folders-views (11 tools), and custom-fields (4 tools). Every tool named below exists.
+This skill uses tools from five of the Speak AI MCP server's categories:
+search-analytics, magic-prompt, media, folders-views, and custom-fields. Every tool named below exists.
 Do not invent tool names. If you need something that is not listed here, check
 `tools.json` in the repository before you call anything.
 
