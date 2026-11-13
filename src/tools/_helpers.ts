@@ -39,6 +39,7 @@ export interface ToolResult {
   content: ToolResultContent[];
   structuredContent?: { data: unknown };
   isError?: boolean;
+  _meta?: Record<string, unknown>;
 }
 
 export function refusalResult(refusal: ApiRefusal): ToolResult {
@@ -92,7 +93,8 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
   description: string,
   inputSchema: InputSchema,
   annotations: SpeakToolAnnotations,
-  handler: (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) => ToolResult | Promise<ToolResult>
+  handler: (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) => ToolResult | Promise<ToolResult>,
+  toolMeta?: Record<string, unknown>
 ): RegisteredTool {
   // The SDK's registerTool and ToolCallback generics compare zod 3 and zod 4 shapes per tool and run tsc out of memory.
   const registerTool = server.registerTool.bind(server) as (name: string, config: object, cb: unknown) => RegisteredTool;
@@ -104,6 +106,7 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
       inputSchema,
       outputSchema: passthroughOutputSchema,
       annotations,
+      ...(toolMeta ? { _meta: toolMeta } : {}),
     },
     async (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) =>
       runToolCall(name, async (context) => {

@@ -12,6 +12,8 @@ export interface RegisterOptions {
   automations?: boolean;
   /** Register get_voice_test_run and apply_voice_test_recommendation. The hosted server leaves this off. */
   voiceTestRunDetails?: boolean;
+  /** Register the file list card (MCP Apps resource ui://speak/media-list) and show it for list_media and search_media. Off by default. */
+  cards?: boolean;
 }
 
 export declare function registerAllTools(

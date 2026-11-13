@@ -25,6 +25,7 @@ import * as voiceQuestions from "./voice-questions.js";
 import * as voiceIntelligence from "./voice-intelligence.js";
 import * as billing from "./billing.js";
 import { instrumentSpeakClient } from "../client.js";
+import { registerMediaListCard } from "../ui/media-list/index.js";
 
 export interface RegisterOptions {
   localFileAccess?: boolean;
@@ -32,6 +33,7 @@ export interface RegisterOptions {
   aiChat?: boolean;
   automations?: boolean;
   voiceTestRunDetails?: boolean;
+  cards?: boolean;
 }
 
 type ToolModule = {
@@ -74,7 +76,9 @@ const modules: ToolModule[] = [
  *                  AI Chat tools, whose assistant can call other tools, and automations to register the
  *                  automation tools, whose steps can run actions in connected third-party apps; the hosted
  *                  server leaves both off. Set voiceTestRunDetails to register get_voice_test_run and
- *                  apply_voice_test_recommendation; the hosted server leaves it off.
+ *                  apply_voice_test_recommendation; the hosted server leaves it off. Set cards to register
+ *                  the file list card (ui://speak/media-list) and show it for list_media and search_media in
+ *                  chat apps that support MCP Apps.
  */
 export function registerAllTools(
   server: McpServer,
@@ -85,4 +89,5 @@ export function registerAllTools(
   for (const mod of modules) {
     mod.register(server, client, options);
   }
+  if (options.cards) registerMediaListCard(server);
 }
