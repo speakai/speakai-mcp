@@ -305,7 +305,6 @@ describe("Credit refusals", () => {
     options: [{ id: "top_up", recommended: true, amount: 10, currency: "usd", credits: 100, url: CHECKOUT_URL }],
     checkoutUrl: CHECKOUT_URL,
     userMessage: "You are out of credits. Add credits to keep going.",
-    agentNotes: "Show userMessage and the checkout link.",
   };
 
   type Reply = { status: number; data: unknown };
