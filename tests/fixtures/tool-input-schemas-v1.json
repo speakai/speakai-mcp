@@ -1964,7 +1964,7 @@
       "prompt"
     ]
   },
-  "get_analysis_quote": {
+  "check_analysis_eligibility": {
     "type": [
       "object"
     ],
