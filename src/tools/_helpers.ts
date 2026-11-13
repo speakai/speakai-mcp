@@ -31,10 +31,6 @@ export const SHARED_DASHBOARD_CACHE_NOTE =
   "for date ranges that include today (15 at most) and up to about 17 minutes for past ranges (60 at most); " +
   "any dashboard update refreshes it at once.";
 
-export const CREDIT_REFUSAL_NOTE =
-  "If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user " +
-  "and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.";
-
 type ToolResultContent =
   | { type: "text"; text: string }
   | { type: "image"; data: string; mimeType: string };

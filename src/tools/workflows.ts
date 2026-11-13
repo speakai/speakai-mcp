@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool, refusalResult, CREDIT_REFUSAL_NOTE } from "./_helpers.js";
+import { registerSpeakTool, refusalResult } from "./_helpers.js";
 import type { RegisterOptions } from "./index.js";
 import { speakClient, formatAxiosError, formatRefusal, getApiRefusal, type ApiRefusal } from "../client.js";
 import { MediaType } from "@speakai/shared";
@@ -636,7 +636,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server,
     "upload_and_analyze",
-    `Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts. ${CREDIT_REFUSAL_NOTE}`,
+    `Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.`,
     {
       // A plain literal, not a template: the docs generator drops a tool's whole parameter
       // table when a description interpolates a value it cannot resolve statically.
@@ -711,7 +711,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server,
     "upload_and_analyze_batch",
-    `Import up to ${MAX_BATCH_URLS} audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most ${MAX_BATCH_CONCURRENCY} uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing. ${CREDIT_REFUSAL_NOTE}`,
+    `Import up to ${MAX_BATCH_URLS} audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most ${MAX_BATCH_CONCURRENCY} uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Each accepted upload creates a media item. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.`,
     {
       urls: z
         .array(z.string().min(1))
@@ -842,7 +842,6 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "Works with any audio or video file on the local filesystem.",
       "Each upload creates a media item.",
       "After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights.",
-      CREDIT_REFUSAL_NOTE,
     ].join(" "),
     {
       filePath: z.string().describe("Absolute path to the local audio or video file"),

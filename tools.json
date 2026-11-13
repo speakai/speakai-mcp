@@ -30,7 +30,7 @@
         {
           "name": "upload_media",
           "title": "Upload Media from URL",
-          "description": "Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Creates a media item. The request fails if the file exceeds the plan's size limit or its duration cannot be read. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights. If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.",
+          "description": "Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Creates a media item. The request fails if the file exceeds the plan's size limit or its duration cannot be read. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -39,7 +39,7 @@
         {
           "name": "upload_local_file",
           "title": "Upload Local File",
-          "description": "Upload a local file to Speak AI for transcription and analysis. Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry. Works with any audio or video file on the local filesystem. Each upload creates a media item. After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights. If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.",
+          "description": "Upload a local file to Speak AI for transcription and analysis. Reads the file from disk, gets a pre-signed S3 URL, uploads the file, then creates the media entry. Works with any audio or video file on the local filesystem. Each upload creates a media item. After upload, use get_media_status to poll for completion, then get_transcript and get_media_insights.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -48,7 +48,7 @@
         {
           "name": "upload_and_analyze",
           "title": "Upload and Analyze Media",
-          "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts. If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.",
+          "description": "Upload and transcribe media from a URL — a direct/public file URL, OR a shareable social/video page link, which Speak resolves to the underlying media automatically. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item. Returns media_id immediately; after this returns, poll get_media_status until state is 'processed' (typically 1-3 min for under 60min audio), then call get_media_insights for AI summaries. This async pattern is required for remote MCP transports — long blocking calls die at proxy idle timeouts.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -147,7 +147,7 @@
         {
           "name": "reanalyze_media",
           "title": "Re-analyze Media",
-          "description": "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts. If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.",
+          "description": "Re-run AI analysis on a media file using the latest models. Choose which parts to re-run via the flags below. Overwrites the existing results for the selected parts.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -165,7 +165,7 @@
         {
           "name": "upload_and_analyze_batch",
           "title": "Upload and Analyze Several URLs",
-          "description": "Import up to 25 audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most 5 uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing. If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.",
+          "description": "Import up to 25 audio or video URLs in one call. Each URL is imported the same way as upload_and_analyze, and transcription starts for each one. At most 5 uploads run at once. Each URL may be a direct public file URL or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube. Vimeo and Loom page links are not supported. Each accepted upload creates a media item. A failed URL does not stop the others, and the result lists every URL as uploaded (with its mediaId) or failed (with the reason). Returns once the uploads are accepted. Use get_media_status per mediaId, or list_media on the folder, to follow processing.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -191,7 +191,7 @@
         {
           "name": "ask_ai_chat",
           "title": "Ask AI Chat",
-          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole account. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone. That is a premium feature and costs credits per hour of media — call get_analysis_quote first to check eligibility and price. Each question is charged to the account's chat usage. The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat. If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.",
+          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole account. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone. That is a premium feature and costs credits per hour of media — call get_analysis_quote first to check eligibility and price. Each question is charged to the account's chat usage. The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -200,7 +200,7 @@
         {
           "name": "retry_ai_chat",
           "title": "Retry AI Chat",
-          "description": "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps. If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.",
+          "description": "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -938,7 +938,7 @@
         {
           "name": "create_text_note",
           "title": "Create Text Note",
-          "description": "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.",
+          "description": "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -956,7 +956,7 @@
         {
           "name": "reanalyze_text",
           "title": "Re-analyze Text Note",
-          "description": "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment. If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.",
+          "description": "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -965,7 +965,7 @@
         {
           "name": "update_text_note",
           "title": "Update Text Note",
-          "description": "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text. If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.",
+          "description": "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,

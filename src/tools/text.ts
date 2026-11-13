@@ -1,14 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool, fieldIdSchema, CREDIT_REFUSAL_NOTE } from "./_helpers.js";
+import { registerSpeakTool, fieldIdSchema } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 export function register(server: McpServer, client?: AxiosInstance): void {
   const api = client ?? speakClient;
   registerSpeakTool(server, 
     "create_text_note",
-    `Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment. ${CREDIT_REFUSAL_NOTE}`,
+    "Create a new text note in Speak AI for analysis. The content will be analyzed for insights, topics, and sentiment.",
     {
       name: z.string().min(1).describe("Title/name for the text note"),
       text: z.string().optional().describe("Full text content to analyze"),
@@ -93,7 +93,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "reanalyze_text",
-    `Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment. ${CREDIT_REFUSAL_NOTE}`,
+    "Trigger a re-analysis of an existing text note to regenerate insights with the latest AI models. Overwrites the note's current insights and sentiment.",
     {
       mediaId: z
         .string()
@@ -127,7 +127,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_text_note",
-    `Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text. ${CREDIT_REFUSAL_NOTE}`,
+    "Update an existing text note's name, content, or metadata. New text replaces the existing text. A note that has not been analyzed yet is analyzed after the update; an already analyzed note is not re-analyzed, so call reanalyze_text afterwards if its insights should reflect the new text.",
     {
       mediaId: z.string().min(1).describe("Unique identifier of the text note"),
       name: z.string().optional().describe("New name for the text note"),
