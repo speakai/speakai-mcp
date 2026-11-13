@@ -1,10 +1,9 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { SUPPORTED_URL_SOURCES } from "./media-utils.js";
 
 type PromptMessages = { messages: Array<{ role: "user" | "assistant"; content: { type: "text"; text: string } }> };
 
-// The SDK's prompt() generics compare zod 3 and zod 4 shapes and fail to typecheck; this keeps the callback args typed.
 function registerPrompt<Args extends z.ZodRawShape>(
   server: McpServer,
   name: string,
@@ -12,7 +11,7 @@ function registerPrompt<Args extends z.ZodRawShape>(
   args: Args,
   callback: (args: z.infer<z.ZodObject<Args>>) => PromptMessages | Promise<PromptMessages>
 ): void {
-  (server.prompt.bind(server) as (name: string, description: string, args: Args, cb: unknown) => void)(name, description, args, callback);
+  server.registerPrompt(name, { description, argsSchema: z.object(args) }, callback);
 }
 
 export function registerPrompts(server: McpServer): void {

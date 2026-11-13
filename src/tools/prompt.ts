@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
@@ -82,7 +82,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       .optional()
       .describe("Scope the prompt to multiple custom fields (max 10)"),
     filters: z
-      .record(z.unknown())
+      .record(z.string(), z.unknown())
       .optional()
       .describe("Advanced filter object to scope which media the prompt runs over"),
     analysisMediaId: z

@@ -1,8 +1,4 @@
-import type {
-  McpServer,
-  RegisteredTool,
-  ToolCallback,
-} from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { CallToolResult, McpServer, RegisteredTool, ServerContext } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import {
   type ApiRefusal,
@@ -40,7 +36,7 @@ type ToolResultContent =
   | { type: "text"; text: string }
   | { type: "image"; data: string; mimeType: string };
 
-export interface ToolResult {
+export interface ToolResult extends CallToolResult {
   content: ToolResultContent[];
   structuredContent?: { data: unknown };
   isError?: boolean;
@@ -100,27 +96,25 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
   description: string,
   inputSchema: InputSchema,
   annotations: SpeakToolAnnotations,
-  handler: (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) => ToolResult | Promise<ToolResult>,
+  handler: (args: z.infer<z.ZodObject<InputSchema>>, ctx: ServerContext) => ToolResult | Promise<ToolResult>,
   toolMeta?: Record<string, unknown>
 ): RegisteredTool {
-  // The SDK's registerTool and ToolCallback generics compare zod 3 and zod 4 shapes per tool and run tsc out of memory.
-  const registerTool = server.registerTool.bind(server) as (name: string, config: object, cb: unknown) => RegisteredTool;
-  return registerTool(
+  return server.registerTool(
     name,
     {
       title: annotations.title,
       description,
-      inputSchema,
-      outputSchema: passthroughOutputSchema,
+      inputSchema: z.object(inputSchema),
+      outputSchema: z.object(passthroughOutputSchema),
       annotations,
       ...(toolMeta ? { _meta: toolMeta } : {}),
     },
-    async (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) =>
+    async (args, ctx) =>
       runToolCall(name, async (context) => {
         const startedAt = performance.now();
         let result: ToolResult | undefined;
         try {
-          result = normalizeToolResult(await handler(args, extra), context);
+          result = normalizeToolResult(await handler(args, ctx), context);
           return result;
         } finally {
           reportToolCall(server, name, startedAt, result, context);

@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool, refusalResult } from "./_helpers.js";
@@ -192,8 +192,8 @@ interface BuildAutomationArgs {
 // registerSpeakTool call site. Validation behavior is unchanged.
 const buildAutomationSchema: z.ZodRawShape = {
   name: z.string().min(1).max(150).describe("Display name for the automation"),
-  trigger: z.record(z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
-  steps: z.array(z.record(z.unknown())).min(1).max(20).describe(STEP_SPEC_DESCRIPTION),
+  trigger: z.record(z.string(), z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
+  steps: z.array(z.record(z.string(), z.unknown())).min(1).max(20).describe(STEP_SPEC_DESCRIPTION),
   automationId: z
     .string()
     .optional()
@@ -201,7 +201,7 @@ const buildAutomationSchema: z.ZodRawShape = {
   description: z.string().max(1000).optional().describe("Optional description"),
   isActive: z.boolean().optional().describe("Whether the automation is active (default true)"),
   orTriggers: z
-    .array(z.record(z.unknown()))
+    .array(z.record(z.string(), z.unknown()))
     .max(10)
     .optional()
     .describe(

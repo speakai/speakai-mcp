@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool, fieldIdSchema, SHARED_DASHBOARD_CACHE_NOTE } from "./_helpers.js";
@@ -106,7 +106,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .array(
           z.object({
             id: fieldIdSchema,
-            value: z.unknown().describe("Value to set for the field"),
+            value: z.unknown().optional().describe("Value to set for the field"),
           }),
         )
         .describe("Array of field id/value pairs to set"),
