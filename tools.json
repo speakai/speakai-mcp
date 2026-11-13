@@ -21,7 +21,7 @@
         {
           "name": "get_signed_upload_url",
           "title": "Get Signed Upload URL",
-          "description": "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
+          "description": "Get a pre-signed URL for sending a file's bytes straight to Speak AI storage. Use it only when you can make an HTTP PUT request with the file's bytes yourself, for example from a terminal on the user's computer. If you cannot send that request, do not call this tool: ask the user for a public link to the file and use upload_and_analyze, or ask them to upload it in the Speak AI app. After the PUT succeeds, call upload_media with the returned URL. Where upload_local_file is available it does all of these steps for you.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": false,

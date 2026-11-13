@@ -91,6 +91,21 @@ describe("Error Handling & Resilience", () => {
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain("404");
+      expect(result.content[0].text).toContain("Media not found");
+      expect(result.content[0].text).toMatch(/search_media or list_media/);
+    });
+
+    it("explains which links work when the API rejects an upload link", async () => {
+      const { register } = await import("../src/tools/workflows.js");
+      register(server, mockClient, { localFileAccess: false });
+
+      mockPost.mockRejectedValueOnce(axiosError(400, { status: "failed", message: "Could not fetch media from this URL." }));
+
+      const result = await getToolCallback(server, "upload_and_analyze")({ url: "https://www.instagram.com/p/abc/" });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("Could not fetch media from this URL.");
+      expect(result.content[0].text).toMatch(/opens without signing in/);
     });
 
     it("handles 429 Rate Limited gracefully", async () => {

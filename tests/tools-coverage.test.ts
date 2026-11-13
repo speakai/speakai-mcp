@@ -854,6 +854,17 @@ describe("Workflows tools (upload_and_analyze)", () => {
     expect(body).not.toHaveProperty("mediaType");
   });
 
+  it("upload_and_analyze sends a non-empty name for a page link that ends in a slash", async () => {
+    mockPost.mockResolvedValueOnce({
+      data: { data: { mediaId: "m1", state: "pending" } },
+    });
+
+    await getToolCallback(server, "upload_and_analyze")({ url: "https://www.instagram.com/reel/abc123/", name: "" });
+
+    const [, body] = mockPost.mock.calls[0];
+    expect(body.name).toMatch(/^Upload \d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC$/);
+  });
+
   it("upload_and_analyze still forwards an explicit mediaType for a page link", async () => {
     mockPost.mockResolvedValueOnce({
       data: { data: { mediaId: "m1", state: "pending" } },
