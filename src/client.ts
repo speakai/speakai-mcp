@@ -11,9 +11,10 @@ export type ApiRefusal = Record<string, unknown> & {
   checkoutUrl?: string;
 };
 
-interface ToolCallContext {
+export interface ToolCallContext {
   toolName: string;
   refusal?: ApiRefusal;
+  status?: number;
 }
 
 const toolCallContext = new AsyncLocalStorage<ToolCallContext>();
@@ -56,6 +57,13 @@ export function formatRefusal(refusal: ApiRefusal): string {
     : lead;
 }
 
+export function noteToolFailure(value: unknown, refusal = getApiRefusal(value)): void {
+  const context = toolCallContext.getStore();
+  if (!context) return;
+  if (refusal) context.refusal = refusal;
+  if (axios.isAxiosError(value) && value.response) context.status = value.response.status;
+}
+
 const instrumentedClients = new WeakSet<object>();
 
 export function instrumentSpeakClient<T extends AxiosInstance>(client: T): T {
@@ -68,16 +76,10 @@ export function instrumentSpeakClient<T extends AxiosInstance>(client: T): T {
     return config;
   });
 
-  const keepRefusal = (value: unknown) => {
-    const context = toolCallContext.getStore();
-    const refusal = getApiRefusal(value);
-    if (context && refusal) context.refusal = refusal;
-  };
-
   client.interceptors.response.use(
     (response) => {
       if (!isFailedBody(response.data)) return response;
-      keepRefusal(response.data);
+      noteToolFailure(response.data);
       const message = getApiRefusal(response.data)
         ? formatRefusal(response.data)
         : String(response.data.message ?? "The API reported that the request failed.");
@@ -86,7 +88,7 @@ export function instrumentSpeakClient<T extends AxiosInstance>(client: T): T {
       );
     },
     (error) => {
-      keepRefusal(error);
+      noteToolFailure(error);
       return Promise.reject(error);
     }
   );

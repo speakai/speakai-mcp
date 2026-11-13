@@ -2,6 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool, ok, err } from "./_helpers.js";
+import type { RegisterOptions } from "./index.js";
+import { buildListMediaCard, mediaListCardResultMeta, mediaListCardToolMeta } from "../ui/media-list/card-data.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 import {
@@ -10,6 +12,10 @@ import {
   detectImageMimeType,
   SUPPORTED_URL_SOURCES,
   UNSUPPORTED_URL_SOURCES,
+  URL_UPLOAD_HELP,
+  MEDIA_NOT_FOUND_HELP,
+  apiErrorText,
+  defaultUploadName,
 } from "../media-utils.js";
 
 export const LIST_MEDIA_DEFAULT_PAGE_SIZE = 25;
@@ -22,16 +28,18 @@ const THUMBNAIL_FILE_EXTENSIONS: Record<string, string> = {
   "image/png": "png",
   "image/webp": "webp",
 };
+const MEDIA_ID_DESCRIPTION =
+  "The mediaId (12 characters) from list_media, search_media or an upload result. Not the media name and not a database _id.";
 
 /** Scopes a media name search to the name field; an unscoped search also scans every transcript. */
 export const toNameFilter = (text: string): string => (/^name:/i.test(text) ? text : `name:${text}`);
 
-export function register(server: McpServer, client?: AxiosInstance): void {
+export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
   // 1. Get signed upload URL
   registerSpeakTool(server, 
     "get_signed_upload_url",
-    "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
+    "Get a pre-signed URL for sending a file's bytes straight to Speak AI storage. Use it only when you can make an HTTP PUT request with the file's bytes yourself, for example from a terminal on the user's computer. If you cannot send that request, do not call this tool: ask the user for a public link to the file and use upload_and_analyze, or ask them to upload it in the Speak AI app. After the PUT succeeds, call upload_media with the returned URL. Where upload_local_file is available it does all of these steps for you.",
     {
       filename: z.string().min(1).describe("Original filename including extension, e.g. \"interview.mp4\". The extension decides audio vs video and the storage path, so it must match the real file — a video named \".mp3\" is stored as audio and can never be analysed as video."),
       mediaType: z
@@ -76,7 +84,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "upload_media",
     `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Creates a media item. The request fails if the file exceeds the plan's size limit or its duration cannot be read. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
-      name: z.string().min(1).describe("Display name for the media file"),
+      name: z.string().optional().describe("Display name for the media. Defaults to the file name in the URL, or \"Upload\" with the date and time when the URL has none."),
       url: z
         .string()
         // A plain literal, not a template: the docs generator drops a tool's whole parameter
@@ -125,7 +133,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         // Forwarded as given: mediaType is sent only when the caller actually chose one.
         // Deriving it from the URL would send a guess the server cannot tell apart from a
         // decision, and an explicit mediaType stops the server probing the real file.
-        const result = await api.post("/v1/media/upload", body);
+        const result = await api.post("/v1/media/upload", { ...body, name: defaultUploadName(body.url, body.name) });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) },
@@ -133,7 +141,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         };
       } catch (err) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: apiErrorText(err, { 400: URL_UPLOAD_HELP }) }],
           isError: true,
         };
       }
@@ -229,8 +237,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         queryParams.pageSize = params.pageSize ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
 
         const result = await api.get("/v1/media", { params: queryParams });
+        const cardMeta = options.cards ? mediaListCardResultMeta(buildListMediaCard(result.data)) : undefined;
         return {
           content: [{ type: "text", text: JSON.stringify(result.data) }],
+          ...(cardMeta ? { _meta: cardMeta } : {}),
         };
       } catch (err) {
         return {
@@ -238,7 +248,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           isError: true,
         };
       }
-    }
+    },
+    options.cards ? mediaListCardToolMeta : undefined
   );
 
   // 4. Get media insights
@@ -246,7 +257,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "get_media_insights",
     "Retrieve AI-generated insights for a processed media file — topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
-      mediaId: z.string().min(1).describe("Unique identifier of the media file"),
+      mediaId: z.string().min(1).describe(MEDIA_ID_DESCRIPTION),
     },
     {
       title: "Get Media Insights",
@@ -265,7 +276,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         };
       } catch (err) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: apiErrorText(err, { 404: MEDIA_NOT_FOUND_HELP }) }],
           isError: true,
         };
       }
@@ -277,7 +288,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "get_transcript",
     "Retrieve the full transcript for a media file with speaker labels and timestamps. Works on processed media and also returns the partial, in-progress transcript while a meeting bot is still recording (LIVE_TRANSCRIPT state). To fetch only the new sentences added since your previous call during a live meeting, use get_live_meeting_transcript instead. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
     {
-      mediaId: z.string().min(1).describe("Unique identifier of the media file"),
+      mediaId: z.string().min(1).describe(MEDIA_ID_DESCRIPTION),
     },
     {
       title: "Get Transcript",
@@ -296,7 +307,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         };
       } catch (err) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: apiErrorText(err, { 404: MEDIA_NOT_FOUND_HELP }) }],
           isError: true,
         };
       }
@@ -399,7 +410,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "get_media_status",
     "Check the processing status of a media file. States: pending → transcribing → analyzing → processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
-      mediaId: z.string().min(1).describe("Unique identifier of the media file"),
+      mediaId: z.string().min(1).describe(MEDIA_ID_DESCRIPTION),
     },
     {
       title: "Get Media Status",
@@ -418,7 +429,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         };
       } catch (err) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: apiErrorText(err, { 404: MEDIA_NOT_FOUND_HELP }) }],
           isError: true,
         };
       }

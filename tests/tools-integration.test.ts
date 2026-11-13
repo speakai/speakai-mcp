@@ -206,6 +206,115 @@ describe("Tools Integration Tests", () => {
     });
   });
 
+  describe("File list card", () => {
+    const CARD_KEY = "co.speakai/mediaList";
+    const CARD_ITEM_KEYS = ["mediaId", "name", "createdAt", "durationSeconds", "mediaType", "state", "matchLine"];
+    const signed = "https://media.example-bucket.s3.amazonaws.com/thumb.jpg?X-Amz-Signature=abc";
+    const listRow = (n: number, extra: Record<string, unknown> = {}) => ({
+      mediaId: `m${n}`,
+      name: `Weekly sync ${n}`,
+      createdAt: `2026-11-1${n}T15:00:00.000Z`,
+      duration: { start: "0", end: "2520", inSecond: 2520 },
+      mediaType: "audio",
+      state: "processed",
+      folderId: "f1",
+      tags: ["a"],
+      description: "secret notes",
+      thumbnailUrl: signed,
+      mediaUrl: signed,
+      downloadUrl: signed,
+      fields: [{ id: "x", value: "y" }],
+      sentiment: { document: { Compound: 1 } },
+      ...extra,
+    });
+
+    async function registerWithCards(cards: boolean) {
+      const { registerAllTools } = await import("../src/tools/index.js");
+      registerAllTools(server, mockClient, { cards });
+    }
+
+    it("list_media keeps its text and adds an allow-listed card of at most 3 rows only when cards are on", async () => {
+      const body = { status: "success", data: { totalCount: 143, pages: 6, mediaList: [1, 2, 3, 4].map((n) => listRow(n)) } };
+      mockGet.mockResolvedValue({ data: body });
+      await registerWithCards(true);
+
+      const tool = (server as any)._registeredTools.list_media;
+      expect(tool._meta.ui.resourceUri).toBe("ui://speak/media-list");
+      expect((server as any)._registeredTools.search_media._meta.ui.resourceUri).toBe("ui://speak/media-list");
+      expect((server as any)._registeredTools.get_transcript._meta).toBeUndefined();
+
+      const result = await getToolCallback(server, "list_media")({});
+      expect(result.content).toEqual([{ type: "text", text: JSON.stringify(body) }]);
+      expect(result.structuredContent).toEqual({ data: body });
+
+      const card = result._meta[CARD_KEY];
+      expect(card).toMatchObject({ source: "list_media", total: 143 });
+      expect(card.items).toHaveLength(3);
+      expect(card.items[0]).toEqual({
+        mediaId: "m1",
+        name: "Weekly sync 1",
+        createdAt: "2026-11-11T15:00:00.000Z",
+        durationSeconds: 2520,
+        mediaType: "audio",
+        state: "processed",
+      });
+      for (const item of card.items) {
+        for (const key of Object.keys(item)) expect(CARD_ITEM_KEYS).toContain(key);
+      }
+      expect(JSON.stringify(result._meta)).not.toMatch(/https?:|Signature|secret/);
+
+      const resource = (server as any)._registeredResources["ui://speak/media-list"];
+      const read = await resource.readCallback(new URL("ui://speak/media-list"), {});
+      const html: string = read.contents[0].text;
+      expect(read.contents[0].mimeType).toBe("text/html;profile=mcp-app");
+      expect(read.contents[0]._meta.ui.csp).toEqual({ connectDomains: [], resourceDomains: [] });
+      expect(html).not.toMatch(/<script[^>]+src=|<link |@import|amazonaws|thumbnailUrl|mediaUrl|downloadUrl/);
+      expect(html.match(/https?:\/\/[^"'\s)]+/g)).toEqual(["https://app.speakai.co"]);
+      expect(html).not.toMatch(/\u2014|workspace|price|plan|credit/i);
+    });
+
+    it("search_media adds the first matching line cut to 160 characters, and no card for 0 results", async () => {
+      const longLine = "Dana ".repeat(60);
+      mockPost.mockResolvedValueOnce({
+        data: {
+          status: "success",
+          data: {
+            media: [
+              listRow(1, { sentences: [{ text: longLine, score: { compound: 1 } }, { text: "second" }] }),
+              listRow(2, { sentences: [] }),
+            ],
+            stats: {},
+          },
+        },
+      });
+      await registerWithCards(true);
+
+      const result = await getToolCallback(server, "search_media")({ query: "Dana" });
+      const card = result._meta[CARD_KEY];
+      expect(card).toMatchObject({ source: "search_media", total: 2, query: "Dana" });
+      expect(card.items[0].matchLine).toHaveLength(160);
+      expect(card.items[0].matchLine.endsWith("…")).toBe(true);
+      expect(card.items[1].matchLine).toBeUndefined();
+
+      mockPost.mockResolvedValueOnce({ data: { status: "success", data: { media: [], stats: {} } } });
+      const empty = await getToolCallback(server, "search_media")({ query: "nothing" });
+      expect(empty._meta).toBeUndefined();
+      mockGet.mockResolvedValueOnce({ data: { status: "success", data: { totalCount: 0, mediaList: [] } } });
+      expect((await getToolCallback(server, "list_media")({}))._meta).toBeUndefined();
+    });
+
+    it("leaves tools, results and resources unchanged when cards are off", async () => {
+      mockGet.mockResolvedValue({ data: { status: "success", data: { totalCount: 1, mediaList: [listRow(1)] } } });
+      await registerWithCards(false);
+
+      expect((server as any)._registeredTools.list_media._meta).toBeUndefined();
+      expect((server as any)._registeredTools.search_media._meta).toBeUndefined();
+      expect(Object.keys((server as any)._registeredResources)).toHaveLength(0);
+      const result = await getToolCallback(server, "list_media")({});
+      expect(result._meta).toBeUndefined();
+    });
+  });
+
   describe("Clips tools", () => {
     it("create_clip calls POST /v1/clips", async () => {
       const { register } = await import("../src/tools/clips.js");
