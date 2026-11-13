@@ -297,7 +297,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server,
     "list_automations",
-    "List automation rules in the workspace, with paging and filters.",
+    "List automation rules in the Speak AI account, with paging and filters.",
     {
       page: z.number().int().min(0).optional().describe("0-based page index"),
       pageSize: z.number().int().min(1).max(100).optional().describe("Results per page"),
@@ -422,7 +422,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     "create_automation",
     "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and " +
       "then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any " +
-      "address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into " +
+      "address, post to the account's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into " +
       "Speak, run actions in connected third-party apps through Composio. An inbound-webhook " +
       "trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio " +
       "app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types " +

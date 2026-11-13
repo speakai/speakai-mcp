@@ -25,7 +25,7 @@ const embedSessionRangeSchema = {
     .enum(Object.values(EmbedSessionTrafficFilter) as [string, ...string[]])
     .optional()
     .describe("people leaves out bots, bots shows only bots (default all)"),
-  includeOwner: z.boolean().optional().describe("Include sessions from people signed in to your own Speak AI workspace (default false)"),
+  includeOwner: z.boolean().optional().describe("Include sessions from people signed in to your own Speak AI account (default false)"),
 };
 
 export function register(server: McpServer, client?: AxiosInstance): void {

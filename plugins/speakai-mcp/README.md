@@ -1,7 +1,7 @@
 # Speak AI
 
 Speak AI transcribes and analyzes your meetings, interviews, sales calls, research sessions,
-webinars and podcasts. This plugin connects Claude to your Speak AI workspace, so you can search
+webinars and podcasts. This plugin connects Claude to your Speak AI account, so you can search
 and summarize recordings, pull verbatim quotes, cut clips, run async voice and video surveys,
 send a meeting assistant to a call, and automate workflows without leaving the conversation.
 Eight skills teach Claude which Speak AI tools to use for each job and in what order.
@@ -31,7 +31,7 @@ creates a key linked to Claude in your account, and revoking the connection revo
 
 - The plugin sends your requests, and the details needed to carry them out, such as a search
   query or a recording's id, only to Speak AI's server above.
-- Your recordings, transcripts and insights stay in your Speak AI workspace. Claude reads only
+- Your recordings, transcripts and insights stay in your Speak AI account. Claude reads only
   what a request needs, with the permissions of the account you sign in with.
 - Tools that delete, overwrite, spend credits or send data outside Speak AI, such as webhooks,
   email or Slack notifications from automations, are marked as such, so Claude asks before

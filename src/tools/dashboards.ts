@@ -108,7 +108,7 @@ const sectionInputSchema = z.object({
 export const sourceInputSchema = z
   .object({
     type: z.enum(["folders", "team", "workspace"]).describe(
-      "folders = specific folder ids; team = the caller's team scope; workspace = everything accessible",
+      "folders = specific folder ids; team = the caller's team scope; workspace = everything the caller can access in the Speak AI account",
     ),
     folderIds: z
       .array(z.string().min(1).max(64))
@@ -590,8 +590,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "create_dashboard",
-    "Create an analytics dashboard. Only `title` is required — source defaults to the whole " +
-      "workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and " +
+    "Create an analytics dashboard. Only `title` is required — source defaults to everything in the " +
+      "Speak AI account and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and " +
       "lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | " +
       "{type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. " +
       "Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION " +

@@ -12,7 +12,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "list_users",
-    "List the users (members) in the workspace/company, with their ids, names, emails, and permissions. Use the returned _id values when assigning members to user groups.",
+    "List the users (members) in the Speak AI account, with their ids, names, emails, and permissions. Use the returned _id values when assigning members to user groups.",
     {
       filterName: z
         .string()

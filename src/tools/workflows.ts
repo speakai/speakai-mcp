@@ -110,7 +110,7 @@ async function resolveFolder(
   // A ref that looks like a folder id but matches nothing is almost certainly a
   // typo'd id — creating a folder literally named "f990ec4b40ca" helps nobody.
   if (ID_PATTERN.test(ref)) {
-    throw new Error(`Folder id "${ref}" not found in this workspace (and it looks like an id, so it was not created as a folder name)`);
+    throw new Error(`Folder id "${ref}" not found in this Speak AI account (and it looks like an id, so it was not created as a folder name)`);
   }
   const res = await api.post("/v1/folder", { name: ref });
   const folderId = unwrapData(res.data)?.folderId;
@@ -163,7 +163,7 @@ const STEP_SPEC_DESCRIPTION =
   "(writes payload values into custom fields on the uploaded media) }\n" +
   "- { do: \"ai_chat\", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] " +
   "(max 10 — values are extracted into these custom fields; prompt may be omitted for extraction-only steps), " +
-  "model? (a Speak-supported LLM id, e.g. \"gemini-2.5-flash\", \"claude-sonnet-4-6\"; omit for the workspace default), " +
+  "model? (a Speak-supported LLM id, e.g. \"gemini-2.5-flash\", \"claude-sonnet-4-6\"; omit for the account default), " +
   "analyse?: \"transcript\" (default) | \"audio\" | \"video\" — what the model receives. \"audio\" lets it hear tone and " +
   "delivery, \"video\" also lets it see the screen; on a video file \"audio\" extracts the audio track first. Premium: " +
   "requires the account's audio/video analysis opt-in and costs credits per hour of media }\n" +
@@ -222,7 +222,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces " +
       "that whole automation. The automation is active by default and then runs on its own every time its trigger " +
       "fires: upload steps fetch a file from any URL, slack " +
-      "notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An " +
+      "notify steps post to the account's Slack, and call_webhook steps send HTTP requests to any URL. An " +
       "inbound_webhook trigger creates a public URL that accepts payloads.",
     buildAutomationSchema,
     {

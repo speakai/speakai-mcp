@@ -11,7 +11,7 @@ metadata:
 The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
 
 A recorder is a public page that collects audio or video answers. You send a link, people
-record replies on their own time, and each submission lands in the workspace as normal
+record replies on their own time, and each submission lands in the Speak AI account as normal
 media with a transcript and insights. It replaces booking a call for every participant.
 
 Use this for customer research, candidate screening, onboarding feedback, testimonials, or
@@ -25,7 +25,7 @@ configure it in the next steps rather than trying to pass everything at once.
 Useful optional arguments:
 
 - `description`, shown to the respondent.
-- `folderId`, so submissions land somewhere findable instead of the workspace root.
+- `folderId`, so submissions land somewhere findable instead of the account's top level.
 - `isAutoAnalyze`, so each submission is transcribed and analyzed on arrival. Set this
   unless the user wants to review raw recordings first.
 - `sourceLanguage`, a transcription language code such as `en-US`.

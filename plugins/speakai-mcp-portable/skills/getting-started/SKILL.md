@@ -1,6 +1,6 @@
 ---
 name: getting-started
-description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the MCP tools and their categories, the resources, the built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
+description: Connect an agent to Speak AI and orient it in the Speak AI account. Covers the remote OAuth connection, the local stdio connection with an API key, the MCP tools and their categories, the resources, the built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
 metadata:
   server-version: "1.43.0"
   openclaw-homepage: "https://docs.speakai.co/mcp"
@@ -12,10 +12,10 @@ metadata:
 The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
 
 Speak AI transcribes and analyzes audio, video, and text. The MCP server gives you
-**tools, resources, and prompts** over one workspace of recordings, transcripts,
+**tools, resources, and prompts** over one Speak AI account of recordings, transcripts,
 AI insights, folders, recorders, automations, and dashboards.
 
-Recordings stay in the user's Speak AI workspace. You only read what the user's
+Recordings stay in the user's Speak AI account. You only read what the user's
 permissions allow.
 
 ## Connect
@@ -78,7 +78,7 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 |---|---|---|---|
 | `media` | 19 | Upload, transcripts, captions, insights, status, metadata, speakers, thumbnails | `list_media`, `get_transcript`, `get_media_insights` |
 | `magic-prompt` | 12 | Chat history and prompt tools. AI Chat itself is available only on the local stdio server (`npx @speakai/mcp-server`) | `get_chat_history`, `list_prompts`, `export_chat_answer` |
-| `search-analytics` | 3 | Deep search, workspace statistics, language list | `search_media`, `get_media_statistics` |
+| `search-analytics` | 3 | Deep search, account statistics, language list | `search_media`, `get_media_statistics` |
 | `folders-views` | 11 | Folders and saved views | `list_folders`, `create_folder`, `create_folder_view` |
 | `recorders-surveys` | 10 | Async voice and video surveys | `create_recorder`, `generate_recorder_url`, `get_recorder_recordings` |
 | `clips` | 4 | Highlight clips | `create_clip`, `get_clips` |
@@ -90,7 +90,7 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 | `custom-fields` | 4 | Structured metadata on media | `list_fields`, `update_multiple_fields` |
 | `labels-comments` | 16 | Labels on transcript words and comment threads | `list_labels`, `apply_label`, `add_comment` |
 | `embed-other` | 7 | Embeds, iframe URLs and visit analytics | `create_embed`, `get_embed_iframe_url`, `get_embed_session_summary` |
-| `users-team` | 5 | Workspace members and groups | `list_users`, `list_user_groups` |
+| `users-team` | 5 | Account members and groups | `list_users`, `list_user_groups` |
 | `dashboards` | 9 | Analytics dashboards and widgets | `list_dashboards`, `get_dashboard` |
 
 Users and groups are supporting tools rather than a workflow of their own. You reach for
@@ -228,7 +228,7 @@ not treat the first page as the whole library.
 
 **Permissions differ per member.** A 403 means the connected user cannot see that record,
 not that the record is gone. A 404 usually means the id is stale or belongs to another
-workspace. Do not retry either one in a loop.
+Speak AI account. Do not retry either one in a loop.
 
 **Ids are not interchangeable.** Folder calls take `folderId`. Media calls take `mediaId`,
 which lists return as `_id`. Dashboard updates need the current `revision` from

@@ -50,7 +50,7 @@ reference those ids in `sections[].widgetIds`.
 A dashboard has a source, a date range, and optional filters. Each widget can override any
 of them through `binding`, and omitting a key inherits the dashboard's value.
 
-Get the scope right before adding widgets. A dashboard over the whole workspace when the
+Get the scope right before adding widgets. A dashboard over the whole Speak AI account when the
 user meant one folder produces charts that look fine and mean nothing. If the user names a
 team, a project, or a client, find the matching folder with `list_folders` first and scope
 to it.

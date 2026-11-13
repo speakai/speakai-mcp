@@ -57,7 +57,7 @@
         {
           "name": "list_media",
           "title": "List Media Files",
-          "description": "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript or get_media_insights. For deep full-text search across transcripts, use search_media instead.",
+          "description": "List and search media files in the Speak AI account with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript or get_media_insights. For deep full-text search across transcripts, use search_media instead.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -186,7 +186,7 @@
       "id": "magic-prompt",
       "name": "AI Chat",
       "iconKey": "magic-prompt",
-      "shortDescription": "Run AI prompts across one file, a folder, or your whole workspace. Save favorites.",
+      "shortDescription": "Run AI prompts across one file, a folder, or your whole Speak AI account. Save favorites.",
       "tools": [
         {
           "name": "ask_ai_chat",
@@ -236,7 +236,7 @@
         {
           "name": "list_prompts",
           "title": "List Recent Chat Messages",
-          "description": "List recent AI Chat messages across the workspace, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns messages from the 25 most recently updated conversations in the workspace, filtered to those the caller can access, so a member may see fewer.",
+          "description": "List recent AI Chat messages across the Speak AI account, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns messages from the 25 most recently updated conversations in the Speak AI account, filtered to those the caller can access, so a member may see fewer.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -325,7 +325,7 @@
         {
           "name": "get_media_statistics",
           "title": "Get Media Statistics",
-          "description": "Get workspace-level media statistics — total counts, processing status breakdown, storage usage, etc.",
+          "description": "Get account-level media statistics — total counts, processing status breakdown, storage usage, etc.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -351,7 +351,7 @@
         {
           "name": "list_folders",
           "title": "List Folders",
-          "description": "List all folders in the workspace with pagination and sorting.",
+          "description": "List all folders in the Speak AI account with pagination and sorting.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -369,7 +369,7 @@
         {
           "name": "create_folder",
           "title": "Create Folder",
-          "description": "Create a new folder in the workspace, optionally assigned to users or user groups.",
+          "description": "Create a new folder in the Speak AI account, optionally assigned to users or user groups.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -396,7 +396,7 @@
         {
           "name": "delete_folder",
           "title": "Delete Folder",
-          "description": "Permanently delete a folder. The folder must be empty: the request is refused if it still holds any media or if it is the workspace's last folder, so move or delete its media first.",
+          "description": "Permanently delete a folder. The folder must be empty: the request is refused if it still holds any media or if it is the account's last folder, so move or delete its media first.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -458,7 +458,7 @@
         {
           "name": "create_recorder",
           "title": "Create Recorder",
-          "description": "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
+          "description": "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the account's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the account's embed_recorder.created webhook if one is registered.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -467,7 +467,7 @@
         {
           "name": "list_recorders",
           "title": "List Recorders",
-          "description": "List all recorders/surveys in the workspace.",
+          "description": "List all recorders/surveys in the Speak AI account.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -485,7 +485,7 @@
         {
           "name": "clone_recorder",
           "title": "Clone Recorder",
-          "description": "Duplicate an existing recorder including all its settings and questions. The copy gets its own public link, accepts submissions right away and sends the same submission emails, webhooks and automations as any recorder. Fires the workspace's embed_recorder.created webhook if one is registered.",
+          "description": "Duplicate an existing recorder including all its settings and questions. The copy gets its own public link, accepts submissions right away and sends the same submission emails, webhooks and automations as any recorder. Fires the account's embed_recorder.created webhook if one is registered.",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -539,7 +539,7 @@
         {
           "name": "delete_recorder",
           "title": "Delete Recorder",
-          "description": "Permanently delete a recorder/survey. Its public link stops accepting submissions. Existing recordings are preserved. Fires the workspace's embed_recorder.deleted webhook if one is registered.",
+          "description": "Permanently delete a recorder/survey. Its public link stops accepting submissions. Existing recordings are preserved. Fires the account's embed_recorder.deleted webhook if one is registered.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -679,7 +679,7 @@
         {
           "name": "list_automations",
           "title": "List Automations",
-          "description": "List automation rules in the workspace, with paging and filters.",
+          "description": "List automation rules in the Speak AI account, with paging and filters.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -697,7 +697,7 @@
         {
           "name": "create_automation",
           "title": "Create Automation",
-          "description": "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
+          "description": "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the account's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -805,7 +805,7 @@
         {
           "name": "build_automation",
           "title": "Build Automation",
-          "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL, slack notify steps post to the workspace's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
+          "description": "High-level automation builder: create (or update) a Speak automation from a friendly spec without knowing the wire format. Accepts folder/custom-field NAMES (resolved to ids; missing folders are auto-created), payload.<path> shorthand for webhook tokens, and simple step types (filter, branch, upload, ai_chat, translate, notify, call_webhook). For inbound-webhook automations the result includes the receive URL and mappable payload tokens. create_automation takes the raw wire format instead. Passing automationId replaces that whole automation. The automation is active by default and then runs on its own every time its trigger fires: upload steps fetch a file from any URL, slack notify steps post to the account's Slack, and call_webhook steps send HTTP requests to any URL. An inbound_webhook trigger creates a public URL that accepts payloads.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -876,7 +876,7 @@
         {
           "name": "list_webhooks",
           "title": "List Webhooks",
-          "description": "List all configured webhooks in the workspace.",
+          "description": "List all configured webhooks in the Speak AI account.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -982,7 +982,7 @@
         {
           "name": "list_fields",
           "title": "List Custom Fields",
-          "description": "List all custom fields defined in the workspace. Each field returns a `slug` (for example `regulator_comment`) alongside its `id`, `name`, and `type`. Put `{{field.<slug>}}` in the prompt text you send and Speak substitutes that field's value for the media before the model sees it. A slug is unique per company and never changes when the field is renamed, so prefer it over the field name. A field with no slug yet resolves by `id` in the same token. Every other tool that takes a field id wants this `id` (12 characters), never the database `_id`.",
+          "description": "List all custom fields defined in the Speak AI account. Each field returns a `slug` (for example `regulator_comment`) alongside its `id`, `name`, and `type`. Put `{{field.<slug>}}` in the prompt text you send and Speak substitutes that field's value for the media before the model sees it. A slug is unique per company and never changes when the field is renamed, so prefer it over the field name. A field with no slug yet resolves by `id` in the same token. Every other tool that takes a field id wants this `id` (12 characters), never the database `_id`.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -1021,12 +1021,12 @@
       "id": "labels-comments",
       "name": "Labels & comments",
       "iconKey": "text-fields",
-      "shortDescription": "Manage workspace labels, apply them to transcript words, and discuss a file in comment threads.",
+      "shortDescription": "Manage account labels, apply them to transcript words, and discuss a file in comment threads.",
       "tools": [
         {
           "name": "list_labels",
           "title": "List Labels",
-          "description": "List the workspace's labels as a tree: groups (isGroup true) carry their labels in `labels`, and ungrouped labels sit at the top level. Each item has labelId, name, description, color, parentId, source (`speak` for Speak label sets), usageCount and isActive. Use the labelIds of non-group labels with apply_label. Anyone in the workspace can read labels.",
+          "description": "List the account's labels as a tree: groups (isGroup true) carry their labels in `labels`, and ungrouped labels sit at the top level. Each item has labelId, name, description, color, parentId, source (`speak` for Speak label sets), usageCount and isActive. Use the labelIds of non-group labels with apply_label. Anyone in the Speak AI account can read labels.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -1035,7 +1035,7 @@
         {
           "name": "create_label",
           "title": "Create Label",
-          "description": "Create a label, or a label group with isGroup true. Labels are shared by the whole workspace and are applied to transcript words with apply_label. A label can sit in one group (parentId); groups cannot be nested, and a group has no color. Names are unique among active labels under the same parent, ignoring case and extra spaces: 409 means the name is taken. Requires the labels create permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "description": "Create a label, or a label group with isGroup true. Labels are shared by the whole Speak AI account and are applied to transcript words with apply_label. A label can sit in one group (parentId); groups cannot be nested, and a group has no color. Names are unique among active labels under the same parent, ignoring case and extra spaces: 409 means the name is taken. Requires the labels create permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -1098,7 +1098,7 @@
         {
           "name": "apply_label",
           "title": "Apply Label",
-          "description": "Apply one or more labels to a span of words in a media file's transcript. Give the span as quote (words copied from get_transcript; this tool finds their position and the current transcriptRevision for you) or as range plus expectedTranscriptRevision. If the same span already has labels, the new ones are added to it. Check the returned anchor.exact to confirm the right words were labelled. A 409 that says the transcript changed means someone edited it after your revision was read: read the transcript again (get_transcript) and retry with the new range or quote. Nothing was saved. A 400 means the range is outside the transcript or a label is archived, a group, or not in this workspace. Requires the labels assign permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "description": "Apply one or more labels to a span of words in a media file's transcript. Give the span as quote (words copied from get_transcript; this tool finds their position and the current transcriptRevision for you) or as range plus expectedTranscriptRevision. If the same span already has labels, the new ones are added to it. Check the returned anchor.exact to confirm the right words were labelled. A 409 that says the transcript changed means someone edited it after your revision was read: read the transcript again (get_transcript) and retry with the new range or quote. Nothing was saved. A 400 means the range is outside the transcript or a label is archived, a group, or not in this Speak AI account. Requires the labels assign permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
           "readOnlyHint": false,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -1116,7 +1116,7 @@
         {
           "name": "remove_media_label",
           "title": "Remove Media Label",
-          "description": "Remove a labelled span from a transcript. The label itself stays in the workspace, and comments linked to the span stay without the link. Requires the labels assign permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
+          "description": "Remove a labelled span from a transcript. The label itself stays in the Speak AI account, and comments linked to the span stay without the link. Requires the labels assign permission (every member by default). The change is recorded in your Speak Notifications under Label (type label).",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -1244,12 +1244,12 @@
       "id": "users-team",
       "name": "Users & teams",
       "iconKey": "users-team",
-      "shortDescription": "List workspace members and manage user groups.",
+      "shortDescription": "List account members and manage user groups.",
       "tools": [
         {
           "name": "list_users",
           "title": "List Users",
-          "description": "List the users (members) in the workspace/company, with their ids, names, emails, and permissions. Use the returned _id values when assigning members to user groups.",
+          "description": "List the users (members) in the Speak AI account, with their ids, names, emails, and permissions. Use the returned _id values when assigning members to user groups.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -1329,7 +1329,7 @@
         {
           "name": "create_dashboard",
           "title": "Create Dashboard",
-          "description": "Create an analytics dashboard. Only `title` is required — source defaults to the whole workspace and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Shared dashboard links cache widget data, so field and media edits can take up to about 5 minutes to show for date ranges that include today (15 at most) and up to about 17 minutes for past ranges (60 at most); any dashboard update refreshes it at once. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, labels, comments, profiles) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets a link viewer write as one of the dashboard's feedback submitter names (feedback.submitters, even while feedback itself is off), or as another typed name only when feedback.allowOtherSubmitter is true. Anyone holding the share link can pick any of those names, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the names with the user before saving a write mode. With no submitter names nobody can write. Label groups that are not active refuse the whole save with a 400 rather than being dropped. Saving only settings.profiles does not move media pages onto the settings flow. settings.profiles is a list of up to 5 groups, one per custom field (a field may appear only once), each with a label (for example Speakers or Products) and entries that give a value of that field a name, image, description and link. Entry names must equal that field's values (trim, case-insensitive), and a name or id listed twice in a group is rejected with a 400; they are matched by display string, so renaming a value in the media fields orphans its profile. Names, descriptions, links and images are PUBLIC to anyone with the dashboard link: write plain text only, no HTML, and confirm the descriptions and links with the user before saving. This MCP cannot upload images: leave imageKey out, or pass one copied unchanged from get_dashboard. To add an image over the API, POST it (multipart, JPEG/PNG/WEBP/GIF, max 2 MB) to /v1/dashboards/:dashboardId/profile-image and use the returned imageKey.",
+          "description": "Create an analytics dashboard. Only `title` is required — source defaults to everything in the Speak AI account and dateRange to last30days. Add widgets by listing their types (the MCP assigns ids and lays them out automatically), scope with source ({type:\"folders\",folderIds} | {type:\"team\"} | {type:\"workspace\"}) and dateRange ({preset}), and optionally group widgets into sections. Design guidance: lead with a narrative widget as the first widget; group sections by the QUESTION they answer, not by widget type; don't pad — every widget earns its place (aim for 4-16 widgets on a full build); if something can't be expressed by the widget catalog, put it in a narrative widget's focus instead of faking it. Call list_dashboard_widgets first for the widget catalog, config vocabulary, design rules, and full examples. Creating a dashboard does not share it publicly; only share_dashboard creates a public link. If settings.feedback.sheetWebhookUrl is set, each Feedback submission made on the shared dashboard is posted to that external Google Apps Script URL. Shared dashboard links cache widget data, so field and media edits can take up to about 5 minutes to show for date ranges that include today (15 at most) and up to about 17 minutes for past ranges (60 at most); any dashboard update refreshes it at once. Viewer settings (the settings input): Do not pass settings unless the user explicitly asks to change this dashboard's viewer settings. Saving fields, feedback or fieldEdits moves that dashboard onto the settings flow immediately: its media pages use these groups and this Feedback setup from then on. Each section (fields, feedback, fieldEdits, labels, comments, profiles) replaces that whole section when sent; a section left out keeps its saved value. Call get_dashboard first and resend every key of the section you change; a key left out resets to its default. Get field ids from list_fields. Ids that are not the company's fields are dropped when saving and returned in droppedFieldIds. When feedback.isEnabled is true, pass a non-empty feedback.fieldIds (score fields) rather than leaving it empty. Only set feedback.sheetWebhookUrl when the user gives the Apps Script URL. fieldEdits.fieldIds may list only fields that have allowed values (the server rejects any other field with a 400) and that the dashboard's media pages show; pass an empty fieldIds to turn field editing off. Labels and comments on the shared link are off until the user asks to turn them on. Mode 'apply' (labels) or 'reply' (comments) lets a link viewer write as one of the dashboard's feedback submitter names (feedback.submitters, even while feedback itself is off), or as another typed name only when feedback.allowOtherSubmitter is true. Anyone holding the share link can pick any of those names, because the link has no sign-in (an accepted risk; every entry is marked as made via this dashboard), so confirm the names with the user before saving a write mode. With no submitter names nobody can write. Label groups that are not active refuse the whole save with a 400 rather than being dropped. Saving only settings.profiles does not move media pages onto the settings flow. settings.profiles is a list of up to 5 groups, one per custom field (a field may appear only once), each with a label (for example Speakers or Products) and entries that give a value of that field a name, image, description and link. Entry names must equal that field's values (trim, case-insensitive), and a name or id listed twice in a group is rejected with a 400; they are matched by display string, so renaming a value in the media fields orphans its profile. Names, descriptions, links and images are PUBLIC to anyone with the dashboard link: write plain text only, no HTML, and confirm the descriptions and links with the user before saving. This MCP cannot upload images: leave imageKey out, or pass one copied unchanged from get_dashboard. To add an image over the API, POST it (multipart, JPEG/PNG/WEBP/GIF, max 2 MB) to /v1/dashboards/:dashboardId/profile-image and use the returned imageKey.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,

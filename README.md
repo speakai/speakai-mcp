@@ -33,7 +33,7 @@ This connector is built on MCP, the open standard AI assistants use to connect t
 - "Pull exact customer quotes about onboarding friction from recent research calls and format them for a product brief."
 - "Find a strong 30-second highlight from the latest webinar, create a clip, and export captions."
 
-The AI does the searching, summarizing, and citing. Your recordings stay in your Speak AI workspace; the assistant only queries them through this connector.
+The AI does the searching, summarizing, and citing. Your recordings stay in your Speak AI account; the assistant only queries them through this connector.
 
 ---
 
@@ -41,7 +41,7 @@ The AI does the searching, summarizing, and citing. Your recordings stay in your
 
 > **Two paths to install**: pick whichever feels easier. The one-click connect path approves access via a permission popup; the manual path pastes an API key into a header.
 
-> **Don't know which one to pick?** Install it in the AI assistant you already use. Every option below connects to the same Speak AI workspace.
+> **Don't know which one to pick?** Install it in the AI assistant you already use. Every option below connects to the same Speak AI account.
 
 > Speak AI's connector address (paste this into your AI tool's connector settings; it's the same idea as pasting a Zoom link into your calendar): `https://api.speakai.co/v1/mcp`
 
@@ -225,9 +225,9 @@ Any assistant that supports remote MCP servers can connect. Add `https://api.spe
 
 ## Privacy & data
 
-When you click **Allow** on the permission popup (or paste your Speak AI API key into your AI assistant), you're authorizing that AI assistant to read and modify your Speak AI workspace on your behalf: including media files, transcripts, and AI insights.
+When you click **Allow** on the permission popup (or paste your Speak AI API key into your AI assistant), you're authorizing that AI assistant to read and modify your Speak AI account on your behalf: including media files, transcripts, and AI insights.
 
-- Your recordings stay in your Speak AI workspace. They are not copied or stored by Anthropic or OpenAI.
+- Your recordings stay in your Speak AI account. They are not copied or stored by Anthropic or OpenAI.
 - The AI assistant only sees the specific data it requests for the question you asked.
 - When you approve the permission popup, Speak AI creates an API key in your account that is linked to that assistant and used only for its requests. You never need to create or paste one yourself. Revoking the connection also revokes that key.
 - You can disconnect at any time by either removing the connector inside your AI assistant, revoking the connection at [api.speakai.co/v1/oauth/connections](https://api.speakai.co/v1/oauth/connections), or rotating/revoking your API key at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
@@ -434,7 +434,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 
 | Tool | Description |
 |---|---|
-| `ask_ai_chat` | Ask AI questions about media, folders, or your whole workspace |
+| `ask_ai_chat` | Ask AI questions about media, folders, or your whole Speak AI account |
 | `retry_ai_chat` | Retry a failed or incomplete AI Chat response |
 | `get_chat_history` | List recent AI Chat conversations |
 | `get_chat_messages` | Get full message history for conversations |
@@ -460,7 +460,7 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 | Tool | Description |
 |---|---|
 | `search_media` | Deep search across transcripts, insights, and metadata with filters |
-| `get_media_statistics` | Get workspace-level stats: counts, storage, processing breakdown |
+| `get_media_statistics` | Get account-level stats: counts, storage, processing breakdown |
 | `list_supported_languages` | List all supported transcription languages |
 
 </details>
@@ -609,7 +609,7 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 
 | Tool | Description |
 |---|---|
-| `list_labels` | List workspace labels and groups as a tree |
+| `list_labels` | List account labels and groups as a tree |
 | `create_label` | Create a label or a label group |
 | `update_label` | Rename, recolor, describe, move or reorder a label |
 | `archive_label` | Archive a label (a group takes its labels along) |
@@ -648,7 +648,7 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 
 | Tool | Description |
 |---|---|
-| `list_users` | List workspace members with ids, emails, and permissions |
+| `list_users` | List account members with ids, emails, and permissions |
 | `list_user_groups` | List user groups with hydrated members |
 | `create_user_group` | Create a user group and assign members |
 | `update_user_group` | Update a group's name and members (full replace) |
@@ -713,7 +713,7 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 | `get_voice_test_baseline` | Get a voice agent's best-scoring completed run, for regression comparison |
 | `get_voice_test_score_history` | Get completed-run score points for charting |
 
-A test run sends each enabled scenario's scripted user messages to the agent as text and grades every criterion. It uses credits for the AI cost, except when the workspace uses its own OpenAI key. The ten run tools, from `start_voice_test_run` down, register by default; pass `voiceTestRuns: false` to `registerAllTools` to leave them off.
+A test run sends each enabled scenario's scripted user messages to the agent as text and grades every criterion. It uses credits for the AI cost, except when the account uses its own OpenAI key. The ten run tools, from `start_voice_test_run` down, register by default; pass `voiceTestRuns: false` to `registerAllTools` to leave them off.
 
 </details>
 
@@ -756,7 +756,7 @@ Resources provide direct data access without tool calls. Clients can read these 
 
 | Resource | URI | Description |
 |---|---|---|
-| Media Library | `speakai://media` | List of all media files in your workspace |
+| Media Library | `speakai://media` | List of all media files in your Speak AI account |
 | Folders | `speakai://folders` | List of all folders |
 | Supported Languages | `speakai://languages` | Transcription language list |
 | Transcript | `speakai://media/{mediaId}/transcript` | Full transcript for a specific media file |
@@ -841,7 +841,7 @@ npx @speakai/mcp-server config set-key
 
 | Command | Description |
 |---|---|
-| `ask <prompt>` | Ask AI about media, folders, or your whole workspace |
+| `ask <prompt>` | Ask AI about media, folders, or your whole Speak AI account |
 | `chat-history` | List past AI Chat conversations |
 | `search <query>` | Full-text search across transcripts and insights |
 
@@ -855,11 +855,11 @@ npx @speakai/mcp-server config set-key
 | `clips` | List clips (filter by media or folder) |
 | `clip <mediaId>` | Create a clip (`--start` and `--end` in seconds) |
 
-#### Workspace
+#### Account
 
 | Command | Description |
 |---|---|
-| `stats` | Show workspace media statistics |
+| `stats` | Show account media statistics |
 | `languages` | List supported transcription languages |
 | `list-meeting-events` | List scheduled/completed meeting events (`--platform`, `--status`, `--sort`) |
 | `schedule-meeting <url>` | Schedule AI assistant to join a meeting |
@@ -891,7 +891,7 @@ speakai-mcp export abc123 -f pdf --speakers
 # Ask AI about a specific media file
 speakai-mcp ask "What were the action items?" -m abc123
 
-# Ask across your entire workspace
+# Ask across your entire Speak AI account
 speakai-mcp ask "What themes appear in customer interviews?"
 
 # Search all transcripts

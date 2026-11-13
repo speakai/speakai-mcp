@@ -214,7 +214,7 @@ speakai-mcp call export_multiple_media '{
 ## Step 8: Embeds
 
 An embed is a player and transcript widget you put on a web page. It is reachable
-from outside the workspace, so treat creating one as publishing. Ask the user
+from outside the Speak AI account, so treat creating one as publishing. Ask the user
 before you create an embed for media you did not just create with them.
 
 1. Call `check_embed` with `mediaId` first. It tells you whether an embed already

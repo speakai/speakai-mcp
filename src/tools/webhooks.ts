@@ -47,7 +47,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server, 
     "list_webhooks",
-    "List all configured webhooks in the workspace.",
+    "List all configured webhooks in the Speak AI account.",
     {},
     {
       title: "List Webhooks",

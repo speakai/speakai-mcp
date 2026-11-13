@@ -24,7 +24,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       callbackUrl: z
         .string()
         .optional()
-        .describe("URL that replaces the workspace webhook's destination for this note's webhook events. It takes effect only when the workspace already has an active webhook for the event; on its own it does not create a webhook or send anything."),
+        .describe("URL that replaces the account webhook's destination for this note's webhook events. It takes effect only when the account already has an active webhook for the event; on its own it does not create a webhook or send anything."),
       fields: z
         .array(
           z.object({

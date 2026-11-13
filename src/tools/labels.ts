@@ -33,7 +33,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "list_labels",
-    "List the workspace's labels as a tree: groups (isGroup true) carry their labels in `labels`, and ungrouped labels sit at the top level. Each item has labelId, name, description, color, parentId, source (`speak` for Speak label sets), usageCount and isActive. Use the labelIds of non-group labels with apply_label. Anyone in the workspace can read labels.",
+    "List the account's labels as a tree: groups (isGroup true) carry their labels in `labels`, and ungrouped labels sit at the top level. Each item has labelId, name, description, color, parentId, source (`speak` for Speak label sets), usageCount and isActive. Use the labelIds of non-group labels with apply_label. Anyone in the Speak AI account can read labels.",
     {
       status: z
         .nativeEnum(LabelListStatus)
@@ -59,7 +59,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "create_label",
-    "Create a label, or a label group with isGroup true. Labels are shared by the whole workspace and are applied to transcript words with apply_label. A label can sit in one group (parentId); groups cannot be nested, and a group has no color. Names are unique among active labels under the same parent, ignoring case and extra spaces: 409 means the name is taken. Requires the labels create permission (every member by default). " +
+    "Create a label, or a label group with isGroup true. Labels are shared by the whole Speak AI account and are applied to transcript words with apply_label. A label can sit in one group (parentId); groups cannot be nested, and a group has no color. Names are unique among active labels under the same parent, ignoring case and extra spaces: 409 means the name is taken. Requires the labels create permission (every member by default). " +
       LABEL_ACTIVITY_NOTE,
     {
       name: labelName.describe(`Label or group name (1 to ${LABEL_NAME_MAX} characters)`),
@@ -207,7 +207,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     "apply_label",
     "Apply one or more labels to a span of words in a media file's transcript. Give the span as quote (words copied from get_transcript; this tool finds their position and the current transcriptRevision for you) or as range plus expectedTranscriptRevision. If the same span already has labels, the new ones are added to it. Check the returned anchor.exact to confirm the right words were labelled. " +
       STALE_TRANSCRIPT_NOTE +
-      " A 400 means the range is outside the transcript or a label is archived, a group, or not in this workspace. Requires the labels assign permission (every member by default). " +
+      " A 400 means the range is outside the transcript or a label is archived, a group, or not in this Speak AI account. Requires the labels assign permission (every member by default). " +
       LABEL_ACTIVITY_NOTE,
     {
       mediaId: publicId("mediaId").describe("Media id"),
@@ -269,7 +269,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "remove_media_label",
-    "Remove a labelled span from a transcript. The label itself stays in the workspace, and comments linked to the span stay without the link. Requires the labels assign permission (every member by default). " +
+    "Remove a labelled span from a transcript. The label itself stays in the Speak AI account, and comments linked to the span stay without the link. Requires the labels assign permission (every member by default). " +
       LABEL_ACTIVITY_NOTE,
     {
       mediaId: publicId("mediaId").describe("Media id"),

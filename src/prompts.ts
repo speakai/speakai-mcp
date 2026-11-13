@@ -71,7 +71,7 @@ export function registerPrompts(server: McpServer): void {
             text: [
               `Research this topic across my media library: "${topic}"`,
               ``,
-              folder ? `Scope: folder ${folder}` : `Scope: entire workspace`,
+              folder ? `Scope: folder ${folder}` : `Scope: entire Speak AI account`,
               ``,
               `Steps:`,
               `1. Use search_media to find relevant media matching this topic`,

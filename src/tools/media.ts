@@ -106,11 +106,11 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       folderId: z
         .string()
         .optional()
-        .describe("ID of the folder to place the media in. If the folder is not found, the media goes to the workspace's first folder."),
+        .describe("ID of the folder to place the media in. If the folder is not found, the media goes to the account's first folder."),
       callbackUrl: z
         .string()
         .optional()
-        .describe("URL that replaces the workspace webhook's destination for this media's webhook events. It takes effect only when the workspace already has an active webhook for the event; on its own it does not create a webhook or send anything."),
+        .describe("URL that replaces the account webhook's destination for this media's webhook events. It takes effect only when the account already has an active webhook for the event; on its own it does not create a webhook or send anything."),
       fields: z
         .array(
           z.object({
@@ -119,7 +119,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
           })
         )
         .optional()
-        .describe("Custom field values to attach to the media. Field IDs that do not belong to the workspace are ignored without an error."),
+        .describe("Custom field values to attach to the media. Field IDs that do not belong to the Speak AI account are ignored without an error."),
     },
     {
       title: "Upload Media from URL",
@@ -151,7 +151,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
   // 3. List media
   registerSpeakTool(server, 
     "list_media",
-    "List and search media files in the workspace with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript or get_media_insights. For deep full-text search across transcripts, use search_media instead.",
+    "List and search media files in the Speak AI account with filtering, pagination, and sorting. Use filterName for text search, mediaType to filter by audio/video/text, folderId for folder-specific results, and from/to for date ranges. Use the include param to embed additional data (transcripts, speakers, keywords) inline with each result, avoiding N+1 API calls. Returns mediaIds you can pass to get_transcript or get_media_insights. For deep full-text search across transcripts, use search_media instead.",
     {
       mediaType: z
         .enum([MediaType.AUDIO, MediaType.VIDEO, MediaType.TEXT] as [string, ...string[]])
@@ -583,7 +583,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
   // 12. Get media statistics
   registerSpeakTool(server, 
     "get_media_statistics",
-    "Get workspace-level media statistics — total counts, processing status breakdown, storage usage, etc.",
+    "Get account-level media statistics — total counts, processing status breakdown, storage usage, etc.",
     {},
     {
       title: "Get Media Statistics",

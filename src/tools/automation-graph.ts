@@ -835,7 +835,7 @@ export function validateGraph(steps: WireStep[], opts: ValidateOptions = {}): Va
         }
         if (opts.knownFieldIds && !opts.knownFieldIds.has(field)) {
           errors.push(
-            `Step "${step.stepId}" tests custom field "${field}", which does not exist in this workspace. ` +
+            `Step "${step.stepId}" tests custom field "${field}", which does not exist in this Speak AI account. ` +
               `A condition naming an unknown field is not rejected by the server and silently takes the same branch every time — use list_fields to get a real field id.`,
           );
         }

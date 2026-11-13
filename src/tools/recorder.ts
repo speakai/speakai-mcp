@@ -89,7 +89,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "create_recorder",
-    "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the workspace's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the workspace's embed_recorder.created webhook if one is registered.",
+    "Create a new recorder or survey for collecting audio/video submissions. The recorder is live as soon as it is created: anyone with its public link can submit. By default each submission emails the recorder owner (if they opted in) and any users in notifyUsers, and emails a confirmation to the respondent when they give an email (see `notification`), and it fires the account's embed_recorder.recording_received webhook and recording_received automations. Creating the recorder fires the account's embed_recorder.created webhook if one is registered.",
     {
       name: z.string().describe("Display name for the recorder"),
       ...recorderConfigShape,
@@ -124,7 +124,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "list_recorders",
-    "List all recorders/surveys in the workspace.",
+    "List all recorders/surveys in the Speak AI account.",
     {
       page: z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
       pageSize: z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
@@ -154,7 +154,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "clone_recorder",
-    "Duplicate an existing recorder including all its settings and questions. The copy gets its own public link, accepts submissions right away and sends the same submission emails, webhooks and automations as any recorder. Fires the workspace's embed_recorder.created webhook if one is registered.",
+    "Duplicate an existing recorder including all its settings and questions. The copy gets its own public link, accepts submissions right away and sends the same submission emails, webhooks and automations as any recorder. Fires the account's embed_recorder.created webhook if one is registered.",
     {
       recorderId: z.string().min(1).describe("ID of the recorder to clone"),
       name: z.string().optional().describe("Name for the cloned recorder"),
@@ -340,7 +340,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "delete_recorder",
-    "Permanently delete a recorder/survey. Its public link stops accepting submissions. Existing recordings are preserved. Fires the workspace's embed_recorder.deleted webhook if one is registered.",
+    "Permanently delete a recorder/survey. Its public link stops accepting submissions. Existing recordings are preserved. Fires the account's embed_recorder.deleted webhook if one is registered.",
     {
       recorderId: z.string().min(1).describe("Unique identifier of the recorder to delete"),
     },

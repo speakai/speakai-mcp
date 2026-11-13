@@ -90,7 +90,7 @@ Acknowledge with a `2xx` before you do slow work. A handler that transcribes, ca
 LLM, or writes to a slow database inside the request is the most common cause of
 retries, and retries are what make duplicate handling necessary in the first place.
 
-Use `list_webhooks` to see everything registered in the workspace before you add
+Use `list_webhooks` to see everything registered in the Speak AI account before you add
 another one. Duplicate `callbackUrl` values are a common way to end up processing every
 event twice.
 
@@ -101,7 +101,7 @@ Docs: <https://docs.speakai.co/mcp/tools/webhooks/create_webhook/>,
 
 ## Edge cases that actually bite
 
-**Empty results are normal, not errors.** `list_webhooks` on a new workspace returns an empty list with a success status. Report the empty result. Do not retry it and do not treat it as a failure.
+**Empty results are normal, not errors.** `list_webhooks` on a new account returns an empty list with a success status. Report the empty result. Do not retry it and do not treat it as a failure.
 
 **Permissions and scope.** Every call runs with the permissions of the API key or the OAuth session. A key without webhook access gets a `401` or `403`, not an empty list. Ask the user to check their key at <https://app.speakai.co/developers/apikeys> rather than retrying.
 

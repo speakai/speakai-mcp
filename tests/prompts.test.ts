@@ -84,7 +84,7 @@ describe("Prompts", () => {
       expect(result.messages[0].role).toBe("user");
       expect(result.messages[0].content.type).toBe("text");
       expect(result.messages[0].content.text).toContain("customer feedback");
-      expect(result.messages[0].content.text).toContain("entire workspace");
+      expect(result.messages[0].content.text).toContain("entire Speak AI account");
     });
 
     it("scopes to a folder when folder param is provided", async () => {
@@ -92,7 +92,7 @@ describe("Prompts", () => {
       const result = await cb({ topic: "onboarding", folder: "folder123" });
 
       expect(result.messages[0].content.text).toContain("folder folder123");
-      expect(result.messages[0].content.text).not.toContain("entire workspace");
+      expect(result.messages[0].content.text).not.toContain("entire Speak AI account");
     });
 
     it("includes research methodology steps", async () => {

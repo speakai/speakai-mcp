@@ -131,6 +131,6 @@ as `state: "failed"` from `get_media_status`, so a status poll that never reache
 
 ## Cost and consent
 
-Every import consumes the workspace's credits, and a batch multiplies that. When a user
+Every import consumes the account's credits, and a batch multiplies that. When a user
 pastes a long list, say how many links you are about to import before you run it. Imported
-media lands in their workspace permanently until deleted.
+media lands in their Speak AI account permanently until deleted.

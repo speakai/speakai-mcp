@@ -210,7 +210,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
   // Folders CRUD
   registerSpeakTool(server, 
     "list_folders",
-    "List all folders in the workspace with pagination and sorting.",
+    "List all folders in the Speak AI account with pagination and sorting.",
     {
       page: z.number().int().min(0).optional().describe("Page number (0-based, default: 0)"),
       pageSize: z.number().int().min(1).max(500).optional().describe("Results per page (default: 20, max: 500)"),
@@ -275,7 +275,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "create_folder",
-    "Create a new folder in the workspace, optionally assigned to users or user groups.",
+    "Create a new folder in the Speak AI account, optionally assigned to users or user groups.",
     {
       name: z.string().min(1).describe("Display name for the new folder"),
       description: z.string().optional().describe("Optional folder description"),
@@ -390,7 +390,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "delete_folder",
-    "Permanently delete a folder. The folder must be empty: the request is refused if it still holds any media or if it is the workspace's last folder, so move or delete its media first.",
+    "Permanently delete a folder. The folder must be empty: the request is refused if it still holds any media or if it is the account's last folder, so move or delete its media first.",
     {
       folderId: z.string().min(1).describe("Unique identifier of the folder to delete"),
     },

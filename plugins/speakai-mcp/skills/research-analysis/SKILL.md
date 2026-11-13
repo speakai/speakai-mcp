@@ -44,7 +44,7 @@ directly, authentication is documented at <https://docs.speakai.co/mcp/authentic
 ## Step 1. Find the right recordings
 
 This is the step people skip, and it is the step that decides whether the answer is
-right. Never analyze the whole workspace on the first pass. You will end up with an
+right. Never analyze the whole Speak AI account on the first pass. You will end up with an
 average of everything, and you will not be able to say which calls each point came from.
 
 ### Which finder to use
@@ -148,8 +148,8 @@ set that answers the question.
   choice for research work because you can name every source.
 - A whole folder. Pass its `folderId` to `list_media` and page through. Use this when the
   folder is the study and the user wants everything in it.
-- The entire workspace. Use this only when the user explicitly asks about everything,
-  and say in your answer that the scope was the whole workspace.
+- The entire Speak AI account. Use this only when the user explicitly asks about everything,
+  and say in your answer that the scope was the whole Speak AI account.
 
 Whatever the scope, keep the list of media ids you actually read. Being able to answer
 "which calls is this from" is the point of the exercise.
@@ -332,7 +332,7 @@ before you answer, rather than reusing the media ids from the earlier question.
 | Tool | Category | Use |
 | --- | --- | --- |
 | `search_media` | search-analytics | Full text search across transcripts, insights, metadata |
-| `get_media_statistics` | search-analytics | Workspace level counts and processing status breakdown |
+| `get_media_statistics` | search-analytics | Account-level counts and processing status breakdown |
 | `list_media` | media | Filtered, sorted, paginated listing, with optional inline data |
 | `get_media_status` | media | Processing state before you analyze or quote |
 | `get_transcript` | media | Verbatim text with speaker labels and timestamps |

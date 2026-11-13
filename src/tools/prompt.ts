@@ -31,7 +31,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     mediaIds: z
       .array(z.string())
       .optional()
-      .describe("Array of media IDs to query. Omit along with folderIds to search across all media in your workspace."),
+      .describe("Array of media IDs to query. Omit along with folderIds to search across all media in your Speak AI account."),
     folderIds: z
       .array(z.string())
       .optional()
@@ -225,7 +225,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       modelId: z
         .string()
         .optional()
-        .describe("Optional model id to check against. Omit for the workspace default."),
+        .describe("Optional model id to check against. Omit for the account default."),
     },
     {
       title: "Get Analysis Quote",
@@ -406,7 +406,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server, 
     "list_prompts",
-    "List recent AI Chat messages across the workspace, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns messages from the 25 most recently updated conversations in the workspace, filtered to those the caller can access, so a member may see fewer.",
+    "List recent AI Chat messages across the Speak AI account, newest first, with each prompt, answer, references, and the media or folder it ran on. Returns messages from the 25 most recently updated conversations in the Speak AI account, filtered to those the caller can access, so a member may see fewer.",
     {},
     {
       title: "List Recent Chat Messages",

@@ -697,7 +697,7 @@ export function createCli(): Command {
 
   program
     .command("ask")
-    .description("Ask an AI question about media files, folders, or your entire workspace")
+    .description("Ask an AI question about media files, folders, or your entire Speak AI account")
     .argument("<prompt>", "Your question")
     .argument("[mediaId]", "Optional media file ID (shorthand for -m <id>)")
     .option("-m, --media <ids...>", "Media file IDs to query (space-separated)")
@@ -1028,7 +1028,7 @@ export function createCli(): Command {
 
   program
     .command("stats")
-    .description("Show workspace media statistics")
+    .description("Show account media statistics")
     .option("--json", "Output raw JSON")
     .action(async (opts) => {
       requireApiKey();

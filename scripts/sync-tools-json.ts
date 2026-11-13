@@ -163,7 +163,7 @@ const newCategories = [
     id: "labels-comments",
     name: "Labels & comments",
     iconKey: "text-fields",
-    shortDescription: "Manage workspace labels, apply them to transcript words, and discuss a file in comment threads.",
+    shortDescription: "Manage account labels, apply them to transcript words, and discuss a file in comment threads.",
     tools: [
       "list_labels",
       "create_label",
@@ -187,7 +187,7 @@ const newCategories = [
     id: "users-team",
     name: "Users & teams",
     iconKey: "users-team",
-    shortDescription: "List workspace members and manage user groups.",
+    shortDescription: "List account members and manage user groups.",
     tools: ["list_users", "list_user_groups", "create_user_group", "update_user_group", "delete_user_group"],
   },
   {

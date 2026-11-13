@@ -301,7 +301,7 @@ describe("validateGraph — accepted, then wrong at run time", () => {
       triggerSlug: "media_analyzed",
       knownFieldIds: new Set(["fldReal"]),
     }).errors.join(" ");
-    expect(errors).toContain("does not exist in this workspace");
+    expect(errors).toContain("does not exist in this Speak AI account");
   });
 
   it("refuses a positional step token once the graph branches", () => {

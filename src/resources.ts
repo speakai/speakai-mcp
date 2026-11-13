@@ -35,7 +35,7 @@ export function registerResources(server: McpServer, client?: AxiosInstance): vo
   server.resource(
     "media-library",
     "speakai://media",
-    { description: "List of all media files in your Speak AI workspace" },
+    { description: "List of all media files in your Speak AI account" },
     async () => {
       try {
         const result = await api.get("/v1/media", {
@@ -51,7 +51,7 @@ export function registerResources(server: McpServer, client?: AxiosInstance): vo
   server.resource(
     "folders",
     "speakai://folders",
-    { description: "List of all folders in your Speak AI workspace" },
+    { description: "List of all folders in your Speak AI account" },
     async () => {
       try {
         const result = await api.get("/v1/folder", {

@@ -204,7 +204,7 @@ the full week.
 
 **Permissions and scope.** A 401 or 403 means the key or the OAuth connection is bad.
 Rotate the key at https://app.speakai.co/developers/apikeys and reconnect. A 404 on a
-media id or folder id usually means the id belongs to a different workspace or was
+media id or folder id usually means the id belongs to a different Speak AI account or was
 deleted, not that the tool is broken. Some meetings may be in folders the connected
 user cannot read, so a digest can be legitimately incomplete.
 
