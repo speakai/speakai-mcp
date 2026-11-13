@@ -754,7 +754,7 @@ A test run sends each enabled scenario's scripted user messages to the agent as 
 
 | Tool | Description |
 |---|---|
-| `get_billing_status` | Plan, remaining credits, renewal or trial end, pending payment, and upgrade or top-up checkout links (checkout links only for people who can manage billing) |
+| `get_billing_status` | Plan, remaining credits, renewal or trial end, and whether a payment is pending |
 
 </details>
 
@@ -1041,7 +1041,7 @@ All tool errors follow this structure:
 | `404` | Resource not found |
 | `429` | Rate limit exceeded |
 
-When the account cannot pay for the work, the tool error leads with the API's `userMessage`, followed by a `Continue here: <checkoutUrl>` line when there is one. `structuredContent.data` carries the full reply: `reason` (`OUT_OF_CREDITS`, `TRIAL_ENDED`, `PAYMENT_METHOD_REQUIRED`, `PLAN_FEATURE` or `PENDING_PAYMENT`; left out for public visitors), `billing` (`plan`: `free_trial`, `pay_as_you_go`, `pro` or `custom`; `creditsRemaining`, `creditsNeeded`, `trialEndsAt`, `canManageBilling`), `options` (`pro` carries only `id`, `recommended` and `url`, with no price; `top_up` carries `id`, `recommended`, `amount`, `currency`, `credits`, `autoReload` and `url`) and `agentNotes`. `checkoutUrl` is left out when the person cannot manage billing. Show the message to the user and retry only after they confirm. Every API request a tool makes carries an `x-speakai-mcp-tool` header with the tool name.
+When the account cannot cover the work, the tool error leads with the API's `userMessage`: why the call was refused and where plans are described. `structuredContent.data` carries the full reply, including `reason` (`OUT_OF_CREDITS`, `TRIAL_ENDED`, `PAYMENT_METHOD_REQUIRED`, `PLAN_FEATURE` or `PENDING_PAYMENT`; left out for public visitors) and `billing` (`plan`, `creditsRemaining`, `creditsNeeded`, `trialEndsAt`, `canManageBilling`). Show the message to the user and retry only after they confirm. Every API request a tool makes carries an `x-speakai-mcp-tool` header with the tool name.
 
 ### Development
 
