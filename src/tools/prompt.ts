@@ -19,14 +19,18 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
     "To continue a conversation, pass the promptId from a previous response.",
     "Returns a promptId — save it to continue the conversation with follow-up questions.",
-    "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
-    "reading the transcript alone; call get_analysis_quote first to check the file can be analysed that way.",
+    ...(answerOnly
+      ? []
+      : [
+          "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
+          "reading the transcript alone; call check_analysis_eligibility first to check the file can be analysed that way.",
+        ]),
     answerOnly
       ? "The assistant answers only from the person's Speak recordings: it can search them and chart what it finds, and it does not take actions in other apps."
       : "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
   ].join(" ");
 
-  const askAiChatInputSchema = {
+  const fullAskAiChatInputSchema = {
     prompt: z.string().min(1).describe("The question or prompt to ask about the media"),
     mediaIds: z
       .array(z.string())
@@ -94,6 +98,13 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       .optional()
       .describe("'audio' lets the model hear tone, pacing and delivery; 'video' also lets it see what is on screen. Omit for transcript-only, which is the default. 'transcript' is not a valid value here — omitting the field IS transcript-only."),
   };
+
+  // The hosted server answers from transcripts only, so it leaves out the audio and video fields and the eligibility check.
+  const { analysisMediaId: _hostedSkipsMedia, analysisInput: _hostedSkipsInput, ...hostedAskAiChatInputSchema } =
+    fullAskAiChatInputSchema;
+  const askAiChatInputSchema = answerOnly
+    ? (hostedAskAiChatInputSchema as typeof fullAskAiChatInputSchema)
+    : fullAskAiChatInputSchema;
 
   const askAiChatAnnotations = {
     title: "Ask AI Chat",
@@ -210,8 +221,8 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     askAiChatHandler
   );
 
-  if (aiChat) registerSpeakTool(server,
-    "get_analysis_quote",
+  if (aiChat && !answerOnly) registerSpeakTool(server,
+    "check_analysis_eligibility",
     "Check whether a media file can be analysed as audio or video before running ask_ai_chat with analysisInput. " +
       "Returns whether the file is eligible and, when it is not, a plain-English reason. An unavailable file is a normal result here, not an error. " +
       "This is the only check that accounts for both the account's opt-in and the server-wide switch, so call it before an audio or video run.",

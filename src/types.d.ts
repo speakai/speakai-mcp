@@ -6,7 +6,7 @@ export interface RegisterOptions {
   localFileAccess?: boolean;
   /** Register the voice test-run tools (start, pause, resume, cancel, results). Defaults to true; pass false to leave them off. */
   voiceTestRuns?: boolean;
-  /** Register ask_ai_chat, retry_ai_chat and get_analysis_quote. Speak's assistant behind them can call other tools. */
+  /** Register ask_ai_chat, retry_ai_chat and check_analysis_eligibility. Speak's assistant behind them can call other tools. */
   aiChat?: boolean;
   /** Register the same AI Chat tools with answer-only descriptions. For the hosted server: Speak runs chat from AI-assistant connections with read tools over the person's recordings only, and no actions in other apps. */
   aiChatAnswerOnly?: boolean;

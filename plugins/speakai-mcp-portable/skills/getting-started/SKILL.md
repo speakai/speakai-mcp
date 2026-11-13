@@ -2,7 +2,7 @@
 name: getting-started
 description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the MCP tools and their categories, the resources, the built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
 metadata:
-  server-version: "1.43.0"
+  server-version: "1.43.3"
   openclaw-homepage: "https://docs.speakai.co/mcp"
   openclaw-emoji: "🎙️"
 ---
@@ -77,7 +77,7 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 | Category id | Tools | What it is for | Start with |
 |---|---|---|---|
 | `media` | 19 | Upload, transcripts, captions, insights, status, metadata, speakers, thumbnails | `list_media`, `get_transcript`, `get_media_insights` |
-| `magic-prompt` | 12 | Chat history and prompt tools. AI Chat itself is available only on the local stdio server (`npx @speakai/mcp-server`) | `get_chat_history`, `list_prompts`, `export_chat_answer` |
+| `magic-prompt` | 12 | AI Chat, chat history and prompt tools. On the hosted server AI Chat answers only from the person's recordings | `get_chat_history`, `list_prompts`, `export_chat_answer` |
 | `search-analytics` | 3 | Deep search, workspace statistics, language list | `search_media`, `get_media_statistics` |
 | `folders-views` | 11 | Folders and saved views | `list_folders`, `create_folder`, `create_folder_view` |
 | `recorders-surveys` | 10 | Async voice and video surveys | `create_recorder`, `generate_recorder_url`, `get_recorder_recordings` |

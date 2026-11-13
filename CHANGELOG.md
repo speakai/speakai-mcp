@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.43.3 (2026-11-13)
+
+- fix(chat): leave check_analysis_eligibility off the hosted server
+
+## v1.43.2 (2026-11-13)
+
+- fix(chat): rename get_analysis_quote to check_analysis_eligibility
+
+## v1.43.1 (2026-11-13)
+
+- fix(plugin): keep the OpenAI package in line with the hosted tool set
+
 ## v1.43.0 (2026-11-13)
 
 - feat(tools): file list card in the chat
