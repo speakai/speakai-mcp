@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "speakai-mcp",
-  "version": "1.41.4",
+  "version": "1.43.0",
   "description": "Capture meetings, search thousands of recordings, run async voice and video surveys, create clips, and automate workflows with Speak AI. Includes the Speak AI MCP tools, resources, prompts, and skills.",
   "author": {
     "name": "Speak AI",
@@ -108,7 +108,7 @@
         "demo_recording_url": "https://drive.google.com/file/d/1BOqI-OdeqII2QQkUolQFVeHqycgbuoBB/view?usp=sharing"
       },
       "publication": {
-        "release_notes": "Every operation the model can call is now its own tool with a description, input schema and annotations. AI Chat, which passed requests to Speak AI's own assistant and could call other tools, is no longer part of the hosted server, and the skills read transcripts and insights directly instead. Listing icons and logos now use the Speak AI wordmark, and REST calls authenticate with the API key alone."
+        "release_notes": "Adds get_billing_status, a read-only tool that shows the account's plan, remaining credits and renewal date, so the assistant can tell you before an upload or analysis would run past your credits. Every operation the model can call is still its own tool with a description, input schema and annotations, and AI Chat is still not part of the hosted server. The skills no longer hard-code tool counts."
       }
     }
   }

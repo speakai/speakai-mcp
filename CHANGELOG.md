@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.43.0 (2026-11-13)
+
+- feat(tools): file list card in the chat
+
+## v1.42.2 (2026-11-13)
+
+- fix(billing): get_billing_status describes billing without offers or links
+
+## v1.42.1 (2026-11-13)
+
+- fix(billing): get_billing_status says how Pro compares and when to retry
+
+## v1.42.0 (2026-11-13)
+
+- fix(tools): keep billing wording out of tool descriptions
+
 ## v1.41.4 (2026-11-11)
 
 - Maintenance release
