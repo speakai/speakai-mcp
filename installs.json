@@ -46,38 +46,33 @@
     {
       "id": "chatgpt",
       "title": "ChatGPT",
-      "tagline": "Web + desktop. Requires Developer Mode.",
+      "tagline": "Web + desktop. Install from ChatGPT's plugin directory.",
+      "installButton": {
+        "label": "Install in ChatGPT",
+        "url": "https://chatgpt.com/plugins/plugin_asdk_app_6ac2ff7ad9b481918e5eef0343cf3c7b"
+      },
       "steps": [
-        { "html": "Open ChatGPT → Settings → <strong>Apps &amp; Connectors</strong> → <strong>Advanced</strong>" },
-        { "html": "Turn on <strong>Developer Mode</strong> <em>(required while Speak AI isn't yet listed in ChatGPT's app store)</em>" },
-        {
-          "html": "Back on Apps &amp; Connectors, click <strong>Create</strong> and paste the URL above",
-          "image": "./assets/openai/1.connect.png",
-          "alt": "ChatGPT connect screen with Speak AI URL pasted"
-        },
-        {
-          "html": "For <strong>Authentication</strong>, choose <strong>OAuth</strong>, then click <strong>Connect</strong>",
-          "image": "./assets/openai/2.connect-continue.png",
-          "alt": "ChatGPT connect continue screen"
-        },
+        { "html": "Open <a href=\"https://chatgpt.com/plugins/plugin_asdk_app_6ac2ff7ad9b481918e5eef0343cf3c7b\" target=\"_blank\" rel=\"noopener\">Speak AI in ChatGPT</a> while signed in to ChatGPT" },
+        { "html": "Click <strong>Install plugin</strong>" },
         {
           "html": "ChatGPT opens a new tab to Speak AI — sign in (or click <strong>Confirm</strong> if already logged in) to authorize",
           "image": "./assets/openai/3.speak-auth.png",
           "alt": "Speak AI authorization screen"
         },
         {
-          "html": "Return to ChatGPT — Speak AI is now in your connector list",
+          "html": "Return to ChatGPT — Speak AI is now in your apps list",
           "image": "./assets/openai/4.connected.png",
           "alt": "Speak AI connected in ChatGPT"
         },
-        { "html": "<strong>Per-chat:</strong> open a chat, click the <strong>+</strong> / connector menu, enable Speak AI for that chat" }
+        { "html": "<strong>Per-chat:</strong> open a chat, click the <strong>+</strong> menu, enable Speak AI for that chat" }
       ],
       "troubleshoot": {
         "summary": "Trouble connecting?",
         "items": [
           "If the authorization tab lands on the plain Speak AI dashboard with no confirmation message, the authorization still went through — close that tab and return to ChatGPT.",
-          "If the <strong>Connect</strong> button keeps reopening the dashboard, fully close and reopen ChatGPT, then check Settings → Apps &amp; Connectors. Speak AI should already be listed there.",
-          "If a chat shows \"no actions available,\" confirm Developer Mode is still on and that Speak AI is enabled in the per-chat connector menu.",
+          "If the install keeps reopening the dashboard, fully close and reopen ChatGPT, then check Settings → Apps &amp; Connectors. Speak AI should already be listed there.",
+          "If a chat shows \"no actions available,\" confirm Speak AI is enabled in the per-chat <strong>+</strong> menu.",
+          "If you can't install plugins in your ChatGPT account, ask your ChatGPT admin to allow Speak AI, or add it as a custom connector instead: Settings → Apps &amp; Connectors → Advanced → turn on <strong>Developer Mode</strong>, click <strong>Create</strong>, paste the URL above and choose <strong>OAuth</strong>.",
           "Still stuck? Email <a href=\"mailto:success@speakai.co\">success@speakai.co</a>."
         ]
       }
