@@ -2,6 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool, ok, err } from "./_helpers.js";
+import type { RegisterOptions } from "./index.js";
+import { buildListMediaCard, mediaListCardResultMeta, mediaListCardToolMeta } from "../ui/media-list/card-data.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { MediaType, MediaState } from "@speakai/shared";
 import {
@@ -32,7 +34,7 @@ const MEDIA_ID_DESCRIPTION =
 /** Scopes a media name search to the name field; an unscoped search also scans every transcript. */
 export const toNameFilter = (text: string): string => (/^name:/i.test(text) ? text : `name:${text}`);
 
-export function register(server: McpServer, client?: AxiosInstance): void {
+export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
   // 1. Get signed upload URL
   registerSpeakTool(server, 
@@ -235,8 +237,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         queryParams.pageSize = params.pageSize ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
 
         const result = await api.get("/v1/media", { params: queryParams });
+        const cardMeta = options.cards ? mediaListCardResultMeta(buildListMediaCard(result.data)) : undefined;
         return {
           content: [{ type: "text", text: JSON.stringify(result.data) }],
+          ...(cardMeta ? { _meta: cardMeta } : {}),
         };
       } catch (err) {
         return {
@@ -244,7 +248,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           isError: true,
         };
       }
-    }
+    },
+    options.cards ? mediaListCardToolMeta : undefined
   );
 
   // 4. Get media insights

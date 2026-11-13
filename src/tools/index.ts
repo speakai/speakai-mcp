@@ -25,6 +25,7 @@ import * as voiceQuestions from "./voice-questions.js";
 import * as voiceIntelligence from "./voice-intelligence.js";
 import * as billing from "./billing.js";
 import { instrumentSpeakClient } from "../client.js";
+import { registerMediaListCard } from "../ui/media-list/index.js";
 import { setToolCallListener } from "./_helpers.js";
 
 export interface ToolCallEvent {
@@ -44,6 +45,7 @@ export interface RegisterOptions {
   automations?: boolean;
   voiceTestRunDetails?: boolean;
   onToolCall?: (event: ToolCallEvent) => void;
+  cards?: boolean;
 }
 
 type ToolModule = {
@@ -91,6 +93,8 @@ const modules: ToolModule[] = [
  *                  apply_voice_test_recommendation; the hosted server leaves it off. Set onToolCall to receive
  *                  one usage event per tool call (tool name, outcome, refusal reason, HTTP status, duration;
  *                  never arguments or results). Nothing is logged when it is not set.
+ *                  Set cards to register the file list card (ui://speak/media-list) and show it for
+ *                  list_media and search_media in chat apps that support MCP Apps.
  */
 export function registerAllTools(
   server: McpServer,
@@ -102,4 +106,5 @@ export function registerAllTools(
   for (const mod of modules) {
     mod.register(server, client, options);
   }
+  if (options.cards) registerMediaListCard(server);
 }

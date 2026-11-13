@@ -407,6 +407,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_API_KEY` | Yes | -- | Your Speak AI API key |
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
+| `SPEAK_MCP_CARDS` | No | -- | Set to `true` to show the file list card for list_media and search_media in chat apps that support MCP Apps |
 
 ### MCP Tools
 

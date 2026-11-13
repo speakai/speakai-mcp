@@ -89,7 +89,7 @@ if (isCliMode) {
             version: "1.0.0",
           });
 
-          registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
+          registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true, cards: process.env.SPEAK_MCP_CARDS === "true" });
           registerResources(server);
           registerPrompts(server);
 
