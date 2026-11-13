@@ -33,13 +33,13 @@ describe("MCP Server Smoke Tests", () => {
     server = new McpServer({ name: "speak-ai-test", version: "1.0.0" });
   });
 
-  it("registers all 189 MCP tools without errors", async () => {
+  it("registers all 190 MCP tools without errors", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
     expect(() => registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true })).not.toThrow();
 
     const tools = getRegisteredTools(server);
     const toolNames = Object.keys(tools);
-    expect(toolNames).toHaveLength(189);
+    expect(toolNames).toHaveLength(190);
   });
 
   it("leaves local-disk, AI Chat, automation and voice test-run detail tools off the hosted server", async () => {
@@ -66,7 +66,7 @@ describe("MCP Server Smoke Tests", () => {
     expect(toolNames).toContain("get_chat_history");
     expect(toolNames).toContain("create_webhook");
     expect(toolNames).toContain("start_voice_test_run");
-    expect(toolNames).toHaveLength(160);
+    expect(toolNames).toHaveLength(161);
   });
 
   it("leaves the voice test-run tools off when voiceTestRuns is false", async () => {
@@ -89,7 +89,7 @@ describe("MCP Server Smoke Tests", () => {
       expect(toolNames).not.toContain(runTool);
     }
     expect(toolNames).toContain("get_voice_test_suite");
-    expect(toolNames).toHaveLength(152);
+    expect(toolNames).toHaveLength(153);
   });
 
   it("declares every registerAllTools option in the published types", () => {

@@ -173,6 +173,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
 
   // users / team management
   "list_users",
+  "get_billing_status",
   "list_user_groups",
   "create_user_group",
   "update_user_group",

@@ -13,7 +13,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   const askAiChatDescription = [
     "Ask an AI-powered question about your media using Speak AI's AI Chat.",
-    "Supports querying a single file, multiple files, entire folders, or your whole workspace.",
+    "Supports querying a single file, multiple files, entire folders, or your whole account.",
     "Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media.",
     "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
     "To continue a conversation, pass the promptId from a previous response.",
@@ -212,7 +212,8 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     "get_analysis_quote",
     "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. " +
       "Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason — an unavailable file is a normal result here, not an error. " +
-      "This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
+      "This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run. " +
+      "Compare credits with the remaining balance from get_billing_status to warn the user before a run would use up their credits.",
     {
       mediaId: z.string().min(1).describe("Media file to price"),
       analysisInput: z

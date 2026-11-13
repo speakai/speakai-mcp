@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 189,
+  "totalTools": 190,
   "categories": [
     {
       "id": "media",
@@ -191,7 +191,7 @@
         {
           "name": "ask_ai_chat",
           "title": "Ask AI Chat",
-          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone. That is a premium feature and costs credits per hour of media — call get_analysis_quote first to check eligibility and price. Each question is charged to the account's chat usage. The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
+          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole account. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone. That is a premium feature and costs credits per hour of media — call get_analysis_quote first to check eligibility and price. Each question is charged to the account's chat usage. The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -299,7 +299,7 @@
         {
           "name": "get_analysis_quote",
           "title": "Get Analysis Quote",
-          "description": "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason — an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
+          "description": "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason — an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run. Compare credits with the remaining balance from get_billing_status to warn the user before a run would use up their credits.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -1844,6 +1844,23 @@
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "billing",
+      "name": "Billing",
+      "iconKey": "billing",
+      "shortDescription": "Check the account's plan and remaining credits, with upgrade and top-up links.",
+      "tools": [
+        {
+          "name": "get_billing_status",
+          "title": "Get Billing Status",
+          "description": "Show the account's billing status: plan (free_trial, pay_as_you_go, pro or custom), creditsRemaining, renewsAt, trialEndsAt, pendingPayment, canManageBilling and manageUrl, plus options: 'pro' has only id, recommended and a checkout url (no price), and 'top_up' has id, recommended, amount, currency, credits, autoReload and a checkout url. checkoutUrl links to the recommended option and is left out when the current user cannot manage billing; then ask them to contact whoever manages billing on the account. Read-only and free to call. Use it to warn the user before an upload, analysis or chat would run past the remaining credits, or after a tool reports that the account is out of credits. Share the links with the user and let them decide; never complete a purchase for them.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
           "openWorldHint": false
         }
       ]

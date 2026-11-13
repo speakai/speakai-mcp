@@ -102,8 +102,8 @@ describe("client.ts", () => {
       // Import triggers module-level code that registers interceptors
       await import("../src/client.js");
 
-      // The request interceptor should have been registered
-      expect(mockRequestInterceptors.length).toBe(1);
+      // Auth interceptor first, then the tool-header one from instrumentSpeakClient
+      expect(mockRequestInterceptors.length).toBe(2);
 
       // Invoke the request interceptor — since there's no accessToken,
       // it will call authenticate()
@@ -233,7 +233,7 @@ describe("client.ts", () => {
       // Now simulate a 401 in the response interceptor, which resets tokenExpiresAt to 0
       // and calls ensureAuthenticated -> since we have both tokens, it calls refreshAccessToken
       // refreshAccessToken fails -> falls back to authenticate
-      expect(mockResponseInterceptors.length).toBe(1);
+      expect(mockResponseInterceptors.length).toBe(2);
 
       // Simulate the refresh failing, then authenticate succeeding
       mockPost

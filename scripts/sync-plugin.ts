@@ -135,7 +135,6 @@ const RULES: Rule[] = [
 
   jsonRule(`${PORTABLE_PLUGIN}/plugin.json`, (d) => {
     d.version = version;
-    d.description = d.description.replace(/\b\d+ MCP tools\b/, `${toolCount} MCP tools`);
   }),
 
   jsonRule(`${CLAUDE_PLUGIN}/.claude-plugin/plugin.json`, (d) => {
@@ -174,9 +173,7 @@ const RULES: Rule[] = [
   {
     file: "README.md",
     edit: (t) => {
-      let out = t
-        .replace(/### MCP Tools \(\d+\)/, `### MCP Tools (${toolCount})`)
-        .replace(/\bships \d+ tools\b/, `ships ${toolCount} tools`);
+      let out = t;
 
       // Each section states the number of rows in its own table.
       for (const section of readmeSections(out)) {
@@ -226,18 +223,10 @@ const RULES: Rule[] = [
     generated: true,
   },
 
-  {
-    file: "llms.txt",
-    edit: (t) =>
-      t
-        .replace(/\bexposes \d+ tools\b/, `exposes ${toolCount} tools`)
-        .replace(/\baccess to \d+ tools\b/, `access to ${toolCount} tools`),
-  },
-
 ];
 
-// Skills state the total and the server version. Per-category counts inside a
-// skill are validated against the registry by the audit below.
+// Skills state the server version. Tool and category counts are not written
+// anywhere by hand; the audit below rejects them.
 // The Claude folder holds the source skills; the portable folder gets generated copies.
 const SKILLS_DIR = `${CLAUDE_PLUGIN}/skills`;
 const PORTABLE_SKILLS_DIR = `${PORTABLE_PLUGIN}/skills`;
@@ -247,8 +236,6 @@ const skillNames = readdirSync(path.join(ROOT, SKILLS_DIR), { withFileTypes: tru
 
 const syncSkill = (t: string) =>
   t
-    .replace(/\b\d+ MCP tools\b/g, `${toolCount} MCP tools`)
-    .replace(/\b\d+ tools across\b/g, `${toolCount} tools across`)
     // The server version in frontmatter metadata, under either key spelling.
     .replace(/^(\s+(?:server-)?version:\s*")[\d.]+(")$/gm, `$1${version}$2`)
     // Pinned installs in prose and config samples.
@@ -301,14 +288,16 @@ export function syncDerivedSurfaces(write: boolean) {
     .map((e) => e.name);
 
   /**
- * Catches counts in phrasings no rule covers. Per-category counts in README
- * `<summary>` rows are excluded, since the rule above derives those.
+ * tools.json is the only place that states how many tools there are. Hand-written
+ * text must not carry a count of tools, categories, resources, prompts or CLI
+ * commands, because it goes stale with every release. README `<summary>` rows are excluded, since the rule above derives those.
  */
   const AUDIT_FILES = [
   "README.md",
   "llms.txt",
   `${CLAUDE_PLUGIN}/README.md`,
   `${PORTABLE_PLUGIN}/README.md`,
+  `${PORTABLE_PLUGIN}/plugin.json`,
   ...skillNames.map((s) => `${SKILLS_DIR}/${s}/SKILL.md`),
   ];
   const stale: string[] = [];
@@ -320,28 +309,12 @@ export function syncDerivedSurfaces(write: boolean) {
   } catch {
     continue;
   }
-  // Skills cite per-category counts as `category-id (N tools)`, and prose wraps,
-  // so the pair can straddle a line break. Validate those against the registry
-  // over the whole text, then blank them out so the per-line total check below
-  // does not mistake a category count for a stale total.
-  text = text.replace(/\b([a-z][a-z-]+)\s+\((\d+) tools?\)/g, (whole, id, count) => {
-    const category = toolsJson.categories.find((c: { id: string }) => c.id === id);
-    if (!category) return whole;
-    if (category.tools.length !== Number(count)) {
-      stale.push(
-        `  ${file}  "${whole.replace(/\s+/g, " ")}" should say ${category.tools.length} tools`,
-      );
-    }
-    return whole.replace(/\S/g, " ");
-  });
-
   text.split("\n").forEach((line, i) => {
     if (line.includes("<summary>")) return;
-    // "N tools", "N MCP tools" and the singular all state the total.
-    for (const m of line.matchAll(/\b(\d+) (?:MCP )?tools?\b/g)) {
-      if (Number(m[1]) !== toolCount) {
-        stale.push(`  ${file}:${i + 1}  "${m[0]}" should be "${toolCount} tools"`);
-      }
+    const counts =
+      /\b\d+ (?:Speak AI |MCP |built-in )?(?:tools?|categories|resources?|prompts?|commands?)\b|^#+ .*\(\d+(?: \w+)?\)\s*$/g;
+    for (const m of line.matchAll(counts)) {
+      stale.push(`  ${file}:${i + 1}  "${m[0]}" states a count; drop the number (tools.json is the source of truth)`);
     }
   });
   }
