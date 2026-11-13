@@ -30,7 +30,7 @@ If you are an AI assistant (Claude, ChatGPT, etc.) helping a Speak AI customer i
    Per-client phrasing:
    - **Claude.ai web:** Settings → Connectors → Add custom connector → paste `https://api.speakai.co/v1/mcp` → click Add → sign in to Speak AI in the popup and click Allow.
    - **Claude Desktop:** Settings → Connectors → Add custom connector → paste URL → click Add → sign in to Speak AI in the popup and click Allow. (Bearer alternative: expand "Custom headers" before clicking Add and enter `Authorization` = `Bearer <key>`.)
-   - **ChatGPT Developer Mode:** Settings → Connectors → Advanced → toggle Developer Mode ON → Create → paste URL → choose OAuth → sign in to Speak AI and click Allow → enable the connector per-chat from the chat's connector menu.
+   - **ChatGPT:** open https://chatgpt.com/plugins/plugin_asdk_app_6ac2ff7ad9b481918e5eef0343cf3c7b → click Install plugin → sign in to Speak AI and click Allow → enable Speak AI per-chat from the chat's + menu. If the user's ChatGPT account cannot install plugins, fall back to Developer Mode: Settings → Apps & Connectors → Advanced → toggle Developer Mode ON → Create → paste URL → choose OAuth.
    - **Cursor / VS Code:** the deep-link buttons in the README register the editor via Dynamic Client Registration and open the consent popup. The user clicks Allow and is done.
    - **Claude Code (CLI):** OAuth (loopback) works, but the fastest path is `claude mcp add --transport http speakai https://api.speakai.co/v1/mcp --header "Authorization: Bearer $SPEAKAI_KEY"`.
    - **ChatGPT (API / Responses, for developers):** include `{type:"mcp", server_url:"https://api.speakai.co/v1/mcp", authorization:"Bearer <key>"}` in the `tools` array.
