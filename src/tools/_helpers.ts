@@ -32,8 +32,8 @@ export const SHARED_DASHBOARD_CACHE_NOTE =
   "any dashboard update refreshes it at once.";
 
 export const CREDIT_REFUSAL_NOTE =
-  "If the account is out of credits the result explains why and how to continue; show userMessage to the user " +
-  "and retry only after they confirm. get_billing_status shows the remaining credits, so you can warn the user before a large job.";
+  "If the account cannot cover the work, the result explains why and how to continue; show userMessage to the user " +
+  "and retry only after they confirm. get_billing_status shows what the account has left, so you can warn the user before a large job.";
 
 type ToolResultContent =
   | { type: "text"; text: string }
@@ -96,22 +96,22 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
   description: string,
   inputSchema: InputSchema,
   annotations: SpeakToolAnnotations,
-  handler: ToolCallback<InputSchema>
+  handler: (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) => ToolResult | Promise<ToolResult>
 ): RegisteredTool {
-  const { title, ...toolAnnotations } = annotations;
-
-  return server.registerTool(
+  // The SDK's registerTool and ToolCallback generics compare zod 3 and zod 4 shapes per tool and run tsc out of memory.
+  const registerTool = server.registerTool.bind(server) as (name: string, config: object, cb: unknown) => RegisteredTool;
+  return registerTool(
     name,
     {
-      title,
+      title: annotations.title,
       description,
       inputSchema,
       outputSchema: passthroughOutputSchema,
-      annotations: toolAnnotations,
+      annotations,
     },
-    (async (...args: Parameters<ToolCallback<InputSchema>>) =>
+    async (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) =>
       runToolCall(name, async (context) => {
-        const result = await handler(...args);
+        const result = await handler(args, extra);
         if (result.isError && context.refusal) {
           return refusalResult(context.refusal);
         }
@@ -120,7 +120,7 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
         }
 
         const textContent = result.content?.find(
-          (item) => item.type === "text" && typeof item.text === "string"
+          (item): item is Extract<ToolResultContent, { type: "text" }> => item.type === "text"
         );
         if (!textContent) {
           return { ...result, structuredContent: { data: null } };
@@ -132,9 +132,10 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
         } catch {
           return { ...result, structuredContent: { data: textContent.text } };
         }
+        // Covers a client that bypassed instrumentSpeakClient and passed a refusal through as success.
         const refusal = getApiRefusal(data);
         if (refusal) return refusalResult(refusal);
         return { ...result, structuredContent: { data } };
-      })) as ToolCallback<InputSchema>
+      })
   );
 }

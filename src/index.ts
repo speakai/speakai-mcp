@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Public API — for use as a library (e.g., from speak-server)
+// Public API — for use as a library (e.g., from the API server)
 export { registerAllTools } from "./tools/index.js";
 export type { RegisterOptions } from "./tools/index.js";
 export { registerResources } from "./resources.js";
@@ -89,7 +89,7 @@ if (isCliMode) {
             version: "1.0.0",
           });
 
-          registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
+          registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
           registerResources(server);
           registerPrompts(server);
 

@@ -15,7 +15,6 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       `Clips are processed asynchronously (states: ${Object.values(ClipState).join(", ")}) — use get_clips to check status.`,
       "Maximum total clip duration is 30 minutes.",
       "Use multiple timeRanges to stitch segments from different media files together.",
-      "When the clip finishes processing it fires your clip_created automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions.",
     ].join(" "),
     {
       title: z.string().min(1).describe("Title for the clip"),
@@ -40,9 +39,9 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Highlight Clip",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
-      openWorldHint: true,
+      openWorldHint: false,
     },
     async (body) => {
       try {

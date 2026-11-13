@@ -246,7 +246,7 @@ speakClient.interceptors.response.use(
 instrumentSpeakClient(speakClient);
 
 /**
- * Create a client with pre-existing auth — used when embedded in speak-server.
+ * Create a client with pre-existing auth — used when embedded in the API server.
  */
 export function createSpeakClient(options: {
   baseUrl: string;

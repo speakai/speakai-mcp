@@ -5,7 +5,7 @@ import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 
 // Valid recorder question answer types. Source of truth: RecorderAnswerType in
-// @speakai/shared (see speak-server @speak-common/types/enum/recorder.ts).
+// @speakai/shared (the API server uses the same enum).
 // NOTE: there is no free-text / rating / number type — choice types cover input.
 const RECORDER_ANSWER_TYPES = [
   "single",
@@ -103,7 +103,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Create Recorder",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true,
     },
@@ -164,7 +164,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     {
       title: "Clone Recorder",
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true,
     },

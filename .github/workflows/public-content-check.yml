@@ -1,0 +1,43 @@
+# A check that keeps internal references and tooling files out of this repository.
+# Copy to .github/workflows/public-content-check.yml, with the script at
+# .github/scripts/public-content-check.py. It needs no secret.
+# On a pull request it checks the added lines, the title, the description, the commit messages,
+# the names of added files and the files npm would publish. On a push to the default branch it
+# checks the pushed commits the same way; a push cannot be undone, so a red run there means a
+# cleanup by hand.
+# Waive one finding with a line in the pull request description: public-ok: <id> <reason>.
+# Files meant to be public go in .github/public-content-allow.txt, one glob per line.
+name: public-content-check
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  push:
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  check:
+    if: github.event_name == 'pull_request' || github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2, pinned to SHA (supply-chain)
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # A pull request runs the base branch's copy of the script, so it cannot loosen its own check.
+      - name: Check for internal references and tooling files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          script=.github/scripts/public-content-check.py
+          if [ -n "$BASE_REF" ]; then
+            if git cat-file -e "origin/$BASE_REF:$script" 2>/dev/null; then
+              git show "origin/$BASE_REF:$script" > "$RUNNER_TEMP/public-content-check.py"
+              script="$RUNNER_TEMP/public-content-check.py"
+            else
+              echo "::notice::The base branch has no copy of the check yet, so this pull request's copy runs."
+            fi
+          fi
+          python3 "$script"

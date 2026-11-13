@@ -65,6 +65,12 @@ app. Codex reads `.codex-plugin/plugin.json` through the repository's
 
 Use the Claude package in `../speakai-mcp/`; its README has the install steps.
 
+### Other AI assistants
+
+The same Speak AI server also works in ChatGPT, Claude, Cursor, VS Code, Windsurf, Muse,
+OpenClaw and any client that supports remote MCP servers. Setup guides for each are at
+<https://docs.speakai.co/mcp/>.
+
 ## Skills
 
 | Skill | What it covers |

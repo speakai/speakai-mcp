@@ -43,7 +43,7 @@ const stub = {
     return {} as any;
   },
 } as any;
-registerAllTools(stub, {} as any, { localFileAccess: true, voiceTestRuns: true });
+registerAllTools(stub, {} as any, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const toolsPath = path.join(root, "tools.json");
@@ -188,13 +188,7 @@ const newCategories = [
     name: "Users & teams",
     iconKey: "users-team",
     shortDescription: "List workspace members and manage user groups.",
-    tools: [
-      "list_users",
-      "list_user_groups",
-      "create_user_group",
-      "update_user_group",
-      "delete_user_group",
-    ],
+    tools: ["list_users", "list_user_groups", "create_user_group", "update_user_group", "delete_user_group"],
   },
   {
     id: "dashboards",

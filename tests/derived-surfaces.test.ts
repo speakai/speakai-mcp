@@ -33,24 +33,18 @@ describe("skill auth examples", () => {
     .map((e) => path.join(SKILLS_DIR, e.name, "SKILL.md"));
 
   it.each(skillFiles.map((f) => [path.basename(path.dirname(f)), f]))(
-    "%s uses Bearer only against the MCP endpoint",
+    "%s authenticates REST calls with the API key alone",
     (_name, file) => {
-      const lines = readFileSync(file, "utf8").split("\n");
-      const offenders: string[] = [];
-
-      lines.forEach((line, i) => {
-        if (!/Authorization:\s*Bearer/i.test(line)) return;
-        // A curl header sits a line or two below its URL, so look back a little.
-        const context = lines.slice(Math.max(0, i - 3), i + 1).join("\n");
-        if (!context.includes("/v1/mcp")) {
-          offenders.push(`  line ${i + 1}: ${line.trim()}`);
-        }
-      });
+      const offenders = readFileSync(file, "utf8")
+        .split("\n")
+        .flatMap((line, i) =>
+          /x-access-token|\/v1\/auth\/(accessToken|refreshToken)/.test(line) ? [`  line ${i + 1}: ${line.trim()}`] : [],
+        );
 
       expect(
         offenders,
-        `\nBearer is only valid against https://api.speakai.co/v1/mcp.\n` +
-          `The REST API takes x-speakai-key and x-access-token.\n` +
+        `\nThe API accepts the API key alone, in x-speakai-key or Authorization: Bearer.\n` +
+          `Skills must not send agents through the old access-token exchange.\n` +
           offenders.join("\n") +
           "\n",
       ).toEqual([]);

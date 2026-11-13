@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { readFileSync } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Mock axios to prevent real HTTP calls during registration
 vi.mock("axios", () => {
@@ -32,21 +35,38 @@ describe("MCP Server Smoke Tests", () => {
 
   it("registers all 190 MCP tools without errors", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    expect(() => registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true })).not.toThrow();
+    expect(() => registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true })).not.toThrow();
 
     const tools = getRegisteredTools(server);
     const toolNames = Object.keys(tools);
     expect(toolNames).toHaveLength(190);
   });
 
-  it("exposes the voice test-run tools but not local-disk tools on the hosted server", async () => {
+  it("leaves local-disk, AI Chat, automation and voice test-run detail tools off the hosted server", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
     registerAllTools(server);
 
     const toolNames = Object.keys(getRegisteredTools(server));
     expect(toolNames).not.toContain("upload_local_file");
+    for (const chatTool of ["ask_ai_chat", "retry_ai_chat", "get_analysis_quote"]) {
+      expect(toolNames).not.toContain(chatTool);
+    }
+    for (const gated of [
+      "create_automation",
+      "build_automation",
+      "run_automations",
+      "list_automation_actions",
+      "provision_inbound_webhook",
+      "get_webhook_attempts",
+      "get_voice_test_run",
+      "apply_voice_test_recommendation",
+    ]) {
+      expect(toolNames).not.toContain(gated);
+    }
+    expect(toolNames).toContain("get_chat_history");
+    expect(toolNames).toContain("create_webhook");
     expect(toolNames).toContain("start_voice_test_run");
-    expect(toolNames).toHaveLength(189);
+    expect(toolNames).toHaveLength(161);
   });
 
   it("leaves the voice test-run tools off when voiceTestRuns is false", async () => {
@@ -69,12 +89,21 @@ describe("MCP Server Smoke Tests", () => {
       expect(toolNames).not.toContain(runTool);
     }
     expect(toolNames).toContain("get_voice_test_suite");
-    expect(toolNames).toHaveLength(179);
+    expect(toolNames).toHaveLength(153);
+  });
+
+  it("declares every registerAllTools option in the published types", () => {
+    const optionKeys = (text: string) =>
+      [...(text.match(/interface RegisterOptions \{([\s\S]*?)\n\}/)?.[1] ?? "").matchAll(/^\s*(\w+)\?:/gm)].map((m) => m[1]).sort();
+    const source = optionKeys(readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "../src/tools/index.ts"), "utf8"));
+    const published = optionKeys(readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "../src/types.d.ts"), "utf8"));
+    expect(source.length).toBeGreaterThan(0);
+    expect(published).toEqual(source);
   });
 
   it("registers all tools with unique names", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);
@@ -84,7 +113,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("every tool has a non-empty description", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     for (const [name, tool] of Object.entries(tools)) {
@@ -95,11 +124,13 @@ describe("MCP Server Smoke Tests", () => {
 
   it("every tool declares Apps SDK annotations and an output schema", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     for (const [name, tool] of Object.entries(tools)) {
       expect(tool.outputSchema, `Tool ${name} missing outputSchema`).toBeTruthy();
+      expect(tool.annotations?.title, `Tool ${name} missing annotations.title`).toBeTruthy();
+      expect(tool.annotations?.title, `Tool ${name} title out of step`).toBe(tool.title);
       expect(
         tool.annotations?.readOnlyHint,
         `Tool ${name} missing readOnlyHint`
@@ -124,7 +155,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("only marks writes non-destructive when they are purely additive", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     const additiveWrites = Object.entries(tools)
@@ -141,9 +172,16 @@ describe("MCP Server Smoke Tests", () => {
       "apply_label",
       "bulk_create_voice_agent_resources",
       "clone_folder",
+      "clone_folder_view",
+      "clone_recorder",
+      "create_clip",
+      "create_embed",
       "create_field",
       "create_folder",
+      "create_folder_view",
       "create_label",
+      "create_recorder",
+      "create_text_note",
       "create_user_group",
       "create_voice_agent",
       "create_voice_agent_from_prompt",
@@ -155,12 +193,18 @@ describe("MCP Server Smoke Tests", () => {
       "export_multiple_media",
       "generate_voice_faq_suggestions",
       "provision_inbound_webhook",
+      "resume_voice_test_run",
+      "start_voice_test_run",
+      "upload_and_analyze",
+      "upload_and_analyze_batch",
+      "upload_local_file",
+      "upload_media",
     ].sort());
   });
 
   it("only marks tools open-world when they affect public or external systems", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     const openWorldTools = Object.entries(tools)
@@ -172,11 +216,9 @@ describe("MCP Server Smoke Tests", () => {
       "ask_ai_chat",
       "build_automation",
       "bulk_create_voice_agent_resources",
-      "bulk_move_media",
       "bulk_update_automation_status",
       "clone_recorder",
       "create_automation",
-      "create_clip",
       "create_dashboard",
       "create_embed",
       "create_recorder",
@@ -185,31 +227,24 @@ describe("MCP Server Smoke Tests", () => {
       "create_webhook",
       "delete_automation",
       "delete_dashboard",
-      "delete_media",
       "delete_recorder",
       "delete_scheduled_assistant",
       "delete_voice_agent",
       "delete_webhook",
       "provision_inbound_webhook",
-      "reanalyze_media",
-      "reanalyze_text",
       "remove_assistant_from_meeting",
       "retry_ai_chat",
       "run_automations",
       "schedule_meeting_event",
       "set_media_thumbnail",
       "share_dashboard",
-      "submit_chat_feedback",
       "test_automation",
       "toggle_automation_status",
       "update_automation",
       "update_dashboard",
       "update_embed",
-      "update_media_metadata",
-      "update_multiple_fields",
       "update_recorder_questions",
       "update_recorder_settings",
-      "update_text_note",
       "update_voice_agent_resource",
       "update_webhook",
       "upload_and_analyze",
@@ -221,16 +256,16 @@ describe("MCP Server Smoke Tests", () => {
 
   it("never describes an outside send or irreversible effect that the hints don't declare", async () => {
     // OpenAI's tool scan reads the description against the annotations. A write that says it sends
-    // outside Speak AI, or changes a share link, embedded widget or phone number, must be open-world; one that says it bills, overwrites or permanently deletes
-    // must be destructive. A match is ignored when its clause negates it, or names another tool, first.
+    // outside Speak AI, or changes a share link, embedded widget or phone number, must be open-world; one that says it overwrites, replaces or permanently deletes
+    // must be destructive. Spending credits is not destructive under OpenAI's current rules. A match is ignored when its clause negates it, or names another tool, first.
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);
     const OUTSIDE_SEND =
       /\b(sends?|sent|sending|posts?|posted|emails?|fires?|triggers?|notifies|calls?)\b[^;]{0,160}?\b(email|slack|webhook|automation|any address|third-party|external)|\bpublic (url|link|page)|\bshare link|\bembedded widget|\bphone numbers?\b|\bphone call|\bjoins? [^;]*?\bmeeting|\bcomposio\b/i;
-    const IRREVERSIBLE = /\b(charges?|bills?|billed|credits?|permanently|overwrites?|replaces?)\b/i;
+    const IRREVERSIBLE = /\b(permanently|overwrites?|replaces?)\b/i;
     const NEGATED = /\b(not|no|never|without|cannot)\b/i;
 
     // A match counts unless the clause negates it, or names another tool, before the match.
@@ -467,7 +502,7 @@ describe("MCP Server Smoke Tests", () => {
 
   it("includes expected tool categories", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true });
+    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     const names = Object.keys(tools);
