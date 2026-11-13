@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import type { RegisterOptions, ToolCallEvent } from "../src/tools/index.js";
 
 // Create a mock axios instance that tracks calls

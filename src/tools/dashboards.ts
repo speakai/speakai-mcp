@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import {
@@ -65,7 +65,7 @@ const widgetInputSchema = z.object({
     ),
   title: z.string().min(1).max(40).optional().describe("Widget title, max 40 chars (defaults to a per-type label)"),
   config: z
-    .record(z.unknown())
+    .record(z.string(), z.unknown())
     .optional()
     .describe(
       "Per-type config (STRICT — unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + " +
@@ -76,7 +76,7 @@ const widgetInputSchema = z.object({
         "Omit for a sensible valid default (except field-distribution, which needs fieldName).",
     ),
   binding: z
-    .record(z.unknown())
+    .record(z.string(), z.unknown())
     .optional()
     .describe(
       "Per-widget scope override: { source?, dateRange?: {preset}, filter? }. Omit any key to inherit the dashboard's value.",

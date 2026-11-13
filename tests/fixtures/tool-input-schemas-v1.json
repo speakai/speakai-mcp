@@ -1,0 +1,7633 @@
+{
+  "get_signed_upload_url": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "filename": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"audio\"",
+          "\"video\""
+        ]
+      },
+      "mimeType": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "filename"
+    ]
+  },
+  "upload_media": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "url": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"audio\"",
+          "\"video\""
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "sourceLanguage": {
+        "type": [
+          "string"
+        ]
+      },
+      "tags": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "callbackUrl": {
+        "type": [
+          "string"
+        ]
+      },
+      "fields": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string"
+              ]
+            },
+            "value": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "value"
+          ]
+        }
+      }
+    },
+    "required": [
+      "url"
+    ]
+  },
+  "list_media": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"audio\"",
+          "\"text\"",
+          "\"video\""
+        ]
+      },
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "pageSize": {
+        "type": [
+          "number"
+        ]
+      },
+      "sortBy": {
+        "type": [
+          "string"
+        ]
+      },
+      "filterMedia": {
+        "type": [
+          "number"
+        ]
+      },
+      "filterName": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "from": {
+        "type": [
+          "string"
+        ]
+      },
+      "to": {
+        "type": [
+          "string"
+        ]
+      },
+      "isFavorites": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "include": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ],
+          "enum": [
+            "\"custom\"",
+            "\"fields\"",
+            "\"keywords\"",
+            "\"sentiment\"",
+            "\"speakers\"",
+            "\"transcription\""
+          ]
+        }
+      }
+    },
+    "required": []
+  },
+  "get_media_insights": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "get_transcript": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "update_transcript_speakers": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "speakers": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ]
+        }
+      }
+    },
+    "required": [
+      "mediaId",
+      "speakers"
+    ]
+  },
+  "update_transcription": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "original": {
+        "type": [
+          "string"
+        ]
+      },
+      "replacement": {
+        "type": [
+          "string"
+        ]
+      },
+      "caseSensitive": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "mediaId",
+      "original",
+      "replacement"
+    ]
+  },
+  "get_media_status": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "update_media_metadata": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "tags": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "status": {
+        "type": [
+          "string"
+        ]
+      },
+      "remark": {
+        "type": [
+          "string"
+        ]
+      },
+      "manageBy": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId",
+      "name"
+    ]
+  },
+  "delete_media": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "get_captions": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "list_supported_languages": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "get_media_statistics": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "toggle_media_favorite": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "isFavorite": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "isFavorite",
+      "mediaIds"
+    ]
+  },
+  "reanalyze_media": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "isInsights": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isSentiment": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isFillerWords": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isEmbeddings": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "bulk_update_transcript_speakers": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "speakers": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "name"
+          ]
+        }
+      }
+    },
+    "required": [
+      "mediaIds",
+      "speakers"
+    ]
+  },
+  "bulk_move_media": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "folderId",
+      "mediaIds"
+    ]
+  },
+  "set_media_thumbnail": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "imageUrl": {
+        "type": [
+          "string"
+        ]
+      },
+      "imageBase64": {
+        "type": [
+          "string"
+        ]
+      },
+      "atSeconds": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "create_text_note": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "text": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "tags": {
+        "type": [
+          "string"
+        ]
+      },
+      "callbackUrl": {
+        "type": [
+          "string"
+        ]
+      },
+      "fields": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string"
+              ]
+            },
+            "value": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "value"
+          ]
+        }
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "get_text_insight": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "reanalyze_text": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "update_text_note": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "text": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "tags": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "export_media": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "fileType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"csv\"",
+          "\"csv-insights\"",
+          "\"csv-labels\"",
+          "\"csv-text-sentiment\"",
+          "\"csv-transcript\"",
+          "\"csv-transcript-sentiment\"",
+          "\"docx\"",
+          "\"html\"",
+          "\"json\"",
+          "\"md\"",
+          "\"mp4\"",
+          "\"pdf\"",
+          "\"sourceFile\"",
+          "\"srt\"",
+          "\"ttml\"",
+          "\"txt\"",
+          "\"vtt\""
+        ]
+      },
+      "isSpeakerNames": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isSpeakerEmail": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isTimeStamps": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isInsightVisualized": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isRedacted": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "redactedCategories": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "fileType",
+      "mediaId"
+    ]
+  },
+  "export_multiple_media": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "fileType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"csv\"",
+          "\"csv-insights\"",
+          "\"csv-labels\"",
+          "\"csv-text-sentiment\"",
+          "\"csv-transcript\"",
+          "\"csv-transcript-sentiment\"",
+          "\"docx\"",
+          "\"html\"",
+          "\"json\"",
+          "\"md\"",
+          "\"mp4\"",
+          "\"pdf\"",
+          "\"sourceFile\"",
+          "\"srt\"",
+          "\"ttml\"",
+          "\"txt\"",
+          "\"vtt\""
+        ]
+      },
+      "isSpeakerNames": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isSpeakerEmail": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isTimeStamps": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isInsightVisualized": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isRedacted": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "isMerged": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "fileType",
+      "mediaIds"
+    ]
+  },
+  "get_all_folder_views": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "get_folder_views": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "folderId"
+    ]
+  },
+  "create_folder_view": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "isDefault": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "columns": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "fieldId": {
+              "type": [
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "string"
+              ]
+            },
+            "type": {
+              "type": [
+                "string"
+              ]
+            },
+            "definition": {
+              "type": [
+                "string"
+              ]
+            },
+            "order": {
+              "type": [
+                "number"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "order",
+            "type"
+          ]
+        }
+      }
+    },
+    "required": [
+      "columns",
+      "folderId",
+      "name"
+    ]
+  },
+  "update_folder_view": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "viewId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "isDefault": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "columns": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "fieldId": {
+              "type": [
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "string"
+              ]
+            },
+            "type": {
+              "type": [
+                "string"
+              ]
+            },
+            "definition": {
+              "type": [
+                "string"
+              ]
+            },
+            "order": {
+              "type": [
+                "number"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "order",
+            "type"
+          ]
+        }
+      }
+    },
+    "required": [
+      "columns",
+      "folderId",
+      "isDefault",
+      "name",
+      "viewId"
+    ]
+  },
+  "clone_folder_view": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "sourceFolderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "targetFolderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "viewId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "isDefault": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "name",
+      "sourceFolderId",
+      "targetFolderId",
+      "viewId"
+    ]
+  },
+  "list_folders": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "pageSize": {
+        "type": [
+          "number"
+        ]
+      },
+      "sortBy": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": []
+  },
+  "get_folder_info": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "folderId"
+    ]
+  },
+  "create_folder": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "assignTo": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "clone_folder": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "assignTo": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "isSaveDefaultView": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "folderId"
+    ]
+  },
+  "update_folder": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "assignTo": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "folderId",
+      "name"
+    ]
+  },
+  "delete_folder": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "folderId"
+    ]
+  },
+  "check_recorder_status": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "token": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "token"
+    ]
+  },
+  "create_recorder": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "sourceLanguage": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "isAutoAnalyze": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "notifyUsers": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "duration": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "options": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "notification": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "meta": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "clientInformation": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "list_recorders": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "pageSize": {
+        "type": [
+          "number"
+        ]
+      },
+      "sortBy": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": []
+  },
+  "clone_recorder": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "recorderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "recorderId"
+    ]
+  },
+  "get_recorder_info": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "recorderId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "recorderId"
+    ]
+  },
+  "get_recorder_recordings": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "recorderId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "recorderId"
+    ]
+  },
+  "generate_recorder_url": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "recorderId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "recorderId"
+    ]
+  },
+  "update_recorder_settings": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "recorderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "sourceLanguage": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "isAutoAnalyze": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "notifyUsers": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "duration": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "options": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "notification": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "meta": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      }
+    },
+    "required": [
+      "name",
+      "recorderId"
+    ]
+  },
+  "update_recorder_questions": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "recorderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "email": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "questions": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "values": {}
+        }
+      },
+      "consent": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      }
+    },
+    "required": [
+      "questions",
+      "recorderId"
+    ]
+  },
+  "delete_recorder": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "recorderId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "recorderId"
+    ]
+  },
+  "create_embed": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": []
+  },
+  "update_embed": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "embedId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "privacyMode": {
+        "type": [
+          "string"
+        ]
+      },
+      "password": {
+        "type": [
+          "string"
+        ]
+      },
+      "meta": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      }
+    },
+    "required": [
+      "embedId"
+    ]
+  },
+  "check_embed": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "get_embed_iframe_url": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "list_embed_sessions": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "embedId": {
+        "type": [
+          "string"
+        ]
+      },
+      "from": {
+        "type": [
+          "string"
+        ]
+      },
+      "to": {
+        "type": [
+          "string"
+        ]
+      },
+      "traffic": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"all\"",
+          "\"bots\"",
+          "\"people\""
+        ]
+      },
+      "includeOwner": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "pageSize": {
+        "type": [
+          "number"
+        ]
+      },
+      "search": {
+        "type": [
+          "string"
+        ]
+      },
+      "viewer": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"all\"",
+          "\"anonymous\"",
+          "\"identified\""
+        ]
+      },
+      "device": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"all\"",
+          "\"desktop\"",
+          "\"mobile\"",
+          "\"tablet\""
+        ]
+      },
+      "country": {
+        "type": [
+          "string"
+        ]
+      },
+      "includeLegacy": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "viewerId": {
+        "type": [
+          "string"
+        ]
+      },
+      "visitorId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "sort": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"activeMs:desc\"",
+          "\"questions:desc\"",
+          "\"startedAt:asc\"",
+          "\"startedAt:desc\"",
+          "\"watchedMs:desc\""
+        ]
+      }
+    },
+    "required": [
+      "embedId"
+    ]
+  },
+  "get_embed_session_summary": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "embedId": {
+        "type": [
+          "string"
+        ]
+      },
+      "from": {
+        "type": [
+          "string"
+        ]
+      },
+      "to": {
+        "type": [
+          "string"
+        ]
+      },
+      "traffic": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"all\"",
+          "\"bots\"",
+          "\"people\""
+        ]
+      },
+      "includeOwner": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "tz": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaPage": {
+        "type": [
+          "number"
+        ]
+      },
+      "mediaPageSize": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "embedId"
+    ]
+  },
+  "get_embed_session": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "embedId": {
+        "type": [
+          "string"
+        ]
+      },
+      "id": {
+        "type": [
+          "string"
+        ]
+      },
+      "eventsPage": {
+        "type": [
+          "number"
+        ]
+      },
+      "eventsPageSize": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "embedId",
+      "id"
+    ]
+  },
+  "ask_ai_chat": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "prompt": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "folderIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "assistantType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"custom\"",
+          "\"general\"",
+          "\"marketer\"",
+          "\"recruiter\"",
+          "\"researcher\"",
+          "\"sales\""
+        ]
+      },
+      "assistantTemplateId": {
+        "type": [
+          "string"
+        ]
+      },
+      "promptId": {
+        "type": [
+          "string"
+        ]
+      },
+      "speakers": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "tags": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "startDate": {
+        "type": [
+          "string"
+        ]
+      },
+      "endDate": {
+        "type": [
+          "string"
+        ]
+      },
+      "isIndividualPrompt": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "fieldId": {
+        "type": [
+          "string"
+        ]
+      },
+      "fieldIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "filters": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "analysisMediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "analysisInput": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"audio\"",
+          "\"video\""
+        ]
+      }
+    },
+    "required": [
+      "prompt"
+    ]
+  },
+  "check_analysis_eligibility": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "analysisInput": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"audio\"",
+          "\"video\""
+        ]
+      },
+      "modelId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "analysisInput",
+      "mediaId"
+    ]
+  },
+  "retry_ai_chat": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "promptId": {
+        "type": [
+          "string"
+        ]
+      },
+      "messageId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "messageId",
+      "promptId"
+    ]
+  },
+  "get_chat_history": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "limit": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": []
+  },
+  "get_chat_messages": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "promptId": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaIds": {
+        "type": [
+          "string"
+        ]
+      },
+      "query": {
+        "type": [
+          "string"
+        ]
+      },
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "pageSize": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": []
+  },
+  "delete_chat_conversation": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "promptId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "promptId"
+    ]
+  },
+  "list_prompts": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "get_favorite_prompts": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "toggle_prompt_favorite": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "promptId": {
+        "type": [
+          "string"
+        ]
+      },
+      "messageId": {
+        "type": [
+          "string"
+        ]
+      },
+      "isFavorite": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "isFavorite",
+      "messageId",
+      "promptId"
+    ]
+  },
+  "update_chat_title": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "promptId": {
+        "type": [
+          "string"
+        ]
+      },
+      "title": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "promptId",
+      "title"
+    ]
+  },
+  "submit_chat_feedback": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "promptId": {
+        "type": [
+          "string"
+        ]
+      },
+      "messageId": {
+        "type": [
+          "string"
+        ]
+      },
+      "score": {
+        "type": [
+          "number"
+        ],
+        "enum": [
+          "-1",
+          "1"
+        ]
+      },
+      "reason": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "messageId",
+      "promptId",
+      "score"
+    ]
+  },
+  "get_chat_statistics": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "startDate": {
+        "type": [
+          "string"
+        ]
+      },
+      "endDate": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": []
+  },
+  "export_chat_answer": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "promptId": {
+        "type": [
+          "string"
+        ]
+      },
+      "messageId": {
+        "type": [
+          "string"
+        ]
+      },
+      "fileType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"docx\"",
+          "\"md\"",
+          "\"pdf\"",
+          "\"txt\""
+        ]
+      }
+    },
+    "required": [
+      "fileType",
+      "messageId",
+      "promptId"
+    ]
+  },
+  "list_meeting_events": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "platformType": {
+        "type": [
+          "string"
+        ]
+      },
+      "meetingStatus": {
+        "type": [
+          "string"
+        ]
+      },
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "pageSize": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": []
+  },
+  "schedule_meeting_event": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "title": {
+        "type": [
+          "string"
+        ]
+      },
+      "meetingURL": {
+        "type": [
+          "string"
+        ]
+      },
+      "meetingDate": {
+        "type": [
+          "string"
+        ]
+      },
+      "meetingLanguage": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "meetingURL",
+      "title"
+    ]
+  },
+  "remove_assistant_from_meeting": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "meetingAssistantEventId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "meetingAssistantEventId"
+    ]
+  },
+  "delete_scheduled_assistant": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "meetingAssistantEventId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "meetingAssistantEventId"
+    ]
+  },
+  "get_live_meeting_transcript": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "meetingAssistantEventId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "sinceEndInSec": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": []
+  },
+  "list_fields": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "create_field": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "type": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "prompt": {
+        "type": [
+          "string"
+        ]
+      },
+      "allowedValues": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "allowedValuesMode": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"multiple\"",
+          "\"single\""
+        ]
+      },
+      "otherValues": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "notApplicableValues": {
+        "type": [
+          "string"
+        ]
+      },
+      "privacyMode": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "name",
+      "type"
+    ]
+  },
+  "update_multiple_fields": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "fields": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string"
+              ]
+            },
+            "value": {}
+          },
+          "required": [
+            "id"
+          ]
+        }
+      }
+    },
+    "required": [
+      "fields"
+    ]
+  },
+  "update_field": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "id": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "type": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "prompt": {
+        "type": [
+          "string"
+        ]
+      },
+      "allowedValues": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "allowedValuesMode": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"multiple\"",
+          "\"single\""
+        ]
+      },
+      "otherValues": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "notApplicableValues": {
+        "type": [
+          "string"
+        ]
+      },
+      "privacyMode": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ]
+  },
+  "list_labels": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "status": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"active\"",
+          "\"all\"",
+          "\"archived\""
+        ]
+      },
+      "search": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": []
+  },
+  "create_label": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "isGroup": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "color": {
+        "type": [
+          "string"
+        ]
+      },
+      "parentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "sortOrder": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "update_label": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "labelId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "color": {
+        "type": [
+          "string"
+        ]
+      },
+      "parentId": {
+        "anyOf": [
+          {
+            "type": [
+              "string"
+            ]
+          },
+          {
+            "type": [
+              "null"
+            ]
+          }
+        ]
+      },
+      "sortOrder": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "labelId"
+    ]
+  },
+  "archive_label": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "labelId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "labelId"
+    ]
+  },
+  "restore_label": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "labelId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "labelId"
+    ]
+  },
+  "merge_labels": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "labelId": {
+        "type": [
+          "string"
+        ]
+      },
+      "targetLabelId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "labelId",
+      "targetLabelId"
+    ]
+  },
+  "add_speak_label_sets": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "sets": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ],
+          "enum": [
+            "\"meetings\"",
+            "\"research\"",
+            "\"sales_qa\"",
+            "\"transcript_feedback\""
+          ]
+        }
+      }
+    },
+    "required": [
+      "sets"
+    ]
+  },
+  "list_media_labels": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "status": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"active\"",
+          "\"needs_review\"",
+          "\"shifted\""
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "apply_label": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "labelIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "range": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "start": {
+            "type": [
+              "number"
+            ]
+          },
+          "end": {
+            "type": [
+              "number"
+            ]
+          }
+        },
+        "required": [
+          "end",
+          "start"
+        ]
+      },
+      "expectedTranscriptRevision": {
+        "type": [
+          "number"
+        ]
+      },
+      "quote": {
+        "type": [
+          "string"
+        ]
+      },
+      "occurrence": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "labelIds",
+      "mediaId"
+    ]
+  },
+  "update_media_label": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaLabelId": {
+        "type": [
+          "string"
+        ]
+      },
+      "labelIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "action": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"keep\"",
+          "\"replace\""
+        ]
+      },
+      "range": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "start": {
+            "type": [
+              "number"
+            ]
+          },
+          "end": {
+            "type": [
+              "number"
+            ]
+          }
+        },
+        "required": [
+          "end",
+          "start"
+        ]
+      },
+      "expectedTranscriptRevision": {
+        "type": [
+          "number"
+        ]
+      },
+      "quote": {
+        "type": [
+          "string"
+        ]
+      },
+      "occurrence": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "mediaId",
+      "mediaLabelId"
+    ]
+  },
+  "remove_media_label": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaLabelId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "mediaId",
+      "mediaLabelId"
+    ]
+  },
+  "list_media_comments": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "filter": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"all\"",
+          "\"file\"",
+          "\"open\"",
+          "\"resolved\""
+        ]
+      }
+    },
+    "required": [
+      "mediaId"
+    ]
+  },
+  "add_comment": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "body": {
+        "type": [
+          "string"
+        ]
+      },
+      "parentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaLabelId": {
+        "type": [
+          "string"
+        ]
+      },
+      "range": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "start": {
+            "type": [
+              "number"
+            ]
+          },
+          "end": {
+            "type": [
+              "number"
+            ]
+          }
+        },
+        "required": [
+          "end",
+          "start"
+        ]
+      },
+      "expectedTranscriptRevision": {
+        "type": [
+          "number"
+        ]
+      },
+      "quote": {
+        "type": [
+          "string"
+        ]
+      },
+      "occurrence": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "body",
+      "mediaId"
+    ]
+  },
+  "update_comment": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "commentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "body": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "body",
+      "commentId",
+      "mediaId"
+    ]
+  },
+  "resolve_comment": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "commentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "resolved": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "commentId",
+      "mediaId"
+    ]
+  },
+  "delete_comment": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      },
+      "commentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "commentId",
+      "mediaId"
+    ]
+  },
+  "list_automations": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "pageSize": {
+        "type": [
+          "number"
+        ]
+      },
+      "sortBy": {
+        "type": [
+          "string"
+        ]
+      },
+      "query": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderIds": {
+        "type": [
+          "string"
+        ]
+      },
+      "isActive": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "runType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"instant\"",
+          "\"schedule\""
+        ]
+      }
+    },
+    "required": []
+  },
+  "list_automation_names": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "get_automation": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "automationId"
+    ]
+  },
+  "get_automation_runs": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      },
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "pageSize": {
+        "type": [
+          "number"
+        ]
+      },
+      "status": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"completed\"",
+          "\"failed\"",
+          "\"killed\"",
+          "\"pending\"",
+          "\"running\""
+        ]
+      }
+    },
+    "required": [
+      "automationId"
+    ]
+  },
+  "create_automation": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "trigger": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "triggers": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "values": {}
+        }
+      },
+      "steps": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "values": {}
+        }
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "isActive": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "runType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"instant\"",
+          "\"schedule\""
+        ]
+      },
+      "schedule": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      }
+    },
+    "required": [
+      "name",
+      "steps",
+      "trigger"
+    ]
+  },
+  "update_automation": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "trigger": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "triggers": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "values": {}
+        }
+      },
+      "steps": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "values": {}
+        }
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "isActive": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "runType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"instant\"",
+          "\"schedule\""
+        ]
+      },
+      "schedule": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      }
+    },
+    "required": [
+      "automationId",
+      "name",
+      "steps",
+      "trigger"
+    ]
+  },
+  "toggle_automation_status": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "automationId"
+    ]
+  },
+  "bulk_update_automation_status": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "isActive": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "automationIds",
+      "isActive"
+    ]
+  },
+  "bulk_assign_automation_folders": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "folderIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "automationIds",
+      "folderIds"
+    ]
+  },
+  "run_automations": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "mediaIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "automationIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "automationIds",
+      "mediaIds"
+    ]
+  },
+  "delete_automation": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "automationId"
+    ]
+  },
+  "get_automation_run": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      },
+      "runId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "automationId",
+      "runId"
+    ]
+  },
+  "get_automation_run_stats": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      },
+      "days": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "automationId"
+    ]
+  },
+  "test_automation": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "automationId",
+      "mediaId"
+    ]
+  },
+  "validate_automation_graph": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "steps": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "values": {}
+        }
+      },
+      "trigger": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "runType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"instant\"",
+          "\"schedule\""
+        ]
+      }
+    },
+    "required": [
+      "steps"
+    ]
+  },
+  "describe_automation_graph": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "automationId"
+    ]
+  },
+  "list_automation_apps": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "list_automation_triggers": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "app": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": []
+  },
+  "list_automation_actions": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "app": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": []
+  },
+  "create_webhook": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "callbackUrl": {
+        "type": [
+          "string"
+        ]
+      },
+      "events": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "callbackUrl"
+    ]
+  },
+  "list_webhooks": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "update_webhook": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "webhookId": {
+        "type": [
+          "string"
+        ]
+      },
+      "callbackUrl": {
+        "type": [
+          "string"
+        ]
+      },
+      "events": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "callbackUrl",
+      "webhookId"
+    ]
+  },
+  "provision_inbound_webhook": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "get_inbound_webhook": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "webhookId": {
+        "type": [
+          "string"
+        ]
+      },
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      },
+      "childKey": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": []
+  },
+  "get_webhook_attempts": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "webhookId": {
+        "type": [
+          "string"
+        ]
+      },
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "pageSize": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "webhookId"
+    ]
+  },
+  "delete_webhook": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "webhookId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "webhookId"
+    ]
+  },
+  "search_media": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "query": {
+        "type": [
+          "string"
+        ]
+      },
+      "startDate": {
+        "type": [
+          "string"
+        ]
+      },
+      "endDate": {
+        "type": [
+          "string"
+        ]
+      },
+      "filterList": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "fieldName": {
+              "type": [
+                "string"
+              ],
+              "enum": [
+                "\"category\"",
+                "\"fields\"",
+                "\"folderId\"",
+                "\"mediaId\"",
+                "\"mediaType\"",
+                "\"recorderId\"",
+                "\"sentimentNegative\"",
+                "\"sentimentPositive\"",
+                "\"speaker\"",
+                "\"tags\""
+              ]
+            },
+            "fieldOperator": {
+              "type": [
+                "string"
+              ],
+              "enum": [
+                "\"contain\"",
+                "\"greaterThan\"",
+                "\"include\"",
+                "\"lessThan\"",
+                "\"notContain\"",
+                "\"notInclude\""
+              ]
+            },
+            "fieldValue": {
+              "type": [
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "string"
+                ]
+              }
+            },
+            "fieldCondition": {
+              "type": [
+                "string"
+              ],
+              "enum": [
+                "\"and\"",
+                "\"or\""
+              ]
+            }
+          },
+          "required": [
+            "fieldCondition",
+            "fieldName",
+            "fieldOperator",
+            "fieldValue"
+          ]
+        }
+      }
+    },
+    "required": [
+      "query"
+    ]
+  },
+  "create_clip": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "title": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"audio\"",
+          "\"video\""
+        ]
+      },
+      "timeRanges": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "mediaId": {
+              "type": [
+                "string"
+              ]
+            },
+            "startTime": {
+              "type": [
+                "number"
+              ]
+            },
+            "endTime": {
+              "type": [
+                "number"
+              ]
+            }
+          },
+          "required": [
+            "endTime",
+            "mediaId",
+            "startTime"
+          ]
+        }
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "tags": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "mergeStrategy": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"CONCATENATE\""
+        ]
+      }
+    },
+    "required": [
+      "mediaType",
+      "timeRanges",
+      "title"
+    ]
+  },
+  "get_clips": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "clipId": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": []
+  },
+  "update_clip": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "clipId": {
+        "type": [
+          "string"
+        ]
+      },
+      "title": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "tags": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "clipId"
+    ]
+  },
+  "delete_clip": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "clipId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "clipId"
+    ]
+  },
+  "build_automation": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "trigger": {
+        "type": [
+          "object"
+        ],
+        "values": {}
+      },
+      "steps": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "values": {}
+        }
+      },
+      "automationId": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "isActive": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "orTriggers": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "values": {}
+        }
+      }
+    },
+    "required": [
+      "name",
+      "steps",
+      "trigger"
+    ]
+  },
+  "upload_and_analyze": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "url": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"audio\"",
+          "\"video\""
+        ]
+      },
+      "sourceLanguage": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "tags": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "url"
+    ]
+  },
+  "upload_and_analyze_batch": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "urls": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "mediaType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"audio\"",
+          "\"video\""
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "sourceLanguage": {
+        "type": [
+          "string"
+        ]
+      },
+      "tags": {
+        "type": [
+          "string"
+        ]
+      },
+      "concurrency": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "urls"
+    ]
+  },
+  "upload_local_file": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "filePath": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "mediaType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"audio\"",
+          "\"video\""
+        ]
+      },
+      "sourceLanguage": {
+        "type": [
+          "string"
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "tags": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "filePath"
+    ]
+  },
+  "list_users": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "filterName": {
+        "type": [
+          "string"
+        ]
+      },
+      "sortBy": {
+        "type": [
+          "string"
+        ]
+      },
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "pageSize": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": []
+  },
+  "list_user_groups": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "create_user_group": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "users": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "description"
+    ]
+  },
+  "update_user_group": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "_id": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "users": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "_id",
+      "description",
+      "users"
+    ]
+  },
+  "delete_user_group": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "id": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "id"
+    ]
+  },
+  "list_dashboards": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "get_dashboard": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "dashboardId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "dashboardId"
+    ]
+  },
+  "list_dashboard_widgets": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "create_dashboard": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "title": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "source": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "type": {
+            "type": [
+              "string"
+            ],
+            "enum": [
+              "\"folders\"",
+              "\"team\"",
+              "\"workspace\""
+            ]
+          },
+          "folderIds": {
+            "type": [
+              "array"
+            ],
+            "items": {
+              "type": [
+                "string"
+              ]
+            }
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "dateRange": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "preset": {
+            "type": [
+              "string"
+            ],
+            "enum": [
+              "\"allTime\"",
+              "\"last30days\"",
+              "\"last3months\"",
+              "\"last7days\"",
+              "\"yearToDate\""
+            ]
+          }
+        },
+        "required": [
+          "preset"
+        ]
+      },
+      "sections": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string"
+              ]
+            },
+            "title": {
+              "type": [
+                "string"
+              ]
+            },
+            "icon": {
+              "type": [
+                "string"
+              ]
+            },
+            "widgetIds": {
+              "type": [
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "string"
+                ]
+              }
+            }
+          },
+          "required": [
+            "icon",
+            "id",
+            "title",
+            "widgetIds"
+          ]
+        }
+      },
+      "widgets": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "type": {
+              "type": [
+                "string"
+              ],
+              "enum": [
+                "\"chat-history\"",
+                "\"comparison\"",
+                "\"field-distribution\"",
+                "\"metric-chart\"",
+                "\"narrative\"",
+                "\"notes\"",
+                "\"people\"",
+                "\"sentiment-trend\"",
+                "\"stat-cards\"",
+                "\"table\"",
+                "\"team-activity\"",
+                "\"themes\""
+              ]
+            },
+            "id": {
+              "type": [
+                "string"
+              ]
+            },
+            "title": {
+              "type": [
+                "string"
+              ]
+            },
+            "config": {
+              "type": [
+                "object"
+              ],
+              "values": {}
+            },
+            "binding": {
+              "type": [
+                "object"
+              ],
+              "values": {}
+            },
+            "layout": {
+              "type": [
+                "object"
+              ],
+              "properties": {
+                "x": {
+                  "type": [
+                    "number"
+                  ]
+                },
+                "y": {
+                  "type": [
+                    "number"
+                  ]
+                },
+                "w": {
+                  "type": [
+                    "number"
+                  ]
+                },
+                "h": {
+                  "type": [
+                    "number"
+                  ]
+                }
+              },
+              "required": [
+                "h",
+                "w",
+                "x",
+                "y"
+              ]
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      },
+      "icon": {
+        "type": [
+          "string"
+        ]
+      },
+      "assignTo": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "filters": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "filterList": {
+            "type": [
+              "array"
+            ],
+            "items": {
+              "type": [
+                "object"
+              ],
+              "properties": {
+                "fieldName": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "fieldOperator": {
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "\"include\""
+                  ]
+                },
+                "fieldValue": {
+                  "type": [
+                    "array"
+                  ],
+                  "items": {
+                    "type": [
+                      "string"
+                    ]
+                  }
+                },
+                "fieldCondition": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "required": [
+                "fieldName",
+                "fieldOperator",
+                "fieldValue"
+              ]
+            }
+          }
+        },
+        "required": [],
+        "values": {}
+      },
+      "isDefault": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "settings": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "fields": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "includeIds": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "groups": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "object"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "label": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "fieldIds": {
+                      "type": [
+                        "array"
+                      ],
+                      "items": {
+                        "type": [
+                          "string"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "fieldIds",
+                    "key",
+                    "label"
+                  ]
+                }
+              },
+              "orderIds": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "groups",
+              "includeIds"
+            ]
+          },
+          "feedback": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "isEnabled": {
+                "type": [
+                  "boolean"
+                ]
+              },
+              "fieldIds": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "submitters": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "removeReasons": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "reviewScope": {
+                "type": [
+                  "string"
+                ],
+                "enum": [
+                  "\"company\"",
+                  "\"dashboard\""
+                ]
+              },
+              "allowOtherSubmitter": {
+                "type": [
+                  "boolean"
+                ]
+              },
+              "groups": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "object"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "label": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "fieldIds": {
+                      "type": [
+                        "array"
+                      ],
+                      "items": {
+                        "type": [
+                          "string"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "fieldIds",
+                    "key",
+                    "label"
+                  ]
+                }
+              },
+              "fieldRules": {
+                "type": [
+                  "object"
+                ],
+                "values": {
+                  "type": [
+                    "object"
+                  ],
+                  "properties": {
+                    "label": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "min": {
+                      "type": [
+                        "number"
+                      ]
+                    },
+                    "max": {
+                      "type": [
+                        "number"
+                      ]
+                    }
+                  },
+                  "required": []
+                }
+              },
+              "sheetWebhookUrl": {
+                "type": [
+                  "string"
+                ]
+              }
+            },
+            "required": [
+              "fieldIds",
+              "isEnabled",
+              "removeReasons",
+              "submitters"
+            ]
+          },
+          "fieldEdits": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "fieldIds": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "fieldIds"
+            ]
+          },
+          "labels": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "isEnabled": {
+                "type": [
+                  "boolean"
+                ]
+              },
+              "mode": {
+                "type": [
+                  "string"
+                ],
+                "enum": [
+                  "\"apply\"",
+                  "\"view\""
+                ]
+              },
+              "labelGroupIds": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "isEnabled",
+              "labelGroupIds",
+              "mode"
+            ]
+          },
+          "comments": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "isEnabled": {
+                "type": [
+                  "boolean"
+                ]
+              },
+              "mode": {
+                "type": [
+                  "string"
+                ],
+                "enum": [
+                  "\"reply\"",
+                  "\"view\""
+                ]
+              }
+            },
+            "required": [
+              "isEnabled",
+              "mode"
+            ]
+          },
+          "profiles": {
+            "type": [
+              "array"
+            ],
+            "items": {
+              "type": [
+                "object"
+              ],
+              "properties": {
+                "fieldId": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "label": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "imageShape": {
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "\"round\"",
+                    "\"square\""
+                  ]
+                },
+                "entries": {
+                  "type": [
+                    "array"
+                  ],
+                  "items": {
+                    "type": [
+                      "object"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "imageKey": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "description": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "link": {
+                        "type": [
+                          "string"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "entries",
+                "fieldId",
+                "label"
+              ]
+            }
+          }
+        },
+        "required": []
+      }
+    },
+    "required": [
+      "title"
+    ]
+  },
+  "update_dashboard": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "dashboardId": {
+        "type": [
+          "string"
+        ]
+      },
+      "title": {
+        "type": [
+          "string"
+        ]
+      },
+      "revision": {
+        "type": [
+          "number"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "source": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "type": {
+            "type": [
+              "string"
+            ],
+            "enum": [
+              "\"folders\"",
+              "\"team\"",
+              "\"workspace\""
+            ]
+          },
+          "folderIds": {
+            "type": [
+              "array"
+            ],
+            "items": {
+              "type": [
+                "string"
+              ]
+            }
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "dateRange": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "preset": {
+            "type": [
+              "string"
+            ],
+            "enum": [
+              "\"allTime\"",
+              "\"last30days\"",
+              "\"last3months\"",
+              "\"last7days\"",
+              "\"yearToDate\""
+            ]
+          }
+        },
+        "required": [
+          "preset"
+        ]
+      },
+      "sections": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "id": {
+              "type": [
+                "string"
+              ]
+            },
+            "title": {
+              "type": [
+                "string"
+              ]
+            },
+            "icon": {
+              "type": [
+                "string"
+              ]
+            },
+            "widgetIds": {
+              "type": [
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "string"
+                ]
+              }
+            }
+          },
+          "required": [
+            "icon",
+            "id",
+            "title",
+            "widgetIds"
+          ]
+        }
+      },
+      "widgets": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "type": {
+              "type": [
+                "string"
+              ],
+              "enum": [
+                "\"chat-history\"",
+                "\"comparison\"",
+                "\"field-distribution\"",
+                "\"metric-chart\"",
+                "\"narrative\"",
+                "\"notes\"",
+                "\"people\"",
+                "\"sentiment-trend\"",
+                "\"stat-cards\"",
+                "\"table\"",
+                "\"team-activity\"",
+                "\"themes\""
+              ]
+            },
+            "id": {
+              "type": [
+                "string"
+              ]
+            },
+            "title": {
+              "type": [
+                "string"
+              ]
+            },
+            "config": {
+              "type": [
+                "object"
+              ],
+              "values": {}
+            },
+            "binding": {
+              "type": [
+                "object"
+              ],
+              "values": {}
+            },
+            "layout": {
+              "type": [
+                "object"
+              ],
+              "properties": {
+                "x": {
+                  "type": [
+                    "number"
+                  ]
+                },
+                "y": {
+                  "type": [
+                    "number"
+                  ]
+                },
+                "w": {
+                  "type": [
+                    "number"
+                  ]
+                },
+                "h": {
+                  "type": [
+                    "number"
+                  ]
+                }
+              },
+              "required": [
+                "h",
+                "w",
+                "x",
+                "y"
+              ]
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      },
+      "icon": {
+        "type": [
+          "string"
+        ]
+      },
+      "assignTo": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "filters": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "filterList": {
+            "type": [
+              "array"
+            ],
+            "items": {
+              "type": [
+                "object"
+              ],
+              "properties": {
+                "fieldName": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "fieldOperator": {
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "\"include\""
+                  ]
+                },
+                "fieldValue": {
+                  "type": [
+                    "array"
+                  ],
+                  "items": {
+                    "type": [
+                      "string"
+                    ]
+                  }
+                },
+                "fieldCondition": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "required": [
+                "fieldName",
+                "fieldOperator",
+                "fieldValue"
+              ]
+            }
+          }
+        },
+        "required": [],
+        "values": {}
+      },
+      "isDefault": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "settings": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "fields": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "includeIds": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "groups": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "object"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "label": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "fieldIds": {
+                      "type": [
+                        "array"
+                      ],
+                      "items": {
+                        "type": [
+                          "string"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "fieldIds",
+                    "key",
+                    "label"
+                  ]
+                }
+              },
+              "orderIds": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "groups",
+              "includeIds"
+            ]
+          },
+          "feedback": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "isEnabled": {
+                "type": [
+                  "boolean"
+                ]
+              },
+              "fieldIds": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "submitters": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "removeReasons": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "reviewScope": {
+                "type": [
+                  "string"
+                ],
+                "enum": [
+                  "\"company\"",
+                  "\"dashboard\""
+                ]
+              },
+              "allowOtherSubmitter": {
+                "type": [
+                  "boolean"
+                ]
+              },
+              "groups": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "object"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "label": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "fieldIds": {
+                      "type": [
+                        "array"
+                      ],
+                      "items": {
+                        "type": [
+                          "string"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "fieldIds",
+                    "key",
+                    "label"
+                  ]
+                }
+              },
+              "fieldRules": {
+                "type": [
+                  "object"
+                ],
+                "values": {
+                  "type": [
+                    "object"
+                  ],
+                  "properties": {
+                    "label": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "min": {
+                      "type": [
+                        "number"
+                      ]
+                    },
+                    "max": {
+                      "type": [
+                        "number"
+                      ]
+                    }
+                  },
+                  "required": []
+                }
+              },
+              "sheetWebhookUrl": {
+                "type": [
+                  "string"
+                ]
+              }
+            },
+            "required": [
+              "fieldIds",
+              "isEnabled",
+              "removeReasons",
+              "submitters"
+            ]
+          },
+          "fieldEdits": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "fieldIds": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "fieldIds"
+            ]
+          },
+          "labels": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "isEnabled": {
+                "type": [
+                  "boolean"
+                ]
+              },
+              "mode": {
+                "type": [
+                  "string"
+                ],
+                "enum": [
+                  "\"apply\"",
+                  "\"view\""
+                ]
+              },
+              "labelGroupIds": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "isEnabled",
+              "labelGroupIds",
+              "mode"
+            ]
+          },
+          "comments": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "isEnabled": {
+                "type": [
+                  "boolean"
+                ]
+              },
+              "mode": {
+                "type": [
+                  "string"
+                ],
+                "enum": [
+                  "\"reply\"",
+                  "\"view\""
+                ]
+              }
+            },
+            "required": [
+              "isEnabled",
+              "mode"
+            ]
+          },
+          "profiles": {
+            "type": [
+              "array"
+            ],
+            "items": {
+              "type": [
+                "object"
+              ],
+              "properties": {
+                "fieldId": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "label": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "imageShape": {
+                  "type": [
+                    "string"
+                  ],
+                  "enum": [
+                    "\"round\"",
+                    "\"square\""
+                  ]
+                },
+                "entries": {
+                  "type": [
+                    "array"
+                  ],
+                  "items": {
+                    "type": [
+                      "object"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "imageKey": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "description": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "link": {
+                        "type": [
+                          "string"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "entries",
+                "fieldId",
+                "label"
+              ]
+            }
+          }
+        },
+        "required": []
+      }
+    },
+    "required": [
+      "dashboardId"
+    ]
+  },
+  "delete_dashboard": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "dashboardId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "dashboardId"
+    ]
+  },
+  "duplicate_dashboard": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "dashboardId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "dashboardId"
+    ]
+  },
+  "share_dashboard": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "dashboardId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "dashboardId"
+    ]
+  },
+  "get_dashboard_speakers_insight": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "folderScope": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "startDate": {
+        "type": [
+          "string"
+        ]
+      },
+      "endDate": {
+        "type": [
+          "string"
+        ]
+      },
+      "filterList": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "fieldName": {
+              "type": [
+                "string"
+              ]
+            },
+            "fieldOperator": {
+              "type": [
+                "string"
+              ]
+            },
+            "fieldValue": {
+              "type": [
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "string"
+                ]
+              }
+            },
+            "fieldCondition": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "required": [
+            "fieldName"
+          ]
+        }
+      }
+    },
+    "required": []
+  },
+  "list_voice_agents": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "get_voice_agent": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "list_voice_conversations": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "limit": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": []
+  },
+  "get_voice_conversation": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "conversationId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "conversationId"
+    ]
+  },
+  "get_agent_analytics": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "start": {
+        "type": [
+          "string"
+        ]
+      },
+      "end": {
+        "type": [
+          "string"
+        ]
+      },
+      "tz": {
+        "type": [
+          "string"
+        ]
+      },
+      "compare": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "includeTests": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "create_voice_agent": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "personality": {
+        "type": [
+          "string"
+        ]
+      },
+      "instructions": {
+        "type": [
+          "string"
+        ]
+      },
+      "voice": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "provider": {
+            "type": [
+              "string"
+            ]
+          },
+          "voiceId": {
+            "type": [
+              "string"
+            ]
+          },
+          "model": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "provider",
+          "voiceId"
+        ]
+      },
+      "llm": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "provider": {
+            "type": [
+              "string"
+            ]
+          },
+          "model": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": []
+      },
+      "avatar": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "avatarId": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "avatarId"
+        ]
+      },
+      "chatSettings": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "welcomeMessage": {
+            "type": [
+              "string"
+            ]
+          },
+          "conversationStarters": {
+            "type": [
+              "array"
+            ],
+            "items": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "topicsToAvoid": {
+            "type": [
+              "array"
+            ],
+            "items": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "maxResponseLength": {
+            "type": [
+              "number"
+            ]
+          },
+          "maxSessionLength": {
+            "type": [
+              "number"
+            ]
+          },
+          "language": {
+            "type": [
+              "string"
+            ]
+          },
+          "responsePace": {
+            "type": [
+              "string"
+            ],
+            "enum": [
+              "\"balanced\"",
+              "\"patient\"",
+              "\"snappy\"",
+              "\"very_patient\""
+            ]
+          }
+        },
+        "required": []
+      },
+      "conversationMode": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"avatar\"",
+          "\"voice\""
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "enableWebSearch": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "instructions",
+      "name",
+      "personality",
+      "voice"
+    ]
+  },
+  "update_voice_agent": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "personality": {
+        "type": [
+          "string"
+        ]
+      },
+      "instructions": {
+        "type": [
+          "string"
+        ]
+      },
+      "voice": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "provider": {
+            "type": [
+              "string"
+            ]
+          },
+          "voiceId": {
+            "type": [
+              "string"
+            ]
+          },
+          "model": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "provider",
+          "voiceId"
+        ]
+      },
+      "llm": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "provider": {
+            "type": [
+              "string"
+            ]
+          },
+          "model": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": []
+      },
+      "avatar": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "avatarId": {
+            "type": [
+              "string"
+            ]
+          }
+        },
+        "required": [
+          "avatarId"
+        ]
+      },
+      "chatSettings": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "welcomeMessage": {
+            "type": [
+              "string"
+            ]
+          },
+          "conversationStarters": {
+            "type": [
+              "array"
+            ],
+            "items": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "topicsToAvoid": {
+            "type": [
+              "array"
+            ],
+            "items": {
+              "type": [
+                "string"
+              ]
+            }
+          },
+          "maxResponseLength": {
+            "type": [
+              "number"
+            ]
+          },
+          "maxSessionLength": {
+            "type": [
+              "number"
+            ]
+          },
+          "language": {
+            "type": [
+              "string"
+            ]
+          },
+          "responsePace": {
+            "type": [
+              "string"
+            ],
+            "enum": [
+              "\"balanced\"",
+              "\"patient\"",
+              "\"snappy\"",
+              "\"very_patient\""
+            ]
+          }
+        },
+        "required": []
+      },
+      "conversationMode": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"avatar\"",
+          "\"voice\""
+        ]
+      },
+      "folderId": {
+        "type": [
+          "string"
+        ]
+      },
+      "enableWebSearch": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "list_voice_avatars": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "list_voices": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "delete_voice_agent": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "create_voice_agent_from_prompt": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "prompt": {
+        "type": [
+          "string"
+        ]
+      },
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "manualInstructions": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "prompt"
+    ]
+  },
+  "generate_voice_agent_config": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "prompt": {
+        "type": [
+          "string"
+        ]
+      },
+      "manualInstructions": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "prompt"
+    ]
+  },
+  "get_voice_agent_setup_guide": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  },
+  "get_voice_test_suite": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "update_voice_test_suite": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "scenarios": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "scenarioId": {
+              "type": [
+                "string"
+              ]
+            },
+            "name": {
+              "type": [
+                "string"
+              ]
+            },
+            "description": {
+              "type": [
+                "string"
+              ]
+            },
+            "userMessages": {
+              "type": [
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "string"
+                ]
+              }
+            },
+            "criteria": {
+              "type": [
+                "array"
+              ],
+              "items": {
+                "type": [
+                  "object"
+                ],
+                "properties": {
+                  "criterionId": {
+                    "type": [
+                      "string"
+                    ]
+                  },
+                  "name": {
+                    "type": [
+                      "string"
+                    ]
+                  },
+                  "evaluationPrompt": {
+                    "type": [
+                      "string"
+                    ]
+                  },
+                  "weight": {
+                    "type": [
+                      "number"
+                    ]
+                  },
+                  "isCritical": {
+                    "type": [
+                      "boolean"
+                    ]
+                  },
+                  "type": {
+                    "type": [
+                      "string"
+                    ],
+                    "enum": [
+                      "\"llm_judged\"",
+                      "\"regex_match\"",
+                      "\"response_length\"",
+                      "\"tool_called\""
+                    ]
+                  },
+                  "maxWords": {
+                    "type": [
+                      "number"
+                    ]
+                  },
+                  "regexPattern": {
+                    "type": [
+                      "string"
+                    ]
+                  },
+                  "mustMatch": {
+                    "type": [
+                      "boolean"
+                    ]
+                  },
+                  "expectedToolName": {
+                    "type": [
+                      "string"
+                    ]
+                  }
+                },
+                "required": [
+                  "evaluationPrompt",
+                  "name"
+                ]
+              }
+            },
+            "category": {
+              "type": [
+                "string"
+              ],
+              "enum": [
+                "\"custom\"",
+                "\"edge_case\"",
+                "\"greeting\"",
+                "\"kb_retrieval\"",
+                "\"off_topic\""
+              ]
+            },
+            "isEnabled": {
+              "type": [
+                "boolean"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "userMessages"
+          ]
+        }
+      },
+      "maxCostPerRun": {
+        "type": [
+          "number"
+        ]
+      },
+      "autoRunOnKbUpdate": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "autoRunOnInstructionSave": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "scheduledCron": {
+        "type": [
+          "null",
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "generate_voice_test_suite": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "start_voice_test_run": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "get_active_voice_test_run": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "pause_voice_test_run": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "runId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "runId"
+    ]
+  },
+  "resume_voice_test_run": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "runId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "runId"
+    ]
+  },
+  "cancel_voice_test_run": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "runId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "runId"
+    ]
+  },
+  "list_voice_test_runs": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "limit": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "get_voice_test_run": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "runId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "runId"
+    ]
+  },
+  "apply_voice_test_recommendation": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "runId": {
+        "type": [
+          "string"
+        ]
+      },
+      "recId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "recId",
+      "runId"
+    ]
+  },
+  "get_voice_test_baseline": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "get_voice_test_score_history": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "limit": {
+        "type": [
+          "number"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "list_voice_questions": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "enabledOnly": {
+        "type": [
+          "boolean"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "get_voice_question": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "fieldId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "fieldId"
+    ]
+  },
+  "create_voice_question": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "templateId": {
+        "type": [
+          "string"
+        ]
+      },
+      "customConfig": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "displayLabel": {
+            "type": [
+              "string"
+            ]
+          },
+          "question": {
+            "type": [
+              "string"
+            ]
+          },
+          "confirmationText": {
+            "type": [
+              "string"
+            ]
+          },
+          "validationPrompt": {
+            "type": [
+              "string"
+            ]
+          },
+          "validation": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "pattern": {
+                "type": [
+                  "string"
+                ]
+              },
+              "minLength": {
+                "type": [
+                  "number"
+                ]
+              },
+              "maxLength": {
+                "type": [
+                  "number"
+                ]
+              },
+              "min": {
+                "type": [
+                  "number"
+                ]
+              },
+              "max": {
+                "type": [
+                  "number"
+                ]
+              },
+              "allowedValues": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              }
+            },
+            "required": []
+          }
+        },
+        "required": []
+      },
+      "required": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "maxPromptAttempts": {
+        "type": [
+          "number"
+        ]
+      },
+      "noResponseBehavior": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"end_conversation\"",
+          "\"move_to_next_question\""
+        ]
+      },
+      "triggerCondition": {
+        "type": [
+          "string"
+        ]
+      },
+      "order": {
+        "type": [
+          "number"
+        ]
+      },
+      "enabled": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "mappedFieldId": {
+        "type": [
+          "null",
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "templateId"
+    ]
+  },
+  "update_voice_question": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "fieldId": {
+        "type": [
+          "string"
+        ]
+      },
+      "customConfig": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "displayLabel": {
+            "type": [
+              "string"
+            ]
+          },
+          "question": {
+            "type": [
+              "string"
+            ]
+          },
+          "confirmationText": {
+            "type": [
+              "string"
+            ]
+          },
+          "validationPrompt": {
+            "type": [
+              "string"
+            ]
+          },
+          "validation": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "pattern": {
+                "type": [
+                  "string"
+                ]
+              },
+              "minLength": {
+                "type": [
+                  "number"
+                ]
+              },
+              "maxLength": {
+                "type": [
+                  "number"
+                ]
+              },
+              "min": {
+                "type": [
+                  "number"
+                ]
+              },
+              "max": {
+                "type": [
+                  "number"
+                ]
+              },
+              "allowedValues": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              }
+            },
+            "required": []
+          }
+        },
+        "required": []
+      },
+      "required": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "maxPromptAttempts": {
+        "type": [
+          "number"
+        ]
+      },
+      "noResponseBehavior": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"end_conversation\"",
+          "\"move_to_next_question\""
+        ]
+      },
+      "triggerCondition": {
+        "type": [
+          "string"
+        ]
+      },
+      "order": {
+        "type": [
+          "number"
+        ]
+      },
+      "enabled": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "mappedFieldId": {
+        "type": [
+          "null",
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "fieldId"
+    ]
+  },
+  "delete_voice_question": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "fieldId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "fieldId"
+    ]
+  },
+  "reorder_voice_questions": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "fieldOrders": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "fieldId": {
+              "type": [
+                "string"
+              ]
+            },
+            "order": {
+              "type": [
+                "number"
+              ]
+            }
+          },
+          "required": [
+            "fieldId",
+            "order"
+          ]
+        }
+      }
+    },
+    "required": [
+      "agentId",
+      "fieldOrders"
+    ]
+  },
+  "list_voice_question_templates": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "category": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"booking\"",
+          "\"contact\"",
+          "\"custom\"",
+          "\"qualification\""
+        ]
+      }
+    },
+    "required": []
+  },
+  "create_voice_question_template": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "category": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"booking\"",
+          "\"contact\"",
+          "\"custom\"",
+          "\"qualification\""
+        ]
+      },
+      "fieldType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"boolean\"",
+          "\"choice\"",
+          "\"date\"",
+          "\"datetime\"",
+          "\"email\"",
+          "\"number\"",
+          "\"phone\"",
+          "\"text\"",
+          "\"time\"",
+          "\"url\""
+        ]
+      },
+      "defaultConfig": {
+        "type": [
+          "object"
+        ],
+        "properties": {
+          "displayLabel": {
+            "type": [
+              "string"
+            ]
+          },
+          "question": {
+            "type": [
+              "string"
+            ]
+          },
+          "confirmationText": {
+            "type": [
+              "string"
+            ]
+          },
+          "validationPrompt": {
+            "type": [
+              "string"
+            ]
+          },
+          "validation": {
+            "type": [
+              "object"
+            ],
+            "properties": {
+              "pattern": {
+                "type": [
+                  "string"
+                ]
+              },
+              "minLength": {
+                "type": [
+                  "number"
+                ]
+              },
+              "maxLength": {
+                "type": [
+                  "number"
+                ]
+              },
+              "min": {
+                "type": [
+                  "number"
+                ]
+              },
+              "max": {
+                "type": [
+                  "number"
+                ]
+              },
+              "allowedValues": {
+                "type": [
+                  "array"
+                ],
+                "items": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              }
+            },
+            "required": []
+          }
+        },
+        "required": [
+          "displayLabel",
+          "question"
+        ]
+      },
+      "isPublic": {
+        "type": [
+          "boolean"
+        ]
+      },
+      "tags": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "category",
+      "defaultConfig",
+      "description",
+      "fieldType",
+      "name"
+    ]
+  },
+  "list_voice_kb_gaps": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "analyze_voice_kb_gaps": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "add_voice_kb_gap": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "gapId": {
+        "type": [
+          "string"
+        ]
+      },
+      "answer": {
+        "type": [
+          "string"
+        ]
+      },
+      "title": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "gapId"
+    ]
+  },
+  "dismiss_voice_kb_gap": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "gapId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "gapId"
+    ]
+  },
+  "list_voice_faq_suggestions": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "generate_voice_faq_suggestions": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "add_voice_faq_suggestion": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "suggestionId": {
+        "type": [
+          "string"
+        ]
+      },
+      "question": {
+        "type": [
+          "string"
+        ]
+      },
+      "answer": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "suggestionId"
+    ]
+  },
+  "update_voice_faq_suggestion": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "suggestionId": {
+        "type": [
+          "string"
+        ]
+      },
+      "question": {
+        "type": [
+          "string"
+        ]
+      },
+      "answer": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "suggestionId"
+    ]
+  },
+  "dismiss_voice_faq_suggestion": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "suggestionId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "suggestionId"
+    ]
+  },
+  "list_voice_agent_resources": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "page": {
+        "type": [
+          "number"
+        ]
+      },
+      "limit": {
+        "type": [
+          "number"
+        ]
+      },
+      "search": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": []
+  },
+  "create_voice_agent_resource": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "url": {
+        "type": [
+          "string"
+        ]
+      },
+      "title": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "action": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"link\"",
+          "\"presentation\""
+        ]
+      },
+      "contentType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"image\"",
+          "\"pdf\"",
+          "\"video\""
+        ]
+      }
+    },
+    "required": [
+      "action",
+      "agentId",
+      "description",
+      "title",
+      "url"
+    ]
+  },
+  "bulk_create_voice_agent_resources": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "resources": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "object"
+          ],
+          "properties": {
+            "url": {
+              "type": [
+                "string"
+              ]
+            },
+            "title": {
+              "type": [
+                "string"
+              ]
+            },
+            "description": {
+              "type": [
+                "string"
+              ]
+            },
+            "action": {
+              "type": [
+                "string"
+              ],
+              "enum": [
+                "\"link\"",
+                "\"presentation\""
+              ]
+            },
+            "contentType": {
+              "type": [
+                "string"
+              ],
+              "enum": [
+                "\"image\"",
+                "\"pdf\"",
+                "\"video\""
+              ]
+            }
+          },
+          "required": [
+            "action",
+            "description",
+            "title",
+            "url"
+          ]
+        }
+      }
+    },
+    "required": [
+      "agentId",
+      "resources"
+    ]
+  },
+  "update_voice_agent_resource": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "resourceId": {
+        "type": [
+          "string"
+        ]
+      },
+      "url": {
+        "type": [
+          "string"
+        ]
+      },
+      "title": {
+        "type": [
+          "string"
+        ]
+      },
+      "description": {
+        "type": [
+          "string"
+        ]
+      },
+      "action": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"link\"",
+          "\"presentation\""
+        ]
+      },
+      "contentType": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"image\"",
+          "\"pdf\"",
+          "\"video\""
+        ]
+      }
+    },
+    "required": [
+      "resourceId"
+    ]
+  },
+  "delete_voice_agent_resource": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "resourceId": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "resourceId"
+    ]
+  },
+  "analyze_voice_instruction_gaps": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "anchors": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      },
+      "originalPrompt": {
+        "type": [
+          "string"
+        ]
+      },
+      "conversationSummaries": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
+      }
+    },
+    "required": [
+      "agentId"
+    ]
+  },
+  "apply_voice_instruction_gap": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "agentId": {
+        "type": [
+          "string"
+        ]
+      },
+      "suggestedPatch": {
+        "type": [
+          "string"
+        ]
+      },
+      "insertAfterSection": {
+        "type": [
+          "null",
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "agentId",
+      "suggestedPatch"
+    ]
+  },
+  "get_billing_status": {
+    "type": [
+      "object"
+    ],
+    "properties": {},
+    "required": []
+  }
+}

@@ -1,4 +1,4 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpServer } from "@modelcontextprotocol/server";
 import { MCP_APP_MIME_TYPE, MEDIA_LIST_CARD_URI } from "./card-data.js";
 import { MEDIA_LIST_CARD_HTML } from "./view.js";
 

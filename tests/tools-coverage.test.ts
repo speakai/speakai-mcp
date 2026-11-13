@@ -3,7 +3,7 @@
  * Each tool gets at least one happy-path test verifying the correct HTTP method + URL.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 
 const mockGet = vi.fn().mockResolvedValue({ data: { data: {} } });
 const mockPost = vi.fn().mockResolvedValue({ data: { data: {} } });

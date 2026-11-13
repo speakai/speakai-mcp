@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import type { RegisterOptions } from "./index.js";
@@ -105,14 +105,14 @@ const OR_TRIGGERS_DESCRIPTION =
 
 const writeSchema = {
   name: z.string().min(1).max(150).describe("Display name for the automation"),
-  trigger: z.record(z.unknown()).describe(TRIGGER_DESCRIPTION),
+  trigger: z.record(z.string(), z.unknown()).describe(TRIGGER_DESCRIPTION),
   triggers: z
-    .array(z.record(z.unknown()))
+    .array(z.record(z.string(), z.unknown()))
     .max(10)
     .optional()
     .describe(OR_TRIGGERS_DESCRIPTION),
   steps: z
-    .array(z.record(z.unknown()))
+    .array(z.record(z.string(), z.unknown()))
     .min(1)
     .max(20)
     .describe(STEPS_DESCRIPTION),
@@ -126,7 +126,7 @@ const writeSchema = {
     .optional()
     .describe("Run type: \"instant\" (default, runs on trigger) or \"schedule\" (cron)"),
   schedule: z
-    .record(z.unknown())
+    .record(z.string(), z.unknown())
     .optional()
     .describe(
       "Required when runType=\"schedule\": { timePeriod: \"today\"|\"yesterday\"|\"last7days\"|\"last14days\"|\"thisWeek\", repeatAt: string }",
@@ -182,7 +182,7 @@ function refuseInvalidGraph(
 ): { content: { type: "text"; text: string }[]; isError: true } | null {
   if (!Array.isArray(steps)) return null;
   const triggerSlug = (trigger as { triggerSlug?: unknown })?.triggerSlug;
-  const { errors } = validateGraph(steps as WireStep[], {
+  const { errors } = validateGraph(steps as unknown as WireStep[], {
     triggerSlug: typeof triggerSlug === "string" ? triggerSlug : undefined,
     runType: typeof runType === "string" ? runType : undefined,
   });
@@ -207,7 +207,7 @@ function refuseInvalidGraph(
 function graphWarnings(steps: unknown, trigger: unknown, runType: unknown): string[] {
   if (!Array.isArray(steps)) return [];
   const triggerSlug = (trigger as { triggerSlug?: unknown })?.triggerSlug;
-  return validateGraph(steps as WireStep[], {
+  return validateGraph(steps as unknown as WireStep[], {
     triggerSlug: typeof triggerSlug === "string" ? triggerSlug : undefined,
     runType: typeof runType === "string" ? runType : undefined,
   }).warnings;
@@ -793,8 +793,8 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "web editor could not reopen — plus non-blocking warnings. Use it to iterate on a branched automation " +
       "instead of discovering the problems one failed save at a time.",
     {
-      steps: z.array(z.record(z.unknown())).min(1).describe(STEPS_DESCRIPTION),
-      trigger: z.record(z.unknown()).optional().describe(TRIGGER_DESCRIPTION),
+      steps: z.array(z.record(z.string(), z.unknown())).min(1).describe(STEPS_DESCRIPTION),
+      trigger: z.record(z.string(), z.unknown()).optional().describe(TRIGGER_DESCRIPTION),
       runType: z
         .enum(["instant", "schedule"])
         .optional()
@@ -809,7 +809,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     },
     async ({ steps, trigger, runType }) => {
       const triggerSlug = (trigger as { triggerSlug?: unknown } | undefined)?.triggerSlug;
-      const { errors, warnings } = validateGraph(steps as WireStep[], {
+      const { errors, warnings } = validateGraph(steps as unknown as WireStep[], {
         triggerSlug: typeof triggerSlug === "string" ? triggerSlug : undefined,
         runType,
       });
@@ -822,7 +822,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
                 valid: errors.length === 0,
                 errors,
                 warnings,
-                shape: describeGraph(steps as WireStep[]),
+                shape: describeGraph(steps as unknown as WireStep[]),
               },
               null,
               2,
@@ -868,7 +868,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
           };
         }
         const triggerSlug = (data as { trigger?: { triggerSlug?: unknown } })?.trigger?.triggerSlug;
-        const { errors, warnings } = validateGraph(steps as WireStep[], {
+        const { errors, warnings } = validateGraph(steps as unknown as WireStep[], {
           triggerSlug: typeof triggerSlug === "string" ? triggerSlug : undefined,
           runType: (data as { runType?: string })?.runType,
         });
@@ -881,7 +881,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
                   automationId,
                   name: (data as { name?: string })?.name,
                   runType: (data as { runType?: string })?.runType,
-                  shape: describeGraph(steps as WireStep[]),
+                  shape: describeGraph(steps as unknown as WireStep[]),
                   steps,
                   // A stored automation can predate a rule, or have been written through the
                   // raw API. Saying so here is cheaper than a failed round-trip on re-save.

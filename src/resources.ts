@@ -1,5 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/server";
 import { AxiosInstance } from "axios";
 import { speakClient } from "./client.js";
 import { formatAxiosError } from "./client.js";
@@ -32,7 +31,7 @@ export function registerResources(server: McpServer, client?: AxiosInstance): vo
 
   // ── Static Resources ────────────────────────────────────────────────
 
-  server.resource(
+  server.registerResource(
     "media-library",
     "speakai://media",
     { description: "List of all media files in your Speak AI workspace" },
@@ -48,7 +47,7 @@ export function registerResources(server: McpServer, client?: AxiosInstance): vo
     }
   );
 
-  server.resource(
+  server.registerResource(
     "folders",
     "speakai://folders",
     { description: "List of all folders in your Speak AI workspace" },
@@ -64,7 +63,7 @@ export function registerResources(server: McpServer, client?: AxiosInstance): vo
     }
   );
 
-  server.resource(
+  server.registerResource(
     "supported-languages",
     "speakai://languages",
     { description: "List of supported transcription languages" },
@@ -80,7 +79,7 @@ export function registerResources(server: McpServer, client?: AxiosInstance): vo
 
   // ── Dynamic Resource Templates ──────────────────────────────────────
 
-  server.resource(
+  server.registerResource(
     "transcript",
     new ResourceTemplate("speakai://media/{mediaId}/transcript", { list: undefined }),
     { description: "Full transcript for a specific media file" },
@@ -94,7 +93,7 @@ export function registerResources(server: McpServer, client?: AxiosInstance): vo
     }
   );
 
-  server.resource(
+  server.registerResource(
     "insights",
     new ResourceTemplate("speakai://media/{mediaId}/insights", { list: undefined }),
     { description: "AI-generated insights for a specific media file" },
