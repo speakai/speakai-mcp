@@ -41,6 +41,7 @@ __export(client_exports, {
   getApiRefusal: () => getApiRefusal,
   instrumentSpeakClient: () => instrumentSpeakClient,
   isFailedBody: () => isFailedBody,
+  noteToolFailure: () => noteToolFailure,
   runToolCall: () => runToolCall,
   speakClient: () => speakClient
 });
@@ -70,6 +71,12 @@ function formatRefusal(refusal) {
   return typeof refusal.checkoutUrl === "string" && refusal.checkoutUrl ? `${lead}
 Continue here: ${refusal.checkoutUrl}` : lead;
 }
+function noteToolFailure(value, refusal = getApiRefusal(value)) {
+  const context = toolCallContext.getStore();
+  if (!context) return;
+  if (refusal) context.refusal = refusal;
+  if (import_axios.default.isAxiosError(value) && value.response) context.status = value.response.status;
+}
 function instrumentSpeakClient(client) {
   if (!client?.interceptors || instrumentedClients.has(client)) return client;
   instrumentedClients.add(client);
@@ -78,22 +85,17 @@ function instrumentSpeakClient(client) {
     if (toolName) config.headers.set(TOOL_NAME_HEADER, toolName);
     return config;
   });
-  const keepRefusal = (value) => {
-    const context = toolCallContext.getStore();
-    const refusal = getApiRefusal(value);
-    if (context && refusal) context.refusal = refusal;
-  };
   client.interceptors.response.use(
     (response) => {
       if (!isFailedBody(response.data)) return response;
-      keepRefusal(response.data);
+      noteToolFailure(response.data);
       const message = getApiRefusal(response.data) ? formatRefusal(response.data) : String(response.data.message ?? "The API reported that the request failed.");
       return Promise.reject(
         new import_axios.default.AxiosError(message, "ERR_BAD_RESPONSE", response.config, response.request, response)
       );
     },
     (error) => {
-      keepRefusal(error);
+      noteToolFailure(error);
       return Promise.reject(error);
     }
   );
@@ -274,6 +276,7 @@ var init_client = __esm({
 
 // src/tools/_helpers.ts
 function refusalResult(refusal) {
+  noteToolFailure(refusal, refusal);
   return {
     content: [{ type: "text", text: formatRefusal(refusal) }],
     structuredContent: { data: refusal },
@@ -297,6 +300,7 @@ function ok(data) {
   };
 }
 function err(error) {
+  noteToolFailure(error);
   const refusal = getApiRefusal(error);
   if (refusal) return refusalResult(refusal);
   return {
@@ -304,7 +308,7 @@ function err(error) {
     isError: true
   };
 }
-function registerSpeakTool(server, name, description, inputSchema, annotations, handler) {
+function registerSpeakTool(server, name, description, inputSchema, annotations, handler, toolMeta) {
   const registerTool = server.registerTool.bind(server);
   return registerTool(
     name,
@@ -313,40 +317,69 @@ function registerSpeakTool(server, name, description, inputSchema, annotations, 
       description,
       inputSchema,
       outputSchema: passthroughOutputSchema,
-      annotations
+      annotations,
+      ...toolMeta ? { _meta: toolMeta } : {}
     },
     async (args2, extra) => runToolCall(name, async (context) => {
-      const result = await handler(args2, extra);
-      if (result.isError && context.refusal) {
-        return refusalResult(context.refusal);
-      }
-      if (result.isError || result.structuredContent) {
-        return result;
-      }
-      const textContent = result.content?.find(
-        (item) => item.type === "text"
-      );
-      if (!textContent) {
-        return { ...result, structuredContent: { data: null } };
-      }
-      let data;
+      const startedAt = performance.now();
+      let result;
       try {
-        data = JSON.parse(textContent.text);
-      } catch {
-        return { ...result, structuredContent: { data: textContent.text } };
+        result = normalizeToolResult(await handler(args2, extra), context);
+        return result;
+      } finally {
+        reportToolCall(server, name, startedAt, result, context);
       }
-      const refusal = getApiRefusal(data);
-      if (refusal) return refusalResult(refusal);
-      return { ...result, structuredContent: { data } };
     })
   );
 }
-var import_zod, passthroughOutputSchema, fieldIdSchema, SHARED_DASHBOARD_CACHE_NOTE;
+function normalizeToolResult(result, context) {
+  if (result.isError && context.refusal) {
+    return refusalResult(context.refusal);
+  }
+  if (result.isError || result.structuredContent) {
+    return result;
+  }
+  const textContent = result.content?.find(
+    (item) => item.type === "text"
+  );
+  if (!textContent) {
+    return { ...result, structuredContent: { data: null } };
+  }
+  let data;
+  try {
+    data = JSON.parse(textContent.text);
+  } catch {
+    return { ...result, structuredContent: { data: textContent.text } };
+  }
+  const refusal = getApiRefusal(data);
+  if (refusal) return refusalResult(refusal);
+  return { ...result, structuredContent: { data } };
+}
+function setToolCallListener(server, listener) {
+  toolCallListeners.set(server, listener);
+}
+function reportToolCall(server, tool, startedAt, result, context) {
+  const listener = toolCallListeners.get(server);
+  if (!listener) return;
+  const ok2 = result !== void 0 && !result.isError;
+  const event = { event: "mcp.tool.call", tool, ok: ok2, durationMs: Math.round(performance.now() - startedAt) };
+  if (!ok2 && context.refusal) {
+    event.refusal = typeof context.refusal.reason === "string" ? context.refusal.reason : "declined";
+  }
+  if (!ok2 && context.status !== void 0) event.status = context.status;
+  try {
+    listener(event);
+  } catch {
+    return;
+  }
+}
+var import_zod, toolCallListeners, passthroughOutputSchema, fieldIdSchema, SHARED_DASHBOARD_CACHE_NOTE;
 var init_helpers = __esm({
   "src/tools/_helpers.ts"() {
     "use strict";
     import_zod = require("zod");
     init_client();
+    toolCallListeners = /* @__PURE__ */ new WeakMap();
     passthroughOutputSchema = {
       data: import_zod.z.unknown().describe("Response payload from the Speak AI API")
     };
@@ -354,6 +387,88 @@ var init_helpers = __esm({
       message: "This looks like the field's database _id. Use the field `id` from list_fields or create_field (12 characters)."
     }).describe("Field `id` from list_fields or create_field (12 characters), never the database `_id`");
     SHARED_DASHBOARD_CACHE_NOTE = "Shared dashboard links cache widget data, so field and media edits can take up to about 5 minutes to show for date ranges that include today (15 at most) and up to about 17 minutes for past ranges (60 at most); any dashboard update refreshes it at once.";
+  }
+});
+
+// src/ui/media-list/card-data.ts
+function isRecord2(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function nonEmptyString(value) {
+  return typeof value === "string" && value.trim() ? value : void 0;
+}
+function durationSecondsOf(value) {
+  if (!isRecord2(value)) return void 0;
+  const seconds = value.inSecond;
+  return typeof seconds === "number" && Number.isFinite(seconds) && seconds >= 0 ? seconds : void 0;
+}
+function firstMatchLine(sentences) {
+  if (!Array.isArray(sentences)) return void 0;
+  const text = isRecord2(sentences[0]) ? nonEmptyString(sentences[0].text) : void 0;
+  if (!text) return void 0;
+  const line = text.replace(/\s+/g, " ").trim();
+  return line.length > MATCH_LINE_MAX_CHARS ? `${line.slice(0, MATCH_LINE_MAX_CHARS - 1)}\u2026` : line;
+}
+function toCardItem(raw, withMatchLine) {
+  if (!isRecord2(raw)) return void 0;
+  const mediaId = nonEmptyString(raw.mediaId);
+  const name = nonEmptyString(raw.name);
+  if (!mediaId || !name) return void 0;
+  const item = { mediaId, name };
+  const createdAt = nonEmptyString(raw.createdAt);
+  if (createdAt) item.createdAt = createdAt;
+  const durationSeconds = durationSecondsOf(raw.duration);
+  if (durationSeconds !== void 0) item.durationSeconds = durationSeconds;
+  const mediaType = nonEmptyString(raw.mediaType);
+  if (mediaType) item.mediaType = mediaType;
+  const state = nonEmptyString(raw.state);
+  if (state) item.state = state;
+  if (withMatchLine) {
+    const matchLine = firstMatchLine(raw.sentences);
+    if (matchLine) item.matchLine = matchLine;
+  }
+  return item;
+}
+function toCard(source, rows, total, query) {
+  if (!Array.isArray(rows)) return void 0;
+  const items = [];
+  for (const row of rows) {
+    if (items.length === MEDIA_LIST_CARD_MAX_ROWS) break;
+    const item = toCardItem(row, source === "search_media");
+    if (item) items.push(item);
+  }
+  if (!items.length) return void 0;
+  const card = { source, total: Math.max(total, items.length), items };
+  if (query) card.query = query;
+  return card;
+}
+function buildListMediaCard(body) {
+  const data = isRecord2(body) && isRecord2(body.data) ? body.data : void 0;
+  if (!data) return void 0;
+  const total = typeof data.totalCount === "number" ? data.totalCount : 0;
+  return toCard("list_media", data.mediaList, total);
+}
+function buildSearchMediaCard(body, query) {
+  const data = isRecord2(body) && isRecord2(body.data) ? body.data : void 0;
+  if (!data || !Array.isArray(data.media)) return void 0;
+  return toCard("search_media", data.media, data.media.length, query);
+}
+function mediaListCardResultMeta(card) {
+  return card ? { [MEDIA_LIST_CARD_META_KEY]: card } : void 0;
+}
+var MEDIA_LIST_CARD_URI, MCP_APP_MIME_TYPE, MEDIA_LIST_CARD_META_KEY, MEDIA_LIST_CARD_MAX_ROWS, MATCH_LINE_MAX_CHARS, mediaListCardToolMeta;
+var init_card_data = __esm({
+  "src/ui/media-list/card-data.ts"() {
+    "use strict";
+    MEDIA_LIST_CARD_URI = "ui://speak/media-list";
+    MCP_APP_MIME_TYPE = "text/html;profile=mcp-app";
+    MEDIA_LIST_CARD_META_KEY = "co.speakai/mediaList";
+    MEDIA_LIST_CARD_MAX_ROWS = 3;
+    MATCH_LINE_MAX_CHARS = 160;
+    mediaListCardToolMeta = {
+      ui: { resourceUri: MEDIA_LIST_CARD_URI },
+      "ui/resourceUri": MEDIA_LIST_CARD_URI
+    };
   }
 });
 
@@ -4886,6 +5001,36 @@ function getMimeType(filePath) {
 function detectMediaType(filePath) {
   return isVideoFile(filePath) ? "video" : "audio";
 }
+function apiErrorText(error, helpByStatus) {
+  const status = import_axios2.default.isAxiosError(error) ? error.response?.status : void 0;
+  const help = status === void 0 ? void 0 : helpByStatus[status];
+  return `Error: ${formatAxiosError(error)}${help ? `
+
+${help}` : ""}`;
+}
+function defaultUploadName(source, name, now = /* @__PURE__ */ new Date()) {
+  const given = name?.trim();
+  if (given) return given;
+  const fileName = fileNameFromSource(source);
+  if (fileName) return fileName;
+  return `Upload ${now.toISOString().slice(0, 16).replace("T", " ")} UTC`;
+}
+function fileNameFromSource(source) {
+  if (!/^https?:\/\//i.test(source.trim())) return path.basename(source.trim()) || void 0;
+  let lastSegment;
+  try {
+    lastSegment = new URL(source.trim()).pathname.split("/").filter(Boolean).pop();
+  } catch {
+    return void 0;
+  }
+  if (!lastSegment) return void 0;
+  let fileName = lastSegment.trim();
+  try {
+    fileName = decodeURIComponent(lastSegment).trim();
+  } catch {
+  }
+  return fileName && path.extname(fileName) ? fileName : void 0;
+}
 function detectImageMimeType(bytes) {
   const ascii = (start, end) => String.fromCharCode(...bytes.subarray(start, end));
   if (bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) return "image/jpeg";
@@ -4893,11 +5038,13 @@ function detectImageMimeType(bytes) {
   if (bytes.length >= 12 && ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "image/webp";
   return null;
 }
-var path, VIDEO_EXTENSIONS, MIME_TYPES, SUPPORTED_URL_SOURCES, UNSUPPORTED_URL_SOURCES;
+var path, import_axios2, VIDEO_EXTENSIONS, MIME_TYPES, SUPPORTED_URL_SOURCES, UNSUPPORTED_URL_SOURCES, URL_UPLOAD_HELP, MEDIA_NOT_FOUND_HELP;
 var init_media_utils = __esm({
   "src/media-utils.ts"() {
     "use strict";
     path = __toESM(require("path"));
+    import_axios2 = __toESM(require("axios"));
+    init_client();
     VIDEO_EXTENSIONS = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
     MIME_TYPES = {
       ".mp3": "audio/mpeg",
@@ -4912,6 +5059,8 @@ var init_media_utils = __esm({
     };
     SUPPORTED_URL_SOURCES = "YouTube, TikTok, Instagram, X/Twitter, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru and Rutube";
     UNSUPPORTED_URL_SOURCES = "Vimeo and Loom page links are not supported.";
+    URL_UPLOAD_HELP = `If the message above is about the link, show it to the user and ask for a different link instead of retrying the same one. A link works when it opens without signing in and is either a direct link to an audio or video file (such as .mp3, .m4a, .wav or .mp4) or a public page link from ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Private or sign-in-only links, photo-only posts and links to web pages without media cannot be imported.`;
+    MEDIA_NOT_FOUND_HELP = "No media with this mediaId exists in the signed-in Speak account. It may have been deleted, belong to a different Speak account, or not be a mediaId at all (a media name, a database _id or an id from another tool). Call search_media or list_media to find the right mediaId, then try again.";
   }
 });
 
@@ -4923,12 +5072,12 @@ __export(media_exports, {
   register: () => register,
   toNameFilter: () => toNameFilter
 });
-function register(server, client) {
+function register(server, client, options = {}) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
     "get_signed_upload_url",
-    "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
+    "Get a pre-signed URL for sending a file's bytes straight to Speak AI storage. Use it only when you can make an HTTP PUT request with the file's bytes yourself, for example from a terminal on the user's computer. If you cannot send that request, do not call this tool: ask the user for a public link to the file and use upload_and_analyze, or ask them to upload it in the Speak AI app. After the PUT succeeds, call upload_media with the returned URL. Where upload_local_file is available it does all of these steps for you.",
     {
       filename: import_zod2.z.string().min(1).describe('Original filename including extension, e.g. "interview.mp4". The extension decides audio vs video and the storage path, so it must match the real file \u2014 a video named ".mp3" is stored as audio and can never be analysed as video.'),
       mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". It decides the storage path, so it has to match the real file. Send it whenever the user has told you which they want, or when the filename extension does not reflect the real container. Omit it to derive the type from the extension, which is the only evidence available here because the bytes do not exist yet.'),
@@ -4966,7 +5115,7 @@ function register(server, client) {
     "upload_media",
     `Import an audio or video file into Speak AI from a URL and start transcription. Accepts a direct public file URL, a URL returned by get_signed_upload_url, or a page link from a supported platform, which the server resolves to the underlying media. Supported page links: ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} Creates a media item. The request fails if the file exceeds the plan's size limit or its duration cannot be read. Returns mediaId and state right away while processing continues in the background. Use get_media_status until state is 'processed', then get_transcript and get_media_insights.`,
     {
-      name: import_zod2.z.string().min(1).describe("Display name for the media file"),
+      name: import_zod2.z.string().optional().describe('Display name for the media. Defaults to the file name in the URL, or "Upload" with the date and time when the URL has none.'),
       url: import_zod2.z.string().describe("Direct public media file URL, a URL returned by get_signed_upload_url, or a page link from a platform listed in this tool's description. Page links are resolved server-side, so pass the URL the user gave you as-is."),
       mediaType: import_zod2.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       description: import_zod2.z.string().optional().describe("Description of the media file"),
@@ -4990,7 +5139,7 @@ function register(server, client) {
     },
     async (body) => {
       try {
-        const result = await api.post("/v1/media/upload", body);
+        const result = await api.post("/v1/media/upload", { ...body, name: defaultUploadName(body.url, body.name) });
         return {
           content: [
             { type: "text", text: JSON.stringify(result.data, null, 2) }
@@ -4998,7 +5147,7 @@ function register(server, client) {
         };
       } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          content: [{ type: "text", text: apiErrorText(err2, { 400: URL_UPLOAD_HELP }) }],
           isError: true
         };
       }
@@ -5052,8 +5201,10 @@ function register(server, client) {
         }
         queryParams.pageSize = params.pageSize ?? LIST_MEDIA_DEFAULT_PAGE_SIZE;
         const result = await api.get("/v1/media", { params: queryParams });
+        const cardMeta = options.cards ? mediaListCardResultMeta(buildListMediaCard(result.data)) : void 0;
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data) }]
+          content: [{ type: "text", text: JSON.stringify(result.data) }],
+          ...cardMeta ? { _meta: cardMeta } : {}
         };
       } catch (err2) {
         return {
@@ -5061,14 +5212,15 @@ function register(server, client) {
           isError: true
         };
       }
-    }
+    },
+    options.cards ? mediaListCardToolMeta : void 0
   );
   registerSpeakTool(
     server,
     "get_media_insights",
     "Retrieve AI-generated insights for a processed media file \u2014 topics, sentiment, keywords, action items, summaries, and more. The media must be in 'processed' state (check with get_media_status first). For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
-      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
+      mediaId: import_zod2.z.string().min(1).describe(MEDIA_ID_DESCRIPTION)
     },
     {
       title: "Get Media Insights",
@@ -5087,7 +5239,7 @@ function register(server, client) {
         };
       } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          content: [{ type: "text", text: apiErrorText(err2, { 404: MEDIA_NOT_FOUND_HELP }) }],
           isError: true
         };
       }
@@ -5098,7 +5250,7 @@ function register(server, client) {
     "get_transcript",
     "Retrieve the full transcript for a media file with speaker labels and timestamps. Works on processed media and also returns the partial, in-progress transcript while a meeting bot is still recording (LIVE_TRANSCRIPT state). To fetch only the new sentences added since your previous call during a live meeting, use get_live_meeting_transcript instead. Use update_transcript_speakers to rename speaker labels after reviewing. For subtitle-formatted output, use get_captions instead.",
     {
-      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
+      mediaId: import_zod2.z.string().min(1).describe(MEDIA_ID_DESCRIPTION)
     },
     {
       title: "Get Transcript",
@@ -5117,7 +5269,7 @@ function register(server, client) {
         };
       } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          content: [{ type: "text", text: apiErrorText(err2, { 404: MEDIA_NOT_FOUND_HELP }) }],
           isError: true
         };
       }
@@ -5207,7 +5359,7 @@ function register(server, client) {
     "get_media_status",
     "Check the processing status of a media file. States: pending \u2192 transcribing \u2192 analyzing \u2192 processed (or failed). Poll this after upload_media until state is 'processed', then use get_transcript and get_media_insights to retrieve results. For a video, data.thumbnail has the thumbnail: url, source (auto or custom), pending while a requested frame is being made, and error if that frame failed.",
     {
-      mediaId: import_zod2.z.string().min(1).describe("Unique identifier of the media file")
+      mediaId: import_zod2.z.string().min(1).describe(MEDIA_ID_DESCRIPTION)
     },
     {
       title: "Get Media Status",
@@ -5226,7 +5378,7 @@ function register(server, client) {
         };
       } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          content: [{ type: "text", text: apiErrorText(err2, { 404: MEDIA_NOT_FOUND_HELP }) }],
           isError: true
         };
       }
@@ -5599,12 +5751,13 @@ function register(server, client) {
     }
   );
 }
-var import_zod2, LIST_MEDIA_DEFAULT_PAGE_SIZE, LIST_MEDIA_MAX_PAGE_SIZE, THUMBNAIL_MAX_BYTES, THUMBNAIL_POLL_TIMEOUT_MS, THUMBNAIL_POLL_INTERVAL_MS, THUMBNAIL_FILE_EXTENSIONS, toNameFilter;
+var import_zod2, LIST_MEDIA_DEFAULT_PAGE_SIZE, LIST_MEDIA_MAX_PAGE_SIZE, THUMBNAIL_MAX_BYTES, THUMBNAIL_POLL_TIMEOUT_MS, THUMBNAIL_POLL_INTERVAL_MS, THUMBNAIL_FILE_EXTENSIONS, MEDIA_ID_DESCRIPTION, toNameFilter;
 var init_media3 = __esm({
   "src/tools/media.ts"() {
     "use strict";
     import_zod2 = require("zod");
     init_helpers();
+    init_card_data();
     init_client();
     init_dist();
     init_media_utils();
@@ -5618,6 +5771,7 @@ var init_media3 = __esm({
       "image/png": "png",
       "image/webp": "webp"
     };
+    MEDIA_ID_DESCRIPTION = "The mediaId (12 characters) from list_media, search_media or an upload result. Not the media name and not a database _id.";
     toNameFilter = (text) => /^name:/i.test(text) ? text : `name:${text}`;
   }
 });
@@ -6879,6 +7033,7 @@ __export(prompt_exports, {
 });
 function register7(server, client, options = {}) {
   const api = client ?? speakClient;
+  const answerOnly = Boolean(options.aiChatAnswerOnly);
   const askAiChatDescription = [
     "Ask an AI-powered question about your media using Speak AI's AI Chat.",
     "Supports querying a single file, multiple files, entire folders, or your whole account.",
@@ -6887,10 +7042,8 @@ function register7(server, client, options = {}) {
     "To continue a conversation, pass the promptId from a previous response.",
     "Returns a promptId \u2014 save it to continue the conversation with follow-up questions.",
     "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
-    "reading the transcript alone. That is a premium feature and costs credits per hour of media \u2014",
-    "call get_analysis_quote first to check eligibility and price.",
-    "Each question is charged to the account's chat usage.",
-    "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat."
+    "reading the transcript alone; call get_analysis_quote first to check the file can be analysed that way.",
+    answerOnly ? "The assistant answers only from the person's Speak recordings: it can search them and chart what it finds, and it does not take actions in other apps." : "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat."
   ].join(" ");
   const askAiChatInputSchema = {
     prompt: import_zod8.z.string().min(1).describe("The question or prompt to ask about the media"),
@@ -6908,15 +7061,15 @@ function register7(server, client, options = {}) {
     fieldId: import_zod8.z.string().optional().describe("Scope the prompt to a single custom field"),
     fieldIds: import_zod8.z.array(import_zod8.z.string()).max(10).optional().describe("Scope the prompt to multiple custom fields (max 10)"),
     filters: import_zod8.z.record(import_zod8.z.unknown()).optional().describe("Advanced filter object to scope which media the prompt runs over"),
-    analysisMediaId: import_zod8.z.string().optional().describe("Media to analyse as audio/video rather than transcript. Must also appear in mediaIds, and must be sent together with analysisInput. Premium feature."),
-    analysisInput: import_zod8.z.enum(["audio", "video"]).optional().describe("'audio' lets the model hear tone, pacing and delivery; 'video' also lets it see what is on screen. Omit for transcript-only, which is the default and costs nothing extra. 'transcript' is not a valid value here \u2014 omitting the field IS transcript-only.")
+    analysisMediaId: import_zod8.z.string().optional().describe("Media to analyse as audio/video rather than transcript. Must also appear in mediaIds, and must be sent together with analysisInput."),
+    analysisInput: import_zod8.z.enum(["audio", "video"]).optional().describe("'audio' lets the model hear tone, pacing and delivery; 'video' also lets it see what is on screen. Omit for transcript-only, which is the default. 'transcript' is not a valid value here \u2014 omitting the field IS transcript-only.")
   };
   const askAiChatAnnotations = {
     title: "Ask AI Chat",
     readOnlyHint: false,
-    destructiveHint: true,
+    destructiveHint: !answerOnly,
     idempotentHint: false,
-    openWorldHint: true
+    openWorldHint: !answerOnly
   };
   const ANALYSIS_TIMEOUT_MS = 6 * 60 * 1e3;
   const refuse = (message) => ({
@@ -6974,7 +7127,8 @@ function register7(server, client, options = {}) {
       };
     }
   };
-  if (options.aiChat) registerSpeakTool(
+  const aiChat = options.aiChat || answerOnly;
+  if (aiChat) registerSpeakTool(
     server,
     "ask_ai_chat",
     askAiChatDescription,
@@ -6982,16 +7136,16 @@ function register7(server, client, options = {}) {
     askAiChatAnnotations,
     askAiChatHandler
   );
-  if (options.aiChat) registerSpeakTool(
+  if (aiChat) registerSpeakTool(
     server,
     "get_analysis_quote",
-    "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason \u2014 an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run. Compare credits with the remaining balance from get_billing_status to warn the user before a run would use up their credits.",
+    "Check whether a media file can be analysed as audio or video before running ask_ai_chat with analysisInput. Returns whether the file is eligible and, when it is not, a plain-English reason. An unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's opt-in and the server-wide switch, so call it before an audio or video run.",
     {
-      mediaId: import_zod8.z.string().min(1).describe("Media file to price"),
+      mediaId: import_zod8.z.string().min(1).describe("Media file to check"),
       analysisInput: import_zod8.z.enum(["audio", "video"]).describe(
-        "Which pass to price: 'audio' (tone, pacing, delivery) or 'video' (also on-screen visuals, gestures, slides). Required."
+        "Which pass to check: 'audio' (tone, pacing, delivery) or 'video' (also on-screen visuals, gestures, slides). Required."
       ),
-      modelId: import_zod8.z.string().optional().describe("Optional model id to price against. Omit for the workspace default.")
+      modelId: import_zod8.z.string().optional().describe("Optional model id to check against. Omit for the workspace default.")
     },
     {
       title: "Get Analysis Quote",
@@ -7014,10 +7168,10 @@ function register7(server, client, options = {}) {
       }
     }
   );
-  if (options.aiChat) registerSpeakTool(
+  if (aiChat) registerSpeakTool(
     server,
     "retry_ai_chat",
-    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
+    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings and replaces the earlier answer for that message. " + (answerOnly ? "Like ask_ai_chat, the assistant answers only from the person's Speak recordings and does not take actions in other apps." : "Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps."),
     {
       promptId: import_zod8.z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: import_zod8.z.string().min(1).describe("ID of the specific message to retry")
@@ -7027,7 +7181,7 @@ function register7(server, client, options = {}) {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: true
+      openWorldHint: !answerOnly
     },
     async (body) => {
       try {
@@ -9884,7 +10038,7 @@ function withDefaultSearchDateRange(params) {
     endDate: params.endDate ?? now.toISOString()
   };
 }
-function register14(server, client) {
+function register14(server, client, options = {}) {
   const api = client ?? speakClient;
   registerSpeakTool(
     server,
@@ -9919,8 +10073,10 @@ function register14(server, client) {
     async (params) => {
       try {
         const result = await api.post("/v1/analytics/search", withDefaultSearchDateRange(params));
+        const cardMeta = options.cards ? mediaListCardResultMeta(buildSearchMediaCard(result.data, params.query)) : void 0;
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+          ...cardMeta ? { _meta: cardMeta } : {}
         };
       } catch (err2) {
         return {
@@ -9928,7 +10084,8 @@ function register14(server, client) {
           isError: true
         };
       }
-    }
+    },
+    options.cards ? mediaListCardToolMeta : void 0
   );
 }
 var import_zod16;
@@ -9937,6 +10094,7 @@ var init_analytics2 = __esm({
     "use strict";
     import_zod16 = require("zod");
     init_helpers();
+    init_card_data();
     init_client();
     init_dist();
   }
@@ -10485,7 +10643,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
       // A plain literal, not a template: the docs generator drops a tool's whole parameter
       // table when a description interpolates a value it cannot resolve statically.
       url: import_zod18.z.string().describe("Direct/public media file URL, or a shareable social/video page link \u2014 page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
-      name: import_zod18.z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
+      name: import_zod18.z.string().optional().describe('Display name for the media. Defaults to the file name in the URL, or "Upload" with the date and time when the URL has none.'),
       mediaType: import_zod18.z.enum([MediaType.AUDIO, MediaType.VIDEO]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want \u2014 if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       sourceLanguage: import_zod18.z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: import_zod18.z.string().optional().describe("Folder ID to place the media in"),
@@ -10501,7 +10659,7 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
     async (params) => {
       try {
         const uploadBody = {
-          name: params.name ?? params.url.split("/").pop()?.split("?")[0] ?? "Upload",
+          name: defaultUploadName(params.url, params.name),
           url: params.url
         };
         if (params.mediaType) uploadBody.mediaType = params.mediaType;
@@ -10535,7 +10693,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
         };
       } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          content: [{ type: "text", text: apiErrorText(err2, { 400: URL_UPLOAD_HELP }) }],
           isError: true
         };
       }
@@ -10577,7 +10735,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       const workerCount = Math.min(params.concurrency ?? MAX_BATCH_CONCURRENCY, urls.length);
       const send = (url) => api.post("/v1/media/upload", {
         ...shared,
-        name: url.split("/").pop()?.split("?")[0] || "Upload",
+        name: defaultUploadName(url),
         url
       });
       const worker = async () => {
@@ -10624,8 +10782,8 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
         ] : uploaded.length ? [
           `1. Poll get_media_status for each of the ${uploaded.length} mediaId values every 10-30 seconds, or call list_media on the folder to see them together.`,
           `2. When one reads "processed", call get_media_insights and get_transcript for it.`,
-          failed.length ? `3. ${failed.length} URL(s) did not upload \u2014 report the reasons above rather than silently retrying.` : `3. Nothing failed in this batch.`
-        ] : ["No uploads were accepted. Report the errors above to the user."]
+          failed.length ? `3. ${failed.length} URL(s) did not upload \u2014 report the reasons above rather than silently retrying. ${URL_UPLOAD_HELP}` : `3. Nothing failed in this batch.`
+        ] : [`No uploads were accepted. Report the errors above to the user. ${URL_UPLOAD_HELP}`]
       };
       return {
         content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
@@ -10683,8 +10841,8 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
           };
         }
         const fileBuffer = fs.readFileSync(filePath);
-        const axios3 = (await import("axios")).default;
-        await axios3.put(uploadUrl, fileBuffer, {
+        const axios4 = (await import("axios")).default;
+        await axios4.put(uploadUrl, fileBuffer, {
           headers: {
             "Content-Type": mimeType
           },
@@ -10692,7 +10850,7 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
           maxContentLength: Infinity
         });
         const createBody = {
-          name: params.name ?? filename,
+          name: defaultUploadName(filename, params.name),
           url: uploadUrl.split("?")[0],
           // S3 URL without query params; server re-signs via CloudFront
           mediaType
@@ -13064,7 +13222,7 @@ function register23(server, client) {
         const result = await api.get("/v1/subscription/billing-status");
         return ok(result.data);
       } catch (error) {
-        if (import_axios2.default.isAxiosError(error) && error.response?.status === 404) {
+        if (import_axios3.default.isAxiosError(error) && error.response?.status === 404) {
           return {
             content: [
               {
@@ -13080,13 +13238,384 @@ function register23(server, client) {
     }
   );
 }
-var import_axios2;
+var import_axios3;
 var init_billing3 = __esm({
   "src/tools/billing.ts"() {
     "use strict";
-    import_axios2 = __toESM(require("axios"));
+    import_axios3 = __toESM(require("axios"));
     init_helpers();
     init_client();
+  }
+});
+
+// src/ui/media-list/view.ts
+var SPEAK_WEB_APP_URL, CARD_DATA_TIMEOUT_MS, LIVE_BUTTON_PAUSE_MS, MCP_APPS_PROTOCOL_VERSION, VIEW_STYLE, VIEW_SCRIPT, MEDIA_LIST_CARD_HTML;
+var init_view = __esm({
+  "src/ui/media-list/view.ts"() {
+    "use strict";
+    init_card_data();
+    SPEAK_WEB_APP_URL = "https://app.speakai.co";
+    CARD_DATA_TIMEOUT_MS = 45e3;
+    LIVE_BUTTON_PAUSE_MS = 8e3;
+    MCP_APPS_PROTOCOL_VERSION = "2026-01-26";
+    VIEW_STYLE = `
+:root{color-scheme:light;
+--fb-bg:#ffffff;--fb-fg:#1f2328;--fb-muted:#59636e;--fb-line:#d8dee4;--fb-soft:#eef0f2;--fb-bad:#b42318}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+--fb-bg:#26282c;--fb-fg:#ececec;--fb-muted:#a8adb3;--fb-line:#3a3d42;--fb-soft:#34363a;--fb-bad:#f97066}}
+:root[data-theme="dark"]{color-scheme:dark;
+--fb-bg:#26282c;--fb-fg:#ececec;--fb-muted:#a8adb3;--fb-line:#3a3d42;--fb-soft:#34363a;--fb-bad:#f97066}
+:root{
+--c-bg:var(--color-background-primary,var(--fb-bg));
+--c-fg:var(--color-text-primary,var(--fb-fg));
+--c-muted:var(--color-text-secondary,var(--fb-muted));
+--c-line:var(--color-border-tertiary,var(--fb-line));
+--c-soft:var(--color-background-secondary,var(--fb-soft));
+--c-bad:var(--color-text-danger,var(--fb-bad));
+--c-ring:var(--color-ring-primary,var(--c-fg));
+--c-radius:var(--border-radius-xl,12px);
+--c-radius-btn:var(--border-radius-md,8px);
+--c-font:var(--font-sans,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif);
+--c-semibold:var(--font-weight-semibold,600)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent}
+body{font-family:var(--c-font);color:var(--c-fg);font-size:12px;line-height:1.45;-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+.card{border:1px solid var(--c-line);border-radius:var(--c-radius);background:var(--c-bg);padding:2px 12px 6px;min-width:0}
+.head{font-size:12px;font-weight:var(--c-semibold);color:var(--c-muted);padding:8px 0 6px;margin:0;overflow-wrap:anywhere}
+.list{list-style:none;margin:0;padding:0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--c-line);padding:6px 0;min-height:44px;min-width:0}
+.txt{position:relative;min-width:0;flex:1 1 auto}
+.t{font-size:14px;font-weight:var(--c-semibold);color:var(--c-fg);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;text-decoration:underline;text-decoration-color:var(--c-line);text-underline-offset:3px;border-radius:4px}
+.t:hover{text-decoration-color:currentColor}
+.meta,.match{display:block;font-size:12px;color:var(--c-muted)}
+.match{color:var(--c-fg)}
+.st{color:var(--c-fg);font-weight:var(--c-semibold)}
+.st.bad{color:var(--c-bad)}
+.match{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{flex:0 0 auto;font:inherit;font-size:12px;font-weight:var(--c-semibold);color:var(--c-fg);background:transparent;border:1px solid var(--c-line);border-radius:var(--c-radius-btn);padding:0 10px;min-height:32px;display:inline-flex;align-items:center;white-space:nowrap;cursor:pointer}
+.btn:hover{background:var(--c-soft)}
+.btn[aria-disabled="true"]{opacity:.45;cursor:default;background:transparent}
+.t:focus-visible,.btn:focus-visible{outline:2px solid var(--c-ring);outline-offset:2px}
+.t:focus:not(:focus-visible),.btn:focus:not(:focus-visible){outline:none}
+.foot{font-size:12px;color:var(--c-muted);border-top:1px solid var(--c-line);padding-top:6px;margin:0}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.touch .btn{min-height:44px;padding:0 12px}
+.touch .txt{min-height:44px;display:flex;flex-direction:column;justify-content:center}
+.touch .t::after{content:"";position:absolute;inset:0}
+.sk{display:block;background:var(--c-soft);border-radius:4px;height:12px}
+.sk.h{width:60px;margin:8px 0 6px}
+.sk.t{height:14px;width:60%;margin-bottom:6px}
+.sk.m{width:35%}
+.sk.b{width:110px;height:32px;border-radius:var(--c-radius-btn);flex:0 0 auto}
+.touch .sk.b{height:44px}
+@media (max-width:359px){.row{flex-direction:column;align-items:flex-start;gap:4px}.txt{width:100%}}
+`;
+    VIEW_SCRIPT = `
+(function(){
+var META_KEY=${JSON.stringify(MEDIA_LIST_CARD_META_KEY)};
+var MAX_ROWS=${MEDIA_LIST_CARD_MAX_ROWS};
+var WEB_APP_URL=${JSON.stringify(SPEAK_WEB_APP_URL)};
+var DATA_TIMEOUT_MS=${CARD_DATA_TIMEOUT_MS};
+var LIVE_PAUSE_MS=${LIVE_BUTTON_PAUSE_MS};
+var PROTOCOL_VERSION=${JSON.stringify(MCP_APPS_PROTOCOL_VERSION)};
+var READY_STATES={processed:1,complete:1};
+var NOT_STARTED_STATES={notUploaded:1,pendingPayment:1};
+
+var root=document.getElementById("card");
+var hostCaps={};
+var locale=document.documentElement.lang||navigator.language||"en-GB";
+var timeZone;
+var nextId=1;
+var pending={};
+var settled=false;
+var dataTimer;
+
+function post(msg){window.parent.postMessage(msg,"*");}
+function request(method,params){
+  var id=nextId++;
+  post({jsonrpc:"2.0",id:id,method:method,params:params});
+  return new Promise(function(resolve,reject){
+    pending[id]={resolve:resolve,reject:reject};
+    setTimeout(function(){if(pending[id]){delete pending[id];reject(new Error("timeout"));}},15000);
+  });
+}
+function notify(method,params){post({jsonrpc:"2.0",method:method,params:params||{}});}
+
+var lastHeight=-1;
+function reportSize(){
+  var h=root.hidden?0:Math.ceil(document.documentElement.getBoundingClientRect().height);
+  if(h===lastHeight)return;
+  lastHeight=h;
+  notify("ui/notifications/size-changed",{height:h});
+}
+
+function applyContext(ctx){
+  if(!ctx)return;
+  var docEl=document.documentElement;
+  if(ctx.theme)docEl.setAttribute("data-theme",ctx.theme==="dark"?"dark":"light");
+  var vars=ctx.styles&&ctx.styles.variables;
+  if(vars){for(var k in vars){if(vars[k])docEl.style.setProperty(k,vars[k]);}}
+  if(ctx.locale)locale=ctx.locale;
+  if(ctx.timeZone)timeZone=ctx.timeZone;
+  var touch=(ctx.deviceCapabilities&&ctx.deviceCapabilities.touch)||ctx.platform==="mobile";
+  if(touch||(window.matchMedia&&window.matchMedia("(pointer: coarse)").matches))docEl.classList.add("touch");
+  var inset=ctx.safeAreaInsets;
+  if(inset){document.body.style.padding=[inset.top,inset.right,inset.bottom,inset.left].map(function(n){return (n||0)+"px";}).join(" ");}
+}
+
+function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
+
+function formatDate(iso){
+  if(!iso)return "";
+  var d=new Date(iso);
+  if(isNaN(d.getTime()))return "";
+  try{return new Intl.DateTimeFormat(locale,{day:"numeric",month:"short",year:"numeric",timeZone:timeZone}).format(d);}
+  catch(e){return d.toISOString().slice(0,10);}
+}
+function formatLength(s){
+  if(typeof s!=="number")return "";
+  if(s<60)return "Under 1 min";
+  if(s<3600)return Math.floor(s/60)+" min";
+  var m=Math.floor((s%3600)/60);
+  return Math.floor(s/3600)+" h "+(m<10?"0":"")+m+" min";
+}
+function statusOf(item){
+  var s=item.state;
+  if(!s||READY_STATES[s])return null;
+  if(s==="failed")return {text:"Could not process",bad:true,button:false};
+  if(s==="liveTranscript")return {text:"Recording now",button:true,live:true};
+  if(NOT_STARTED_STATES[s])return {text:"Not processed yet",button:false};
+  return {text:"Processing",button:false};
+}
+function plural(n,one,many){return n+" "+(n===1?one:many);}
+function headerText(card){
+  if(card.source==="search_media"&&card.query){
+    return plural(card.total,"file matches","files match")+" \\u201c"+card.query+"\\u201d";
+  }
+  return plural(card.total,"file","files");
+}
+
+function openLink(url){
+  if(hostCaps.openLinks){
+    return request("ui/open-link",{url:url}).then(function(r){if(r&&r.isError)throw new Error("refused");});
+  }
+  return Promise.reject(new Error("no open-link"));
+}
+
+function askForText(item,btn,status){
+  if(btn.getAttribute("aria-disabled")==="true")return;
+  btn.setAttribute("aria-disabled","true");
+  var isText=item.mediaType==="text";
+  var live=status&&status.live;
+  var visible=isText?"Show the text of "+item.name:(live?"Show the transcript so far of "+item.name:"Show the transcript of "+item.name);
+  var context="The person picked the Speak file \\""+item.name+"\\" (mediaId "+item.mediaId+") in the file list card. Use get_transcript with mediaId "+item.mediaId+" for it; do not search again.";
+  var withContext=hostCaps.updateModelContext
+    ?request("ui/update-model-context",{content:[{type:"text",text:context}],structuredContent:{mediaId:item.mediaId,name:item.name}}).catch(function(){})
+    :Promise.resolve();
+  withContext.then(function(){
+    return request("ui/message",{role:"user",content:[{type:"text",text:visible}]});
+  }).then(function(r){
+    if(r&&r.isError)throw new Error("refused");
+    if(live)setTimeout(function(){btn.removeAttribute("aria-disabled");},LIVE_PAUSE_MS);
+  }).catch(function(){btn.removeAttribute("aria-disabled");});
+}
+
+function renderRow(item,isSearch){
+  var status=statusOf(item);
+  var li=el("li","row");
+  var txt=el("div","txt");
+  var url=WEB_APP_URL+"/media/"+encodeURIComponent(item.mediaId);
+  var a=el("a","t");
+  a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.title=item.name;
+  a.appendChild(document.createTextNode(item.name));
+  a.appendChild(el("span","sr",", opens in Speak in a new tab"));
+  a.addEventListener("click",function(ev){
+    if(!hostCaps.openLinks)return;
+    ev.preventDefault();
+    openLink(url).catch(function(){window.open(url,"_blank","noopener");});
+  });
+  txt.appendChild(a);
+
+  var meta=el("span","meta");
+  var parts=[];
+  if(!status&&item.mediaType!=="text"){var len=formatLength(item.durationSeconds);if(len)parts.push(len);}
+  var date=formatDate(item.createdAt);
+  if(date)parts.push(date);
+  meta.textContent=parts.join(" \\u00b7 ");
+  if(status){
+    if(parts.length)meta.appendChild(document.createTextNode(" \\u00b7 "));
+    meta.appendChild(el("span","st"+(status.bad?" bad":""),status.text));
+  }
+  txt.appendChild(meta);
+
+  if(isSearch){
+    txt.appendChild(el("span","match",item.matchLine?"\\u201c"+item.matchLine+"\\u201d":"Matched the file name or details"));
+  }
+  li.appendChild(txt);
+
+  if(!status||status.button){
+    var isText=item.mediaType==="text";
+    var label=isText?"Show text":"Show transcript";
+    var btn=el("button","btn",label);
+    btn.type="button";
+    btn.setAttribute("aria-label",(isText?"Show text of ":"Show transcript of ")+item.name);
+    btn.addEventListener("click",function(){askForText(item,btn,status);});
+    li.appendChild(btn);
+  }
+  return li;
+}
+
+function render(card){
+  settled=true;
+  clearTimeout(dataTimer);
+  root.textContent="";
+  root.removeAttribute("aria-busy");
+  if(!card||!Array.isArray(card.items)||!card.items.length){hide();return;}
+  var isSearch=card.source==="search_media";
+  var items=card.items.slice(0,MAX_ROWS);
+  var head=el("h2","head",headerText(card));
+  head.id="card-head";
+  root.appendChild(head);
+  var ul=el("ul","list");
+  ul.setAttribute("aria-labelledby","card-head");
+  items.forEach(function(item){ul.appendChild(renderRow(item,isSearch));});
+  root.appendChild(ul);
+  if(card.total>items.length){
+    root.appendChild(el("p","foot","Showing "+items.length+" of "+card.total+". "+(card.total-items.length)+" more in Speak."));
+  }
+  root.hidden=false;
+  reportSize();
+}
+
+function renderSkeleton(rows){
+  if(settled)return;
+  root.textContent="";
+  root.setAttribute("aria-busy","true");
+  root.appendChild(el("span","sk h"));
+  var ul=el("ul","list");
+  ul.setAttribute("aria-hidden","true");
+  for(var i=0;i<rows;i++){
+    var li=el("li","row");
+    var txt=el("div","txt");
+    txt.appendChild(el("span","sk t"));
+    txt.appendChild(el("span","sk m"));
+    li.appendChild(txt);
+    li.appendChild(el("span","sk b"));
+    ul.appendChild(li);
+  }
+  root.appendChild(ul);
+  root.hidden=false;
+  reportSize();
+}
+
+function hide(){
+  settled=true;
+  clearTimeout(dataTimer);
+  root.hidden=true;
+  root.textContent="";
+  reportSize();
+}
+
+function skeletonRows(args){
+  var size=args&&typeof args.pageSize==="number"?args.pageSize:MAX_ROWS;
+  return Math.max(1,Math.min(MAX_ROWS,size));
+}
+
+function onNotification(method,params){
+  if(method==="ui/notifications/tool-input"){renderSkeleton(skeletonRows(params&&params.arguments));}
+  else if(method==="ui/notifications/tool-result"){
+    if(!params||params.isError){hide();return;}
+    render(params._meta&&params._meta[META_KEY]);
+  }
+  else if(method==="ui/notifications/tool-cancelled"){hide();}
+  else if(method==="ui/notifications/host-context-changed"){applyContext(params);reportSize();}
+}
+
+window.addEventListener("message",function(ev){
+  if(ev.source!==window.parent)return;
+  var msg=ev.data;
+  if(!msg||msg.jsonrpc!=="2.0")return;
+  if(msg.method){
+    if(msg.id!=null){post({jsonrpc:"2.0",id:msg.id,result:{}});return;}
+    onNotification(msg.method,msg.params);
+    return;
+  }
+  if(msg.id!=null&&pending[msg.id]){
+    var p=pending[msg.id];delete pending[msg.id];
+    if(msg.error)p.reject(msg.error);else p.resolve(msg.result);
+  }
+});
+
+if(window.ResizeObserver){new ResizeObserver(reportSize).observe(document.documentElement);}
+
+renderSkeleton(MAX_ROWS);
+dataTimer=setTimeout(function(){if(!settled)hide();},DATA_TIMEOUT_MS);
+
+request("ui/initialize",{
+  appInfo:{name:"speakai-file-list",version:"1.0.0"},
+  appCapabilities:{availableDisplayModes:["inline"]},
+  protocolVersion:PROTOCOL_VERSION
+}).then(function(result){
+  hostCaps=(result&&result.hostCapabilities)||{};
+  applyContext(result&&result.hostContext);
+  notify("ui/notifications/initialized",{});
+  reportSize();
+}).catch(function(){});
+})();
+`;
+    MEDIA_LIST_CARD_HTML = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Speak files</title>
+<style>${VIEW_STYLE}</style>
+</head>
+<body>
+<main id="card" class="card" hidden></main>
+<script>${VIEW_SCRIPT}</script>
+</body>
+</html>
+`;
+  }
+});
+
+// src/ui/media-list/index.ts
+function registerMediaListCard(server) {
+  server.registerResource(
+    "speakai-file-list-card",
+    MEDIA_LIST_CARD_URI,
+    {
+      title: "Speak file list card",
+      description: "Shows up to 3 Speak files from list_media or search_media in the chat.",
+      mimeType: MCP_APP_MIME_TYPE,
+      _meta: MEDIA_LIST_CARD_RESOURCE_META
+    },
+    async () => ({
+      contents: [
+        {
+          uri: MEDIA_LIST_CARD_URI,
+          mimeType: MCP_APP_MIME_TYPE,
+          text: MEDIA_LIST_CARD_HTML,
+          _meta: MEDIA_LIST_CARD_RESOURCE_META
+        }
+      ]
+    })
+  );
+}
+var MEDIA_LIST_CARD_RESOURCE_META;
+var init_media_list = __esm({
+  "src/ui/media-list/index.ts"() {
+    "use strict";
+    init_card_data();
+    init_view();
+    MEDIA_LIST_CARD_RESOURCE_META = {
+      ui: {
+        csp: { connectDomains: [], resourceDomains: [] },
+        prefersBorder: false
+      }
+    };
   }
 });
 
@@ -13097,9 +13626,11 @@ __export(tools_exports, {
 });
 function registerAllTools(server, client, options = {}) {
   if (client) instrumentSpeakClient(client);
+  if (options.onToolCall) setToolCallListener(server, options.onToolCall);
   for (const mod of modules) {
     mod.register(server, client, options);
   }
+  if (options.cards) registerMediaListCard(server);
 }
 var modules;
 var init_tools = __esm({
@@ -13129,6 +13660,8 @@ var init_tools = __esm({
     init_voice_intelligence();
     init_billing3();
     init_client();
+    init_media_list();
+    init_helpers();
     modules = [
       media_exports,
       text_exports,
@@ -13794,9 +14327,9 @@ function createCli() {
       process.exit(1);
     }
     try {
-      const axios3 = (await import("axios")).default;
+      const axios4 = (await import("axios")).default;
       const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
-      const res = await axios3.post(
+      const res = await axios4.post(
         `${baseUrl}/v1/auth/accessToken`,
         {},
         { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
@@ -13839,9 +14372,9 @@ function createCli() {
     }
     process.stdout.write("  Validating...");
     try {
-      const axios3 = (await import("axios")).default;
+      const axios4 = (await import("axios")).default;
       const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
-      const res = await axios3.post(
+      const res = await axios4.post(
         `${baseUrl}/v1/auth/accessToken`,
         {},
         { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
@@ -14067,8 +14600,8 @@ function createCli() {
         }
         process.stdout.write("Uploading...");
         const fileBuffer = fs3.readFileSync(source);
-        const axios3 = (await import("axios")).default;
-        await axios3.put(uploadUrl, fileBuffer, {
+        const axios4 = (await import("axios")).default;
+        await axios4.put(uploadUrl, fileBuffer, {
           headers: { "Content-Type": mimeType },
           maxBodyLength: Infinity,
           maxContentLength: Infinity
@@ -15129,7 +15662,7 @@ if (isCliMode) {
             name: "speak-ai",
             version: "1.0.0"
           });
-          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
+          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true, cards: process.env.SPEAK_MCP_CARDS === "true" });
           registerResources2(server);
           registerPrompts2(server);
           const transport = new StdioServerTransport();
