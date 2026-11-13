@@ -304,7 +304,7 @@ renderSkeleton(MAX_ROWS);
 dataTimer=setTimeout(function(){if(!settled)hide();},DATA_TIMEOUT_MS);
 
 request("ui/initialize",{
-  appInfo:{name:"speak-media-list",version:"1.0.0"},
+  appInfo:{name:"speakai-file-list",version:"1.0.0"},
   appCapabilities:{availableDisplayModes:["inline"]},
   protocolVersion:PROTOCOL_VERSION
 }).then(function(result){
