@@ -207,6 +207,13 @@ const newCategories = [
       "get_dashboard_speakers_insight",
     ],
   },
+  {
+    id: "billing",
+    name: "Billing",
+    iconKey: "billing",
+    shortDescription: "Check the account's plan and remaining credits, with upgrade and top-up links.",
+    tools: ["get_billing_status"],
+  },
 ];
 
 for (const cat of json.categories) {

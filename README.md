@@ -256,7 +256,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 
 ## What you can do once installed
 
-Speak AI ships 189 tools your AI assistant can call. You don't need to memorize them; your AI assistant picks the right ones based on what you ask. Examples by category:
+Speak AI ships tools for media, transcripts, AI chat, automations, voice agents and more that your AI assistant can call. You don't need to memorize them; your AI assistant picks the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -286,7 +286,7 @@ Get a Speak AI API key at [app.speakai.co/developers/apikeys](https://app.speaka
 
 The `@speakai/mcp-server` npm package provides:
 
-- A CLI (`speakai-mcp`) for scripting and pipelines (30 commands).
+- A CLI (`speakai-mcp`) for scripting and pipelines.
 - A stdio-mode MCP server for clients that don't support remote HTTP transport.
 - An auto-setup wizard that detects installed MCP clients and configures them.
 
@@ -408,7 +408,7 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
 
-### MCP Tools (189)
+### MCP Tools
 
 <details>
 <summary>Media (19 tools)</summary>
@@ -749,7 +749,16 @@ A test run sends each enabled scenario's scripted user messages to the agent as 
 
 </details>
 
-### MCP Resources (5)
+<details>
+<summary>Billing (1 tool)</summary>
+
+| Tool | Description |
+|---|---|
+| `get_billing_status` | Plan, remaining credits, renewal or trial end, pending payment, and upgrade or top-up checkout links (checkout links only for people who can manage billing) |
+
+</details>
+
+### MCP Resources
 
 Resources provide direct data access without tool calls. Clients can read these URIs directly.
 
@@ -761,7 +770,7 @@ Resources provide direct data access without tool calls. Clients can read these 
 | Transcript | `speakai://media/{mediaId}/transcript` | Full transcript for a specific media file |
 | Insights | `speakai://media/{mediaId}/insights` | AI-generated insights for a specific media file |
 
-### MCP Prompts (3)
+### MCP Prompts
 
 Pre-built workflow prompts that agents can invoke to run multi-step tasks.
 
@@ -795,7 +804,7 @@ Parameters: days (optional, default: 7), folder (optional)
 
 **Example:** "Use the meeting-brief prompt with days=14 to cover the last two weeks"
 
-### CLI (30 Commands)
+### CLI
 
 Install globally and configure once:
 
@@ -1031,6 +1040,8 @@ All tool errors follow this structure:
 | `403` | Insufficient permissions |
 | `404` | Resource not found |
 | `429` | Rate limit exceeded |
+
+When the account cannot pay for the work, the tool error leads with the API's `userMessage`, followed by a `Continue here: <checkoutUrl>` line when there is one. `structuredContent.data` carries the full reply: `reason` (`OUT_OF_CREDITS`, `TRIAL_ENDED`, `PAYMENT_METHOD_REQUIRED`, `PLAN_FEATURE` or `PENDING_PAYMENT`; left out for public visitors), `billing` (`plan`: `free_trial`, `pay_as_you_go`, `pro` or `custom`; `creditsRemaining`, `creditsNeeded`, `trialEndsAt`, `canManageBilling`), `options` (`pro` carries only `id`, `recommended` and `url`, with no price; `top_up` carries `id`, `recommended`, `amount`, `currency`, `credits`, `autoReload` and `url`) and `agentNotes`. `checkoutUrl` is left out when the person cannot manage billing. Show the message to the user and retry only after they confirm. Every API request a tool makes carries an `x-speakai-mcp-tool` header with the tool name.
 
 ### Development
 

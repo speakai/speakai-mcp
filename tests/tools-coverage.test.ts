@@ -1212,6 +1212,23 @@ describe("Clips tools — remaining untested endpoints", () => {
   });
 });
 
+describe("Billing tools", () => {
+  it("get_billing_status calls GET /v1/subscription/billing-status and returns the reply", async () => {
+    vi.resetAllMocks();
+    const status = { status: "success", data: { plan: "pro", creditsRemaining: 40, canManageBilling: true } };
+    mockGet.mockResolvedValue({ data: status });
+    const server = new McpServer({ name: "test", version: "1.0.0" });
+    const { register } = await import("../src/tools/billing.js");
+    register(server, mockClient);
+
+    const result = await getToolCallback(server, "get_billing_status")({});
+
+    expect(mockGet).toHaveBeenCalledWith("/v1/subscription/billing-status");
+    expect(result.isError).toBeUndefined();
+    expect(result.structuredContent.data).toEqual(status);
+  });
+});
+
 describe("Folder tools", () => {
   let server: McpServer;
 

@@ -298,6 +298,13 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "apply_voice_instruction_gap",
     ],
   },
+  {
+    id: "billing",
+    name: "Billing",
+    tools: [
+      "get_billing_status",
+    ],
+  },
 ] as const satisfies readonly { id: string; name: string; tools: readonly string[] }[];
 
 export type SpeakMcpToolCategory = (typeof SPEAK_MCP_TOOL_CATEGORIES)[number];
