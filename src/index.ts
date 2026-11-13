@@ -61,7 +61,10 @@ const isCliMode =
   args.length > 0 &&
   (args[0].startsWith("-") || cliCommands.includes(args[0]));
 
-if (isCliMode) {
+// Importing the package as a library must never read the host's stdin or write to its stdout.
+const isEntryPoint = typeof module !== "undefined" && require.main === module;
+
+if (isEntryPoint && isCliMode) {
   // CLI mode — resolve config before importing client
   import("./cli/config.js").then(({ resolveApiKey, resolveBaseUrl }) => {
     resolveApiKey();
@@ -74,7 +77,7 @@ if (isCliMode) {
       });
     });
   });
-} else {
+} else if (isEntryPoint) {
   // MCP STDIO server mode (bare invocation or piped input)
   Promise.all([
     import("@modelcontextprotocol/server"),
