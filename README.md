@@ -446,9 +446,9 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `submit_chat_feedback` | Rate a chat response (thumbs up/down) |
 | `get_chat_statistics` | Get AI Chat usage statistics |
 | `export_chat_answer` | Export a conversation or answer |
-| `get_analysis_quote` | Check if a file can be analysed as audio/video and what it costs |
+| `check_analysis_eligibility` | Check whether a file can be analysed as audio or video |
 
-`ask_ai_chat`, `retry_ai_chat` and `get_analysis_quote` register only with `aiChat: true` or `aiChatAnswerOnly: true`. The stdio server uses `aiChat`, where Speak's assistant can call other tools. The hosted endpoint uses `aiChatAnswerOnly`: for AI-assistant connections the assistant answers only from the person's recordings and does not take actions in other apps.
+`ask_ai_chat`, `retry_ai_chat` and `check_analysis_eligibility` register only with `aiChat: true` or `aiChatAnswerOnly: true`. The stdio server uses `aiChat`, where Speak's assistant can call other tools. The hosted endpoint uses `aiChatAnswerOnly`: for AI-assistant connections the assistant answers only from the person's recordings and does not take actions in other apps.
 
 The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbound_webhook` and `get_webhook_attempts` register only with `automations: true`, and `get_voice_test_run` and `apply_voice_test_recommendation` only with `voiceTestRunDetails: true`. The stdio server includes them; the hosted endpoint does not, because automation steps can run actions in connected third-party apps. On the hosted endpoint, set up automations in the Speak AI web app.
 

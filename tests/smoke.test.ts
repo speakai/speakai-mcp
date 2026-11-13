@@ -55,7 +55,7 @@ describe("MCP Server Smoke Tests", () => {
       expect(tools[chatTool].annotations.openWorldHint).toBe(false);
     }
     expect(tools.ask_ai_chat.annotations.destructiveHint).toBe(false);
-    expect(toolNames).toContain("get_analysis_quote");
+    expect(toolNames).toContain("check_analysis_eligibility");
     for (const gated of [
       "create_automation",
       "build_automation",

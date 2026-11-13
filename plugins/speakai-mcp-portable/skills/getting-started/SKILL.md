@@ -77,7 +77,7 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 | Category id | Tools | What it is for | Start with |
 |---|---|---|---|
 | `media` | 19 | Upload, transcripts, captions, insights, status, metadata, speakers, thumbnails | `list_media`, `get_transcript`, `get_media_insights` |
-| `magic-prompt` | 12 | Chat history and prompt tools. AI Chat itself is available only on the local stdio server (`npx @speakai/mcp-server`) | `get_chat_history`, `list_prompts`, `export_chat_answer` |
+| `magic-prompt` | 12 | AI Chat, chat history and prompt tools. On the hosted server AI Chat answers only from the person's recordings | `get_chat_history`, `list_prompts`, `export_chat_answer` |
 | `search-analytics` | 3 | Deep search, workspace statistics, language list | `search_media`, `get_media_statistics` |
 | `folders-views` | 11 | Folders and saved views | `list_folders`, `create_folder`, `create_folder_view` |
 | `recorders-surveys` | 10 | Async voice and video surveys | `create_recorder`, `generate_recorder_url`, `get_recorder_recordings` |
