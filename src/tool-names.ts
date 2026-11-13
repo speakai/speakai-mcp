@@ -125,7 +125,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
 
   // prompt
   "ask_ai_chat",
-  "get_analysis_quote",
+  "check_analysis_eligibility",
   "list_prompts",
   "get_favorite_prompts",
   "toggle_prompt_favorite",

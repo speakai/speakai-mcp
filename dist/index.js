@@ -7041,11 +7041,13 @@ function register7(server, client, options = {}) {
     "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
     "To continue a conversation, pass the promptId from a previous response.",
     "Returns a promptId \u2014 save it to continue the conversation with follow-up questions.",
-    "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
-    "reading the transcript alone; call get_analysis_quote first to check the file can be analysed that way.",
+    ...answerOnly ? [] : [
+      "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
+      "reading the transcript alone; call check_analysis_eligibility first to check the file can be analysed that way."
+    ],
     answerOnly ? "The assistant answers only from the person's Speak recordings: it can search them and chart what it finds, and it does not take actions in other apps." : "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat."
   ].join(" ");
-  const askAiChatInputSchema = {
+  const fullAskAiChatInputSchema = {
     prompt: import_zod8.z.string().min(1).describe("The question or prompt to ask about the media"),
     mediaIds: import_zod8.z.array(import_zod8.z.string()).optional().describe("Array of media IDs to query. Omit along with folderIds to search across all media in your workspace."),
     folderIds: import_zod8.z.array(import_zod8.z.string()).optional().describe("Array of folder IDs to scope the query to. Omit along with mediaIds to search across all media."),
@@ -7064,6 +7066,8 @@ function register7(server, client, options = {}) {
     analysisMediaId: import_zod8.z.string().optional().describe("Media to analyse as audio/video rather than transcript. Must also appear in mediaIds, and must be sent together with analysisInput."),
     analysisInput: import_zod8.z.enum(["audio", "video"]).optional().describe("'audio' lets the model hear tone, pacing and delivery; 'video' also lets it see what is on screen. Omit for transcript-only, which is the default. 'transcript' is not a valid value here \u2014 omitting the field IS transcript-only.")
   };
+  const { analysisMediaId: _hostedSkipsMedia, analysisInput: _hostedSkipsInput, ...hostedAskAiChatInputSchema } = fullAskAiChatInputSchema;
+  const askAiChatInputSchema = answerOnly ? hostedAskAiChatInputSchema : fullAskAiChatInputSchema;
   const askAiChatAnnotations = {
     title: "Ask AI Chat",
     readOnlyHint: false,
@@ -7136,9 +7140,9 @@ function register7(server, client, options = {}) {
     askAiChatAnnotations,
     askAiChatHandler
   );
-  if (aiChat) registerSpeakTool(
+  if (aiChat && !answerOnly) registerSpeakTool(
     server,
-    "get_analysis_quote",
+    "check_analysis_eligibility",
     "Check whether a media file can be analysed as audio or video before running ask_ai_chat with analysisInput. Returns whether the file is eligible and, when it is not, a plain-English reason. An unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's opt-in and the server-wide switch, so call it before an audio or video run.",
     {
       mediaId: import_zod8.z.string().min(1).describe("Media file to check"),
@@ -14035,7 +14039,7 @@ var init_tool_names = __esm({
       "get_live_meeting_transcript",
       // prompt
       "ask_ai_chat",
-      "get_analysis_quote",
+      "check_analysis_eligibility",
       "list_prompts",
       "get_favorite_prompts",
       "toggle_prompt_favorite",
@@ -15333,7 +15337,7 @@ var SPEAK_MCP_TOOL_CATEGORIES = [
       "submit_chat_feedback",
       "get_chat_statistics",
       "export_chat_answer",
-      "get_analysis_quote"
+      "check_analysis_eligibility"
     ]
   },
   {

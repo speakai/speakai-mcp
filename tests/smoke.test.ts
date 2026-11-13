@@ -55,7 +55,10 @@ describe("MCP Server Smoke Tests", () => {
       expect(tools[chatTool].annotations.openWorldHint).toBe(false);
     }
     expect(tools.ask_ai_chat.annotations.destructiveHint).toBe(false);
-    expect(toolNames).toContain("get_analysis_quote");
+    expect(toolNames).not.toContain("check_analysis_eligibility");
+    const askSchema = JSON.stringify(tools.ask_ai_chat.inputSchema ?? {});
+    expect(askSchema).not.toContain("analysisInput");
+    expect(tools.ask_ai_chat.description).not.toContain("check_analysis_eligibility");
     for (const gated of [
       "create_automation",
       "build_automation",
@@ -71,7 +74,7 @@ describe("MCP Server Smoke Tests", () => {
     expect(toolNames).toContain("get_chat_history");
     expect(toolNames).toContain("create_webhook");
     expect(toolNames).toContain("start_voice_test_run");
-    expect(toolNames).toHaveLength(164);
+    expect(toolNames).toHaveLength(163);
   });
 
   it("leaves the voice test-run tools off when voiceTestRuns is false", async () => {
