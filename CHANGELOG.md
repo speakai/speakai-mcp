@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.42.0 (2026-11-13)
+
+- fix(tools): keep billing wording out of tool descriptions
+
 ## v1.41.4 (2026-11-11)
 
 - Maintenance release

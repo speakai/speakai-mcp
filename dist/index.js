@@ -34,10 +34,71 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/client.ts
 var client_exports = {};
 __export(client_exports, {
+  TOOL_NAME_HEADER: () => TOOL_NAME_HEADER,
   createSpeakClient: () => createSpeakClient,
   formatAxiosError: () => formatAxiosError,
+  formatRefusal: () => formatRefusal,
+  getApiRefusal: () => getApiRefusal,
+  instrumentSpeakClient: () => instrumentSpeakClient,
+  isFailedBody: () => isFailedBody,
+  runToolCall: () => runToolCall,
   speakClient: () => speakClient
 });
+function runToolCall(toolName, fn) {
+  const context = { toolName };
+  return toolCallContext.run(context, () => fn(context));
+}
+function isRecord(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function isFailedBody(value) {
+  return isRecord(value) && value.status === "failed";
+}
+function getApiRefusal(value) {
+  const fromError = import_axios.default.isAxiosError(value);
+  const body = fromError ? value.response?.data : value;
+  if (!isRecord(body)) return void 0;
+  const hasUserMessage = typeof body.userMessage === "string";
+  if (body.status === "failed" && hasUserMessage) return body;
+  const httpStatus = fromError ? value.response?.status : void 0;
+  const isClientError = httpStatus !== void 0 && httpStatus >= 400 && httpStatus < 500;
+  if (isClientError && (hasUserMessage || typeof body.reason === "string")) return body;
+  return void 0;
+}
+function formatRefusal(refusal) {
+  const lead = typeof refusal.userMessage === "string" && refusal.userMessage || typeof refusal.message === "string" && refusal.message || "The request was declined.";
+  return typeof refusal.checkoutUrl === "string" && refusal.checkoutUrl ? `${lead}
+Continue here: ${refusal.checkoutUrl}` : lead;
+}
+function instrumentSpeakClient(client) {
+  if (!client?.interceptors || instrumentedClients.has(client)) return client;
+  instrumentedClients.add(client);
+  client.interceptors.request.use((config) => {
+    const toolName = toolCallContext.getStore()?.toolName;
+    if (toolName) config.headers.set(TOOL_NAME_HEADER, toolName);
+    return config;
+  });
+  const keepRefusal = (value) => {
+    const context = toolCallContext.getStore();
+    const refusal = getApiRefusal(value);
+    if (context && refusal) context.refusal = refusal;
+  };
+  client.interceptors.response.use(
+    (response) => {
+      if (!isFailedBody(response.data)) return response;
+      keepRefusal(response.data);
+      const message = getApiRefusal(response.data) ? formatRefusal(response.data) : String(response.data.message ?? "The API reported that the request failed.");
+      return Promise.reject(
+        new import_axios.default.AxiosError(message, "ERR_BAD_RESPONSE", response.config, response.request, response)
+      );
+    },
+    (error) => {
+      keepRefusal(error);
+      return Promise.reject(error);
+    }
+  );
+  return client;
+}
 function getBaseUrl() {
   return process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
 }
@@ -109,15 +170,17 @@ async function ensureAuthenticated() {
   }
 }
 function createSpeakClient(options) {
-  return import_axios.default.create({
-    baseURL: options.baseUrl,
-    headers: {
-      "Content-Type": "application/json",
-      "x-speakai-key": options.apiKey,
-      "x-access-token": options.accessToken
-    },
-    timeout: 6e4
-  });
+  return instrumentSpeakClient(
+    import_axios.default.create({
+      baseURL: options.baseUrl,
+      headers: {
+        "Content-Type": "application/json",
+        "x-speakai-key": options.apiKey,
+        "x-access-token": options.accessToken
+      },
+      timeout: 6e4
+    })
+  );
 }
 function redactValue(value, depth = 0) {
   if (depth > 4) return "[truncated]";
@@ -137,6 +200,8 @@ function redactValue(value, depth = 0) {
   return value;
 }
 function formatAxiosError(error) {
+  const refusal = getApiRefusal(error);
+  if (refusal) return formatRefusal(refusal);
   if (import_axios.default.isAxiosError(error)) {
     const status = error.response?.status;
     const data = error.response?.data;
@@ -147,11 +212,15 @@ function formatAxiosError(error) {
   if (error instanceof Error) return error.message;
   return String(error);
 }
-var import_axios, accessToken, refreshToken, tokenExpiresAt, speakClient, SENSITIVE_KEY_PATTERN, MAX_STRING_LEN;
+var import_node_async_hooks, import_axios, TOOL_NAME_HEADER, toolCallContext, instrumentedClients, accessToken, refreshToken, tokenExpiresAt, speakClient, SENSITIVE_KEY_PATTERN, MAX_STRING_LEN;
 var init_client = __esm({
   "src/client.ts"() {
     "use strict";
+    import_node_async_hooks = require("async_hooks");
     import_axios = __toESM(require("axios"));
+    TOOL_NAME_HEADER = "x-speakai-mcp-tool";
+    toolCallContext = new import_node_async_hooks.AsyncLocalStorage();
+    instrumentedClients = /* @__PURE__ */ new WeakSet();
     accessToken = process.env.SPEAK_ACCESS_TOKEN ?? "";
     refreshToken = "";
     tokenExpiresAt = 0;
@@ -197,19 +266,39 @@ var init_client = __esm({
         return Promise.reject(error);
       }
     );
+    instrumentSpeakClient(speakClient);
     SENSITIVE_KEY_PATTERN = /(token|secret|password|cookie|authorization|jwt|apikey|api[_-]?key|bearer|signature)/i;
     MAX_STRING_LEN = 500;
   }
 });
 
 // src/tools/_helpers.ts
-function ok(data) {
+function refusalResult(refusal) {
   return {
+    content: [{ type: "text", text: formatRefusal(refusal) }],
+    structuredContent: { data: refusal },
+    isError: true
+  };
+}
+function failedBodyResult(data) {
+  const refusal = getApiRefusal(data);
+  if (refusal) return refusalResult(refusal);
+  if (!isFailedBody(data)) return void 0;
+  return {
+    content: [{ type: "text", text: `Error: ${JSON.stringify(data, null, 2)}` }],
+    structuredContent: { data },
+    isError: true
+  };
+}
+function ok(data) {
+  return failedBodyResult(data) ?? {
     content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
     structuredContent: { data }
   };
 }
 function err(error) {
+  const refusal = getApiRefusal(error);
+  if (refusal) return refusalResult(refusal);
   return {
     content: [{ type: "text", text: `Error: ${formatAxiosError(error)}` }],
     isError: true
@@ -226,8 +315,11 @@ function registerSpeakTool(server, name, description, inputSchema, annotations, 
       outputSchema: passthroughOutputSchema,
       annotations
     },
-    async (args2, extra) => {
+    async (args2, extra) => runToolCall(name, async (context) => {
       const result = await handler(args2, extra);
+      if (result.isError && context.refusal) {
+        return refusalResult(context.refusal);
+      }
       if (result.isError || result.structuredContent) {
         return result;
       }
@@ -237,12 +329,16 @@ function registerSpeakTool(server, name, description, inputSchema, annotations, 
       if (!textContent) {
         return { ...result, structuredContent: { data: null } };
       }
+      let data;
       try {
-        return { ...result, structuredContent: { data: JSON.parse(textContent.text) } };
+        data = JSON.parse(textContent.text);
       } catch {
         return { ...result, structuredContent: { data: textContent.text } };
       }
-    }
+      const refusal = getApiRefusal(data);
+      if (refusal) return refusalResult(refusal);
+      return { ...result, structuredContent: { data } };
+    })
   );
 }
 var import_zod, passthroughOutputSchema, fieldIdSchema, SHARED_DASHBOARD_CACHE_NOTE;
@@ -6785,7 +6881,7 @@ function register7(server, client, options = {}) {
   const api = client ?? speakClient;
   const askAiChatDescription = [
     "Ask an AI-powered question about your media using Speak AI's AI Chat.",
-    "Supports querying a single file, multiple files, entire folders, or your whole workspace.",
+    "Supports querying a single file, multiple files, entire folders, or your whole account.",
     "Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media.",
     "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
     "To continue a conversation, pass the promptId from a previous response.",
@@ -6889,7 +6985,7 @@ function register7(server, client, options = {}) {
   if (options.aiChat) registerSpeakTool(
     server,
     "get_analysis_quote",
-    "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason \u2014 an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
+    "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason \u2014 an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run. Compare credits with the remaining balance from get_billing_status to warn the user before a run would use up their credits.",
     {
       mediaId: import_zod8.z.string().min(1).describe("Media file to price"),
       analysisInput: import_zod8.z.enum(["audio", "video"]).describe(
@@ -10416,6 +10512,8 @@ Likely cause: this server rejects filter rules on webhook payload fields (${data
         const mediaId = uploadRes.data?.data?.mediaId;
         const state = uploadRes.data?.data?.state ?? "pending";
         if (!mediaId) {
+          const refusal = getApiRefusal(uploadRes.data);
+          if (refusal) return refusalResult(refusal);
           return {
             content: [{ type: "text", text: `Error: Upload succeeded but no mediaId returned.
 ${JSON.stringify(uploadRes.data, null, 2)}` }],
@@ -10474,6 +10572,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
       if (params.tags) shared.tags = params.tags;
       const uploaded = [];
       const failed = [];
+      let refusal;
       let cursor = 0;
       const workerCount = Math.min(params.concurrency ?? MAX_BATCH_CONCURRENCY, urls.length);
       const send = (url) => api.post("/v1/media/upload", {
@@ -10482,7 +10581,7 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
         url
       });
       const worker = async () => {
-        for (let i = cursor++; i < urls.length; i = cursor++) {
+        for (let i = cursor++; i < urls.length && !refusal; i = cursor++) {
           const url = urls[i];
           try {
             let res;
@@ -10495,21 +10594,34 @@ ${JSON.stringify(uploadRes.data, null, 2)}` }],
               res = await send(url);
             }
             const mediaId = res.data?.data?.mediaId;
-            if (mediaId) uploaded.push({ url, mediaId, state: res.data?.data?.state ?? "pending" });
-            else failed.push({ url, error: "Upload accepted but no mediaId was returned." });
+            if (mediaId) {
+              uploaded.push({ url, mediaId, state: res.data?.data?.state ?? "pending" });
+              continue;
+            }
+            refusal ?? (refusal = getApiRefusal(res.data));
+            failed.push({ url, error: refusal ? formatRefusal(refusal) : "Upload accepted but no mediaId was returned." });
           } catch (err2) {
+            refusal ?? (refusal = getApiRefusal(err2));
             failed.push({ url, error: formatAxiosError(err2) });
           }
         }
       };
       await Promise.all(Array.from({ length: workerCount }, worker));
+      if (refusal && uploaded.length === 0) return refusalResult(refusal);
+      const attempted = new Set([...uploaded, ...failed].map((entry) => entry.url));
+      const notSent = urls.filter((url) => !attempted.has(url));
       const result = {
         requested: urls.length,
         uploaded: uploaded.length,
         failed: failed.length,
         media: uploaded,
         errors: failed,
-        nextSteps: uploaded.length ? [
+        ...refusal ? { notSent, refusal } : {},
+        nextSteps: refusal ? [
+          `1. Stopped after ${uploaded.length} upload(s): ${formatRefusal(refusal)}`,
+          `2. Show that message to the user. ${notSent.length + failed.length} URL(s) were not imported; send them again only after the user confirms.`,
+          `3. Poll get_media_status for each uploaded mediaId every 10-30 seconds.`
+        ] : uploaded.length ? [
           `1. Poll get_media_status for each of the ${uploaded.length} mediaId values every 10-30 seconds, or call list_media on the folder to see them together.`,
           `2. When one reads "processed", call get_media_insights and get_transcript for it.`,
           failed.length ? `3. ${failed.length} URL(s) did not upload \u2014 report the reasons above rather than silently retrying.` : `3. Nothing failed in this batch.`
@@ -10571,8 +10683,8 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
           };
         }
         const fileBuffer = fs.readFileSync(filePath);
-        const axios2 = (await import("axios")).default;
-        await axios2.put(uploadUrl, fileBuffer, {
+        const axios3 = (await import("axios")).default;
+        await axios3.put(uploadUrl, fileBuffer, {
           headers: {
             "Content-Type": mimeType
           },
@@ -12928,12 +13040,63 @@ var init_voice_intelligence = __esm({
   }
 });
 
+// src/tools/billing.ts
+var billing_exports = {};
+__export(billing_exports, {
+  register: () => register23
+});
+function register23(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "get_billing_status",
+    "Show the account's billing status: plan (free_trial, pay_as_you_go, pro or custom), creditsRemaining, renewsAt, trialEndsAt, pendingPayment, canManageBilling and manageUrl, plus options: 'pro' has only id, recommended and a checkout url (no price), and 'top_up' has id, recommended, amount, currency, credits, autoReload and a checkout url. checkoutUrl links to the recommended option and is left out when the current user cannot manage billing; then ask them to contact whoever manages billing on the account. Read-only and free to call. Use it to warn the user before an upload, analysis or chat would run past the remaining credits, or after a tool reports that the account is out of credits. Share the links with the user and let them decide; never complete a purchase for them.",
+    {},
+    {
+      title: "Get Billing Status",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/subscription/billing-status");
+        return ok(result.data);
+      } catch (error) {
+        if (import_axios2.default.isAxiosError(error) && error.response?.status === 404) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: "Error: Billing status is not available from this Speak AI server yet (HTTP 404). Ask the user to check their plan and credits in the Speak AI app."
+              }
+            ],
+            isError: true
+          };
+        }
+        return err(error);
+      }
+    }
+  );
+}
+var import_axios2;
+var init_billing3 = __esm({
+  "src/tools/billing.ts"() {
+    "use strict";
+    import_axios2 = __toESM(require("axios"));
+    init_helpers();
+    init_client();
+  }
+});
+
 // src/tools/index.ts
 var tools_exports = {};
 __export(tools_exports, {
   registerAllTools: () => registerAllTools
 });
 function registerAllTools(server, client, options = {}) {
+  if (client) instrumentSpeakClient(client);
   for (const mod of modules) {
     mod.register(server, client, options);
   }
@@ -12964,6 +13127,8 @@ var init_tools = __esm({
     init_voice_testing();
     init_voice_questions();
     init_voice_intelligence();
+    init_billing3();
+    init_client();
     modules = [
       media_exports,
       text_exports,
@@ -12986,7 +13151,8 @@ var init_tools = __esm({
       voice_exports,
       voice_testing_exports,
       voice_questions_exports,
-      voice_intelligence_exports
+      voice_intelligence_exports,
+      billing_exports
     ];
   }
 });
@@ -13379,6 +13545,7 @@ var init_tool_names = __esm({
       "upload_local_file",
       // users / team management
       "list_users",
+      "get_billing_status",
       "list_user_groups",
       "create_user_group",
       "update_user_group",
@@ -13627,9 +13794,9 @@ function createCli() {
       process.exit(1);
     }
     try {
-      const axios2 = (await import("axios")).default;
+      const axios3 = (await import("axios")).default;
       const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
-      const res = await axios2.post(
+      const res = await axios3.post(
         `${baseUrl}/v1/auth/accessToken`,
         {},
         { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
@@ -13672,9 +13839,9 @@ function createCli() {
     }
     process.stdout.write("  Validating...");
     try {
-      const axios2 = (await import("axios")).default;
+      const axios3 = (await import("axios")).default;
       const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
-      const res = await axios2.post(
+      const res = await axios3.post(
         `${baseUrl}/v1/auth/accessToken`,
         {},
         { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
@@ -13900,8 +14067,8 @@ function createCli() {
         }
         process.stdout.write("Uploading...");
         const fileBuffer = fs3.readFileSync(source);
-        const axios2 = (await import("axios")).default;
-        await axios2.put(uploadUrl, fileBuffer, {
+        const axios3 = (await import("axios")).default;
+        await axios3.put(uploadUrl, fileBuffer, {
           headers: { "Content-Type": mimeType },
           maxBodyLength: Infinity,
           maxContentLength: Infinity
@@ -14887,6 +15054,13 @@ var SPEAK_MCP_TOOL_CATEGORIES = [
       "delete_voice_agent_resource",
       "analyze_voice_instruction_gaps",
       "apply_voice_instruction_gap"
+    ]
+  },
+  {
+    id: "billing",
+    name: "Billing",
+    tools: [
+      "get_billing_status"
     ]
   }
 ];
