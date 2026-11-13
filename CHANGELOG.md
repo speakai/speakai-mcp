@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.42.2 (2026-11-13)
+
+- fix(billing): get_billing_status describes billing without offers or links
+
 ## v1.42.1 (2026-11-13)
 
 - fix(billing): get_billing_status says how Pro compares and when to retry

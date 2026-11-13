@@ -13050,7 +13050,7 @@ function register23(server, client) {
   registerSpeakTool(
     server,
     "get_billing_status",
-    "Show the account's billing status: plan (free_trial, pay_as_you_go, pro or custom), creditsRemaining, renewsAt, trialEndsAt, pendingPayment, canManageBilling and manageUrl, plus options: 'pro' has only id, recommended and a checkout url (no price), and 'top_up' has id, recommended, amount, currency, credits, autoReload and a checkout url. checkoutUrl links to the recommended option and is left out when the current user cannot manage billing; then ask them to contact whoever manages billing on the account. Read-only and free to call. Use it to warn the user before an upload, analysis or chat would run past the remaining credits, or after a tool reports that the account is out of credits. Pro gives more hours of transcription for the money than adding credit. Share the links with the user and let them decide; never complete a purchase for them. Retry a blocked tool only after the user confirms they added credit or started Pro.",
+    "Show the account's billing status: plan (free_trial, pay_as_you_go, pro or custom), creditsRemaining, renewsAt, trialEndsAt, pendingPayment and canManageBilling. Read-only and free to call. Use it to tell the user before an upload, analysis or chat would run past the remaining credits, or after a tool reports that the account cannot cover the work. Retry a blocked tool only after the user confirms their account has credits.",
     {},
     {
       title: "Get Billing Status",
