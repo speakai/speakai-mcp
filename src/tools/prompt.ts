@@ -228,7 +228,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         .describe("Optional model id to check against. Omit for the workspace default."),
     },
     {
-      title: "Get Analysis Quote",
+      title: "Check Analysis Eligibility",
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,

@@ -298,7 +298,7 @@
         },
         {
           "name": "check_analysis_eligibility",
-          "title": "Get Analysis Quote",
+          "title": "Check Analysis Eligibility",
           "description": "Check whether a media file can be analysed as audio or video before running ask_ai_chat with analysisInput. Returns whether the file is eligible and, when it is not, a plain-English reason. An unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's opt-in and the server-wide switch, so call it before an audio or video run.",
           "readOnlyHint": true,
           "destructiveHint": false,
