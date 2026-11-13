@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.43.1 (2026-11-13)
+
+- fix(plugin): keep the OpenAI package in line with the hosted tool set
+
 ## v1.43.0 (2026-11-13)
 
 - feat(tools): file list card in the chat
