@@ -108,7 +108,7 @@
         "demo_recording_url": "https://drive.google.com/file/d/1BOqI-OdeqII2QQkUolQFVeHqycgbuoBB/view?usp=sharing"
       },
       "publication": {
-        "release_notes": "Adds get_billing_status, a read-only tool that shows the account's plan, remaining credits and renewal date, so the assistant can tell you before an upload or analysis would run past your credits. AI Chat is back as ask_ai_chat and retry_ai_chat. On this server it answers only from your own recordings and does not take actions in other apps. check_analysis_eligibility tells you whether a recording can be analysed as audio or video. Every operation the model can call is its own tool with a description, input schema and annotations."
+        "release_notes": "Adds get_billing_status, a read-only tool that shows the account's plan, remaining credits and renewal date, so the assistant can tell you before an upload or analysis would run past your credits. AI Chat is back as ask_ai_chat and retry_ai_chat. On this server it answers only from your own recordings and does not take actions in other apps. Every operation the model can call is its own tool with a description, input schema and annotations."
       }
     }
   }
