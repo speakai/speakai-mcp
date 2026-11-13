@@ -20,7 +20,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     "To continue a conversation, pass the promptId from a previous response.",
     "Returns a promptId — save it to continue the conversation with follow-up questions.",
     "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
-    "reading the transcript alone; call get_analysis_quote first to check the file can be analysed that way.",
+    "reading the transcript alone; call check_analysis_eligibility first to check the file can be analysed that way.",
     answerOnly
       ? "The assistant answers only from the person's Speak recordings: it can search them and chart what it finds, and it does not take actions in other apps."
       : "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
@@ -211,7 +211,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
   );
 
   if (aiChat) registerSpeakTool(server,
-    "get_analysis_quote",
+    "check_analysis_eligibility",
     "Check whether a media file can be analysed as audio or video before running ask_ai_chat with analysisInput. " +
       "Returns whether the file is eligible and, when it is not, a plain-English reason. An unavailable file is a normal result here, not an error. " +
       "This is the only check that accounts for both the account's opt-in and the server-wide switch, so call it before an audio or video run.",

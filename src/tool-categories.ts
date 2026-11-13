@@ -42,7 +42,7 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "submit_chat_feedback",
       "get_chat_statistics",
       "export_chat_answer",
-      "get_analysis_quote",
+      "check_analysis_eligibility",
     ],
   },
   {
