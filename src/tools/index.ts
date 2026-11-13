@@ -30,6 +30,7 @@ export interface RegisterOptions {
   localFileAccess?: boolean;
   voiceTestRuns?: boolean;
   aiChat?: boolean;
+  aiChatAnswerOnly?: boolean;
   automations?: boolean;
   voiceTestRunDetails?: boolean;
 }
@@ -71,9 +72,11 @@ const modules: ToolModule[] = [
  *                 If omitted, uses the default client from env vars (STDIO mode).
  * @param options - Set localFileAccess only where the server runs on the user's machine. The voice
  *                  test-run tools register unless voiceTestRuns is false. Set aiChat to register Speak's
- *                  AI Chat tools, whose assistant can call other tools, and automations to register the
- *                  automation tools, whose steps can run actions in connected third-party apps; the hosted
- *                  server leaves both off. Set voiceTestRunDetails to register get_voice_test_run and
+ *                  AI Chat tools, whose assistant can call other tools. Set aiChatAnswerOnly instead to
+ *                  register them with answer-only descriptions, for the hosted server, where Speak runs the
+ *                  chat for AI-assistant connections with read tools over the person's recordings only.
+ *                  Set automations to register the automation tools, whose steps can run actions in
+ *                  connected third-party apps; the hosted server leaves it off. Set voiceTestRunDetails to register get_voice_test_run and
  *                  apply_voice_test_recommendation; the hosted server leaves it off.
  */
 export function registerAllTools(
