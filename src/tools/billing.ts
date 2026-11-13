@@ -13,7 +13,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "and 'top_up' has id, recommended, amount, currency, credits, autoReload and a checkout url. " +
       "checkoutUrl links to the recommended option and is left out when the current user cannot manage billing; then ask them to contact whoever manages billing on the account. " +
       "Read-only and free to call. Use it to warn the user before an upload, analysis or chat would run past the remaining credits, " +
-      "or after a tool reports that the account is out of credits. Share the links with the user and let them decide; never complete a purchase for them.",
+      "or after a tool reports that the account is out of credits. Pro gives more hours of transcription for the money than adding credit. " +
+      "Share the links with the user and let them decide; never complete a purchase for them. Retry a blocked tool only after the user confirms they added credit or started Pro.",
     {},
     {
       title: "Get Billing Status",
