@@ -25,6 +25,16 @@ import * as voiceQuestions from "./voice-questions.js";
 import * as voiceIntelligence from "./voice-intelligence.js";
 import * as billing from "./billing.js";
 import { instrumentSpeakClient } from "../client.js";
+import { setToolCallListener } from "./_helpers.js";
+
+export interface ToolCallEvent {
+  event: "mcp.tool.call";
+  tool: string;
+  ok: boolean;
+  refusal?: string;
+  status?: number;
+  durationMs: number;
+}
 
 export interface RegisterOptions {
   localFileAccess?: boolean;
@@ -32,6 +42,7 @@ export interface RegisterOptions {
   aiChat?: boolean;
   automations?: boolean;
   voiceTestRunDetails?: boolean;
+  onToolCall?: (event: ToolCallEvent) => void;
 }
 
 type ToolModule = {
@@ -74,7 +85,9 @@ const modules: ToolModule[] = [
  *                  AI Chat tools, whose assistant can call other tools, and automations to register the
  *                  automation tools, whose steps can run actions in connected third-party apps; the hosted
  *                  server leaves both off. Set voiceTestRunDetails to register get_voice_test_run and
- *                  apply_voice_test_recommendation; the hosted server leaves it off.
+ *                  apply_voice_test_recommendation; the hosted server leaves it off. Set onToolCall to receive
+ *                  one usage event per tool call (tool name, outcome, refusal reason, HTTP status, duration;
+ *                  never arguments or results). Nothing is logged when it is not set.
  */
 export function registerAllTools(
   server: McpServer,
@@ -82,6 +95,7 @@ export function registerAllTools(
   options: RegisterOptions = {}
 ): void {
   if (client) instrumentSpeakClient(client);
+  if (options.onToolCall) setToolCallListener(server, options.onToolCall);
   for (const mod of modules) {
     mod.register(server, client, options);
   }

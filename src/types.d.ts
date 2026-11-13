@@ -12,6 +12,20 @@ export interface RegisterOptions {
   automations?: boolean;
   /** Register get_voice_test_run and apply_voice_test_recommendation. The hosted server leaves this off. */
   voiceTestRunDetails?: boolean;
+  /** Receives one usage event per tool call. Events never carry tool arguments, results or user text. Off when not set. */
+  onToolCall?: (event: ToolCallEvent) => void;
+}
+
+/** One tool call. `refusal` and `status` are set only when `ok` is false and the API gave them. */
+export interface ToolCallEvent {
+  event: "mcp.tool.call";
+  tool: string;
+  ok: boolean;
+  /** The API's refusal reason, such as running out of credits. */
+  refusal?: string;
+  /** HTTP status of the failing API call. */
+  status?: number;
+  durationMs: number;
 }
 
 export declare function registerAllTools(
