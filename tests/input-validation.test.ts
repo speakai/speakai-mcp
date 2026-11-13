@@ -447,10 +447,13 @@ describe("Negative Input Validation — Zod Schema Rejection", () => {
       register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     });
 
-    it("upload_media schema rejects empty name", () => {
+    it("upload_media fills in a name when the caller gives none", async () => {
       const schema = getToolInputSchema(server, "upload_media");
-      const result = schema.safeParse({ name: "", url: "https://x.com/a.mp3", mediaType: "audio" });
-      expect(result.success).toBe(false);
+      expect(schema.safeParse({ url: "https://x.com/a.mp3" }).success).toBe(true);
+
+      mockPost.mockResolvedValueOnce({ data: { data: { mediaId: "m1" } } });
+      await getToolCallback(server, "upload_media")({ name: "", url: "https://x.com/calls/a.mp3?sig=1" });
+      expect(mockPost).toHaveBeenCalledWith("/v1/media/upload", expect.objectContaining({ name: "a.mp3" }));
     });
 
     it("upload_media schema rejects invalid mediaType enum", () => {
