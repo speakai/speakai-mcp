@@ -91,7 +91,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server, 
     "update_multiple_fields",
-    "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. Each value that changes fires your field_updated automations, whose steps can send email, post to Slack, call webhook URLs or run connected third-party app actions. " +
+    "Set custom field values across media in a single batch operation, overwriting existing values. Scope the update with `mediaIds`, or with `folderId` to update every media in that folder; when both are given only `mediaIds` is used. Empty values are skipped, so this cannot clear a field. " +
       SHARED_DASHBOARD_CACHE_NOTE,
     {
       folderId: z
@@ -116,7 +116,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
-      openWorldHint: true,
+      openWorldHint: false,
     },
     async (body) => {
       try {

@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
+import type { RegisterOptions } from "./index.js";
 import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import {
@@ -9,7 +10,7 @@ import {
   unwrapData,
 } from "./inbound-webhook-utils.js";
 
-export function register(server: McpServer, client?: AxiosInstance): void {
+export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
   registerSpeakTool(server, 
     "create_webhook",
@@ -104,7 +105,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  registerSpeakTool(server,
+  if (options.automations) registerSpeakTool(server,
     "provision_inbound_webhook",
     "Provision a standalone inbound webhook and get its public receive URL (inboundUrl) BEFORE creating an automation. " +
       "Webhook-first flow: provision, send a test payload to the URL (append ?test=1 to only capture a sample without running anything), " +
@@ -142,7 +143,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  registerSpeakTool(server,
+  if (options.automations) registerSpeakTool(server,
     "get_inbound_webhook",
     "Get an inbound webhook's public receive URL, captured sample payload, and the ready-to-paste " +
       "{{trigger.payload.*}} tokens for mapping payload values into automation steps (speak-upload name/sourceUrl, " +
@@ -211,7 +212,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     }
   );
 
-  registerSpeakTool(server,
+  if (options.automations) registerSpeakTool(server,
     "get_webhook_attempts",
     "Get the delivery log for an inbound webhook: each received request with its HTTP acknowledgement status " +
       "(200 = sample captured, 202 = accepted and run started, 401/403 = rejected) and the automation run it started. " +

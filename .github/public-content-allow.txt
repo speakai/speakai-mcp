@@ -1,0 +1,3 @@
+# Files that are meant to be public but have a name the content check flags.
+# The plugin listing that coding tools read to install this server.
+.agents/plugins/marketplace.json

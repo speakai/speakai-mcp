@@ -1,5 +1,57 @@
 # Changelog
 
+## v1.41.4 (2026-11-11)
+
+- Maintenance release
+
+## v1.41.3 (2026-11-11)
+
+- fix(types): stop tsc running out of memory and typecheck in CI
+
+## v1.41.2 (2026-11-11)
+
+- Maintenance release
+
+## v1.41.1 (2026-10-30)
+
+- fix(types): declare the automations and voiceTestRunDetails options
+
+## v1.41.0 (2026-10-30)
+
+- fix(tools): describe embed session tools as viewing analytics
+
+## v1.40.3 (2026-10-30)
+
+- fix(tools): drop billing and credit wording from tool descriptions
+
+## v1.40.2 (2026-10-30)
+
+- fix(tools): align tool annotations with OpenAI's current hint rules
+
+## v1.40.1 (2026-10-29)
+
+- fix(plugin): use neutral examples so the listing does not read as healthcare
+
+## v1.40.0 (2026-10-29)
+
+- feat(plugin): ship OpenAI review test cases and demo video in the package
+
+## v1.39.5 (2026-10-29)
+
+- fix(tools): send each tool's title in its annotations too
+
+## v1.39.4 (2026-10-29)
+
+- fix(plugin): use the Speak AI wordmark for the OpenAI and Codex logos
+
+## v1.39.3 (2026-10-29)
+
+- Maintenance release
+
+## v1.39.2 (2026-10-28)
+
+- fix(media): list_media and the CLI search media names only
+
 ## v1.39.1 (2026-10-28)
 
 - fix(ask_ai_chat): read the analysis outcome by promptId
@@ -258,7 +310,7 @@
 
 ## v1.10.1 (2026-05-20)
 
-- Fix MCP tool + CLI API contracts to match speak-server
+- Fix MCP tool + CLI API contracts to match the API server
 
 ## v1.10.0 (2026-05-18)
 

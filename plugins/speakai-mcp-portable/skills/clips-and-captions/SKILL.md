@@ -3,7 +3,7 @@ name: clips-and-captions
 description: Turn Speak AI recordings into shareable output. Use this when someone asks for a highlight clip, a soundbite, a reel, subtitles, a caption track, an SRT or VTT file, a transcript exported as PDF, DOCX, TXT, CSV, MD, HTML or JSON, a merged export across several recordings, or an embeddable player or transcript widget for a website. Walks through finding the moment in a timestamped transcript, cutting the clip, waiting for it to finish processing, exporting captions in a supported format, and publishing an embed. Covers search_media, list_media, get_media_status, get_transcript, get_captions, create_clip, get_clips, update_clip, delete_clip, export_media, export_multiple_media, create_embed, check_embed, update_embed and get_embed_iframe_url.
 license: MIT
 metadata:
-  server-version: "1.39.1"
+  server-version: "1.41.4"
   categories: "clips, exports, media, embed-other"
 ---
 
@@ -106,14 +106,12 @@ speakai-mcp call create_clip '{
 }'
 ```
 
-The same call over HTTP. The REST API takes two headers, `x-speakai-key` and
-`x-access-token`, and does not accept a Bearer token. Get the access token by posting your
-API key to `/v1/auth/accessToken` first.
+The same call over HTTP. Send your API key on every call, in `x-speakai-key` or as
+`Authorization: Bearer <key>`. There is no access token to fetch.
 
 ```sh
 curl -X POST https://api.speakai.co/v1/clips \
   -H "x-speakai-key: speak_sk_example_000000000000" \
-  -H "x-access-token: eyJhbG-example-access-token" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Pricing objection highlights",
@@ -281,5 +279,5 @@ file carries whatever the labels were at export time. Fix labels first with
 `update_transcript_speakers`, then export.
 
 **Redaction is opt-in.** Exports are not redacted unless you set `isRedacted`.
-If the user mentions customer names, health information, or anything regulated,
+If the user mentions customer names, personal details, or anything regulated,
 set it.

@@ -3,7 +3,7 @@
  * registered by `registerAllTools`. If a tool is added, removed, or renamed
  * in `src/tools/*.ts` without updating `src/tool-names.ts`, this test fails.
  *
- * Consumers (e.g. speak-server's orchestrator bridge) depend on this manifest
+ * Consumers (e.g. the API server's orchestrator bridge) depend on this manifest
  * as a single source of truth, so drift here is a release blocker.
  */
 import { describe, it, expect, vi } from "vitest";
@@ -34,7 +34,7 @@ describe("SPEAK_MCP_TOOL_NAMES manifest", () => {
     const { SPEAK_MCP_TOOL_NAMES } = await import("../src/tool-names.js");
 
     const server = new McpServer({ name: "test", version: "1.0.0" });
-    registerAllTools(server, mockClient, { localFileAccess: true, voiceTestRuns: true });
+    registerAllTools(server, mockClient, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const registered = Object.keys((server as any)._registeredTools).sort();
     const manifest = [...SPEAK_MCP_TOOL_NAMES].sort();
