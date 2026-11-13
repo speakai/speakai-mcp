@@ -2,7 +2,7 @@
 
 // Public API — for use as a library (e.g., from the API server)
 export { registerAllTools } from "./tools/index.js";
-export type { RegisterOptions } from "./tools/index.js";
+export type { RegisterOptions, ToolCallEvent } from "./tools/index.js";
 export { registerResources } from "./resources.js";
 export { registerPrompts } from "./prompts.js";
 export { createSpeakClient, formatAxiosError } from "./client.js";
@@ -89,7 +89,7 @@ if (isCliMode) {
             version: "1.0.0",
           });
 
-          registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
+          registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true, cards: process.env.SPEAK_MCP_CARDS === "true" });
           registerResources(server);
           registerPrompts(server);
 

@@ -42,15 +42,20 @@ describe("MCP Server Smoke Tests", () => {
     expect(toolNames).toHaveLength(190);
   });
 
-  it("leaves local-disk, AI Chat, automation and voice test-run detail tools off the hosted server", async () => {
+  it("gives the hosted server answer-only AI Chat and leaves local-disk, automation and voice test-run detail tools off", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
+    registerAllTools(server, undefined, { aiChatAnswerOnly: true });
 
-    const toolNames = Object.keys(getRegisteredTools(server));
+    const tools = getRegisteredTools(server);
+    const toolNames = Object.keys(tools);
     expect(toolNames).not.toContain("upload_local_file");
-    for (const chatTool of ["ask_ai_chat", "retry_ai_chat", "get_analysis_quote"]) {
-      expect(toolNames).not.toContain(chatTool);
+    for (const chatTool of ["ask_ai_chat", "retry_ai_chat"]) {
+      expect(tools[chatTool].description).toContain("answers only from the person's Speak recordings");
+      expect(tools[chatTool].description).not.toContain("third-party");
+      expect(tools[chatTool].annotations.openWorldHint).toBe(false);
     }
+    expect(tools.ask_ai_chat.annotations.destructiveHint).toBe(false);
+    expect(toolNames).toContain("get_analysis_quote");
     for (const gated of [
       "create_automation",
       "build_automation",
@@ -66,7 +71,7 @@ describe("MCP Server Smoke Tests", () => {
     expect(toolNames).toContain("get_chat_history");
     expect(toolNames).toContain("create_webhook");
     expect(toolNames).toContain("start_voice_test_run");
-    expect(toolNames).toHaveLength(161);
+    expect(toolNames).toHaveLength(164);
   });
 
   it("leaves the voice test-run tools off when voiceTestRuns is false", async () => {

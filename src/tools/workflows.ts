@@ -12,6 +12,9 @@ import {
   detectMediaType,
   SUPPORTED_URL_SOURCES,
   UNSUPPORTED_URL_SOURCES,
+  URL_UPLOAD_HELP,
+  apiErrorText,
+  defaultUploadName,
 } from "../media-utils.js";
 import { MULTIMODAL_DISABLED_MESSAGE, multimodalCapability } from "../capabilities.js";
 import {
@@ -641,7 +644,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       // A plain literal, not a template: the docs generator drops a tool's whole parameter
       // table when a description interpolates a value it cannot resolve statically.
       url: z.string().describe("Direct/public media file URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
-      name: z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
+      name: z.string().optional().describe("Display name for the media. Defaults to the file name in the URL, or \"Upload\" with the date and time when the URL has none."),
       mediaType: z.enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want — if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       sourceLanguage: z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: z.string().optional().describe("Folder ID to place the media in"),
@@ -665,7 +668,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         // would send a guess the server cannot tell apart from a decision, and an explicit
         // mediaType stops the server probing the real file.
         const uploadBody: Record<string, unknown> = {
-          name: params.name ?? params.url.split("/").pop()?.split("?")[0] ?? "Upload",
+          name: defaultUploadName(params.url, params.name),
           url: params.url,
         };
         if (params.mediaType) uploadBody.mediaType = params.mediaType;
@@ -702,7 +705,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         };
       } catch (err) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: apiErrorText(err, { 400: URL_UPLOAD_HELP }) }],
           isError: true,
         };
       }
@@ -764,7 +767,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       const send = (url: string) =>
         api.post("/v1/media/upload", {
           ...shared,
-          name: url.split("/").pop()?.split("?")[0] || "Upload",
+          name: defaultUploadName(url),
           url,
         });
 
@@ -819,10 +822,10 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
               `1. Poll get_media_status for each of the ${uploaded.length} mediaId values every 10-30 seconds, or call list_media on the folder to see them together.`,
               `2. When one reads "processed", call get_media_insights and get_transcript for it.`,
               failed.length
-                ? `3. ${failed.length} URL(s) did not upload — report the reasons above rather than silently retrying.`
+                ? `3. ${failed.length} URL(s) did not upload — report the reasons above rather than silently retrying. ${URL_UPLOAD_HELP}`
                 : `3. Nothing failed in this batch.`,
             ]
-          : ["No uploads were accepted. Report the errors above to the user."],
+          : [`No uploads were accepted. Report the errors above to the user. ${URL_UPLOAD_HELP}`],
       };
 
       // Every URL failing is a failed call, not a successful batch of failures.
@@ -900,7 +903,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
         // 3. Create media entry
         const createBody: Record<string, unknown> = {
-          name: params.name ?? filename,
+          name: defaultUploadName(filename, params.name),
           url: uploadUrl.split("?")[0], // S3 URL without query params; server re-signs via CloudFront
           mediaType,
         };

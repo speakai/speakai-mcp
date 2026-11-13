@@ -10,8 +10,13 @@ import {
   formatRefusal,
   getApiRefusal,
   isFailedBody,
+  noteToolFailure,
   runToolCall,
+  type ToolCallContext,
 } from "../client.js";
+import type { ToolCallEvent } from "./index.js";
+
+const toolCallListeners = new WeakMap<object, (event: ToolCallEvent) => void>();
 
 export const passthroughOutputSchema = {
   data: z.unknown().describe("Response payload from the Speak AI API"),
@@ -39,9 +44,11 @@ export interface ToolResult {
   content: ToolResultContent[];
   structuredContent?: { data: unknown };
   isError?: boolean;
+  _meta?: Record<string, unknown>;
 }
 
 export function refusalResult(refusal: ApiRefusal): ToolResult {
+  noteToolFailure(refusal, refusal);
   return {
     content: [{ type: "text", text: formatRefusal(refusal) }],
     structuredContent: { data: refusal },
@@ -70,6 +77,7 @@ export function ok(data: unknown): ToolResult {
 }
 
 export function err(error: unknown): ToolResult {
+  noteToolFailure(error);
   const refusal = getApiRefusal(error);
   if (refusal) return refusalResult(refusal);
   return {
@@ -92,7 +100,8 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
   description: string,
   inputSchema: InputSchema,
   annotations: SpeakToolAnnotations,
-  handler: (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) => ToolResult | Promise<ToolResult>
+  handler: (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) => ToolResult | Promise<ToolResult>,
+  toolMeta?: Record<string, unknown>
 ): RegisteredTool {
   // The SDK's registerTool and ToolCallback generics compare zod 3 and zod 4 shapes per tool and run tsc out of memory.
   const registerTool = server.registerTool.bind(server) as (name: string, config: object, cb: unknown) => RegisteredTool;
@@ -104,34 +113,71 @@ export function registerSpeakTool<InputSchema extends z.ZodRawShape>(
       inputSchema,
       outputSchema: passthroughOutputSchema,
       annotations,
+      ...(toolMeta ? { _meta: toolMeta } : {}),
     },
     async (args: z.infer<z.ZodObject<InputSchema>>, extra: Parameters<ToolCallback>[0]) =>
       runToolCall(name, async (context) => {
-        const result = await handler(args, extra);
-        if (result.isError && context.refusal) {
-          return refusalResult(context.refusal);
-        }
-        if (result.isError || result.structuredContent) {
-          return result;
-        }
-
-        const textContent = result.content?.find(
-          (item): item is Extract<ToolResultContent, { type: "text" }> => item.type === "text"
-        );
-        if (!textContent) {
-          return { ...result, structuredContent: { data: null } };
-        }
-
-        let data: unknown;
+        const startedAt = performance.now();
+        let result: ToolResult | undefined;
         try {
-          data = JSON.parse(textContent.text);
-        } catch {
-          return { ...result, structuredContent: { data: textContent.text } };
+          result = normalizeToolResult(await handler(args, extra), context);
+          return result;
+        } finally {
+          reportToolCall(server, name, startedAt, result, context);
         }
-        // Covers a client that bypassed instrumentSpeakClient and passed a refusal through as success.
-        const refusal = getApiRefusal(data);
-        if (refusal) return refusalResult(refusal);
-        return { ...result, structuredContent: { data } };
       })
   );
+}
+
+function normalizeToolResult(result: ToolResult, context: ToolCallContext): ToolResult {
+  if (result.isError && context.refusal) {
+    return refusalResult(context.refusal);
+  }
+  if (result.isError || result.structuredContent) {
+    return result;
+  }
+
+  const textContent = result.content?.find(
+    (item): item is Extract<ToolResultContent, { type: "text" }> => item.type === "text"
+  );
+  if (!textContent) {
+    return { ...result, structuredContent: { data: null } };
+  }
+
+  let data: unknown;
+  try {
+    data = JSON.parse(textContent.text);
+  } catch {
+    return { ...result, structuredContent: { data: textContent.text } };
+  }
+  // Covers a client that bypassed instrumentSpeakClient and passed a refusal through as success.
+  const refusal = getApiRefusal(data);
+  if (refusal) return refusalResult(refusal);
+  return { ...result, structuredContent: { data } };
+}
+
+export function setToolCallListener(server: object, listener: (event: ToolCallEvent) => void): void {
+  toolCallListeners.set(server, listener);
+}
+
+function reportToolCall(
+  server: object,
+  tool: string,
+  startedAt: number,
+  result: ToolResult | undefined,
+  context: ToolCallContext
+): void {
+  const listener = toolCallListeners.get(server);
+  if (!listener) return;
+  const ok = result !== undefined && !result.isError;
+  const event: ToolCallEvent = { event: "mcp.tool.call", tool, ok, durationMs: Math.round(performance.now() - startedAt) };
+  if (!ok && context.refusal) {
+    event.refusal = typeof context.refusal.reason === "string" ? context.refusal.reason : "declined";
+  }
+  if (!ok && context.status !== undefined) event.status = context.status;
+  try {
+    listener(event);
+  } catch {
+    return;
+  }
 }

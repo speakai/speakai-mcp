@@ -2,6 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
+import type { RegisterOptions } from "./index.js";
+import { buildSearchMediaCard, mediaListCardResultMeta, mediaListCardToolMeta } from "../ui/media-list/card-data.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import { FilterFieldName, FilterOperator, FilterCondition } from "@speakai/shared";
 
@@ -14,7 +16,7 @@ function withDefaultSearchDateRange<T extends { startDate?: string; endDate?: st
   };
 }
 
-export function register(server: McpServer, client?: AxiosInstance): void {
+export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
 
   registerSpeakTool(server, 
@@ -58,8 +60,10 @@ export function register(server: McpServer, client?: AxiosInstance): void {
     async (params) => {
       try {
         const result = await api.post("/v1/analytics/search", withDefaultSearchDateRange(params));
+        const cardMeta = options.cards ? mediaListCardResultMeta(buildSearchMediaCard(result.data, params.query)) : undefined;
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+          ...(cardMeta ? { _meta: cardMeta } : {}),
         };
       } catch (err) {
         return {
@@ -67,6 +71,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
           isError: true,
         };
       }
-    }
+    },
+    options.cards ? mediaListCardToolMeta : undefined
   );
 }
