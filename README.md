@@ -94,29 +94,21 @@ Then click Add.
 
 ### ChatGPT
 
-1. Open ChatGPT → **Settings → Apps & Connectors → Advanced**
-2. Turn on **Developer Mode** (required while Speak AI isn't yet listed in ChatGPT's app store; this lets you add it as a custom app)
-3. Back on **Apps & Connectors**, click **Create** and paste `https://api.speakai.co/v1/mcp`
-4. For **Authentication**, choose **OAuth**
-5. ChatGPT opens a new tab to Speak AI. Sign in (or click **Confirm** if already logged in) to authorize. You'll be redirected back; close the tab and return to ChatGPT.
-6. **Per-chat:** open a chat, click the **+** / connector menu, and enable **Speak AI** for that chat.
+**[Install Speak AI in ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6ac2ff7ad9b481918e5eef0343cf3c7b)**
+
+1. Open [Speak AI in ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6ac2ff7ad9b481918e5eef0343cf3c7b) while signed in to ChatGPT
+2. Click **Install plugin**
+3. ChatGPT opens a new tab to Speak AI. Sign in (or click **Confirm** if already logged in) to authorize. You'll be redirected back; close the tab and return to ChatGPT.
+4. **Per-chat:** open a chat, click the **+** menu, and enable **Speak AI** for that chat.
 
 <details>
 <summary>What each step looks like (screenshots)</summary>
-
-**1. Connect screen in ChatGPT**: paste the connector URL and pick OAuth.
-
-![ChatGPT connect screen](./assets/openai/1.connect.png)
-
-**2. Confirm and continue**: ChatGPT asks you to continue to Speak AI.
-
-![ChatGPT continue to Speak](./assets/openai/2.connect-continue.png)
 
 **3. Authorize on Speak AI**: sign in or click Confirm if you're already signed in.
 
 ![Speak AI authorization screen](./assets/openai/3.speak-auth.png)
 
-**4. Connected**: Speak AI now shows in your ChatGPT connector list.
+**4. Connected**: Speak AI now shows in your ChatGPT apps list.
 
 ![Speak AI connected in ChatGPT](./assets/openai/4.connected.png)
 
@@ -125,11 +117,10 @@ Then click Add.
 <details>
 <summary>Trouble connecting?</summary>
 
-A few things we've seen during early access:
-
 - **Authorization tab doesn't show a "you're connected" page**: if you land on the plain Speak AI dashboard with no confirmation, the authorization still went through. Close that tab and return to ChatGPT.
-- **"Connect" button keeps reopening the dashboard**: fully close and reopen ChatGPT, then check **Settings → Apps & Connectors**. Speak AI should already be listed there.
-- **"No actions available" inside a chat**: make sure Developer Mode is still on, and that you've enabled Speak AI from the per-chat connector menu (step 6 above).
+- **Install keeps reopening the dashboard**: fully close and reopen ChatGPT, then check **Settings → Apps & Connectors**. Speak AI should already be listed there.
+- **"No actions available" inside a chat**: make sure you've enabled Speak AI from the per-chat **+** menu (step 4 above).
+- **Can't install plugins in your ChatGPT account**: ask your ChatGPT admin to allow Speak AI, or add it as a custom connector instead: **Settings → Apps & Connectors → Advanced**, turn on **Developer Mode**, click **Create**, paste `https://api.speakai.co/v1/mcp` and choose **OAuth**.
 
 Still stuck? Email [success@speakai.co](mailto:success@speakai.co).
 
