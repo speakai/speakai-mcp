@@ -198,6 +198,21 @@ describe("Error Handling & Resilience", () => {
       expect(result.content[0].text).toBe("null");
     });
 
+    it("returns data null, never undefined, when the API sends an empty body", async () => {
+      const billing = await import("../src/tools/billing.js");
+      const media = await import("../src/tools/media.js");
+      billing.register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+      media.register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+      mockGet.mockResolvedValue({ data: undefined });
+
+      const viaOk = await getToolCallback(server, "get_billing_status")({});
+      const viaText = await getToolCallback(server, "get_media_status")({ mediaId: "abc123" });
+
+      expect(viaOk.content[0].text).toBe("null");
+      expect(viaOk.structuredContent).toStrictEqual({ data: null });
+      expect(viaText.structuredContent).toStrictEqual({ data: null });
+    });
+
     it("handles empty object response", async () => {
       const { register } = await import("../src/tools/media.js");
       register(server, mockClient, { automations: true, voiceTestRunDetails: true });

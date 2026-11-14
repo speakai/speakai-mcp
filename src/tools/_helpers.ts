@@ -63,7 +63,8 @@ function failedBodyResult(data: unknown): ToolResult | undefined {
   };
 }
 
-export function ok(data: unknown): ToolResult {
+export function ok(body: unknown): ToolResult {
+  const data = body ?? null;
   return (
     failedBodyResult(data) ?? {
       content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
@@ -142,7 +143,7 @@ function normalizeToolResult(result: ToolResult, context: ToolCallContext): Tool
   try {
     data = JSON.parse(textContent.text);
   } catch {
-    return { ...result, structuredContent: { data: textContent.text } };
+    return { ...result, structuredContent: { data: textContent.text ?? null } };
   }
   // Covers a client that bypassed instrumentSpeakClient and passed a refusal through as success.
   const refusal = getApiRefusal(data);
