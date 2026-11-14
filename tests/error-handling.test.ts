@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import type { RegisterOptions, ToolCallEvent } from "../src/tools/index.js";
 
 // Create a mock axios instance that tracks calls
@@ -196,6 +196,21 @@ describe("Error Handling & Resilience", () => {
       // JSON.stringify(null) = "null" — tool should not crash
       expect(result.content[0].type).toBe("text");
       expect(result.content[0].text).toBe("null");
+    });
+
+    it("returns data null, never undefined, when the API sends an empty body", async () => {
+      const billing = await import("../src/tools/billing.js");
+      const media = await import("../src/tools/media.js");
+      billing.register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+      media.register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+      mockGet.mockResolvedValue({ data: undefined });
+
+      const viaOk = await getToolCallback(server, "get_billing_status")({});
+      const viaText = await getToolCallback(server, "get_media_status")({ mediaId: "abc123" });
+
+      expect(viaOk.content[0].text).toBe("null");
+      expect(viaOk.structuredContent).toStrictEqual({ data: null });
+      expect(viaText.structuredContent).toStrictEqual({ data: null });
     });
 
     it("handles empty object response", async () => {

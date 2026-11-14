@@ -2,7 +2,7 @@
  * Tests for src/resources.ts — resource handler callbacks.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 
 const mockGet = vi.fn();
 
