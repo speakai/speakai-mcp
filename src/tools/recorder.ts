@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
@@ -36,21 +36,21 @@ const recorderConfigShape = {
   isAutoAnalyze: z.boolean().optional().describe("Whether to auto-analyze submissions"),
   notifyUsers: z.array(z.string()).optional().describe("User IDs to notify on new submissions"),
   duration: z
-    .record(z.unknown())
+    .record(z.string(), z.unknown())
     .optional()
     .describe("Recording duration: { minDuration, maxDuration } in seconds"),
   options: z
-    .record(z.unknown())
+    .record(z.string(), z.unknown())
     .optional()
     .describe(
       "Capture options: { audio, video, screenShare, liveTranscription, upload:{ file, text, multiple, url } } — all booleans",
     ),
   notification: z
-    .record(z.unknown())
+    .record(z.string(), z.unknown())
     .optional()
     .describe("Notification toggles: { upload, client }, both booleans. upload emails the recorder owner (if they opted in to submission emails) and any users in notifyUsers about each new submission; client emails a confirmation to each respondent who gives an email."),
   meta: z
-    .record(z.unknown())
+    .record(z.string(), z.unknown())
     .optional()
     .describe(
       "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }",
@@ -94,7 +94,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       name: z.string().describe("Display name for the recorder"),
       ...recorderConfigShape,
       clientInformation: z
-        .record(z.unknown())
+        .record(z.string(), z.unknown())
         .optional()
         .describe(
           `Respondent info & questions: { name:boolean, email:boolean, questions:[…], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }. Question shape — ${QUESTION_SHAPE_DESC}`,
@@ -305,12 +305,12 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       name: z.boolean().optional().describe("Whether to collect the respondent's name"),
       email: z.boolean().optional().describe("Whether to collect the respondent's email"),
       questions: z
-        .array(z.record(z.unknown()))
+        .array(z.record(z.string(), z.unknown()))
         .describe(
           `Survey questions. ${QUESTION_SHAPE_DESC} (id? may also be passed to update an existing question.)`,
         ),
       consent: z
-        .record(z.unknown())
+        .record(z.string(), z.unknown())
         .optional()
         .describe(
           "Consent screen: { isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? }",

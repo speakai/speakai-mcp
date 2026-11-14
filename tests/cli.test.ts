@@ -1,4 +1,8 @@
+import { spawn } from "child_process";
+import { fileURLToPath } from "url";
 import { describe, it, expect, vi } from "vitest";
+
+const DIST_ENTRY = fileURLToPath(new URL("../dist/index.js", import.meta.url));
 
 // Mock axios before importing CLI
 vi.mock("axios", () => {
@@ -124,5 +128,48 @@ describe("CLI Smoke Tests", () => {
     registerAllTools(stub as any, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     expect(Object.keys(handlers).sort()).toEqual([...SPEAK_MCP_TOOL_NAMES].sort());
+  });
+});
+
+function runNode(args: string[], stdinLine?: string): Promise<{ code: number | null; stdout: string; stderr: string }> {
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, args, { env: { ...process.env, SPEAKAI_API_KEY: "test-key" }, stdio: ["pipe", "pipe", "pipe"] });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+      if (stdinLine && stdout.includes("\n")) child.kill();
+    });
+    child.stderr.on("data", (chunk) => (stderr += chunk));
+    if (stdinLine) child.stdin.write(stdinLine + "\n");
+    const timer = setTimeout(() => child.kill(), 10_000);
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      resolve({ code, stdout, stderr });
+    });
+  });
+}
+
+describe("package entry", () => {
+  it("importing the built package leaves stdin and stdout alone and lets the host exit", async () => {
+    const script = `require(${JSON.stringify(DIST_ENTRY)}); setImmediate(() => console.error("loaded"));`;
+    const result = await runNode(["-e", script]);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).toContain("loaded");
+    expect(result.stderr).not.toContain("Server started");
+  });
+
+  it("running the built package as the bin still serves MCP over stdio", async () => {
+    const initialize = JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "initialize",
+      params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "1" } },
+    });
+    const result = await runNode([DIST_ENTRY], initialize);
+
+    expect(JSON.parse(result.stdout.split("\n")[0]).result.protocolVersion).toBe("2025-06-18");
   });
 });

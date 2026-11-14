@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import axios, { AxiosInstance } from "axios";
 import { registerSpeakTool, ok, err } from "./_helpers.js";
 import { speakClient } from "../client.js";

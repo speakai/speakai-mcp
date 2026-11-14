@@ -2,7 +2,7 @@
  * Tests for src/prompts.ts — prompt handler callbacks.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 
 vi.mock("axios", () => ({
   default: {
@@ -26,7 +26,7 @@ function getPromptCallback(server: McpServer, promptName: string): Function {
   if (!prompt) {
     throw new Error(`Prompt "${promptName}" not registered. Available: ${Object.keys(prompts).join(", ")}`);
   }
-  return prompt.callback;
+  return (args: Record<string, unknown>) => prompt.handler(args, {});
 }
 
 describe("Prompts", () => {
