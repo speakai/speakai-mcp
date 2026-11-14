@@ -4,13 +4,10 @@ import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
 import { speakClient, formatAxiosError } from "../client.js";
 import {
-  EMBED_SESSION_ID_PATTERN,
   EMBED_SESSION_LIMITS,
-  EMBED_VIEWER_ID_PATTERN,
   EmbedSessionDeviceFilter,
   EmbedSessionSort,
   EmbedSessionTrafficFilter,
-  EmbedSessionViewerFilter,
 } from "@speakai/shared";
 
 const objectIdSchema = z.string().regex(/^[0-9a-fA-F]{24}$/);
@@ -198,15 +195,6 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .max(EMBED_SESSION_LIMITS.maxListPageSize)
         .optional()
         .describe(`Sessions per page (default ${EMBED_SESSION_LIMITS.listPageSize}, max ${EMBED_SESSION_LIMITS.maxListPageSize})`),
-      search: z
-        .string()
-        .max(EMBED_SESSION_LIMITS.maxSearchLength)
-        .optional()
-        .describe("Match what a viewer shared about themselves (any part) or the start of a visitorId"),
-      viewer: z
-        .enum(Object.values(EmbedSessionViewerFilter) as [string, ...string[]])
-        .optional()
-        .describe("identified keeps viewers who chose to identify themselves, anonymous keeps the rest (default all)"),
       device: z
         .enum(Object.values(EmbedSessionDeviceFilter) as [string, ...string[]])
         .optional()
@@ -216,16 +204,6 @@ export function register(server: McpServer, client?: AxiosInstance): void {
         .boolean()
         .optional()
         .describe("Also include visits recorded before session tracking started (default false)"),
-      viewerId: z
-        .string()
-        .regex(EMBED_VIEWER_ID_PATTERN)
-        .optional()
-        .describe("Only sessions of one identified viewer (viewerId from a session)"),
-      visitorId: z
-        .string()
-        .regex(EMBED_SESSION_ID_PATTERN)
-        .optional()
-        .describe("Only sessions from one browser (visitorId from a session)"),
       mediaId: z.string().optional().describe("Only sessions that opened this media file"),
       sort: z
         .enum(Object.values(EmbedSessionSort) as [string, ...string[]])
@@ -296,8 +274,8 @@ export function register(server: McpServer, client?: AxiosInstance): void {
 
   registerSpeakTool(server,
     "get_embed_session",
-    "Viewing analytics for an embed the user owns: one visit in full. Returns the visit with the media it opened (time watched, plays, seeks, furthest position, completed), " +
-      "the questions asked in chat, and a paged list of its events in time order, plus how many earlier visits the same viewer has made to this embed. " +
+    "Viewing analytics for an embed the user owns: one visit in full. Returns the visit with the media it opened, how much was watched, " +
+      "the questions asked in chat, and a paged list of the visit's events. " +
       "Use eventsPage and eventsPageSize to read long timelines.",
     {
       embedId: embedIdSchema,

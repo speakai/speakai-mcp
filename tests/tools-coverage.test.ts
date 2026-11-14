@@ -307,9 +307,9 @@ describe("Embed tools", () => {
     const embedId = "a".repeat(24);
     const sessionId = "b".repeat(24);
 
-    await getToolCallback(server, "list_embed_sessions")({ embedId, page: 1, pageSize: 50, viewer: "identified", sort: "questions:desc" });
+    await getToolCallback(server, "list_embed_sessions")({ embedId, page: 1, pageSize: 50, device: "mobile", sort: "questions:desc" });
     expect(mockGet).toHaveBeenCalledWith(`/v1/embed/sessions/${embedId}`, {
-      params: { page: 1, pageSize: 50, viewer: "identified", sort: "questions:desc" },
+      params: { page: 1, pageSize: 50, device: "mobile", sort: "questions:desc" },
     });
 
     await getToolCallback(server, "get_embed_session_summary")({ embedId, from: "2026-10-01", tz: "UTC", mediaPage: 0 });

@@ -1232,7 +1232,7 @@
         {
           "name": "get_embed_session",
           "title": "Get Embed Session",
-          "description": "Viewing analytics for an embed the user owns: one visit in full. Returns the visit with the media it opened (time watched, plays, seeks, furthest position, completed), the questions asked in chat, and a paged list of its events in time order, plus how many earlier visits the same viewer has made to this embed. Use eventsPage and eventsPageSize to read long timelines.",
+          "description": "Viewing analytics for an embed the user owns: one visit in full. Returns the visit with the media it opened, how much was watched, the questions asked in chat, and a paged list of the visit's events. Use eventsPage and eventsPageSize to read long timelines.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
