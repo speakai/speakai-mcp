@@ -3777,6 +3777,7 @@
                 "\"sentimentNegative\"",
                 "\"sentimentPositive\"",
                 "\"speaker\"",
+                "\"state\"",
                 "\"tags\""
               ]
             },
