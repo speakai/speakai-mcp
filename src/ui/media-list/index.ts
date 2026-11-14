@@ -11,7 +11,7 @@ const MEDIA_LIST_CARD_RESOURCE_META = {
 
 export function registerMediaListCard(server: McpServer): void {
   server.registerResource(
-    "speakai-file-list-card",
+    "file-list-card",
     MEDIA_LIST_CARD_URI,
     {
       title: "Speak file list card",
