@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.0 (2026-11-14)
+
+- fix(sdk): never send structuredContent data undefined
+
 ## v1.43.3 (2026-11-13)
 
 - fix(chat): leave check_analysis_eligibility off the hosted server

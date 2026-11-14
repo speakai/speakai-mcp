@@ -293,7 +293,8 @@ function failedBodyResult(data) {
     isError: true
   };
 }
-function ok(data) {
+function ok(body) {
+  const data = body ?? null;
   return failedBodyResult(data) ?? {
     content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
     structuredContent: { data }
@@ -309,22 +310,21 @@ function err(error) {
   };
 }
 function registerSpeakTool(server, name, description, inputSchema, annotations, handler, toolMeta) {
-  const registerTool = server.registerTool.bind(server);
-  return registerTool(
+  return server.registerTool(
     name,
     {
       title: annotations.title,
       description,
-      inputSchema,
-      outputSchema: passthroughOutputSchema,
+      inputSchema: import_zod.z.object(inputSchema),
+      outputSchema: import_zod.z.object(passthroughOutputSchema),
       annotations,
       ...toolMeta ? { _meta: toolMeta } : {}
     },
-    async (args2, extra) => runToolCall(name, async (context) => {
+    async (args2, ctx) => runToolCall(name, async (context) => {
       const startedAt = performance.now();
       let result;
       try {
-        result = normalizeToolResult(await handler(args2, extra), context);
+        result = normalizeToolResult(await handler(args2, ctx), context);
         return result;
       } finally {
         reportToolCall(server, name, startedAt, result, context);
@@ -349,7 +349,7 @@ function normalizeToolResult(result, context) {
   try {
     data = JSON.parse(textContent.text);
   } catch {
-    return { ...result, structuredContent: { data: textContent.text } };
+    return { ...result, structuredContent: { data: textContent.text ?? null } };
   }
   const refusal = getApiRefusal(data);
   if (refusal) return refusalResult(refusal);
@@ -735,6 +735,7 @@ var init_filter = __esm({
       FilterFieldName2["TAGS"] = "tags";
       FilterFieldName2["RECORDER_ID"] = "recorderId";
       FilterFieldName2["FIELDS"] = "fields";
+      FilterFieldName2["STATE"] = "state";
     })(FilterFieldName || (FilterFieldName = {}));
     (function(FilterOperator2) {
       FilterOperator2["INCLUDE"] = "include";
@@ -847,7 +848,7 @@ var init_label = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/media.js
-var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType, ThumbnailStatus, ThumbnailOrigin;
+var MediaType, MediaState, MediaPrivacyMode, MediaInsightType, MediaInsightStatus, MediaProcessType, ThumbnailStatus, ThumbnailOrigin, MediaUploadType;
 var init_media = __esm({
   "node_modules/@speakai/shared/dist/enums/media.js"() {
     "use strict";
@@ -925,6 +926,29 @@ var init_media = __esm({
       ThumbnailOrigin2["AUTO"] = "auto";
       ThumbnailOrigin2["CUSTOM"] = "custom";
     })(ThumbnailOrigin || (ThumbnailOrigin = {}));
+    (function(MediaUploadType2) {
+      MediaUploadType2["WEB"] = "web";
+      MediaUploadType2["ANDROID"] = "android";
+      MediaUploadType2["IOS"] = "ios";
+      MediaUploadType2["TEXT"] = "text";
+      MediaUploadType2["ZAPIER"] = "zapier";
+      MediaUploadType2["MAKE"] = "make";
+      MediaUploadType2["N8N"] = "n8n";
+      MediaUploadType2["API"] = "api";
+      MediaUploadType2["RECORDER"] = "recorder";
+      MediaUploadType2["CSV"] = "csv";
+      MediaUploadType2["ZOOM"] = "zoom";
+      MediaUploadType2["WEB_SCRAPER"] = "web-scraper";
+      MediaUploadType2["APP_RECORDER"] = "app-recorder";
+      MediaUploadType2["MEETING_ASSISTANT"] = "meeting-assistant";
+      MediaUploadType2["CHROME_EXTENSION"] = "chrome-extension";
+      MediaUploadType2["TOOLS"] = "tools";
+      MediaUploadType2["RETRANSCRIBE"] = "retranscribe";
+      MediaUploadType2["SAMPLE"] = "sample";
+      MediaUploadType2["TRANSLATION"] = "translation";
+      MediaUploadType2["VOICE_AGENT"] = "voice-agent";
+      MediaUploadType2["DESKTOP"] = "desktop";
+    })(MediaUploadType || (MediaUploadType = {}));
   }
 });
 
@@ -1900,6 +1924,10 @@ var init_llm = __esm({
       LLMModels2["GPT_5_6_SOL"] = "gpt-5.6-sol";
       LLMModels2["GPT_5_6_TERRA"] = "gpt-5.6-terra";
       LLMModels2["GPT_5_6_LUNA"] = "gpt-5.6-luna";
+      LLMModels2["GPT_6_ASTRA"] = "gpt-6-astra";
+      LLMModels2["GPT_6_1_SOL"] = "gpt-6.1-sol";
+      LLMModels2["GPT_6_1_TERRA"] = "gpt-6.1-terra";
+      LLMModels2["GPT_6_LUNA"] = "gpt-6-luna";
       LLMModels2["CLAUDE_2"] = "claude-2";
       LLMModels2["CLAUDE_3_5_SONNET"] = "claude-3-5-sonnet";
       LLMModels2["CLAUDE_3_5_SONNET_20241022"] = "claude-3-5-sonnet-20241022";
@@ -1908,6 +1936,10 @@ var init_llm = __esm({
       LLMModels2["CLAUDE_SONNET_4_6"] = "claude-sonnet-4-6";
       LLMModels2["CLAUDE_SONNET_5"] = "claude-sonnet-5";
       LLMModels2["CLAUDE_OPUS_4_8"] = "claude-opus-4-8";
+      LLMModels2["CLAUDE_SONNET_5_5"] = "claude-sonnet-5-5";
+      LLMModels2["CLAUDE_OPUS_5_5"] = "claude-opus-5-5";
+      LLMModels2["CLAUDE_HAIKU_5_5"] = "claude-haiku-5-5";
+      LLMModels2["CLAUDE_FABLE_5_1"] = "claude-fable-5-1";
       LLMModels2["GEMINI_1_5_PRO"] = "gemini-1.5-pro";
       LLMModels2["GEMINI_1_5_FLASH"] = "gemini-1.5-flash";
       LLMModels2["GEMINI_2_0_FLASH"] = "gemini-2.0-flash";
@@ -1922,7 +1954,9 @@ var init_llm = __esm({
       LLMModels2["GEMINI_3_8_FLASH"] = "gemini-3.8-flash";
       LLMModels2["GEMINI_4_ARGON"] = "gemini-4-argon";
       LLMModels2["GROK_4_5"] = "x-ai/grok-4.5";
+      LLMModels2["GROK_4_7"] = "x-ai/grok-4.7";
       LLMModels2["GLM_5_2"] = "z-ai/glm-5.2";
+      LLMModels2["GLM_5_3"] = "z-ai/glm-5.3";
     })(LLMModels || (LLMModels = {}));
   }
 });
@@ -2327,9 +2361,95 @@ var init_label2 = __esm({
 });
 
 // node_modules/@speakai/shared/dist/utils/dashboard-spec.js
+var DASHBOARD_ICON_NAMES, DASHBOARD_ICON_NAME_SET;
 var init_dashboard_spec = __esm({
   "node_modules/@speakai/shared/dist/utils/dashboard-spec.js"() {
     "use strict";
+    DASHBOARD_ICON_NAMES = [
+      "layout-dashboard",
+      "layout-grid",
+      "chart-column",
+      "chart-column-increasing",
+      "chart-no-axes-column",
+      "chart-no-axes-combined",
+      "chart-line",
+      "chart-pie",
+      "chart-area",
+      "gauge",
+      "activity",
+      "trending-up",
+      "trending-down",
+      "target",
+      "trophy",
+      "award",
+      "star",
+      "flag",
+      "user",
+      "user-round",
+      "user-check",
+      "users",
+      "phone",
+      "phone-call",
+      "phone-incoming",
+      "phone-missed",
+      "headphones",
+      "mic",
+      "audio-lines",
+      "audio-waveform",
+      "message-circle",
+      "message-square",
+      "messages-square",
+      "megaphone",
+      "send",
+      "quote",
+      "video",
+      "film",
+      "play",
+      "circle-play",
+      "list-video",
+      "calendar",
+      "calendar-days",
+      "calendar-clock",
+      "clock",
+      "sun",
+      "sunrise",
+      "list",
+      "list-checks",
+      "clipboard-check",
+      "square-check-big",
+      "table",
+      "table-2",
+      "layers",
+      "tags",
+      "bookmark",
+      "file-text",
+      "folder-open",
+      "search",
+      "git-compare",
+      "shield-check",
+      "circle-alert",
+      "triangle-alert",
+      "info",
+      "siren",
+      "heart",
+      "heart-pulse",
+      "thumbs-up",
+      "lightbulb",
+      "sparkles",
+      "zap",
+      "bot",
+      "briefcase",
+      "store",
+      "handshake",
+      "dollar-sign",
+      "scale",
+      "map-pin",
+      "globe",
+      "route",
+      "server",
+      "trash"
+    ];
+    DASHBOARD_ICON_NAME_SET = new Set(DASHBOARD_ICON_NAMES);
   }
 });
 
@@ -2374,6 +2494,13 @@ var init_embedSession2 = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/interfaces/design.js
+var init_design = __esm({
+  "node_modules/@speakai/shared/dist/interfaces/design.js"() {
+    "use strict";
+  }
+});
+
 // node_modules/@speakai/shared/dist/interfaces/index.js
 var init_interfaces = __esm({
   "node_modules/@speakai/shared/dist/interfaces/index.js"() {
@@ -2402,6 +2529,7 @@ var init_interfaces = __esm({
     init_pushNotification2();
     init_notificationEvent2();
     init_embedSession2();
+    init_design();
   }
 });
 
@@ -2944,7 +3072,7 @@ var init_interfaces2 = __esm({
 });
 
 // node_modules/@speakai/shared/dist/llm/registry.js
-var MAX_OUTPUT_TOKENS, GEMINI_MAX_OUTPUT_TOKENS, OPENROUTER_MAX_OUTPUT_TOKENS, NO_CAPS, GPT_LEGACY, GPT_5, CLAUDE_LEGACY, CLAUDE_4, CLAUDE_ADAPTIVE, GEMINI_LEGACY, GEMINI_THINKING, MODEL_REGISTRY, OPENAI_DEFAULT_MODEL, CLAUDE_DEFAULT_MODEL, GEMINI_DEFAULT_MODEL, OPENROUTER_DEFAULT_MODEL, FREE_TIER_MODEL, BY_ID;
+var MAX_OUTPUT_TOKENS, GEMINI_MAX_OUTPUT_TOKENS, OPENROUTER_MAX_OUTPUT_TOKENS, NO_CAPS, GPT_LEGACY, GPT_5, CLAUDE_LEGACY, CLAUDE_4, CLAUDE_ADAPTIVE, CLAUDE_ADAPTIVE_NO_FORCED_TOOL, GEMINI_LEGACY, GEMINI_THINKING, MODEL_REGISTRY, OPENAI_DEFAULT_MODEL, CLAUDE_DEFAULT_MODEL, GEMINI_DEFAULT_MODEL, OPENROUTER_DEFAULT_MODEL, FREE_TIER_MODEL, BY_ID;
 var init_registry = __esm({
   "node_modules/@speakai/shared/dist/llm/registry.js"() {
     "use strict";
@@ -2957,13 +3085,15 @@ var init_registry = __esm({
       adaptiveThinking: false,
       vision: false,
       customTemperature: true,
-      nativeAudioVideo: false
+      nativeAudioVideo: false,
+      forcedToolChoice: true
     };
     GPT_LEGACY = { ...NO_CAPS };
     GPT_5 = { ...NO_CAPS, thinking: true, customTemperature: false };
     CLAUDE_LEGACY = { ...NO_CAPS };
     CLAUDE_4 = { ...NO_CAPS, thinking: true };
     CLAUDE_ADAPTIVE = { ...NO_CAPS, thinking: true, adaptiveThinking: true, customTemperature: false };
+    CLAUDE_ADAPTIVE_NO_FORCED_TOOL = { ...CLAUDE_ADAPTIVE, forcedToolChoice: false };
     GEMINI_LEGACY = { ...NO_CAPS, nativeAudioVideo: true };
     GEMINI_THINKING = { ...NO_CAPS, thinking: true, nativeAudioVideo: true };
     MODEL_REGISTRY = [
@@ -2979,6 +3109,7 @@ var init_registry = __esm({
         premium: false,
         pricing: { inputPerMillion: 0.5, outputPerMillion: 1.5, provider: LLMProvider.OPENAI },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 16385,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -2994,6 +3125,7 @@ var init_registry = __esm({
         premium: false,
         pricing: { inputPerMillion: 3, outputPerMillion: 4, provider: LLMProvider.OPENAI },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 16385,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3009,6 +3141,7 @@ var init_registry = __esm({
         premium: false,
         pricing: { inputPerMillion: 0.5, outputPerMillion: 1.5, provider: LLMProvider.OPENAI },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 16385,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3024,6 +3157,7 @@ var init_registry = __esm({
         premium: false,
         pricing: { inputPerMillion: 30, outputPerMillion: 60, provider: LLMProvider.OPENAI },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 8192,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3039,6 +3173,7 @@ var init_registry = __esm({
         premium: false,
         pricing: { inputPerMillion: 10, outputPerMillion: 30, provider: LLMProvider.OPENAI },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 128e3,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3054,6 +3189,7 @@ var init_registry = __esm({
         premium: false,
         pricing: { inputPerMillion: 10, outputPerMillion: 30, provider: LLMProvider.OPENAI },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 128e3,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3069,6 +3205,7 @@ var init_registry = __esm({
         premium: false,
         pricing: { inputPerMillion: 5, outputPerMillion: 15, provider: LLMProvider.OPENAI },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 128e3,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3089,6 +3226,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 128e3,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3109,6 +3247,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 128e3,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3129,6 +3268,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 128e3,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3149,6 +3289,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 128e3,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3169,6 +3310,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1047576,
         capabilities: GPT_LEGACY,
         byokProvider: "openai"
       },
@@ -3189,6 +3331,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 272e3,
         capabilities: GPT_5,
         byokProvider: "openai"
       },
@@ -3209,6 +3352,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 272e3,
         capabilities: GPT_5,
         byokProvider: "openai"
       },
@@ -3233,6 +3377,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 922e3,
         capabilities: GPT_5,
         byokProvider: "openai"
       },
@@ -3253,6 +3398,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 272e3,
         capabilities: GPT_5,
         byokProvider: "openai"
       },
@@ -3273,6 +3419,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 272e3,
         capabilities: GPT_5,
         byokProvider: "openai"
       },
@@ -3281,7 +3428,7 @@ var init_registry = __esm({
         label: "GPT-5.5 Thinking",
         provider: LLMProvider.OPENAI,
         family: "gpt",
-        status: "deprecated",
+        status: "retired",
         replacedBy: LLMModels.GPT_5_5,
         offeredInChat: false,
         offeredInVoice: false,
@@ -3297,6 +3444,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 922e3,
         capabilities: GPT_5,
         byokProvider: "openai"
       },
@@ -3311,12 +3459,17 @@ var init_registry = __esm({
         offeredInVoice: false,
         premium: true,
         pricing: {
-          inputPerMillion: 1,
-          outputPerMillion: 6,
-          cachedInputPerMillion: 0.1,
+          inputPerMillion: 0.2,
+          outputPerMillion: 1.2,
+          cachedInputPerMillion: 0.02,
+          longContextThresholdTokens: 272e3,
+          inputPerMillionLong: 0.4,
+          outputPerMillionLong: 1.8,
+          cachedInputPerMillionLong: 0.04,
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 922e3,
         capabilities: GPT_5,
         byokProvider: "openai"
       },
@@ -3326,8 +3479,7 @@ var init_registry = __esm({
         provider: LLMProvider.OPENAI,
         family: "gpt",
         status: "live",
-        offeredInChat: true,
-        chatOrder: 7,
+        offeredInChat: false,
         offeredInVoice: true,
         voiceReasoning: "none",
         premium: true,
@@ -3338,6 +3490,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 272e3,
         capabilities: GPT_5,
         byokProvider: "openai",
         openRouterSlug: "openai/gpt-5.4-mini"
@@ -3348,8 +3501,7 @@ var init_registry = __esm({
         provider: LLMProvider.OPENAI,
         family: "gpt",
         status: "live",
-        offeredInChat: true,
-        chatOrder: 6,
+        offeredInChat: false,
         offeredInVoice: true,
         voiceReasoning: "none",
         premium: true,
@@ -3364,6 +3516,7 @@ var init_registry = __esm({
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 922e3,
         capabilities: GPT_5,
         byokProvider: "openai",
         openRouterSlug: "openai/gpt-5.5"
@@ -3373,19 +3526,23 @@ var init_registry = __esm({
         label: "GPT-5.6 Sol",
         provider: LLMProvider.OPENAI,
         family: "gpt",
-        status: "live",
-        offeredInChat: true,
-        chatOrder: 5,
-        offeredInVoice: true,
-        voiceReasoning: "none",
+        status: "retired",
+        replacedBy: LLMModels.GPT_6_1_TERRA,
+        offeredInChat: false,
+        offeredInVoice: false,
         premium: true,
         pricing: {
-          inputPerMillion: 5,
-          outputPerMillion: 30,
-          cachedInputPerMillion: 0.5,
+          inputPerMillion: 4,
+          outputPerMillion: 20,
+          cachedInputPerMillion: 0.4,
+          longContextThresholdTokens: 272e3,
+          inputPerMillionLong: 8,
+          outputPerMillionLong: 30,
+          cachedInputPerMillionLong: 0.8,
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 922e3,
         capabilities: GPT_5,
         byokProvider: "openai",
         openRouterSlug: "openai/gpt-5.6-sol"
@@ -3396,21 +3553,128 @@ var init_registry = __esm({
         provider: LLMProvider.OPENAI,
         family: "gpt",
         status: "live",
-        offeredInChat: true,
-        chatOrder: 4,
+        offeredInChat: false,
         offeredInVoice: true,
         voiceReasoning: "none",
         premium: true,
         pricing: {
-          inputPerMillion: 2.5,
-          outputPerMillion: 15,
-          cachedInputPerMillion: 0.25,
+          inputPerMillion: 2,
+          outputPerMillion: 12,
+          cachedInputPerMillion: 0.2,
+          longContextThresholdTokens: 272e3,
+          inputPerMillionLong: 4,
+          outputPerMillionLong: 18,
+          cachedInputPerMillionLong: 0.4,
           provider: LLMProvider.OPENAI
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 922e3,
         capabilities: GPT_5,
         byokProvider: "openai",
         openRouterSlug: "openai/gpt-5.6-terra"
+      },
+      {
+        id: LLMModels.GPT_6_ASTRA,
+        label: "GPT-6 Astra",
+        provider: LLMProvider.OPENAI,
+        family: "gpt",
+        status: "live",
+        offeredInChat: false,
+        offeredInVoice: false,
+        premium: true,
+        pricing: {
+          inputPerMillion: 10,
+          outputPerMillion: 50,
+          cachedInputPerMillion: 1,
+          longContextThresholdTokens: 272e3,
+          inputPerMillionLong: 20,
+          outputPerMillionLong: 75,
+          cachedInputPerMillionLong: 2,
+          provider: LLMProvider.OPENAI
+        },
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 922e3,
+        capabilities: GPT_5,
+        byokProvider: "openai",
+        openRouterSlug: "openai/gpt-6-astra"
+      },
+      {
+        id: LLMModels.GPT_6_1_SOL,
+        label: "GPT-6.1 Sol",
+        provider: LLMProvider.OPENAI,
+        family: "gpt",
+        status: "live",
+        offeredInChat: true,
+        chatOrder: 5,
+        offeredInVoice: false,
+        premium: true,
+        pricing: {
+          inputPerMillion: 2,
+          outputPerMillion: 10,
+          cachedInputPerMillion: 0.1,
+          longContextThresholdTokens: 272e3,
+          inputPerMillionLong: 4,
+          outputPerMillionLong: 15,
+          cachedInputPerMillionLong: 0.2,
+          provider: LLMProvider.OPENAI
+        },
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 922e3,
+        capabilities: GPT_5,
+        byokProvider: "openai",
+        openRouterSlug: "openai/gpt-6.1-sol"
+      },
+      {
+        id: LLMModels.GPT_6_1_TERRA,
+        label: "GPT-6.1 Terra",
+        provider: LLMProvider.OPENAI,
+        family: "gpt",
+        status: "live",
+        offeredInChat: true,
+        chatOrder: 6,
+        offeredInVoice: true,
+        voiceReasoning: "none",
+        premium: true,
+        pricing: {
+          inputPerMillion: 1,
+          outputPerMillion: 5,
+          cachedInputPerMillion: 0.05,
+          longContextThresholdTokens: 272e3,
+          inputPerMillionLong: 2,
+          outputPerMillionLong: 7.5,
+          cachedInputPerMillionLong: 0.1,
+          provider: LLMProvider.OPENAI
+        },
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 922e3,
+        capabilities: GPT_5,
+        byokProvider: "openai",
+        openRouterSlug: "openai/gpt-6.1-terra"
+      },
+      {
+        id: LLMModels.GPT_6_LUNA,
+        label: "GPT-6 Luna",
+        provider: LLMProvider.OPENAI,
+        family: "gpt",
+        status: "live",
+        offeredInChat: false,
+        offeredInVoice: false,
+        premium: true,
+        pricing: {
+          inputPerMillion: 0.1,
+          outputPerMillion: 0.5,
+          cachedInputPerMillion: 0.01,
+          longContextThresholdTokens: 272e3,
+          inputPerMillionLong: 0.2,
+          outputPerMillionLong: 0.75,
+          cachedInputPerMillionLong: 0.02,
+          provider: LLMProvider.OPENAI
+        },
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 922e3,
+        capabilities: GPT_5,
+        byokProvider: "openai",
+        openRouterSlug: "openai/gpt-6-luna"
       },
       {
         id: LLMModels.CLAUDE_2,
@@ -3424,6 +3688,7 @@ var init_registry = __esm({
         premium: false,
         pricing: { inputPerMillion: 8, outputPerMillion: 24, provider: LLMProvider.ANTHROPIC },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1e5,
         capabilities: CLAUDE_LEGACY,
         byokProvider: "anthropic"
       },
@@ -3444,6 +3709,7 @@ var init_registry = __esm({
           provider: LLMProvider.ANTHROPIC
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 2e5,
         capabilities: CLAUDE_LEGACY,
         byokProvider: "anthropic"
       },
@@ -3464,6 +3730,7 @@ var init_registry = __esm({
           provider: LLMProvider.ANTHROPIC
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 2e5,
         capabilities: CLAUDE_LEGACY,
         byokProvider: "anthropic"
       },
@@ -3484,6 +3751,7 @@ var init_registry = __esm({
           provider: LLMProvider.ANTHROPIC
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 2e5,
         capabilities: CLAUDE_LEGACY,
         byokProvider: "anthropic"
       },
@@ -3504,7 +3772,8 @@ var init_registry = __esm({
           provider: LLMProvider.ANTHROPIC
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
-        capabilities: { ...CLAUDE_4, thinking: false },
+        contextWindow: 2e5,
+        capabilities: CLAUDE_4,
         byokProvider: "anthropic"
       },
       {
@@ -3513,8 +3782,7 @@ var init_registry = __esm({
         provider: LLMProvider.ANTHROPIC,
         family: "claude",
         status: "live",
-        offeredInChat: true,
-        chatOrder: 10,
+        offeredInChat: false,
         offeredInVoice: false,
         premium: true,
         pricing: {
@@ -3524,7 +3792,8 @@ var init_registry = __esm({
           provider: LLMProvider.ANTHROPIC
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
-        capabilities: CLAUDE_4,
+        contextWindow: 1e6,
+        capabilities: CLAUDE_ADAPTIVE,
         byokProvider: "anthropic",
         openRouterSlug: "anthropic/claude-sonnet-4.6"
       },
@@ -3534,17 +3803,17 @@ var init_registry = __esm({
         provider: LLMProvider.ANTHROPIC,
         family: "claude",
         status: "live",
-        offeredInChat: true,
-        chatOrder: 8,
+        offeredInChat: false,
         offeredInVoice: false,
         premium: true,
         pricing: {
-          inputPerMillion: 3,
-          outputPerMillion: 15,
-          cachedInputPerMillion: 0.3,
+          inputPerMillion: 2,
+          outputPerMillion: 10,
+          cachedInputPerMillion: 0.2,
           provider: LLMProvider.ANTHROPIC
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1e6,
         capabilities: CLAUDE_ADAPTIVE,
         byokProvider: "anthropic",
         openRouterSlug: "anthropic/claude-sonnet-5"
@@ -3555,8 +3824,7 @@ var init_registry = __esm({
         provider: LLMProvider.ANTHROPIC,
         family: "claude",
         status: "live",
-        offeredInChat: true,
-        chatOrder: 9,
+        offeredInChat: false,
         offeredInVoice: false,
         premium: true,
         pricing: {
@@ -3566,9 +3834,102 @@ var init_registry = __esm({
           provider: LLMProvider.ANTHROPIC
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1e6,
         capabilities: CLAUDE_ADAPTIVE,
         byokProvider: "anthropic",
         openRouterSlug: "anthropic/claude-opus-4.8"
+      },
+      {
+        id: LLMModels.CLAUDE_SONNET_5_5,
+        label: "Claude Sonnet 5.5",
+        provider: LLMProvider.ANTHROPIC,
+        family: "claude",
+        status: "live",
+        offeredInChat: true,
+        chatOrder: 2,
+        offeredInVoice: false,
+        premium: true,
+        pricing: {
+          inputPerMillion: 2,
+          outputPerMillion: 10,
+          cachedInputPerMillion: 0.2,
+          provider: LLMProvider.ANTHROPIC
+        },
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1e6,
+        capabilities: CLAUDE_ADAPTIVE_NO_FORCED_TOOL,
+        byokProvider: "anthropic",
+        openRouterSlug: "anthropic/claude-sonnet-5.5"
+      },
+      {
+        id: LLMModels.CLAUDE_OPUS_5_5,
+        label: "Claude Opus 5.5",
+        provider: LLMProvider.ANTHROPIC,
+        family: "claude",
+        status: "live",
+        offeredInChat: true,
+        chatOrder: 3,
+        offeredInVoice: false,
+        premium: true,
+        pricing: {
+          inputPerMillion: 4,
+          outputPerMillion: 20,
+          cachedInputPerMillion: 0.2,
+          provider: LLMProvider.ANTHROPIC
+        },
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1e6,
+        capabilities: CLAUDE_ADAPTIVE_NO_FORCED_TOOL,
+        byokProvider: "anthropic",
+        openRouterSlug: "anthropic/claude-opus-5.5"
+      },
+      {
+        id: LLMModels.CLAUDE_HAIKU_5_5,
+        label: "Claude Haiku 5.5",
+        provider: LLMProvider.ANTHROPIC,
+        family: "claude",
+        status: "live",
+        offeredInChat: true,
+        chatOrder: 4,
+        offeredInVoice: false,
+        premium: true,
+        pricing: {
+          inputPerMillion: 0.1,
+          outputPerMillion: 0.5,
+          cachedInputPerMillion: 0.01,
+          // Anthropic prices a whole request at the higher rate once its prompt passes 100k tokens.
+          longContextThresholdTokens: 1e5,
+          inputPerMillionLong: 0.5,
+          outputPerMillionLong: 2.5,
+          cachedInputPerMillionLong: 0.05,
+          provider: LLMProvider.ANTHROPIC
+        },
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1e6,
+        capabilities: CLAUDE_ADAPTIVE,
+        byokProvider: "anthropic",
+        openRouterSlug: "anthropic/claude-haiku-5.5"
+      },
+      {
+        id: LLMModels.CLAUDE_FABLE_5_1,
+        label: "Claude Fable 5.1",
+        provider: LLMProvider.ANTHROPIC,
+        family: "claude",
+        status: "live",
+        offeredInChat: false,
+        offeredInVoice: false,
+        premium: true,
+        pricing: {
+          inputPerMillion: 10,
+          outputPerMillion: 50,
+          cachedInputPerMillion: 0.25,
+          provider: LLMProvider.ANTHROPIC
+        },
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1e6,
+        capabilities: CLAUDE_ADAPTIVE_NO_FORCED_TOOL,
+        byokProvider: "anthropic",
+        openRouterSlug: "anthropic/claude-fable-5.1"
       },
       {
         id: LLMModels.GEMINI_1_5_PRO,
@@ -3582,6 +3943,7 @@ var init_registry = __esm({
         premium: false,
         pricing: { inputPerMillion: 1.25, outputPerMillion: 5, provider: LLMProvider.GOOGLE },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 2097152,
         capabilities: GEMINI_LEGACY
       },
       {
@@ -3601,6 +3963,7 @@ var init_registry = __esm({
           provider: LLMProvider.GOOGLE
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
         capabilities: GEMINI_LEGACY
       },
       {
@@ -3620,6 +3983,7 @@ var init_registry = __esm({
           provider: LLMProvider.GOOGLE
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
         capabilities: GEMINI_LEGACY
       },
       {
@@ -3641,6 +4005,7 @@ var init_registry = __esm({
         },
         modality: { audioPerMillion: 1, videoPerMillion: 0.3 },
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
         capabilities: GEMINI_THINKING
       },
       {
@@ -3657,13 +4022,16 @@ var init_registry = __esm({
         pricing: {
           inputPerMillion: 1.25,
           outputPerMillion: 10,
+          cachedInputPerMillion: 0.125,
           longContextThresholdTokens: 2e5,
           inputPerMillionLong: 2.5,
           outputPerMillionLong: 15,
+          cachedInputPerMillionLong: 0.25,
           provider: LLMProvider.GOOGLE
         },
         modality: { audioPerMillion: 1.25, videoPerMillion: 1.25 },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
         capabilities: GEMINI_THINKING
       },
       {
@@ -3685,6 +4053,7 @@ var init_registry = __esm({
         },
         modality: { audioPerMillion: 0.3, videoPerMillion: 0.1 },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
         capabilities: GEMINI_THINKING
       },
       {
@@ -3697,9 +4066,10 @@ var init_registry = __esm({
         offeredInChat: false,
         offeredInVoice: false,
         premium: false,
-        pricing: { inputPerMillion: 0.25, outputPerMillion: 1.5, provider: LLMProvider.GOOGLE },
+        pricing: { inputPerMillion: 0.25, outputPerMillion: 1.5, cachedInputPerMillion: 0.025, provider: LLMProvider.GOOGLE },
         modality: { audioPerMillion: 0.5, videoPerMillion: 0.25 },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
         capabilities: GEMINI_THINKING
       },
       {
@@ -3715,12 +4085,15 @@ var init_registry = __esm({
         pricing: {
           inputPerMillion: 2,
           outputPerMillion: 12,
+          cachedInputPerMillion: 0.2,
           longContextThresholdTokens: 2e5,
           inputPerMillionLong: 4,
           outputPerMillionLong: 18,
+          cachedInputPerMillionLong: 0.4,
           provider: LLMProvider.GOOGLE
         },
         maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
         capabilities: GEMINI_THINKING
       },
       {
@@ -3729,8 +4102,7 @@ var init_registry = __esm({
         provider: LLMProvider.GOOGLE,
         family: "gemini",
         status: "live",
-        offeredInChat: true,
-        chatOrder: 1,
+        offeredInChat: false,
         offeredInVoice: false,
         premium: true,
         pricing: {
@@ -3741,6 +4113,7 @@ var init_registry = __esm({
         },
         modality: { audioPerMillion: 1, videoPerMillion: 0.5 },
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
         capabilities: GEMINI_THINKING,
         openRouterSlug: "google/gemini-3-flash-preview"
       },
@@ -3750,8 +4123,7 @@ var init_registry = __esm({
         provider: LLMProvider.GOOGLE,
         family: "gemini",
         status: "live",
-        offeredInChat: true,
-        chatOrder: 2,
+        offeredInChat: false,
         offeredInVoice: true,
         voiceReasoning: "minimal",
         premium: true,
@@ -3761,14 +4133,36 @@ var init_registry = __esm({
           cachedInputPerMillion: 0.15,
           provider: LLMProvider.GOOGLE
         },
-        modality: { audioPerMillion: 3, videoPerMillion: 1.5 },
+        modality: { audioPerMillion: 1.5, videoPerMillion: 1.5 },
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
         capabilities: GEMINI_THINKING,
         openRouterSlug: "google/gemini-3.5-flash"
       },
       {
         id: LLMModels.GEMINI_3_7_FLASH,
         label: "Gemini 3.7 Flash",
+        provider: LLMProvider.GOOGLE,
+        family: "gemini",
+        status: "live",
+        offeredInChat: false,
+        offeredInVoice: false,
+        premium: false,
+        pricing: {
+          inputPerMillion: 0.75,
+          outputPerMillion: 3.75,
+          cachedInputPerMillion: 0.075,
+          provider: LLMProvider.GOOGLE
+        },
+        modality: { audioPerMillion: 0.75, videoPerMillion: 0.75 },
+        maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
+        capabilities: GEMINI_THINKING,
+        openRouterSlug: "google/gemini-3.7-flash"
+      },
+      {
+        id: LLMModels.GEMINI_3_8_FLASH,
+        label: "Gemini 3.8 Flash",
         provider: LLMProvider.GOOGLE,
         family: "gemini",
         status: "live",
@@ -3782,29 +4176,9 @@ var init_registry = __esm({
           cachedInputPerMillion: 0.075,
           provider: LLMProvider.GOOGLE
         },
-        modality: { audioPerMillion: 1.5, videoPerMillion: 0.75 },
+        modality: { audioPerMillion: 0.75, videoPerMillion: 0.75 },
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
-        capabilities: GEMINI_THINKING,
-        openRouterSlug: "google/gemini-3.7-flash"
-      },
-      {
-        id: LLMModels.GEMINI_3_8_FLASH,
-        label: "Gemini 3.8 Flash",
-        provider: LLMProvider.GOOGLE,
-        family: "gemini",
-        status: "live",
-        offeredInChat: true,
-        chatOrder: 3,
-        offeredInVoice: false,
-        premium: true,
-        pricing: {
-          inputPerMillion: 0.75,
-          outputPerMillion: 3.75,
-          cachedInputPerMillion: 0.075,
-          provider: LLMProvider.GOOGLE
-        },
-        modality: { audioPerMillion: 1.5, videoPerMillion: 0.75 },
-        maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+        contextWindow: 1048576,
         capabilities: GEMINI_THINKING,
         openRouterSlug: "google/gemini-3.8-flash"
       },
@@ -3815,7 +4189,8 @@ var init_registry = __esm({
         provider: LLMProvider.GOOGLE,
         family: "gemini",
         status: "live",
-        offeredInChat: false,
+        offeredInChat: true,
+        chatOrder: 1,
         offeredInVoice: false,
         premium: true,
         // Google's rate from 2026-12-01 ($2 / $10 until then), billed from day one so a turn is never under-charged.
@@ -3825,10 +4200,13 @@ var init_registry = __esm({
           cachedInputPerMillion: 0.2,
           provider: LLMProvider.GOOGLE
         },
-        // Google publishes no separate audio rate; audio at 2x input and video at input, the same ratio as Gemini 3.x Flash.
-        modality: { audioPerMillion: 8, videoPerMillion: 4 },
+        // Vertex prices audio and video inside the single input rate.
+        modality: { audioPerMillion: 4, videoPerMillion: 4 },
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
-        capabilities: GEMINI_THINKING
+        // Input and output share Gemini 4's 1,048,576-token window; this leaves room for a full 65,536-token reply.
+        contextWindow: 983040,
+        capabilities: GEMINI_THINKING,
+        openRouterSlug: "google/gemini-4-argon"
       },
       {
         id: LLMModels.GROK_4_5,
@@ -3836,17 +4214,21 @@ var init_registry = __esm({
         provider: LLMProvider.OPENROUTER,
         family: "grok",
         status: "live",
-        offeredInChat: true,
-        chatOrder: 11,
+        offeredInChat: false,
         offeredInVoice: false,
         premium: true,
         pricing: {
           inputPerMillion: 2.2,
           outputPerMillion: 6.6,
-          cachedInputPerMillion: 0.22,
+          cachedInputPerMillion: 0.33,
+          longContextThresholdTokens: 2e5,
+          inputPerMillionLong: 4.4,
+          outputPerMillionLong: 13.2,
+          cachedInputPerMillionLong: 0.66,
           provider: LLMProvider.OPENROUTER
         },
         maxOutputTokens: OPENROUTER_MAX_OUTPUT_TOKENS,
+        contextWindow: 5e5,
         capabilities: { ...NO_CAPS, thinking: true, vision: true },
         byokProvider: "openrouter"
       },
@@ -3856,26 +4238,71 @@ var init_registry = __esm({
         provider: LLMProvider.OPENROUTER,
         family: "glm",
         status: "live",
-        offeredInChat: true,
-        chatOrder: 12,
+        offeredInChat: false,
         offeredInVoice: false,
         premium: true,
         pricing: {
-          inputPerMillion: 1.023,
-          outputPerMillion: 3.3,
-          cachedInputPerMillion: 0.1023,
+          inputPerMillion: 1.54,
+          outputPerMillion: 4.84,
+          cachedInputPerMillion: 0.286,
           provider: LLMProvider.OPENROUTER
         },
         maxOutputTokens: OPENROUTER_MAX_OUTPUT_TOKENS,
+        contextWindow: 2e5,
+        capabilities: { ...NO_CAPS, thinking: true },
+        byokProvider: "openrouter"
+      },
+      {
+        id: LLMModels.GROK_4_7,
+        label: "Grok 4.7",
+        provider: LLMProvider.OPENROUTER,
+        family: "grok",
+        status: "live",
+        offeredInChat: true,
+        chatOrder: 7,
+        offeredInVoice: false,
+        premium: true,
+        pricing: {
+          inputPerMillion: 2.2,
+          outputPerMillion: 6.6,
+          cachedInputPerMillion: 0.55,
+          longContextThresholdTokens: 2e5,
+          inputPerMillionLong: 4.4,
+          outputPerMillionLong: 13.2,
+          cachedInputPerMillionLong: 1.1,
+          provider: LLMProvider.OPENROUTER
+        },
+        maxOutputTokens: OPENROUTER_MAX_OUTPUT_TOKENS,
+        contextWindow: 5e5,
+        capabilities: { ...NO_CAPS, thinking: true, vision: true },
+        byokProvider: "openrouter"
+      },
+      {
+        id: LLMModels.GLM_5_3,
+        label: "GLM 5.3",
+        provider: LLMProvider.OPENROUTER,
+        family: "glm",
+        status: "live",
+        offeredInChat: false,
+        offeredInVoice: false,
+        premium: true,
+        pricing: {
+          inputPerMillion: 1.54,
+          outputPerMillion: 4.84,
+          cachedInputPerMillion: 0.286,
+          provider: LLMProvider.OPENROUTER
+        },
+        maxOutputTokens: OPENROUTER_MAX_OUTPUT_TOKENS,
+        contextWindow: 2e5,
         capabilities: { ...NO_CAPS, thinking: true },
         byokProvider: "openrouter"
       }
     ];
-    OPENAI_DEFAULT_MODEL = LLMModels.GPT_5_5;
-    CLAUDE_DEFAULT_MODEL = LLMModels.CLAUDE_SONNET_5;
-    GEMINI_DEFAULT_MODEL = LLMModels.GEMINI_3_7_FLASH;
-    OPENROUTER_DEFAULT_MODEL = LLMModels.GROK_4_5;
-    FREE_TIER_MODEL = LLMModels.GEMINI_3_7_FLASH;
+    OPENAI_DEFAULT_MODEL = LLMModels.GPT_6_1_SOL;
+    CLAUDE_DEFAULT_MODEL = LLMModels.CLAUDE_SONNET_5_5;
+    GEMINI_DEFAULT_MODEL = LLMModels.GEMINI_3_8_FLASH;
+    OPENROUTER_DEFAULT_MODEL = LLMModels.GROK_4_7;
+    FREE_TIER_MODEL = LLMModels.GEMINI_3_8_FLASH;
     BY_ID = new Map(MODEL_REGISTRY.map((m) => [m.id.toLowerCase(), m]));
   }
 });
@@ -4629,7 +5056,7 @@ var init_llm2 = __esm({
     VOICE_AGENT_LLM_MODELS = MODEL_REGISTRY.filter((model) => VOICE_AGENT_LLM_PROVIDERS.includes(model.provider)).map((model) => model.id);
     VOICE_AGENT_LLM_CHOICES = MODEL_REGISTRY.filter((model) => model.offeredInVoice);
     VOICE_DEFAULT_MODELS = {
-      [LLMProvider.OPENAI]: OPENAI_DEFAULT_MODEL,
+      [LLMProvider.OPENAI]: LLMModels.GPT_5_6_TERRA,
       [LLMProvider.GOOGLE]: LLMModels.GEMINI_3_5_FLASH
     };
     VOICE_AGENT_MODEL_IDS = [
@@ -4655,7 +5082,8 @@ var init_pricing = __esm({
   "node_modules/@speakai/shared/dist/voice/pricing.js"() {
     "use strict";
     init_modelPricing();
-    init_registry();
+    init_llm();
+    init_llm2();
     init_providers();
     VOICE_TTS_RATES = {
       [TTSProvider.ELEVENLABS]: { perMinute: 0.03 },
@@ -4928,6 +5356,13 @@ var init_embedSession3 = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/utils/color.js
+var init_color = __esm({
+  "node_modules/@speakai/shared/dist/utils/color.js"() {
+    "use strict";
+  }
+});
+
 // node_modules/@speakai/shared/dist/embedSession/playback.js
 var init_playback = __esm({
   "node_modules/@speakai/shared/dist/embedSession/playback.js"() {
@@ -4958,6 +5393,232 @@ var init_tracker = __esm({
   }
 });
 
+// node_modules/@speakai/shared/dist/design/tokens.js
+var PROCESSING_STATUS, READY_STATUS, COLOR_TOKENS, DEFAULT_ACCENT_ID, ACCENT_PRESETS, TYPE_SCALE, SPACING, RADIUS, ELEVATION, MOTION, SPEAKER_PALETTE, MEDIA_STATUS_DESIGN;
+var init_tokens = __esm({
+  "node_modules/@speakai/shared/dist/design/tokens.js"() {
+    "use strict";
+    init_media();
+    PROCESSING_STATUS = Object.freeze({ labelKey: "MEDIA_STATUS.PROCESSING", color: "textSecondary", fill: "surface", icon: "loader-circle" });
+    READY_STATUS = Object.freeze({ labelKey: "MEDIA_STATUS.READY", color: "success", fill: "successSoft", icon: "circle-check" });
+    COLOR_TOKENS = Object.freeze({
+      light: Object.freeze({
+        background: "#ffffff",
+        surface: "#f4f4f5",
+        raised: "#ffffff",
+        separator: "#e4e4e7",
+        line: "#d4d4d8",
+        text: "#18181b",
+        textSecondary: "#52525b",
+        textTertiary: "#6b6b76",
+        record: "#dc2626",
+        onRecord: "#ffffff",
+        success: "#15803d",
+        successSoft: "#ecfdf3",
+        warning: "#a15c07",
+        warningSoft: "#fef6e7",
+        critical: "#b42318",
+        criticalSoft: "#fef3f2",
+        scrim: "rgba(0,0,0,0.4)"
+      }),
+      dark: Object.freeze({
+        background: "#09090b",
+        surface: "#18181b",
+        raised: "#1c1c1f",
+        separator: "#27272a",
+        line: "#3f3f46",
+        text: "#fafafa",
+        textSecondary: "#a1a1aa",
+        textTertiary: "#8b8b94",
+        record: "#ef4444",
+        onRecord: "#ffffff",
+        success: "#4ade80",
+        successSoft: "#0f2a1a",
+        warning: "#fbbf24",
+        warningSoft: "#2e2208",
+        critical: "#f87171",
+        criticalSoft: "#2d1414",
+        scrim: "rgba(0,0,0,0.6)"
+      })
+    });
+    DEFAULT_ACCENT_ID = "default";
+    ACCENT_PRESETS = Object.freeze([
+      {
+        id: DEFAULT_ACCENT_ID,
+        name: "Monochrome",
+        preview: { primary: "#171717", secondary: "#737373" },
+        light: { accent: "#171717", onAccent: "#ffffff" },
+        dark: { accent: "#f2f2f2", onAccent: "#18181b" }
+      },
+      {
+        id: "indigo",
+        name: "Indigo",
+        preview: { primary: "#6366f1", secondary: "#818cf8" },
+        light: { accent: "#6264f1", onAccent: "#ffffff" },
+        dark: { accent: "#6264f1", onAccent: "#ffffff" }
+      },
+      {
+        id: "emerald",
+        name: "Emerald",
+        preview: { primary: "#10b981", secondary: "#34d399" },
+        light: { accent: "#10b77f", onAccent: "#18181b" },
+        dark: { accent: "#12d393", onAccent: "#18181b" }
+      },
+      {
+        id: "rose",
+        name: "Rose",
+        preview: { primary: "#f43f5e", secondary: "#fb7185" },
+        light: { accent: "#f43e5c", onAccent: "#18181b" },
+        dark: { accent: "#f43e5c", onAccent: "#18181b" }
+      },
+      {
+        id: "orange",
+        name: "Orange",
+        preview: { primary: "#f97316", secondary: "#fb923c" },
+        light: { accent: "#f97415", onAccent: "#18181b" },
+        dark: { accent: "#f97415", onAccent: "#18181b" }
+      },
+      {
+        id: "purple",
+        name: "Purple",
+        preview: { primary: "#8b5cf6", secondary: "#a78bfa" },
+        light: { accent: "#6b26d9", onAccent: "#ffffff" },
+        dark: { accent: "#8852e0", onAccent: "#ffffff" }
+      }
+    ]);
+    TYPE_SCALE = Object.freeze({
+      title: {
+        fontSize: 28,
+        lineHeight: 36,
+        fontWeight: 600,
+        heading: true,
+        ios: "largeTitle",
+        android: { role: "headlineMedium", fontSize: 28, lineHeight: 36 },
+        maxScale: 1.4
+      },
+      heading: {
+        fontSize: 20,
+        lineHeight: 26,
+        fontWeight: 600,
+        heading: true,
+        ios: "title3",
+        android: { role: "titleLarge", fontSize: 22, lineHeight: 28 },
+        maxScale: 1.4
+      },
+      headline: {
+        fontSize: 17,
+        lineHeight: 24,
+        fontWeight: 600,
+        heading: false,
+        ios: "headline",
+        android: { role: "titleMedium", fontSize: 16, lineHeight: 24 },
+        maxScale: 2
+      },
+      body: {
+        fontSize: 17,
+        lineHeight: 24,
+        fontWeight: 400,
+        heading: false,
+        ios: "body",
+        android: { role: "bodyLarge", fontSize: 16, lineHeight: 24 },
+        maxScale: 2
+      },
+      callout: {
+        fontSize: 15,
+        lineHeight: 21,
+        fontWeight: 400,
+        heading: false,
+        ios: "callout",
+        android: { role: "bodyMedium", fontSize: 14, lineHeight: 20 },
+        maxScale: 2
+      },
+      footnote: {
+        fontSize: 13,
+        lineHeight: 18,
+        fontWeight: 400,
+        heading: false,
+        ios: "footnote",
+        android: { role: "bodySmall", fontSize: 12, lineHeight: 16 },
+        maxScale: 2
+      },
+      caption: {
+        fontSize: 12,
+        lineHeight: 17,
+        fontWeight: 600,
+        heading: false,
+        ios: "caption1",
+        android: { role: "labelSmall", fontSize: 11, lineHeight: 16 },
+        maxScale: 2
+      },
+      timer: {
+        fontSize: 64,
+        lineHeight: 80,
+        fontWeight: 500,
+        heading: true,
+        ios: null,
+        android: null,
+        maxScale: 1
+      },
+      tab: {
+        fontSize: 10,
+        lineHeight: 16,
+        fontWeight: 600,
+        heading: false,
+        ios: null,
+        android: { role: "labelMedium", fontSize: 12, lineHeight: 16 },
+        maxScale: 1
+      }
+    });
+    SPACING = Object.freeze({
+      xs: 4,
+      sm: 8,
+      md: 12,
+      lg: 16,
+      gutterMax: 20,
+      xl: 24,
+      xxl: 32,
+      xxxl: 40
+    });
+    RADIUS = Object.freeze({
+      control: 10,
+      card: 12,
+      sheet: 16,
+      pill: 999
+    });
+    ELEVATION = Object.freeze({
+      flat: null,
+      raised: Object.freeze({ offsetY: 1, blur: 2, shadowOpacity: 0.08 })
+    });
+    MOTION = Object.freeze({
+      durationMs: Object.freeze({ state: 150, menu: 200, sheet: 300 }),
+      easing: Object.freeze([0, 0, 0.58, 1]),
+      reducedMotion: Object.freeze({ fadeMs: 150, stopLoops: true })
+    });
+    SPEAKER_PALETTE = Object.freeze({
+      hueStep: 137.508,
+      chroma: 0.14,
+      lightness: Object.freeze({ light: 0.52, dark: 0.72 })
+    });
+    MEDIA_STATUS_DESIGN = Object.freeze({
+      [MediaState.NOT_UPLOADED]: Object.freeze({ labelKey: "MEDIA_STATUS.UPLOADING", color: "textSecondary", fill: "surface", icon: "cloud-upload" }),
+      [MediaState.UPLOADED]: Object.freeze({ labelKey: "MEDIA_STATUS.READY_TO_ANALYZE", color: "textSecondary", fill: "surface", icon: "cloud-check" }),
+      [MediaState.QUEUED]: PROCESSING_STATUS,
+      [MediaState.PREPARING]: PROCESSING_STATUS,
+      [MediaState.PREPARING_TRANSCRIPTION]: PROCESSING_STATUS,
+      [MediaState.PROCESSING]: PROCESSING_STATUS,
+      [MediaState.TRANSLATION]: PROCESSING_STATUS,
+      [MediaState.PREPARING_ANALYSIS]: PROCESSING_STATUS,
+      [MediaState.DUBBING]: PROCESSING_STATUS,
+      [MediaState.PROCESSED]: READY_STATUS,
+      [MediaState.COMPLETE]: READY_STATUS,
+      [MediaState.FAILED]: Object.freeze({ labelKey: "MEDIA_STATUS.FAILED", color: "critical", fill: "criticalSoft", icon: "circle-alert" }),
+      [MediaState.PENDING_PAYMENT]: Object.freeze({ labelKey: "MEDIA_STATUS.PAYMENT_NEEDED", color: "critical", fill: "criticalSoft", icon: "credit-card" }),
+      [MediaState.LIVE_TRANSCRIPT]: Object.freeze({ labelKey: "MEDIA_STATUS.LIVE", color: "textSecondary", fill: "surface", icon: "radio" }),
+      local: Object.freeze({ labelKey: "MEDIA_STATUS.LOCAL", color: "textSecondary", fill: "surface", icon: "cloud-off" })
+    });
+  }
+});
+
 // node_modules/@speakai/shared/dist/llm/types.js
 var init_types = __esm({
   "node_modules/@speakai/shared/dist/llm/types.js"() {
@@ -4980,7 +5641,9 @@ var init_dist = __esm({
     init_pushNotification3();
     init_notificationEvent3();
     init_embedSession3();
+    init_color();
     init_tracker();
+    init_tokens();
     init_registry();
     init_types();
     init_modelPricing();
@@ -6472,7 +7135,7 @@ function register5(server, client) {
     {
       name: import_zod6.z.string().describe("Display name for the recorder"),
       ...recorderConfigShape,
-      clientInformation: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+      clientInformation: import_zod6.z.record(import_zod6.z.string(), import_zod6.z.unknown()).optional().describe(
         `Respondent info & questions: { name:boolean, email:boolean, questions:[\u2026], consent?:{ isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? } }. Question shape \u2014 ${QUESTION_SHAPE_DESC}`
       )
     },
@@ -6680,10 +7343,10 @@ function register5(server, client) {
       recorderId: import_zod6.z.string().min(1).describe("Unique identifier of the recorder"),
       name: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's name"),
       email: import_zod6.z.boolean().optional().describe("Whether to collect the respondent's email"),
-      questions: import_zod6.z.array(import_zod6.z.record(import_zod6.z.unknown())).describe(
+      questions: import_zod6.z.array(import_zod6.z.record(import_zod6.z.string(), import_zod6.z.unknown())).describe(
         `Survey questions. ${QUESTION_SHAPE_DESC} (id? may also be passed to update an existing question.)`
       ),
-      consent: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+      consent: import_zod6.z.record(import_zod6.z.string(), import_zod6.z.unknown()).optional().describe(
         "Consent screen: { isEnabled, title, description, yesButtonLabel, noButtonLabel, isRequired, fieldId? }"
       )
     },
@@ -6761,12 +7424,12 @@ var init_recorder3 = __esm({
       folderId: import_zod6.z.string().optional().describe("Folder to store recordings in"),
       isAutoAnalyze: import_zod6.z.boolean().optional().describe("Whether to auto-analyze submissions"),
       notifyUsers: import_zod6.z.array(import_zod6.z.string()).optional().describe("User IDs to notify on new submissions"),
-      duration: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Recording duration: { minDuration, maxDuration } in seconds"),
-      options: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+      duration: import_zod6.z.record(import_zod6.z.string(), import_zod6.z.unknown()).optional().describe("Recording duration: { minDuration, maxDuration } in seconds"),
+      options: import_zod6.z.record(import_zod6.z.string(), import_zod6.z.unknown()).optional().describe(
         "Capture options: { audio, video, screenShare, liveTranscription, upload:{ file, text, multiple, url } } \u2014 all booleans"
       ),
-      notification: import_zod6.z.record(import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client }, both booleans. upload emails the recorder owner (if they opted in to submission emails) and any users in notifyUsers about each new submission; client emails a confirmation to each respondent who gives an email."),
-      meta: import_zod6.z.record(import_zod6.z.unknown()).optional().describe(
+      notification: import_zod6.z.record(import_zod6.z.string(), import_zod6.z.unknown()).optional().describe("Notification toggles: { upload, client }, both booleans. upload emails the recorder owner (if they opted in to submission emails) and any users in notifyUsers about each new submission; client emails a confirmation to each respondent who gives an email."),
+      meta: import_zod6.z.record(import_zod6.z.string(), import_zod6.z.unknown()).optional().describe(
         "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }"
       )
     };
@@ -6820,7 +7483,7 @@ function register6(server, client) {
         "Privacy mode for the embed. Changing this clears the existing password unless `password` is also supplied in the same call."
       ),
       password: import_zod7.z.string().optional().describe("Password to protect the embed with when privacyMode is private. Only applied when privacyMode is also sent."),
-      meta: import_zod7.z.record(import_zod7.z.unknown()).optional().describe(
+      meta: import_zod7.z.record(import_zod7.z.string(), import_zod7.z.unknown()).optional().describe(
         `Embed appearance & feature toggles: { backgroundImg, logo, logoDark, theme, backgroundColor, fontFamily, primaryColor, titleColor, chatWelcomeMessage, assistantTemplateId, isTitle, isDescription, isRemarks, isDataVizDownloadable, isSEOIndexing, isPromptAsk, isPromptHistory, isMediaExport, isLabels, isComments, callToActionButtons:[{ url, label }], features:[{ name, isActive, isCustom? }] }. features entry { name: "fieldsFocus", isActive: false } turns off the fields-first media page: by default, when a media page is opened from a shared dashboard and the media has custom fields, the page shrinks the player to about 22% and leads with the fields. Shared-dashboard branding: logo is the image shown in light mode and logoDark the one shown when the viewer is in dark mode (logoDark must be an uploaded logo; this MCP cannot upload images, any other URL is rejected with a 400, and it falls back to logo when unset). theme is "light" or "dark" and forces that theme for every viewer, hiding their toggle; "" lets the viewer choose. backgroundColor is a hex colour (#rgb or #rrggbb) for the page background; pair it with theme so text stays readable. primaryColor is a hex accent used for nav, links, card chips and play buttons. titleColor is a hex colour for the dashboard title and is ignored when its contrast on the page background is below 3:1. fontFamily is a Google Fonts family name (letters, digits and spaces, max 60 chars, for example "Arimo"; anything else is rejected with a 400); it overrides the account font for this embed, and "" falls back to the account font. Send "" for any of these keys to clear it. isPromptAsk must be on for the chat button of a shared dashboard (and a notes widget openChat action) to work. isLabels and isComments show the media's labels and comments read-only on media and folder embeds; both are off by default and embed viewers can never write them.`
       )
     },
@@ -7062,7 +7725,7 @@ function register7(server, client, options = {}) {
     isIndividualPrompt: import_zod8.z.boolean().optional().describe("When true, processes each media file separately instead of combining context. Useful for comparing responses across files."),
     fieldId: import_zod8.z.string().optional().describe("Scope the prompt to a single custom field"),
     fieldIds: import_zod8.z.array(import_zod8.z.string()).max(10).optional().describe("Scope the prompt to multiple custom fields (max 10)"),
-    filters: import_zod8.z.record(import_zod8.z.unknown()).optional().describe("Advanced filter object to scope which media the prompt runs over"),
+    filters: import_zod8.z.record(import_zod8.z.string(), import_zod8.z.unknown()).optional().describe("Advanced filter object to scope which media the prompt runs over"),
     analysisMediaId: import_zod8.z.string().optional().describe("Media to analyse as audio/video rather than transcript. Must also appear in mediaIds, and must be sent together with analysisInput."),
     analysisInput: import_zod8.z.enum(["audio", "video"]).optional().describe("'audio' lets the model hear tone, pacing and delivery; 'video' also lets it see what is on screen. Omit for transcript-only, which is the default. 'transcript' is not a valid value here \u2014 omitting the field IS transcript-only.")
   };
@@ -7820,7 +8483,7 @@ function register9(server, client) {
       fields: import_zod10.z.array(
         import_zod10.z.object({
           id: fieldIdSchema,
-          value: import_zod10.z.unknown().describe("Value to set for the field")
+          value: import_zod10.z.unknown().optional().describe("Value to set for the field")
         })
       ).describe("Array of field id/value pairs to set")
     },
@@ -9536,8 +10199,8 @@ function register12(server, client, options = {}) {
     "validate_automation_graph",
     "Check a step graph without saving anything. Reports the same problems create_automation and update_automation would refuse \u2014 branch wiring, rules a condition cannot actually read, shapes the Speak web editor could not reopen \u2014 plus non-blocking warnings. Use it to iterate on a branched automation instead of discovering the problems one failed save at a time.",
     {
-      steps: import_zod14.z.array(import_zod14.z.record(import_zod14.z.unknown())).min(1).describe(STEPS_DESCRIPTION),
-      trigger: import_zod14.z.record(import_zod14.z.unknown()).optional().describe(TRIGGER_DESCRIPTION),
+      steps: import_zod14.z.array(import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown())).min(1).describe(STEPS_DESCRIPTION),
+      trigger: import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown()).optional().describe(TRIGGER_DESCRIPTION),
       runType: import_zod14.z.enum(["instant", "schedule"]).optional().describe("Run type the graph would be saved with. A schedule refuses any branch.")
     },
     {
@@ -9762,13 +10425,13 @@ Notes: "tags"/"keywords" trigger types are rejected for graph automations. The s
     OR_TRIGGERS_DESCRIPTION = 'Optional additional "Or" triggers (max 10): the automation runs when ANY of them fires, sharing the same steps. Each entry mirrors the trigger shapes above but cannot be an inbound webhook and carries no webhookId/childKey. Example: [{ type: "folders", triggerSlug: "field_updated", values: ["<fieldId>"] }]';
     writeSchema = {
       name: import_zod14.z.string().min(1).max(150).describe("Display name for the automation"),
-      trigger: import_zod14.z.record(import_zod14.z.unknown()).describe(TRIGGER_DESCRIPTION),
-      triggers: import_zod14.z.array(import_zod14.z.record(import_zod14.z.unknown())).max(10).optional().describe(OR_TRIGGERS_DESCRIPTION),
-      steps: import_zod14.z.array(import_zod14.z.record(import_zod14.z.unknown())).min(1).max(20).describe(STEPS_DESCRIPTION),
+      trigger: import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown()).describe(TRIGGER_DESCRIPTION),
+      triggers: import_zod14.z.array(import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown())).max(10).optional().describe(OR_TRIGGERS_DESCRIPTION),
+      steps: import_zod14.z.array(import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown())).min(1).max(20).describe(STEPS_DESCRIPTION),
       description: import_zod14.z.string().max(1e3).optional().describe("Optional description"),
       isActive: import_zod14.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
       runType: import_zod14.z.enum(["instant", "schedule"]).optional().describe('Run type: "instant" (default, runs on trigger) or "schedule" (cron)'),
-      schedule: import_zod14.z.record(import_zod14.z.unknown()).optional().describe(
+      schedule: import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown()).optional().describe(
         'Required when runType="schedule": { timePeriod: "today"|"yesterday"|"last7days"|"last14days"|"thisWeek", repeatAt: string }'
       )
     };
@@ -10925,12 +11588,12 @@ var init_workflows = __esm({
     STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match, otherwise the run stops here. Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic?, then: [steps], otherwise: [steps], thenEnds?, otherwiseEnds? } \u2014 routes instead of stopping. `then` runs when the rules match, `otherwise` when they do not, and whatever follows the branch runs on both paths. Set thenEnds/otherwiseEnds to true to finish the run on that side instead of carrying on. One side may be empty ("if it matches do this, otherwise just carry on"), but not both. Branches may nest three deep, and a nested branch must be the LAST step of the side it sits on.\n  Rule fields for BOTH filter and branch depend on what reaches the step: while media is flowing use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; straight after an ai_chat step only "answer" is available, so put the branch BEFORE the ai_chat step if you need a media field. A filter and a branch CANNOT read the webhook payload \u2014 they only see the media and earlier answers. To branch on payload data, upload first with mapFields to write the value into a custom field, then branch on that field.\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default), analyse?: "transcript" (default) | "audio" | "video" \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see the screen; on a video file "audio" extracts the audio track first. Premium: requires the account\'s audio/video analysis opt-in and costs credits per hour of media }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nLegacy: a flat list where steps after a branch carry runWhen: "true"|"false" is still accepted and folded into then/otherwise, but it cannot express nesting or an ending side \u2014 prefer then/otherwise. Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
     buildAutomationSchema = {
       name: import_zod18.z.string().min(1).max(150).describe("Display name for the automation"),
-      trigger: import_zod18.z.record(import_zod18.z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
-      steps: import_zod18.z.array(import_zod18.z.record(import_zod18.z.unknown())).min(1).max(20).describe(STEP_SPEC_DESCRIPTION),
+      trigger: import_zod18.z.record(import_zod18.z.string(), import_zod18.z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
+      steps: import_zod18.z.array(import_zod18.z.record(import_zod18.z.string(), import_zod18.z.unknown())).min(1).max(20).describe(STEP_SPEC_DESCRIPTION),
       automationId: import_zod18.z.string().optional().describe("Update this existing automation instead of creating a new one (full replace)"),
       description: import_zod18.z.string().max(1e3).optional().describe("Optional description"),
       isActive: import_zod18.z.boolean().optional().describe("Whether the automation is active (default true)"),
-      orTriggers: import_zod18.z.array(import_zod18.z.record(import_zod18.z.unknown())).max(10).optional().describe(
+      orTriggers: import_zod18.z.array(import_zod18.z.record(import_zod18.z.string(), import_zod18.z.unknown())).max(10).optional().describe(
         'Additional "Or" triggers (same shape as trigger, but inbound_webhook is not allowed here). The automation runs when ANY trigger fires.'
       )
     };
@@ -11824,10 +12487,10 @@ var init_dashboards = __esm({
         "Optional explicit widget id (kebab-case). Required if you reference the widget from sections[].widgetIds; auto-generated otherwise."
       ),
       title: import_zod20.z.string().min(1).max(40).optional().describe("Widget title, max 40 chars (defaults to a per-type label)"),
-      config: import_zod20.z.record(import_zod20.z.unknown()).optional().describe(
+      config: import_zod20.z.record(import_zod20.z.string(), import_zod20.z.unknown()).optional().describe(
         "Per-type config (STRICT \u2014 unknown keys are rejected). metric-chart: mark (line|bar|area|donut|stacked-bar) + metric + groupBy/series + thresholds; table: rowsAre + columns [{header, field|metric}] (+ display: cards and card for session cards); stat-cards: tiles; field-distribution: fieldName+measure+chartType (required); narrative: focus; notes: content (+ actions for buttons); chat-history: limit (optional, past conversations to list, 1-100, default 25). Call list_dashboard_widgets for the full per-type vocabulary + metric/filter grammar. Omit for a sensible valid default (except field-distribution, which needs fieldName)."
       ),
-      binding: import_zod20.z.record(import_zod20.z.unknown()).optional().describe(
+      binding: import_zod20.z.record(import_zod20.z.string(), import_zod20.z.unknown()).optional().describe(
         "Per-widget scope override: { source?, dateRange?: {preset}, filter? }. Omit any key to inherit the dashboard's value."
       ),
       layout: import_zod20.z.object({
@@ -13557,7 +14220,7 @@ renderSkeleton(MAX_ROWS);
 dataTimer=setTimeout(function(){if(!settled)hide();},DATA_TIMEOUT_MS);
 
 request("ui/initialize",{
-  appInfo:{name:"speakai-file-list",version:"1.0.0"},
+  appInfo:{name:"file-list",version:"1.0.0"},
   appCapabilities:{availableDisplayModes:["inline"]},
   protocolVersion:PROTOCOL_VERSION
 }).then(function(result){
@@ -13588,7 +14251,7 @@ request("ui/initialize",{
 // src/ui/media-list/index.ts
 function registerMediaListCard(server) {
   server.registerResource(
-    "speakai-file-list-card",
+    "file-list-card",
     MEDIA_LIST_CARD_URI,
     {
       title: "Speak file list card",
@@ -13716,7 +14379,7 @@ function reportError(label, err2) {
 }
 function registerResources(server, client) {
   const api = client ?? speakClient;
-  server.resource(
+  server.registerResource(
     "media-library",
     "speakai://media",
     { description: "List of all media files in your Speak AI workspace" },
@@ -13731,7 +14394,7 @@ function registerResources(server, client) {
       }
     }
   );
-  server.resource(
+  server.registerResource(
     "folders",
     "speakai://folders",
     { description: "List of all folders in your Speak AI workspace" },
@@ -13746,7 +14409,7 @@ function registerResources(server, client) {
       }
     }
   );
-  server.resource(
+  server.registerResource(
     "supported-languages",
     "speakai://languages",
     { description: "List of supported transcription languages" },
@@ -13759,9 +14422,9 @@ function registerResources(server, client) {
       }
     }
   );
-  server.resource(
+  server.registerResource(
     "transcript",
-    new import_mcp.ResourceTemplate("speakai://media/{mediaId}/transcript", { list: void 0 }),
+    new import_server.ResourceTemplate("speakai://media/{mediaId}/transcript", { list: void 0 }),
     { description: "Full transcript for a specific media file" },
     async (uri, { mediaId }) => {
       try {
@@ -13772,9 +14435,9 @@ function registerResources(server, client) {
       }
     }
   );
-  server.resource(
+  server.registerResource(
     "insights",
-    new import_mcp.ResourceTemplate("speakai://media/{mediaId}/insights", { list: void 0 }),
+    new import_server.ResourceTemplate("speakai://media/{mediaId}/insights", { list: void 0 }),
     { description: "AI-generated insights for a specific media file" },
     async (uri, { mediaId }) => {
       try {
@@ -13786,11 +14449,11 @@ function registerResources(server, client) {
     }
   );
 }
-var import_mcp;
+var import_server;
 var init_resources = __esm({
   "src/resources.ts"() {
     "use strict";
-    import_mcp = require("@modelcontextprotocol/sdk/server/mcp.js");
+    import_server = require("@modelcontextprotocol/server");
     init_client();
     init_client();
   }
@@ -13802,7 +14465,7 @@ __export(prompts_exports, {
   registerPrompts: () => registerPrompts
 });
 function registerPrompt(server, name, description, args2, callback) {
-  server.prompt.bind(server)(name, description, args2, callback);
+  server.registerPrompt(name, { description, argsSchema: import_zod25.z.object(args2) }, callback);
 }
 function registerPrompts(server) {
   registerPrompt(
@@ -15641,7 +16304,8 @@ var cliCommands = [
   "help"
 ];
 var isCliMode = args.length > 0 && (args[0].startsWith("-") || cliCommands.includes(args[0]));
-if (isCliMode) {
+var isEntryPoint = typeof module !== "undefined" && require.main === module;
+if (isEntryPoint && isCliMode) {
   Promise.resolve().then(() => (init_config(), config_exports)).then(({ resolveApiKey: resolveApiKey2, resolveBaseUrl: resolveBaseUrl2 }) => {
     resolveApiKey2();
     resolveBaseUrl2();
@@ -15653,31 +16317,25 @@ if (isCliMode) {
       });
     });
   });
-} else {
-  import("@modelcontextprotocol/sdk/server/mcp.js").then(({ McpServer }) => {
-    import("@modelcontextprotocol/sdk/server/stdio.js").then(
-      ({ StdioServerTransport }) => {
-        Promise.all([
-          Promise.resolve().then(() => (init_tools(), tools_exports)),
-          Promise.resolve().then(() => (init_resources(), resources_exports)),
-          Promise.resolve().then(() => (init_prompts(), prompts_exports))
-        ]).then(([{ registerAllTools: registerAllTools2 }, { registerResources: registerResources2 }, { registerPrompts: registerPrompts2 }]) => {
-          const server = new McpServer({
-            name: "speak-ai",
-            version: "1.0.0"
-          });
-          registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true, cards: process.env.SPEAK_MCP_CARDS === "true" });
-          registerResources2(server);
-          registerPrompts2(server);
-          const transport = new StdioServerTransport();
-          server.connect(transport).then(() => {
-            process.stderr.write(
-              "[speakai-mcp] Server started on stdio transport\n"
-            );
-          });
-        });
-      }
-    );
+} else if (isEntryPoint) {
+  Promise.all([
+    import("@modelcontextprotocol/server"),
+    import("@modelcontextprotocol/server/stdio"),
+    Promise.resolve().then(() => (init_tools(), tools_exports)),
+    Promise.resolve().then(() => (init_resources(), resources_exports)),
+    Promise.resolve().then(() => (init_prompts(), prompts_exports))
+  ]).then(([{ McpServer: McpServer2 }, { serveStdio }, { registerAllTools: registerAllTools2 }, { registerResources: registerResources2 }, { registerPrompts: registerPrompts2 }]) => {
+    serveStdio(() => {
+      const server = new McpServer2({
+        name: "speak-ai",
+        version: "1.0.0"
+      });
+      registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true, cards: process.env.SPEAK_MCP_CARDS === "true" });
+      registerResources2(server);
+      registerPrompts2(server);
+      return server;
+    });
+    process.stderr.write("[speakai-mcp] Server started on stdio transport\n");
   });
 }
 // Annotate the CommonJS export names for ESM import in node:
