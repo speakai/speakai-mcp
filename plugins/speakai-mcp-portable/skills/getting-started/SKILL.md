@@ -34,10 +34,21 @@ once in a browser popup and no API key is handled anywhere.
   mode. Choose Create, paste the URL, pick OAuth, and authorize. Enable it per chat from
   the plus menu.
 - **Cursor and VS Code:** use the one-click install buttons on <https://docs.speakai.co/mcp/setup/>.
-- **Claude Code:**
+  In Cursor you can also add `"speakai": { "url": "https://api.speakai.co/v1/mcp" }` under
+  `mcpServers` in `~/.cursor/mcp.json`, then sign in from Cursor Settings, Tools & MCP.
+- **Claude Code:** add the server, then sign in (or type `/mcp` in a session). The browser
+  opens Speak AI's page, where the user signs in or creates an account.
 
   ```sh
   claude mcp add --transport http speakai https://api.speakai.co/v1/mcp
+  claude mcp login speakai
+  ```
+
+- **Codex:** adding the server starts the browser sign-in. If it did not finish, run
+  `codex mcp login speakai`.
+
+  ```sh
+  codex mcp add speakai --url https://api.speakai.co/v1/mcp
   ```
 
 The portable plugin ships this remote server and nothing else. Its `mcp.json` is:
