@@ -6,7 +6,7 @@ import { detectHostedClients, hostedSetupText, HOSTED_MCP_URL } from "../src/cli
 
 const dirs: string[] = [];
 const tempDir = () => {
-  const d = mkdtempSync(path.join(tmpdir(), "speakai-hosted-"));
+  const d = mkdtempSync(path.join(tmpdir(), "hosted-setup-"));
   dirs.push(d);
   return d;
 };
