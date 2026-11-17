@@ -39,11 +39,9 @@ The AI does the searching, summarizing, and citing. Your recordings stay in your
 
 ## Install (pick your tool)
 
-> **Two paths to install**: pick whichever feels easier. The one-click connect path approves access via a permission popup; the manual path pastes an API key into a header.
+> **Start with the hosted connector.** Every assistant below connects to `https://api.speakai.co/v1/mcp` and signs you in through your browser on Speak AI's own page, where you can sign in or create a free account. There is no API key to copy. An API key setup is still available for local file upload, scripts and machines with no browser; see [Developer reference](#developer-reference-cli-api-advanced-setup).
 
-> **Don't know which one to pick?** Install it in the AI assistant you already use. Every option below connects to the same Speak AI workspace.
-
-> Speak AI's connector address (paste this into your AI tool's connector settings; it's the same idea as pasting a Zoom link into your calendar): `https://api.speakai.co/v1/mcp`
+> **Don't know which one to pick?** Install it in the AI assistant you already use. Every option below connects to the same Speak AI account.
 
 ### Claude.ai (web)
 
@@ -128,32 +126,61 @@ Still stuck? Email [success@speakai.co](mailto:success@speakai.co).
 
 ### Claude Code (terminal)
 
-**Recommended: install from the official Claude Code plugin marketplace:**
+Add the hosted connector, then sign in:
+
+```sh
+claude mcp add --transport http speakai https://api.speakai.co/v1/mcp
+claude mcp login speakai
+```
+
+`claude mcp login` opens Speak AI's sign-in page in your browser. Sign in or create an account, then click **Allow**. You can also type `/mcp` inside Claude Code, pick **speakai** and choose to authenticate. On a machine with no browser (for example over SSH), run `claude mcp login speakai --no-browser`, open the printed link on another device, and paste the address your browser ends on back into the terminal.
+
+Add `--scope user` to the first command to use Speak AI in every project instead of only the current one.
+
+**Or install the plugin**, which adds the same hosted connector plus Speak AI skills:
 
 1. Add the official marketplace (one-time): `/plugin marketplace add claude-plugins-official`
 2. Install the plugin: `/plugin install speakai@claude-plugins-official`
 3. Activate it: `/reload-plugins`
-4. Run the `getting-started` skill and paste your Speak AI API key. Generate one at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
+4. Type `/mcp`, pick **speakai** and sign in to Speak AI in your browser.
 
 If `/plugin install` doesn't find Speak AI, refresh the local catalog with `/plugin marketplace update claude-plugins-official` and retry.
 
 <details>
-<summary>Developer alternative: manual HTTP transport</summary>
-
-Skip the plugin and add the connector directly:
+<summary>Alternative: send an API key instead of signing in</summary>
 
 ```sh
-claude mcp add speakai --transport http --url https://api.speakai.co/v1/mcp
-```
-
-Claude Code will open an OAuth window for sign-in. To bypass OAuth and pass a Bearer token instead:
-
-```sh
-claude mcp add speakai --transport http --url https://api.speakai.co/v1/mcp \
+claude mcp add --transport http speakai https://api.speakai.co/v1/mcp \
   --header "Authorization: Bearer $SPEAKAI_KEY"
 ```
 
-Set `SPEAKAI_KEY` in your shell first, or paste your key inline. Generate a key at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
+Set `SPEAKAI_KEY` in your shell first. Generate a key at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
+
+</details>
+
+### Codex (terminal)
+
+```sh
+codex mcp add speakai --url https://api.speakai.co/v1/mcp
+```
+
+Codex detects that Speak AI uses browser sign-in and opens Speak AI's sign-in page right away. Sign in or create an account, then click **Allow**. If the browser did not open, or you closed it before finishing, run:
+
+```sh
+codex mcp login speakai
+```
+
+Check the connection with `codex mcp list`; Speak AI shows **OAuth** in the Auth column.
+
+<details>
+<summary>Alternative: send an API key instead of signing in</summary>
+
+```sh
+export SPEAKAI_KEY="your-api-key"
+codex mcp add speakai --url https://api.speakai.co/v1/mcp --bearer-token-env-var SPEAKAI_KEY
+```
+
+Generate a key at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
 
 </details>
 
@@ -161,10 +188,22 @@ Set `SPEAKAI_KEY` in your shell first, or paste your key inline. Generate a key 
 
 [![Add to Cursor](https://img.shields.io/badge/Cursor-Install_Speak_AI-000000?logo=cursor&logoColor=white&style=for-the-badge)](cursor://anysphere.cursor-deeplink/mcp/install?name=speakai&config=eyJ1cmwiOiJodHRwczovL2FwaS5zcGVha2FpLmNvL3YxL21jcCJ9)
 
-Click the button. Cursor registers itself automatically and opens the permission popup. Sign in to Speak AI and click **Allow**.
+Click the button, or add this to `~/.cursor/mcp.json` (every project) or `.cursor/mcp.json` (one project):
+
+```json
+{
+  "mcpServers": {
+    "speakai": {
+      "url": "https://api.speakai.co/v1/mcp"
+    }
+  }
+}
+```
+
+Then open **Cursor Settings → Tools & MCP**. Speak AI shows that it needs a login; click it to open Speak AI's sign-in page in your browser, sign in or create an account, and click **Allow**.
 
 <details>
-<summary>Developer alternative: manual setup with an API key</summary>
+<summary>Alternative: local setup with an API key</summary>
 
 Use the manual stdio setup in the Developer reference at the bottom of this README.
 
@@ -275,11 +314,11 @@ Get a Speak AI API key at [app.speakai.co/developers/apikeys](https://app.speaka
 
 ### CLI / npm package
 
-The `@speakai/mcp-server` npm package provides:
+The `@speakai/mcp-server` npm package runs on your own machine with a Speak AI API key. Use it when you need to upload local files from your computer, run scripts and pipelines, or connect a client that can't open a browser or doesn't support remote HTTP servers. It provides:
 
 - A CLI (`speakai-mcp`) for scripting and pipelines.
 - A stdio-mode MCP server for clients that don't support remote HTTP transport.
-- An auto-setup wizard that detects installed MCP clients and configures them.
+- A setup wizard that shows the hosted connector command for the assistants it finds (Claude Code, Codex, Cursor), then offers to set up an API key for the local server and CLI.
 
 ```sh
 npm install -g @speakai/mcp-server

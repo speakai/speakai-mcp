@@ -80,15 +80,23 @@
     {
       "id": "cursor",
       "title": "Cursor",
-      "tagline": "One-click install via deeplink.",
+      "tagline": "One-click install, or a config file entry, then browser sign-in.",
       "installButton": {
         "label": "Install in Cursor",
         "url": "cursor://anysphere.cursor-deeplink/mcp/install?name=speakai&config=eyJ1cmwiOiJodHRwczovL2FwaS5zcGVha2FpLmNvL3YxL21jcCJ9"
       },
       "steps": [
-        { "html": "Click the button — Cursor registers and opens the permission popup" },
-        { "html": "Sign in to Speak AI and click <strong>Allow</strong>" }
-      ]
+        { "html": "Click the button, or add the config below to <code>~/.cursor/mcp.json</code> (every project) or <code>.cursor/mcp.json</code> (one project)" },
+        { "html": "Open <strong>Cursor Settings</strong>, then <strong>Tools &amp; MCP</strong>. Speak AI shows that it needs a login; click it" },
+        { "html": "Your browser opens Speak AI's sign-in page. Sign in, or create an account if you don't have one, then click <strong>Allow</strong>" }
+      ],
+      "config": {
+        "mcpServers": {
+          "speakai": {
+            "url": "https://api.speakai.co/v1/mcp"
+          }
+        }
+      }
     },
     {
       "id": "vscode",
@@ -133,22 +141,45 @@
     {
       "id": "claude-code",
       "title": "Claude Code",
-      "tagline": "Recommended — install via the official Claude Code plugin marketplace.",
+      "tagline": "Add the hosted connector and sign in through your browser.",
       "steps": [
-        { "html": "Add the official marketplace (one-time): <code>/plugin marketplace add claude-plugins-official</code>" },
-        { "html": "Install the plugin: <code>/plugin install speakai@claude-plugins-official</code>" },
-        { "html": "Activate it: <code>/reload-plugins</code>" },
-        { "html": "Run the <code>getting-started</code> skill and paste your Speak AI API key. Generate one at <a href=\"https://app.speakai.co/developers/apikeys\" target=\"_blank\" rel=\"noopener\">app.speakai.co/developers/apikeys</a>" }
+        { "html": "Add the connector: <code>claude mcp add --transport http speakai https://api.speakai.co/v1/mcp</code>. Add <code>--scope user</code> to use it in every project" },
+        { "html": "Sign in: <code>claude mcp login speakai</code>, or type <code>/mcp</code> inside Claude Code, pick <strong>speakai</strong> and choose to authenticate" },
+        { "html": "Your browser opens Speak AI's sign-in page. Sign in, or create an account if you don't have one, then click <strong>Allow</strong>" },
+        { "html": "No browser on this machine, for example over SSH? Run <code>claude mcp login speakai --no-browser</code>, open the printed link on another device, and paste the address your browser ends on back into the terminal" }
       ],
       "devAlt": {
-        "summary": "Prefer the manual HTTP transport?",
-        "html": "Skip the plugin and add the connector directly:<br><br><code>claude mcp add speakai --transport http --url https://api.speakai.co/v1/mcp</code><br><br>Claude Code will open an OAuth window for sign-in. To bypass OAuth and pass a Bearer token instead, append <code>--header \"Authorization: Bearer $SPEAKAI_KEY\"</code>."
+        "summary": "Prefer the plugin, or an API key?",
+        "html": "The plugin adds the same hosted connector plus Speak AI skills: <code>/plugin marketplace add claude-plugins-official</code>, <code>/plugin install speakai@claude-plugins-official</code>, <code>/reload-plugins</code>, then <code>/mcp</code> to sign in.<br><br>To send an API key instead of signing in, append <code>--header \"Authorization: Bearer $SPEAKAI_KEY\"</code> to the add command."
       },
       "troubleshoot": {
-        "summary": "Plugin install didn't find Speak AI?",
+        "summary": "Sign-in didn't finish?",
         "items": [
-          "Refresh the local marketplace catalog with <code>/plugin marketplace update claude-plugins-official</code>, then retry <code>/plugin install speakai@claude-plugins-official</code>.",
-          "If <code>/reload-plugins</code> doesn't surface the plugin, restart Claude Code.",
+          "Run <code>claude mcp login speakai</code> again, or type <code>/mcp</code> and authenticate <strong>speakai</strong>.",
+          "Check the connection with <code>claude mcp get speakai</code>.",
+          "Plugin install didn't find Speak AI? Refresh the catalog with <code>/plugin marketplace update claude-plugins-official</code>, then retry.",
+          "Still stuck? Email <a href=\"mailto:success@speakai.co\">success@speakai.co</a>."
+        ]
+      }
+    },
+    {
+      "id": "codex",
+      "title": "Codex",
+      "tagline": "Add the hosted connector from the Codex CLI and sign in through your browser.",
+      "steps": [
+        { "html": "Add the connector: <code>codex mcp add speakai --url https://api.speakai.co/v1/mcp</code>" },
+        { "html": "Codex sees that Speak AI uses browser sign-in and opens Speak AI's sign-in page right away. Sign in, or create an account if you don't have one, then click <strong>Allow</strong>" },
+        { "html": "If the browser did not open, or you closed it before finishing, run <code>codex mcp login speakai</code>" },
+        { "html": "Check it worked: <code>codex mcp list</code> shows <strong>OAuth</strong> in the Auth column for speakai" }
+      ],
+      "devAlt": {
+        "summary": "Prefer an API key?",
+        "html": "Set <code>SPEAKAI_KEY</code> in your shell, then run <code>codex mcp add speakai --url https://api.speakai.co/v1/mcp --bearer-token-env-var SPEAKAI_KEY</code>."
+      },
+      "troubleshoot": {
+        "summary": "Sign-in didn't finish?",
+        "items": [
+          "Run <code>codex mcp login speakai</code> again.",
           "Still stuck? Email <a href=\"mailto:success@speakai.co\">success@speakai.co</a>."
         ]
       }
