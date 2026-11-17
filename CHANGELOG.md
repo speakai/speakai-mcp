@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.1 (2026-11-17)
+
+- Maintenance release
+
 ## v2.0.0 (2026-11-14)
 
 - fix(sdk): never send structuredContent data undefined

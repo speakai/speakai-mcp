@@ -6369,10 +6369,10 @@ function register(server, client, options = {}) {
       if (modes.length !== 1) {
         return err(new Error("Send exactly one of imageUrl, imageBase64 or atSeconds."));
       }
-      const path4 = `/v1/media/${mediaId}/thumbnail`;
+      const path5 = `/v1/media/${mediaId}/thumbnail`;
       try {
         if (imageUrl !== void 0) {
-          const result = await api.put(path4, { url: imageUrl });
+          const result = await api.put(path5, { url: imageUrl });
           return ok(result.data);
         }
         if (imageBase64 !== void 0) {
@@ -6389,10 +6389,10 @@ function register(server, client, options = {}) {
           }
           const form = new FormData();
           form.append("image", new Blob([bytes], { type: mimeType }), `thumbnail.${THUMBNAIL_FILE_EXTENSIONS[mimeType]}`);
-          const result = await api.put(path4, form, { headers: { "Content-Type": "multipart/form-data" } });
+          const result = await api.put(path5, form, { headers: { "Content-Type": "multipart/form-data" } });
           return ok(result.data);
         }
-        await api.put(path4, { seekSec: atSeconds });
+        await api.put(path5, { seekSec: atSeconds });
         const deadline = Date.now() + THUMBNAIL_POLL_TIMEOUT_MS;
         while (Date.now() < deadline) {
           await new Promise((resolve) => setTimeout(resolve, THUMBNAIL_POLL_INTERVAL_MS));
@@ -11182,11 +11182,11 @@ function register16(server, client, options = {}) {
           }
           return step;
         };
-        const buildNodes = async (specs, path4) => {
+        const buildNodes = async (specs, path5) => {
           const nodes2 = [];
           const folded = foldLegacyRunWhen(specs);
           for (const [index, spec] of folded.entries()) {
-            const where = `${path4}[${index}]`;
+            const where = `${path5}[${index}]`;
             const stepId = nextStepId();
             const body2 = await buildStepBody(stepId, spec, where);
             if (String(spec.do ?? "") !== "branch") {
@@ -14923,6 +14923,73 @@ var init_format = __esm({
   }
 });
 
+// src/cli/hosted-setup.ts
+function onPath(command, envPath) {
+  const exts = process.platform === "win32" ? [".cmd", ".exe", ""] : [""];
+  return envPath.split(import_path2.default.delimiter).filter(Boolean).some((dir) => exts.some((ext) => (0, import_fs2.existsSync)(import_path2.default.join(dir, command + ext))));
+}
+function detectHostedClients(home = (0, import_os2.homedir)(), envPath = process.env.PATH ?? "") {
+  const found = {
+    "claude-code": onPath("claude", envPath) || (0, import_fs2.existsSync)(import_path2.default.join(home, ".claude")),
+    codex: onPath("codex", envPath) || (0, import_fs2.existsSync)(import_path2.default.join(home, ".codex")),
+    cursor: (0, import_fs2.existsSync)(import_path2.default.join(home, ".cursor"))
+  };
+  return ORDER.filter((c) => found[c]);
+}
+function hostedSetupText(detected) {
+  const clients = detected.length > 0 ? detected : ORDER;
+  const lines = [
+    "  Recommended: connect through the hosted connector.",
+    "  Your browser opens Speak AI's sign-in page, where you can sign in or create",
+    "  an account. No API key is needed.",
+    ""
+  ];
+  if (detected.length === 0) {
+    lines.push("  No AI assistant found on this machine. Pick yours:", "");
+  }
+  for (const c of clients) {
+    lines.push(`  ${HOSTED_SETUP[c].name}:`);
+    for (const step of HOSTED_SETUP[c].steps) lines.push(`    ${step}`);
+    lines.push("");
+  }
+  lines.push(`  Any other assistant: add ${HOSTED_MCP_URL} as a remote MCP server.`);
+  return lines.join("\n");
+}
+var import_fs2, import_os2, import_path2, HOSTED_MCP_URL, HOSTED_SETUP, ORDER;
+var init_hosted_setup = __esm({
+  "src/cli/hosted-setup.ts"() {
+    "use strict";
+    import_fs2 = require("fs");
+    import_os2 = require("os");
+    import_path2 = __toESM(require("path"));
+    HOSTED_MCP_URL = "https://api.speakai.co/v1/mcp";
+    HOSTED_SETUP = {
+      "claude-code": {
+        name: "Claude Code",
+        steps: [
+          `claude mcp add --transport http speakai ${HOSTED_MCP_URL}`,
+          "claude mcp login speakai"
+        ]
+      },
+      codex: {
+        name: "Codex",
+        steps: [
+          `codex mcp add speakai --url ${HOSTED_MCP_URL}`,
+          "codex mcp login speakai   (only if the browser sign-in did not open or finish)"
+        ]
+      },
+      cursor: {
+        name: "Cursor",
+        steps: [
+          `Add to ~/.cursor/mcp.json: { "mcpServers": { "speakai": { "url": "${HOSTED_MCP_URL}" } } }`,
+          "Open Cursor Settings > Tools & MCP and click the login prompt next to speakai"
+        ]
+      }
+    };
+    ORDER = ["claude-code", "codex", "cursor"];
+  }
+});
+
 // src/cli/index.ts
 var cli_exports = {};
 __export(cli_exports, {
@@ -15018,10 +15085,22 @@ function createCli() {
     saveConfig(cfg);
     printSuccess(`Base URL set to ${url}`);
   });
-  program.command("init").description("Interactive setup \u2014 configure API key and auto-detect MCP clients").action(async () => {
+  program.command("init").description(
+    "Interactive setup \u2014 shows the hosted connector command for your AI assistant, then offers API key setup"
+  ).action(async () => {
     const rl = (0, import_readline.createInterface)({ input: process.stdin, output: process.stdout });
     const ask = (q) => new Promise((resolve) => rl.question(q, (a) => resolve(a.trim())));
     console.log("\n  Speak AI MCP Server \u2014 Setup\n");
+    console.log(hostedSetupText(detectHostedClients()));
+    console.log(
+      "\n  An API key is only needed for the local server and the speakai-mcp CLI:\n  uploading files from this computer, scripts, or a machine with no browser.\n"
+    );
+    const wantsKey = await ask("  Set up an API key as well? (y/N) ");
+    if (wantsKey.toLowerCase() !== "y") {
+      rl.close();
+      printSuccess("Run the command above for your assistant to connect.");
+      return;
+    }
     const existingKey = resolveApiKey();
     let key = existingKey;
     if (existingKey) {
@@ -15934,6 +16013,7 @@ var init_cli = __esm({
     import_readline = require("readline");
     init_config();
     init_format();
+    init_hosted_setup();
     init_media_utils();
     init_media3();
   }
