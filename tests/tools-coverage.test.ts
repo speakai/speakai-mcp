@@ -578,6 +578,20 @@ describe("Recorder tools", () => {
     });
   });
 
+  it("recorder meta description documents logoDark for create_recorder and update_recorder_settings", () => {
+    for (const name of ["create_recorder", "update_recorder_settings"]) {
+      const description = (server as any)._registeredTools[name].inputSchema.shape.meta.description;
+      expect(description).toContain("logoDark");
+    }
+  });
+
+  it("update_recorder_settings passes meta.logoDark through", async () => {
+    const cb = getToolCallback(server, "update_recorder_settings");
+    const meta = { logo: "s3://bucket/light.png", logoDark: "s3://bucket/dark.png" };
+    await cb({ recorderId: "r1", meta });
+    expect(mockPut).toHaveBeenCalledWith("/v1/recorder/settings/r1", { meta });
+  });
+
   it("update_recorder_questions calls PUT /v1/recorder/questions/:id", async () => {
     const cb = getToolCallback(server, "update_recorder_questions");
     await cb({ recorderId: "r1", questions: [{ text: "How was it?" }] });
