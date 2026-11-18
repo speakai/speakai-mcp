@@ -53,7 +53,8 @@ const recorderConfigShape = {
     .record(z.string(), z.unknown())
     .optional()
     .describe(
-      "Branding/customization: { primaryColor, backgroundImg, logo, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }",
+      "Branding/customization: { primaryColor, backgroundImg, logo, logoDark, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }. " +
+        "logo is the image shown when the survey page is in light mode and logoDark the one shown in dark mode (logoDark must be an uploaded logo; this MCP cannot upload images, and it falls back to logo when unset).",
     ),
 };
 
