@@ -54,7 +54,10 @@ const recorderConfigShape = {
     .optional()
     .describe(
       "Branding/customization: { primaryColor, backgroundImg, logo, logoDark, fontColor, fontFamily, theme, customCSS, hideWaveform, hideTitle, hideDescription, hideSubmitButton, submitButtonLabel, countdown, hideImages }. " +
-        "logo is the image shown when the survey page is in light mode and logoDark the one shown in dark mode (logoDark must be an uploaded logo; this MCP cannot upload images, and it falls back to logo when unset).",
+        "logo is the image shown when the survey page is in light mode and logoDark the one shown in dark mode; each falls back to the other when unset. " +
+        "A new survey copies both logos from the account, so create_recorder ignores meta.logo and meta.logoDark. " +
+        "Setting either logo on a survey replaces the pair: the survey then uses only its own logos and no longer borrows the account ones. " +
+        "logoDark must be an uploaded image; this MCP cannot upload images.",
     ),
 };
 

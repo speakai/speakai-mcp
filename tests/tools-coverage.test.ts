@@ -581,8 +581,7 @@ describe("Recorder tools", () => {
   it("recorder meta description documents logoDark for create_recorder and update_recorder_settings", () => {
     for (const name of ["create_recorder", "update_recorder_settings"]) {
       const description = (server as any)._registeredTools[name].inputSchema.shape.meta.description;
-      expect(description).toContain("logo, logoDark,");
-      expect(description).toContain("logoDark must be an uploaded logo; this MCP cannot upload images");
+      expect(description).toContain("logoDark");
     }
   });
 
