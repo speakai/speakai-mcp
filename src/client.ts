@@ -3,6 +3,13 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
 export const TOOL_NAME_HEADER = "x-speakai-mcp-tool";
 
+declare module "axios" {
+  interface AxiosRequestConfig {
+    /** Set for a request whose 429 is a fixed limit, so waiting and retrying would only repeat the refusal. */
+    skipRateLimitRetry?: boolean;
+  }
+}
+
 export type ApiRefusal = Record<string, unknown> & {
   status?: string;
   message?: string;
@@ -231,7 +238,7 @@ speakClient.interceptors.response.use(
     }
 
     // 429 — rate limited, exponential backoff with Retry-After support
-    if (error.response?.status === 429 && retryCount < 3) {
+    if (error.response?.status === 429 && retryCount < 3 && !originalRequest.skipRateLimitRetry) {
       const retryAfter = error.response.headers["retry-after"];
       const delaySeconds = retryAfter ? parseInt(retryAfter, 10) : Math.pow(2, retryCount + 1);
       const delayMs = (Number.isFinite(delaySeconds) ? delaySeconds : 2) * 1000;

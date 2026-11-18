@@ -499,6 +499,20 @@ describe("client.ts", () => {
 
       await expect(errHandler(err)).rejects.toEqual(err);
     });
+
+    it("does not retry a 429 when the request sets skipRateLimitRetry", async () => {
+      await import("../src/client.js");
+      const errHandler = mockResponseInterceptors[0].rejected;
+
+      const req: any = { _retryCount: 0, headers: {}, skipRateLimitRetry: true };
+      const err: any = {
+        config: req,
+        response: { status: 429, headers: {} },
+      };
+
+      await expect(errHandler(err)).rejects.toEqual(err);
+      expect(req._retryCount).toBe(0);
+    });
   });
 
   // ── Response interceptor passes through success ────────────────────

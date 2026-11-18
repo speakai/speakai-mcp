@@ -7630,5 +7630,25 @@
     ],
     "properties": {},
     "required": []
+  },
+  "submit_feedback": {
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "text": {
+        "type": [
+          "string"
+        ]
+      },
+      "area": {
+        "type": [
+          "string"
+        ]
+      }
+    },
+    "required": [
+      "text"
+    ]
   }
 }
