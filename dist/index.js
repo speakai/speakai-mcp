@@ -255,7 +255,7 @@ var init_client = __esm({
           originalRequest.headers["x-access-token"] = accessToken;
           return speakClient(originalRequest);
         }
-        if (error.response?.status === 429 && retryCount < 3) {
+        if (error.response?.status === 429 && retryCount < 3 && !originalRequest.skipRateLimitRetry) {
           const retryAfter = error.response.headers["retry-after"];
           const delaySeconds = retryAfter ? parseInt(retryAfter, 10) : Math.pow(2, retryCount + 1);
           const delayMs = (Number.isFinite(delaySeconds) ? delaySeconds : 2) * 1e3;
@@ -11508,8 +11508,8 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
           };
         }
         const fileBuffer = fs.readFileSync(filePath);
-        const axios4 = (await import("axios")).default;
-        await axios4.put(uploadUrl, fileBuffer, {
+        const axios5 = (await import("axios")).default;
+        await axios5.put(uploadUrl, fileBuffer, {
           headers: {
             "Content-Type": mimeType
           },
@@ -13915,6 +13915,88 @@ var init_billing3 = __esm({
   }
 });
 
+// src/tools/feedback.ts
+var feedback_exports = {};
+__export(feedback_exports, {
+  feedbackAppVersion: () => feedbackAppVersion,
+  feedbackSurface: () => feedbackSurface,
+  register: () => register24
+});
+function feedbackSurface(area) {
+  const topic = area?.trim();
+  return (topic ? `${SURFACE_PREFIX}: ${topic}` : SURFACE_PREFIX).slice(0, SURFACE_MAX);
+}
+function feedbackAppVersion(clientInfo) {
+  const client = [clientInfo?.name, clientInfo?.version].filter(Boolean).join(" ").trim();
+  return (client ? `${SURFACE_PREFIX} via ${client}` : SURFACE_PREFIX).slice(0, APP_VERSION_MAX);
+}
+function limitResult(nextAllowedAt) {
+  const when = typeof nextAllowedAt === "string" ? ` They can send more after ${nextAllowedAt}.` : "";
+  return {
+    content: [
+      {
+        type: "text",
+        text: "Error: This person sent feedback to Speak AI less than a minute ago, and the limit is one a minute." + when + " Wait until then before sending again, and do not resend the same message."
+      }
+    ],
+    structuredContent: { data: { status: "failed", reason: "FEEDBACK_RATE_LIMIT", nextAllowedAt } },
+    isError: true
+  };
+}
+function register24(server, client) {
+  const api = client ?? speakClient;
+  registerSpeakTool(
+    server,
+    "submit_feedback",
+    "Send the person's feedback about Speak AI (a bug, something confusing, a missing feature, or praise) straight to the Speak AI team. When to offer it: when the person is frustrated with Speak AI, hits a bug or a limit, asks for something Speak AI cannot do, or says what they like or dislike about it. Offer once in a conversation, in one short sentence, and do not repeat the offer if they decline. Rules: send only with the person's clear yes. Write it in their words, show them the exact text first, and leave out recording or transcript content and anyone else's personal details unless they ask you to include them. Limit: one message a minute for each person; a refusal says when they can send again. For feedback on a single AI Chat answer, use submit_chat_feedback instead.",
+    {
+      text: import_zod25.z.string().trim().min(10).max(4e3).describe("The feedback in the person's own words, as they approved it. 10 to 4000 characters."),
+      area: import_zod25.z.string().trim().max(150).optional().describe('The Speak AI feature or tool the feedback is about, for example "transcripts", "meeting assistant" or "upload_and_analyze".')
+    },
+    {
+      title: "Submit Feedback",
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false
+    },
+    async ({ text, area }) => {
+      try {
+        const result = await api.post(
+          "/v1/feedback",
+          {
+            type: "improvement",
+            trigger: "manual",
+            surface: feedbackSurface(area),
+            text,
+            context: { appVersion: feedbackAppVersion(server.server.getClientVersion()) }
+          },
+          // The per-minute limit answers 429 with nextAllowedAt; a quick automatic retry only repeats the refusal.
+          { skipRateLimitRetry: true }
+        );
+        return ok(result.data);
+      } catch (error) {
+        const limited = import_axios4.default.isAxiosError(error) && error.response?.status === 429 ? error.response.data?.nextAllowedAt : void 0;
+        if (limited !== void 0) return limitResult(limited);
+        return err(error);
+      }
+    }
+  );
+}
+var import_axios4, import_zod25, SURFACE_PREFIX, SURFACE_MAX, APP_VERSION_MAX;
+var init_feedback = __esm({
+  "src/tools/feedback.ts"() {
+    "use strict";
+    import_axios4 = __toESM(require("axios"));
+    import_zod25 = require("zod");
+    init_helpers();
+    init_client();
+    SURFACE_PREFIX = "MCP";
+    SURFACE_MAX = 200;
+    APP_VERSION_MAX = 100;
+  }
+});
+
 // src/ui/media-list/view.ts
 var SPEAK_WEB_APP_URL, CARD_DATA_TIMEOUT_MS, LIVE_BUTTON_PAUSE_MS, MCP_APPS_PROTOCOL_VERSION, VIEW_STYLE, VIEW_SCRIPT, MEDIA_LIST_CARD_HTML;
 var init_view = __esm({
@@ -14326,6 +14408,7 @@ var init_tools = __esm({
     init_voice_questions();
     init_voice_intelligence();
     init_billing3();
+    init_feedback();
     init_client();
     init_media_list();
     init_helpers();
@@ -14352,7 +14435,8 @@ var init_tools = __esm({
       voice_testing_exports,
       voice_questions_exports,
       voice_intelligence_exports,
-      billing_exports
+      billing_exports,
+      feedback_exports
     ];
   }
 });
@@ -14462,10 +14546,11 @@ var init_resources = __esm({
 // src/prompts.ts
 var prompts_exports = {};
 __export(prompts_exports, {
+  FEEDBACK_OFFER: () => FEEDBACK_OFFER,
   registerPrompts: () => registerPrompts
 });
 function registerPrompt(server, name, description, args2, callback) {
-  server.registerPrompt(name, { description, argsSchema: import_zod25.z.object(args2) }, callback);
+  server.registerPrompt(name, { description, argsSchema: import_zod26.z.object(args2) }, callback);
 }
 function registerPrompts(server) {
   registerPrompt(
@@ -14473,8 +14558,8 @@ function registerPrompts(server) {
     "analyze-meeting",
     "Upload a meeting recording and get a full analysis \u2014 transcript, insights, action items, and key takeaways.",
     {
-      url: import_zod25.z.string().describe(`URL of the meeting recording \u2014 a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
-      name: import_zod25.z.string().optional().describe("Meeting name (optional)")
+      url: import_zod26.z.string().describe(`URL of the meeting recording \u2014 a direct file link, or a shareable page link from ${SUPPORTED_URL_SOURCES} (resolved to the underlying media automatically)`),
+      name: import_zod26.z.string().optional().describe("Meeting name (optional)")
     },
     async ({ url, name }) => ({
       messages: [
@@ -14498,7 +14583,9 @@ function registerPrompts(server) {
               `Use upload_and_analyze to handle the upload and processing in one step. Pass the URL`,
               `exactly as given \u2014 a page link is resolved server-side. If I told you whether this is`,
               `an audio or a video recording, pass that as mediaType; if I did not say, leave it off`,
-              `and let the server pick the best available track.`
+              `and let the server pick the best available track.`,
+              ``,
+              FEEDBACK_OFFER
             ].join("\n")
           }
         }
@@ -14510,8 +14597,8 @@ function registerPrompts(server) {
     "research-across-media",
     "Search for themes, patterns, or topics across multiple recordings or your entire media library.",
     {
-      topic: import_zod25.z.string().describe("The topic, theme, or question to research"),
-      folder: import_zod25.z.string().optional().describe("Folder ID to scope the research (optional)")
+      topic: import_zod26.z.string().describe("The topic, theme, or question to research"),
+      folder: import_zod26.z.string().optional().describe("Folder ID to scope the research (optional)")
     },
     async ({ topic, folder }) => ({
       messages: [
@@ -14533,7 +14620,9 @@ function registerPrompts(server) {
               `   - Contradictions or differing perspectives`,
               `   - Trends over time (if date range is available)`,
               ``,
-              `Present a research summary with citations (media name + timestamp where possible).`
+              `Present a research summary with citations (media name + timestamp where possible).`,
+              ``,
+              FEEDBACK_OFFER
             ].join("\n")
           }
         }
@@ -14545,8 +14634,8 @@ function registerPrompts(server) {
     "meeting-brief",
     "Prepare a brief from recent meetings \u2014 pull transcripts, extract decisions, and summarize open items.",
     {
-      days: import_zod25.z.string().optional().describe("Number of days to look back (default: 7)"),
-      folder: import_zod25.z.string().optional().describe("Folder ID to scope to (optional)")
+      days: import_zod26.z.string().optional().describe("Number of days to look back (default: 7)"),
+      folder: import_zod26.z.string().optional().describe("Folder ID to scope to (optional)")
     },
     async ({ days, folder }) => {
       const lookback = parseInt(days ?? "7");
@@ -14574,7 +14663,9 @@ function registerPrompts(server) {
                 `   - Open questions or unresolved topics`,
                 `   - Upcoming items that were mentioned`,
                 ``,
-                `Format as a clean, scannable document.`
+                `Format as a clean, scannable document.`,
+                ``,
+                FEEDBACK_OFFER
               ].join("\n")
             }
           }
@@ -14583,12 +14674,13 @@ function registerPrompts(server) {
     }
   );
 }
-var import_zod25;
+var import_zod26, FEEDBACK_OFFER;
 var init_prompts = __esm({
   "src/prompts.ts"() {
     "use strict";
-    import_zod25 = require("zod");
+    import_zod26 = require("zod");
     init_media_utils();
+    FEEDBACK_OFFER = "If anything in Speak AI got in the way, offer once to send that to the Speak AI team with submit_feedback, and send it only if I say yes.";
   }
 });
 
@@ -14814,7 +14906,9 @@ var init_tool_names = __esm({
       "update_voice_agent_resource",
       "delete_voice_agent_resource",
       "analyze_voice_instruction_gaps",
-      "apply_voice_instruction_gap"
+      "apply_voice_instruction_gap",
+      // feedback
+      "submit_feedback"
     ];
   }
 });
@@ -15061,9 +15155,9 @@ function createCli() {
       process.exit(1);
     }
     try {
-      const axios4 = (await import("axios")).default;
+      const axios5 = (await import("axios")).default;
       const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
-      const res = await axios4.post(
+      const res = await axios5.post(
         `${baseUrl}/v1/auth/accessToken`,
         {},
         { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
@@ -15118,9 +15212,9 @@ function createCli() {
     }
     process.stdout.write("  Validating...");
     try {
-      const axios4 = (await import("axios")).default;
+      const axios5 = (await import("axios")).default;
       const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
-      const res = await axios4.post(
+      const res = await axios5.post(
         `${baseUrl}/v1/auth/accessToken`,
         {},
         { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
@@ -15346,8 +15440,8 @@ function createCli() {
         }
         process.stdout.write("Uploading...");
         const fileBuffer = fs3.readFileSync(source);
-        const axios4 = (await import("axios")).default;
-        await axios4.put(uploadUrl, fileBuffer, {
+        const axios5 = (await import("axios")).default;
+        await axios5.put(uploadUrl, fileBuffer, {
           headers: { "Content-Type": mimeType },
           maxBodyLength: Infinity,
           maxContentLength: Infinity
@@ -16341,6 +16435,13 @@ var SPEAK_MCP_TOOL_CATEGORIES = [
     name: "Billing",
     tools: [
       "get_billing_status"
+    ]
+  },
+  {
+    id: "feedback",
+    name: "Feedback",
+    tools: [
+      "submit_feedback"
     ]
   }
 ];

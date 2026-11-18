@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.1.0 (2026-11-18)
+
+- fix(feedback): describe the one-a-minute suggestion limit
+
 ## v2.0.1 (2026-11-17)
 
 - Maintenance release
