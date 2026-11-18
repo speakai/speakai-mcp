@@ -50,11 +50,11 @@ describe("submit_feedback", () => {
     expect(seen[0].skipRateLimitRetry).toBe(true);
   });
 
-  it("explains the hourly limit and says when the person can send again", async () => {
+  it("explains the per-minute limit and says when the person can send again", async () => {
     const nextAllowedAt = "2026-11-17T15:00:00.000Z";
     const { call, seen } = await connect(() => ({
       status: 429,
-      data: { status: "failed", message: "You can send one suggestion an hour.", nextAllowedAt },
+      data: { status: "failed", message: "You can send one suggestion a minute.", nextAllowedAt },
     }));
 
     const result = await call({ text: "Please add a dark mode to the recorder." });
@@ -62,8 +62,8 @@ describe("submit_feedback", () => {
     expect(seen).toHaveLength(1);
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain(`They can send more after ${nextAllowedAt}`);
-    expect(result.content[0].text).toContain("Do not retry now");
-    expect(result.structuredContent.data).toEqual({ status: "failed", reason: "FEEDBACK_HOURLY_LIMIT", nextAllowedAt });
+    expect(result.content[0].text).toContain("limit is one a minute");
+    expect(result.structuredContent.data).toEqual({ status: "failed", reason: "FEEDBACK_RATE_LIMIT", nextAllowedAt });
   });
 
   it("reports other failures, such as the per-minute limit, as a plain tool error", async () => {
@@ -76,7 +76,7 @@ describe("submit_feedback", () => {
 
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain("HTTP 429");
-    expect(result.content[0].text).not.toContain("last hour");
+    expect(result.content[0].text).not.toContain("limit is one a minute");
   });
 
   it.each([

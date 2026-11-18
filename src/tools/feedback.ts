@@ -21,19 +21,19 @@ export function feedbackAppVersion(clientInfo?: { name?: string; version?: strin
   return (client ? `${SURFACE_PREFIX} via ${client}` : SURFACE_PREFIX).slice(0, APP_VERSION_MAX);
 }
 
-function hourlyLimitResult(nextAllowedAt: unknown): ToolResult {
+function limitResult(nextAllowedAt: unknown): ToolResult {
   const when = typeof nextAllowedAt === "string" ? ` They can send more after ${nextAllowedAt}.` : "";
   return {
     content: [
       {
         type: "text",
         text:
-          "Error: This person already sent feedback to Speak AI in the last hour, and the limit is one an hour." +
+          "Error: This person sent feedback to Speak AI less than a minute ago, and the limit is one a minute." +
           when +
-          " Do not retry now. Tell them, and offer to send it later or by email to success@speakai.co.",
+          " Wait until then before sending again, and do not resend the same message.",
       },
     ],
-    structuredContent: { data: { status: "failed", reason: "FEEDBACK_HOURLY_LIMIT", nextAllowedAt } },
+    structuredContent: { data: { status: "failed", reason: "FEEDBACK_RATE_LIMIT", nextAllowedAt } },
     isError: true,
   };
 }
@@ -48,7 +48,7 @@ export function register(server: McpServer, client?: AxiosInstance): void {
       "or says what they like or dislike about it. Offer once in a conversation, in one short sentence, and do not repeat the offer if they decline. " +
       "Rules: send only with the person's clear yes. Write it in their words, show them the exact text first, and leave out recording or transcript content " +
       "and anyone else's personal details unless they ask you to include them. " +
-      "Limit: one message an hour for each person; a refusal returns when they can send again, so do not retry. " +
+      "Limit: one message a minute for each person; a refusal says when they can send again. " +
       "For feedback on a single AI Chat answer, use submit_chat_feedback instead.",
     {
       text: z
@@ -82,13 +82,13 @@ export function register(server: McpServer, client?: AxiosInstance): void {
             text,
             context: { appVersion: feedbackAppVersion(server.server.getClientVersion()) },
           },
-          // The hourly limit answers 429 too; waiting and retrying only repeats the refusal.
+          // The per-minute limit answers 429 with nextAllowedAt; a quick automatic retry only repeats the refusal.
           { skipRateLimitRetry: true }
         );
         return ok(result.data);
       } catch (error) {
-        const hourlyLimit = axios.isAxiosError(error) && error.response?.status === 429 ? error.response.data?.nextAllowedAt : undefined;
-        if (hourlyLimit !== undefined) return hourlyLimitResult(hourlyLimit);
+        const limited = axios.isAxiosError(error) && error.response?.status === 429 ? error.response.data?.nextAllowedAt : undefined;
+        if (limited !== undefined) return limitResult(limited);
         return err(error);
       }
     }

@@ -795,7 +795,7 @@ A test run sends each enabled scenario's scripted user messages to the agent as 
 
 | Tool | Description |
 |---|---|
-| `submit_feedback` | Send the person's feedback about Speak AI to the Speak AI team, after they approve the text. One message an hour per person |
+| `submit_feedback` | Send the person's feedback about Speak AI to the Speak AI team, after they approve the text. One message a minute per person |
 
 </details>
 

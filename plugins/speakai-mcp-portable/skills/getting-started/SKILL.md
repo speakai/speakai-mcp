@@ -289,8 +289,8 @@ every message. Use it for bugs, confusing results, missing features and praise.
   text, and pass the feature or tool it is about as `area`.
 - **Keep it about Speak AI.** Leave out recording or transcript content and other people's
   personal details unless the person asks you to include them.
-- **One an hour.** Each person can send one message an hour. A refusal says when they can
-  send again, so do not retry. They can always email <success@speakai.co> instead.
+- **One a minute.** Each person can send one message a minute. A refusal says when they
+  can send again. They can always email <success@speakai.co> instead.
 - **One chat answer.** To rate a single AI Chat answer, use `submit_chat_feedback`.
 
 ## Troubleshooting
