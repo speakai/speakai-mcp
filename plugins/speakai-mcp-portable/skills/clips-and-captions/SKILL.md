@@ -281,3 +281,9 @@ file carries whatever the labels were at export time. Fix labels first with
 **Redaction is opt-in.** Exports are not redacted unless you set `isRedacted`.
 If the user mentions customer names, personal details, or anything regulated,
 set it.
+
+## Feedback
+
+If Speak AI gets in the way during this workflow, or the person says what they like or
+dislike about it, offer once to send that to the Speak AI team with `submit_feedback`. The
+getting-started skill has the rules.

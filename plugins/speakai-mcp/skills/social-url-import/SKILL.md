@@ -134,3 +134,9 @@ as `state: "failed"` from `get_media_status`, so a status poll that never reache
 Every import consumes the workspace's credits, and a batch multiplies that. When a user
 pastes a long list, say how many links you are about to import before you run it. Imported
 media lands in their workspace permanently until deleted.
+
+## Feedback
+
+If Speak AI gets in the way during this workflow, or the person says what they like or
+dislike about it, offer once to send that to the Speak AI team with `submit_feedback`. The
+getting-started skill has the rules.

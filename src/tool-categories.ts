@@ -305,6 +305,13 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "get_billing_status",
     ],
   },
+  {
+    id: "feedback",
+    name: "Feedback",
+    tools: [
+      "submit_feedback",
+    ],
+  },
 ] as const satisfies readonly { id: string; name: string; tools: readonly string[] }[];
 
 export type SpeakMcpToolCategory = (typeof SPEAK_MCP_TOOL_CATEGORIES)[number];

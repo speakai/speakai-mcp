@@ -24,6 +24,7 @@ import * as voiceTesting from "./voice-testing.js";
 import * as voiceQuestions from "./voice-questions.js";
 import * as voiceIntelligence from "./voice-intelligence.js";
 import * as billing from "./billing.js";
+import * as feedback from "./feedback.js";
 import { instrumentSpeakClient } from "../client.js";
 import { registerMediaListCard } from "../ui/media-list/index.js";
 import { setToolCallListener } from "./_helpers.js";
@@ -76,6 +77,7 @@ const modules: ToolModule[] = [
   voiceQuestions,
   voiceIntelligence,
   billing,
+  feedback,
 ];
 
 /**

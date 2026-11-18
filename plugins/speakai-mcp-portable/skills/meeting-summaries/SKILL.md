@@ -244,3 +244,9 @@ Media: `get_media_status`, `get_transcript`, `get_media_insights`, `list_media`,
 Exports: `export_media`, `export_multiple_media`.
 
 Search: `search_media`.
+
+## Feedback
+
+If Speak AI gets in the way during this workflow, or the person says what they like or
+dislike about it, offer once to send that to the Speak AI team with `submit_feedback`. The
+getting-started skill has the rules.

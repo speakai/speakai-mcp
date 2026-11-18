@@ -354,3 +354,9 @@ before you answer, rather than reusing the media ids from the earlier question.
 
 Per tool documentation follows the pattern
 `https://docs.speakai.co/mcp/tools/<category-id>/<tool_name>/`.
+
+## Feedback
+
+If Speak AI gets in the way during this workflow, or the person says what they like or
+dislike about it, offer once to send that to the Speak AI team with `submit_feedback`. The
+getting-started skill has the rules.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 190,
+  "totalTools": 191,
   "categories": [
     {
       "id": "media",
@@ -1861,6 +1861,23 @@
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "feedback",
+      "name": "Feedback",
+      "iconKey": "feedback",
+      "shortDescription": "Send the person's feedback about Speak AI to the Speak AI team, with their approval.",
+      "tools": [
+        {
+          "name": "submit_feedback",
+          "title": "Submit Feedback",
+          "description": "Send the person's feedback about Speak AI (a bug, something confusing, a missing feature, or praise) straight to the Speak AI team. When to offer it: when the person is frustrated with Speak AI, hits a bug or a limit, asks for something Speak AI cannot do, or says what they like or dislike about it. Offer once in a conversation, in one short sentence, and do not repeat the offer if they decline. Rules: send only with the person's clear yes. Write it in their words, show them the exact text first, and leave out recording or transcript content and anyone else's personal details unless they ask you to include them. Limit: one message an hour for each person; a refusal returns when they can send again, so do not retry. For feedback on a single AI Chat answer, use submit_chat_feedback instead.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
           "openWorldHint": false
         }
       ]

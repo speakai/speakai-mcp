@@ -249,6 +249,9 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "delete_voice_agent_resource",
   "analyze_voice_instruction_gaps",
   "apply_voice_instruction_gap",
+
+  // feedback
+  "submit_feedback",
 ] as const satisfies readonly string[];
 
 export type SpeakMcpToolName = (typeof SPEAK_MCP_TOOL_NAMES)[number];

@@ -161,4 +161,17 @@ describe("Prompts", () => {
       expect(fromDate.getTime()).toBeLessThan(Date.now());
     });
   });
+
+  it.each([
+    { name: "analyze-meeting", args: { url: "https://example.com/a.mp3" } },
+    { name: "research-across-media", args: { topic: "pricing" } },
+    { name: "meeting-brief", args: {} },
+  ])("$name ends with one offer to send feedback with submit_feedback", async ({ name, args }) => {
+    const { FEEDBACK_OFFER } = await import("../src/prompts.js");
+    const result = await getPromptCallback(server, name)(args);
+    const text: string = result.messages[0].content.text;
+
+    expect(text.endsWith(FEEDBACK_OFFER)).toBe(true);
+    expect(FEEDBACK_OFFER).toContain("submit_feedback");
+  });
 });

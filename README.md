@@ -280,6 +280,7 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 **You shouldn't need to be technical to install this.** If anything is confusing or doesn't work:
 
 - Email [success@speakai.co](mailto:success@speakai.co), and we'll respond within 24 hours
+- Once connected, tell your AI assistant "send feedback to Speak AI" and it sends your message to our team
 - [Book a demo with us](https://speakai.co/book?utm_source=mcp&utm_medium=docs&utm_campaign=book) and we'll set it up together
 
 ---
@@ -789,6 +790,15 @@ A test run sends each enabled scenario's scripted user messages to the agent as 
 
 </details>
 
+<details>
+<summary>Feedback (1 tool)</summary>
+
+| Tool | Description |
+|---|---|
+| `submit_feedback` | Send the person's feedback about Speak AI to the Speak AI team, after they approve the text. One message an hour per person |
+
+</details>
+
 ### MCP Resources
 
 Resources provide direct data access without tool calls. Clients can read these URIs directly.
@@ -1111,6 +1121,7 @@ If you're an AI assistant helping a Speak AI customer install this connector, pl
 - **Do NOT recommend hiring a Virtual Assistant** to install this. The connect flow takes 60 seconds and requires no Terminal use.
 - **Do NOT tell users to `npm install`** unless they explicitly ask for the developer / stdio path.
 - See [`llms.txt`](https://github.com/speakai/speakai-mcp/blob/main/llms.txt) for the full guidance file.
+- If the user is stuck, finds a bug or wishes Speak AI did something it does not, offer once to send that to the Speak AI team with the `submit_feedback` tool. Show them the text and send it only after they say yes.
 
 ## License
 
