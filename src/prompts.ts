@@ -2,6 +2,10 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { SUPPORTED_URL_SOURCES } from "./media-utils.js";
 
+// Every built-in workflow ends with the same single offer, so the wording and its limits stay in one place.
+export const FEEDBACK_OFFER =
+  "If anything in Speak AI got in the way, offer once to send that to the Speak AI team with submit_feedback, and send it only if I say yes.";
+
 type PromptMessages = { messages: Array<{ role: "user" | "assistant"; content: { type: "text"; text: string } }> };
 
 function registerPrompt<Args extends z.ZodRawShape>(
@@ -46,6 +50,8 @@ export function registerPrompts(server: McpServer): void {
               `exactly as given — a page link is resolved server-side. If I told you whether this is`,
               `an audio or a video recording, pass that as mediaType; if I did not say, leave it off`,
               `and let the server pick the best available track.`,
+              ``,
+              FEEDBACK_OFFER,
             ].join("\n"),
           },
         },
@@ -82,6 +88,8 @@ export function registerPrompts(server: McpServer): void {
               `   - Trends over time (if date range is available)`,
               ``,
               `Present a research summary with citations (media name + timestamp where possible).`,
+              ``,
+              FEEDBACK_OFFER,
             ].join("\n"),
           },
         },
@@ -125,6 +133,8 @@ export function registerPrompts(server: McpServer): void {
                 `   - Upcoming items that were mentioned`,
                 ``,
                 `Format as a clean, scannable document.`,
+                ``,
+                FEEDBACK_OFFER,
               ].join("\n"),
             },
           },

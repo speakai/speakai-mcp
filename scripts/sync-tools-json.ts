@@ -214,6 +214,13 @@ const newCategories = [
     shortDescription: "Check the account's plan and remaining credits, with upgrade and top-up links.",
     tools: ["get_billing_status"],
   },
+  {
+    id: "feedback",
+    name: "Feedback",
+    iconKey: "feedback",
+    shortDescription: "Send the person's feedback about Speak AI to the Speak AI team, with their approval.",
+    tools: ["submit_feedback"],
+  },
 ];
 
 for (const cat of json.categories) {

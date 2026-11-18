@@ -103,6 +103,7 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 | `embed-other` | 7 | Embeds, iframe URLs and visit analytics | `create_embed`, `get_embed_iframe_url`, `get_embed_session_summary` |
 | `users-team` | 5 | Workspace members and groups | `list_users`, `list_user_groups` |
 | `dashboards` | 9 | Analytics dashboards and widgets | `list_dashboards`, `get_dashboard` |
+| `feedback` | 1 | Send the person's feedback about Speak AI to the Speak AI team | `submit_feedback` |
 
 Users and groups are supporting tools rather than a workflow of their own. You reach for
 `list_users` to get the ids other calls need, such as `notifyUsers` on a recorder or the
@@ -274,6 +275,23 @@ When you do make a lasting change, close the reply with how to undo it:
 `delete_webhook` for webhooks,
 `delete_recorder` for recorders and their public links, `delete_scheduled_assistant` for
 meeting events, and `update_embed` or `delete_clip` for shared assets.
+
+## Send feedback to the Speak AI team
+
+`submit_feedback` sends the person's feedback about Speak AI to the Speak AI team, who read
+every message. Use it for bugs, confusing results, missing features and praise.
+
+- **When to offer.** The person is frustrated with Speak AI, hits a bug or a limit, asks for
+  something Speak AI cannot do, or says what they like or dislike about it. Offer once in the
+  conversation, in one short sentence, such as "Want me to send this to the Speak AI team?"
+  If they decline, do not ask again.
+- **Ask first.** Send only after a clear yes. Write it in their words, show them the exact
+  text, and pass the feature or tool it is about as `area`.
+- **Keep it about Speak AI.** Leave out recording or transcript content and other people's
+  personal details unless the person asks you to include them.
+- **One a minute.** Each person can send one message a minute. A refusal says when they
+  can send again. They can always email <success@speakai.co> instead.
+- **One chat answer.** To rate a single AI Chat answer, use `submit_chat_feedback`.
 
 ## Troubleshooting
 

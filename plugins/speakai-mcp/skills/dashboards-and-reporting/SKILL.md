@@ -159,3 +159,9 @@ Dashboards: `list_dashboard_widgets`, `list_dashboards`, `get_dashboard`,
 Supporting: `list_fields` for custom field names, `list_folders` for scoping.
 
 Per-tool documentation: `https://docs.speakai.co/mcp/tools/dashboards/<tool_name>/`
+
+## Feedback
+
+If Speak AI gets in the way during this workflow, or the person says what they like or
+dislike about it, offer once to send that to the Speak AI team with `submit_feedback`. The
+getting-started skill has the rules.
