@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.1.3 (2026-11-19)
+
+- Maintenance release
+
 ## v2.1.2 (2026-11-19)
 
 - fix(cli): call reaches every listed tool, safe meeting-brief days, owner-only config (#191)

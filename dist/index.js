@@ -509,6 +509,8 @@ var init_auth = __esm({
     })(DevicePlatform || (DevicePlatform = {}));
     (function(AuthErrorCode2) {
       AuthErrorCode2["INVALID_REFRESH_TOKEN"] = "INVALID_REFRESH_TOKEN";
+      AuthErrorCode2["OTP_RESEND_LIMIT"] = "OTP_RESEND_LIMIT";
+      AuthErrorCode2["INVALID_OFFER_LINK"] = "INVALID_OFFER_LINK";
     })(AuthErrorCode || (AuthErrorCode = {}));
   }
 });
@@ -654,6 +656,7 @@ var init_embed = __esm({
     })(EmbedType || (EmbedType = {}));
     (function(ImageSelectionType2) {
       ImageSelectionType2["LOGO"] = "logo";
+      ImageSelectionType2["LOGO_DARK"] = "logoDark";
       ImageSelectionType2["BACKGROUND_IMG"] = "backgroundImg";
       ImageSelectionType2["MEETING_ASSISTANT"] = "meetingAssistant";
     })(ImageSelectionType || (ImageSelectionType = {}));
@@ -1671,7 +1674,7 @@ var init_recorder = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/subscription.js
-var SubscriptionStatus, SubscriptionDuration, TrialTier;
+var SubscriptionStatus, SubscriptionDuration, TrialTier, OfferErrorCode;
 var init_subscription = __esm({
   "node_modules/@speakai/shared/dist/enums/subscription.js"() {
     "use strict";
@@ -1696,6 +1699,11 @@ var init_subscription = __esm({
       TrialTier2["T1"] = "T1";
       TrialTier2["T2"] = "T2";
     })(TrialTier || (TrialTier = {}));
+    (function(OfferErrorCode2) {
+      OfferErrorCode2["OfferEnded"] = "OFFER_ENDED";
+      OfferErrorCode2["OfferNotAvailable"] = "OFFER_NOT_AVAILABLE";
+      OfferErrorCode2["BillingPermissionRequired"] = "BILLING_PERMISSION_REQUIRED";
+    })(OfferErrorCode || (OfferErrorCode = {}));
   }
 });
 
@@ -1714,10 +1722,14 @@ var init_team = __esm({
 });
 
 // node_modules/@speakai/shared/dist/enums/transcription.js
-var TranscriptionEngine, TranscriptionJobState, TranscriptionJobRevisionState;
+var LiveTranscriptSocketEvent, TranscriptionEngine, TranscriptionJobState, TranscriptionJobRevisionState;
 var init_transcription = __esm({
   "node_modules/@speakai/shared/dist/enums/transcription.js"() {
     "use strict";
+    (function(LiveTranscriptSocketEvent2) {
+      LiveTranscriptSocketEvent2["TRANSCRIPT"] = "transcript";
+      LiveTranscriptSocketEvent2["TRANSCRIPT_INTERIM"] = "transcript-interim";
+    })(LiveTranscriptSocketEvent || (LiveTranscriptSocketEvent = {}));
     (function(TranscriptionEngine2) {
       TranscriptionEngine2["AZURE"] = "azure";
       TranscriptionEngine2["ASSEMBLY"] = "assembly";
@@ -1940,6 +1952,7 @@ var init_llm = __esm({
       LLMModels2["CLAUDE_OPUS_5_5"] = "claude-opus-5-5";
       LLMModels2["CLAUDE_HAIKU_5_5"] = "claude-haiku-5-5";
       LLMModels2["CLAUDE_FABLE_5_1"] = "claude-fable-5-1";
+      LLMModels2["CLAUDE_FABLE_5_2"] = "claude-fable-5-2";
       LLMModels2["GEMINI_1_5_PRO"] = "gemini-1.5-pro";
       LLMModels2["GEMINI_1_5_FLASH"] = "gemini-1.5-flash";
       LLMModels2["GEMINI_2_0_FLASH"] = "gemini-2.0-flash";
@@ -3605,7 +3618,7 @@ var init_registry = __esm({
         family: "gpt",
         status: "live",
         offeredInChat: true,
-        chatOrder: 5,
+        chatOrder: 6,
         offeredInVoice: false,
         premium: true,
         pricing: {
@@ -3631,7 +3644,7 @@ var init_registry = __esm({
         family: "gpt",
         status: "live",
         offeredInChat: true,
-        chatOrder: 6,
+        chatOrder: 7,
         offeredInVoice: true,
         voiceReasoning: "none",
         premium: true,
@@ -3890,7 +3903,7 @@ var init_registry = __esm({
         family: "claude",
         status: "live",
         offeredInChat: true,
-        chatOrder: 4,
+        chatOrder: 5,
         offeredInVoice: false,
         premium: true,
         pricing: {
@@ -3915,7 +3928,8 @@ var init_registry = __esm({
         label: "Claude Fable 5.1",
         provider: LLMProvider.ANTHROPIC,
         family: "claude",
-        status: "live",
+        status: "deprecated",
+        replacedBy: LLMModels.CLAUDE_FABLE_5_2,
         offeredInChat: false,
         offeredInVoice: false,
         premium: true,
@@ -3930,6 +3944,28 @@ var init_registry = __esm({
         capabilities: CLAUDE_ADAPTIVE_NO_FORCED_TOOL,
         byokProvider: "anthropic",
         openRouterSlug: "anthropic/claude-fable-5.1"
+      },
+      {
+        id: LLMModels.CLAUDE_FABLE_5_2,
+        label: "Claude Fable 5.2",
+        provider: LLMProvider.ANTHROPIC,
+        family: "claude",
+        status: "live",
+        offeredInChat: true,
+        chatOrder: 4,
+        offeredInVoice: false,
+        premium: true,
+        pricing: {
+          inputPerMillion: 8,
+          outputPerMillion: 40,
+          cachedInputPerMillion: 0.2,
+          provider: LLMProvider.ANTHROPIC
+        },
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        contextWindow: 1e6,
+        capabilities: CLAUDE_ADAPTIVE_NO_FORCED_TOOL,
+        byokProvider: "anthropic",
+        openRouterSlug: "anthropic/claude-fable-5.2"
       },
       {
         id: LLMModels.GEMINI_1_5_PRO,
@@ -4122,18 +4158,19 @@ var init_registry = __esm({
         label: "Gemini 3.5 Flash",
         provider: LLMProvider.GOOGLE,
         family: "gemini",
-        status: "live",
+        // Google routes this id to gemini-3.6-flash and bills it at 3.6 rates, so it is priced as 3.6.
+        status: "deprecated",
+        replacedBy: LLMModels.GEMINI_3_8_FLASH,
         offeredInChat: false,
-        offeredInVoice: true,
-        voiceReasoning: "minimal",
+        offeredInVoice: false,
         premium: true,
         pricing: {
-          inputPerMillion: 1.5,
-          outputPerMillion: 9,
-          cachedInputPerMillion: 0.15,
+          inputPerMillion: 0.75,
+          outputPerMillion: 3.75,
+          cachedInputPerMillion: 0.075,
           provider: LLMProvider.GOOGLE
         },
-        modality: { audioPerMillion: 1.5, videoPerMillion: 1.5 },
+        modality: { audioPerMillion: 0.75, videoPerMillion: 0.75 },
         maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
         contextWindow: 1048576,
         capabilities: GEMINI_THINKING,
@@ -4168,7 +4205,8 @@ var init_registry = __esm({
         status: "live",
         offeredInChat: true,
         chatOrder: 0,
-        offeredInVoice: false,
+        offeredInVoice: true,
+        voiceReasoning: "minimal",
         premium: false,
         pricing: {
           inputPerMillion: 0.75,
@@ -4259,7 +4297,7 @@ var init_registry = __esm({
         family: "grok",
         status: "live",
         offeredInChat: true,
-        chatOrder: 7,
+        chatOrder: 8,
         offeredInVoice: false,
         premium: true,
         pricing: {
@@ -4327,9 +4365,8 @@ var init_agent_templates = __esm({
       gradient: "bg-gradient-to-br from-foreground/80 to-foreground",
       icon: "PlusIcon",
       voice: {
-        provider: "openai",
-        voiceId: "alloy",
-        model: "gpt-4o-mini-tts"
+        provider: "elevenlabs",
+        voiceId: "SAz9YHcvj6GT2YYXdXww"
       },
       llm: TEMPLATE_LLM,
       personality: "You are a helpful and professional AI assistant.",
@@ -4351,9 +4388,8 @@ var init_agent_templates = __esm({
         gradient: "bg-gradient-to-br from-blue-500 to-indigo-600",
         icon: "ChatBubbleLeftRightIcon",
         voice: {
-          provider: "openai",
-          voiceId: "ash",
-          model: "gpt-4o-mini-tts"
+          provider: "elevenlabs",
+          voiceId: "SAz9YHcvj6GT2YYXdXww"
         },
         llm: TEMPLATE_LLM,
         personality: "You are Alex, a seasoned Customer Support Specialist with five years of experience turning frustrated callers into loyal customers. You speak with calm, measured pacing and give people space to fully explain before responding. You lead with empathy \u2014 always acknowledging how someone feels before diving into solutions. Your warm, unhurried tone makes people feel like they're talking to someone who truly cares about getting it right, not just closing tickets.",
@@ -4421,9 +4457,8 @@ Before ending the call, always ask "Is there anything else I can help with today
         gradient: "bg-gradient-to-br from-orange-500 to-red-600",
         icon: "SparklesIcon",
         voice: {
-          provider: "openai",
-          voiceId: "echo",
-          model: "gpt-4o-mini-tts"
+          provider: "elevenlabs",
+          voiceId: "cjVigY5qzO86Huf0OWal"
         },
         llm: TEMPLATE_LLM,
         personality: "You are Jordan, a sharp and personable Sales Representative with a background in consultative selling. You speak with confident, dynamic energy that keeps conversations moving forward naturally. You genuinely enjoy learning about how businesses work, and that curiosity comes through in every exchange. You never lead with a pitch \u2014 you lead with questions, because you believe the best salespeople are the best listeners. Your energy is warm without being aggressive, and people trust you because you care more about finding the right fit than closing at any cost.",
@@ -4492,7 +4527,7 @@ Keep every response to two or three sentences. Speak naturally and conversationa
         icon: "BoltIcon",
         voice: {
           provider: "elevenlabs",
-          voiceId: "EXAVITQu4vr4ARZoOn7q"
+          voiceId: "EXAVITQu4vr4xnSDxMaL"
         },
         personality: "You are Sarah, a calm and incisive Executive Coach with over a decade of experience working with senior leaders navigating high-stakes decisions. You believe that the best answers already live inside the person you are coaching \u2014 your job is to ask the questions that bring those answers to the surface. You are warm but direct, and you are not afraid to challenge someone when they are playing it safe. People trust you because you hold space without judgment, and you hold them accountable without letting them off the hook.",
         instructions: `You are Sarah, an executive coach. Your approach is rooted in the belief that leaders grow fastest when they discover their own insights rather than being told what to do. Your goal in every session is to help the client gain clarity on what truly matters, explore what is getting in the way, and commit to one concrete action they will take before the next conversation.
@@ -4553,9 +4588,8 @@ Keep every response to two or three sentences. You are a thinking partner, not a
         gradient: "bg-gradient-to-br from-cyan-500 to-blue-600",
         icon: "HeartIcon",
         voice: {
-          provider: "openai",
-          voiceId: "nova",
-          model: "gpt-4o-mini-tts"
+          provider: "elevenlabs",
+          voiceId: "EXAVITQu4vr4xnSDxMaL"
         },
         llm: TEMPLATE_LLM,
         personality: "You are Megan, a professional and reassuring healthcare receptionist who has worked at the front desk of a busy medical practice for several years. You speak with a steady, unhurried pace that puts anxious callers at ease \u2014 you never sound rushed, even on busy days. You have a gift for reading emotional cues in someone's voice and adjusting your tone accordingly. You are organized and efficient, but you never let efficiency come at the expense of warmth. Patients remember you because you make them feel like they are the only person you are helping, even when the phones are ringing.",
@@ -4628,7 +4662,7 @@ Keep every response to two or three sentences. Speak naturally using contraction
         icon: "CodeBracketIcon",
         voice: {
           provider: "elevenlabs",
-          voiceId: "pNInz6obpgU5mW9Mo75Y"
+          voiceId: "pNInz6obpgDQGcFmaJgB"
         },
         stt: {
           provider: "deepgram",
@@ -4758,9 +4792,8 @@ Keep every response to two or three sentences to maximize their speaking time. S
         gradient: "bg-gradient-to-br from-amber-500 to-orange-600",
         icon: "HomeIcon",
         voice: {
-          provider: "openai",
-          voiceId: "alloy",
-          model: "gpt-4o-mini-tts"
+          provider: "elevenlabs",
+          voiceId: "SAz9YHcvj6GT2YYXdXww"
         },
         stt: {
           provider: "deepgram",
@@ -4840,9 +4873,8 @@ Keep every response to two or three sentences. Speak naturally and conversationa
         gradient: "bg-gradient-to-br from-fuchsia-500 to-pink-600",
         icon: "BuildingOfficeIcon",
         voice: {
-          provider: "openai",
-          voiceId: "shimmer",
-          model: "gpt-4o-mini-tts"
+          provider: "elevenlabs",
+          voiceId: "EXAVITQu4vr4xnSDxMaL"
         },
         stt: {
           provider: "deepgram",
@@ -5034,7 +5066,7 @@ var init_liveModels = __esm({
         /** Upper bound with audio both ways ($0.005 in + $0.018 out); thinking and tool tokens are billed separately. */
         perMinute: 0.023,
         offeredInVoice: true,
-        textModel: LLMModels.GEMINI_3_5_FLASH
+        textModel: LLMModels.GEMINI_3_8_FLASH
       }
     ];
     VOICE_LIVE_CHOICES = VOICE_LIVE_MODELS.filter((model) => model.offeredInVoice);
@@ -5057,7 +5089,7 @@ var init_llm2 = __esm({
     VOICE_AGENT_LLM_CHOICES = MODEL_REGISTRY.filter((model) => model.offeredInVoice);
     VOICE_DEFAULT_MODELS = {
       [LLMProvider.OPENAI]: LLMModels.GPT_5_6_TERRA,
-      [LLMProvider.GOOGLE]: LLMModels.GEMINI_3_5_FLASH
+      [LLMProvider.GOOGLE]: LLMModels.GEMINI_3_8_FLASH
     };
     VOICE_AGENT_MODEL_IDS = [
       ...VOICE_AGENT_LLM_MODELS,
@@ -5120,17 +5152,20 @@ var init_voice3 = __esm({
 function parseTranscriptTime(timeStr) {
   if (!timeStr)
     return 0;
-  const numeric = parseFloat(timeStr);
-  if (!isNaN(numeric) && !timeStr.includes(":"))
-    return numeric;
-  const parts = timeStr.split(":").map(Number);
+  if (!timeStr.includes(":")) {
+    const numeric = parseFloat(timeStr);
+    return Number.isFinite(numeric) ? numeric : 0;
+  }
+  const parts = timeStr.split(":").map((part) => part.trim() === "" ? NaN : Number(part));
+  if (!parts.every(Number.isFinite))
+    return 0;
   if (parts.length === 3) {
     return parts[0] * 3600 + parts[1] * 60 + parts[2];
   }
   if (parts.length === 2) {
     return parts[0] * 60 + parts[1];
   }
-  return numeric || 0;
+  return 0;
 }
 var init_transcript2 = __esm({
   "node_modules/@speakai/shared/dist/utils/transcript.js"() {
