@@ -49,6 +49,18 @@ export interface RegisterOptions {
   cards?: boolean;
 }
 
+/**
+ * The full tool set for a server that runs on the user's machine (stdio server
+ * and CLI). SPEAK_MCP_TOOL_NAMES and tools.json list exactly these tools.
+ */
+export const LOCAL_TOOL_OPTIONS = {
+  localFileAccess: true,
+  voiceTestRuns: true,
+  aiChat: true,
+  automations: true,
+  voiceTestRunDetails: true,
+} as const satisfies RegisterOptions;
+
 type ToolModule = {
   register(server: McpServer, client?: AxiosInstance, options?: RegisterOptions): void;
 };

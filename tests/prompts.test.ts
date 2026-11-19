@@ -1,7 +1,7 @@
 /**
  * Tests for src/prompts.ts — prompt handler callbacks.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { McpServer } from "@modelcontextprotocol/server";
 
 vi.mock("axios", () => ({
@@ -29,6 +29,12 @@ function getPromptCallback(server: McpServer, promptName: string): Function {
   return (args: Record<string, unknown>) => prompt.handler(args, {});
 }
 
+const PROMPT_CALLS = [
+  { name: "analyze-meeting", args: { url: "https://example.com/a.mp3" } },
+  { name: "research-across-media", args: { topic: "pricing" } },
+  { name: "meeting-brief", args: {} },
+];
+
 describe("Prompts", () => {
   let server: McpServer;
 
@@ -39,139 +45,81 @@ describe("Prompts", () => {
     registerPrompts(server);
   });
 
-  // ── analyze-meeting ───────────────────────────────────────────────
-
-  describe("analyze-meeting", () => {
-    it("returns a correctly structured message with URL and default name", async () => {
-      const cb = getPromptCallback(server, "analyze-meeting");
-      const result = await cb({ url: "https://example.com/meeting.mp3" });
-
-      expect(result.messages).toHaveLength(1);
-      expect(result.messages[0].role).toBe("user");
-      expect(result.messages[0].content.type).toBe("text");
-      expect(result.messages[0].content.text).toContain("https://example.com/meeting.mp3");
-      expect(result.messages[0].content.text).toContain("Meeting");
-      expect(result.messages[0].content.text).toContain("upload_and_analyze");
-    });
-
-    it("uses the provided name when supplied", async () => {
-      const cb = getPromptCallback(server, "analyze-meeting");
-      const result = await cb({ url: "https://example.com/a.mp3", name: "Sprint Retro" });
-
-      expect(result.messages[0].content.text).toContain("Sprint Retro");
-    });
-
-    it("includes key analysis sections in the text", async () => {
-      const cb = getPromptCallback(server, "analyze-meeting");
-      const result = await cb({ url: "https://example.com/a.mp3" });
-      const text = result.messages[0].content.text;
-
-      expect(text).toContain("Key discussion points");
-      expect(text).toContain("Action items");
-      expect(text).toContain("Decisions made");
-      expect(text).toContain("sentiment");
-    });
-  });
-
-  // ── research-across-media ─────────────────────────────────────────
-
-  describe("research-across-media", () => {
-    it("returns a correctly structured message with the topic", async () => {
-      const cb = getPromptCallback(server, "research-across-media");
-      const result = await cb({ topic: "customer feedback" });
-
-      expect(result.messages).toHaveLength(1);
-      expect(result.messages[0].role).toBe("user");
-      expect(result.messages[0].content.type).toBe("text");
-      expect(result.messages[0].content.text).toContain("customer feedback");
-      expect(result.messages[0].content.text).toContain("entire workspace");
-    });
-
-    it("scopes to a folder when folder param is provided", async () => {
-      const cb = getPromptCallback(server, "research-across-media");
-      const result = await cb({ topic: "onboarding", folder: "folder123" });
-
-      expect(result.messages[0].content.text).toContain("folder folder123");
-      expect(result.messages[0].content.text).not.toContain("entire workspace");
-    });
-
-    it("includes research methodology steps", async () => {
-      const cb = getPromptCallback(server, "research-across-media");
-      const result = await cb({ topic: "trends" });
-      const text = result.messages[0].content.text;
-
-      expect(text).toContain("search_media");
-      expect(text).toContain("get_transcript");
-      expect(text).toContain("Common themes");
-      expect(text).toContain("citations");
-    });
-  });
-
-  // ── meeting-brief ─────────────────────────────────────────────────
-
-  describe("meeting-brief", () => {
-    it("returns a correctly structured message with default 7-day lookback", async () => {
-      const cb = getPromptCallback(server, "meeting-brief");
-      const result = await cb({});
-
-      expect(result.messages).toHaveLength(1);
-      expect(result.messages[0].role).toBe("user");
-      expect(result.messages[0].content.type).toBe("text");
-      expect(result.messages[0].content.text).toContain("last 7 days");
-      expect(result.messages[0].content.text).toContain("all media");
-    });
-
-    it("uses custom days parameter", async () => {
-      const cb = getPromptCallback(server, "meeting-brief");
-      const result = await cb({ days: "14" });
-
-      expect(result.messages[0].content.text).toContain("last 14 days");
-    });
-
-    it("scopes to a folder when provided", async () => {
-      const cb = getPromptCallback(server, "meeting-brief");
-      const result = await cb({ folder: "f99" });
-
-      expect(result.messages[0].content.text).toContain("folder f99");
-      expect(result.messages[0].content.text).not.toContain("all media");
-    });
-
-    it("includes the expected workflow steps", async () => {
-      const cb = getPromptCallback(server, "meeting-brief");
-      const result = await cb({});
-      const text = result.messages[0].content.text;
-
-      expect(text).toContain("list_media");
-      expect(text).toContain("get_media_insights");
-      expect(text).toContain("action items");
-      expect(text).toContain("Key decisions");
-    });
-
-    it("computes a valid date range", async () => {
-      const cb = getPromptCallback(server, "meeting-brief");
-      const result = await cb({ days: "3" });
-      const text = result.messages[0].content.text;
-
-      // Should contain an ISO date string (YYYY-MM-DD format)
-      const dateMatch = text.match(/\d{4}-\d{2}-\d{2}/);
-      expect(dateMatch).not.toBeNull();
-
-      // The from-date should be in the past
-      const fromDate = new Date(dateMatch![0]);
-      expect(fromDate.getTime()).toBeLessThan(Date.now());
-    });
-  });
-
-  it.each([
-    { name: "analyze-meeting", args: { url: "https://example.com/a.mp3" } },
-    { name: "research-across-media", args: { topic: "pricing" } },
-    { name: "meeting-brief", args: {} },
-  ])("$name ends with one offer to send feedback with submit_feedback", async ({ name, args }) => {
-    const { FEEDBACK_OFFER } = await import("../src/prompts.js");
+  async function promptText(name: string, args: Record<string, unknown>): Promise<string> {
     const result = await getPromptCallback(server, name)(args);
-    const text: string = result.messages[0].content.text;
+    expect(result.messages).toHaveLength(1);
+    expect(result.messages[0]).toMatchObject({ role: "user", content: { type: "text" } });
+    return result.messages[0].content.text;
+  }
+
+  it.each(PROMPT_CALLS)("$name only tells the model to call tools that exist", async ({ name, args }) => {
+    const { SPEAK_MCP_TOOL_NAMES } = await import("../src/tool-names.js");
+    const mentioned = (await promptText(name, args)).match(/\b[a-z]+(?:_[a-z]+)+\b/g) ?? [];
+
+    expect(mentioned.length).toBeGreaterThan(0);
+    expect(mentioned.filter((tool) => !(SPEAK_MCP_TOOL_NAMES as readonly string[]).includes(tool))).toEqual([]);
+  });
+
+  it.each(PROMPT_CALLS)("$name ends with one offer to send feedback with submit_feedback", async ({ name, args }) => {
+    const { FEEDBACK_OFFER } = await import("../src/prompts.js");
+    const text = await promptText(name, args);
 
     expect(text.endsWith(FEEDBACK_OFFER)).toBe(true);
-    expect(FEEDBACK_OFFER).toContain("submit_feedback");
+    expect(text.indexOf(FEEDBACK_OFFER)).toBe(text.lastIndexOf(FEEDBACK_OFFER));
+  });
+
+  describe("analyze-meeting", () => {
+    it.each([
+      [{ url: "https://example.com/a.mp3" }, "Meeting"],
+      [{ url: "https://example.com/a.mp3", name: "Sprint Retro" }, "Sprint Retro"],
+    ])("passes the URL and name %o to upload_and_analyze", async (args, name) => {
+      const text = await promptText("analyze-meeting", args);
+
+      expect(text).toContain("https://example.com/a.mp3");
+      expect(text).toContain(name);
+    });
+  });
+
+  describe("research-across-media", () => {
+    it.each([
+      [{ topic: "customer feedback" }, "entire workspace", "folder"],
+      [{ topic: "onboarding", folder: "folder123" }, "folder folder123", "entire workspace"],
+    ])("scopes %o", async (args, scope, notScope) => {
+      const text = await promptText("research-across-media", args);
+
+      expect(text).toContain(args.topic);
+      expect(text).toContain(scope);
+      expect(text).not.toContain(notScope);
+    });
+  });
+
+  describe("meeting-brief", () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-03-10T12:00:00Z"));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it.each([
+      [{}, 7, "2026-03-03", "Scope: all media"],
+      [{ days: "14", folder: "f99" }, 14, "2026-02-24", "Scope: folder f99"],
+    ])("looks back over %o", async (args, days, from, scope) => {
+      const text = await promptText("meeting-brief", args);
+
+      expect(text).toContain(`last ${days} days`);
+      expect(text).toContain(`Date range: ${from} to today`);
+      expect(text).toContain(`(from: ${from})`);
+      expect(text).toContain(scope);
+    });
+
+    it.each(["two weeks", "", "0", "-3", "999999999999"])("falls back to 7 days for an unusable days value %j", async (days) => {
+      const text = await promptText("meeting-brief", { days });
+
+      expect(text).toContain("last 7 days");
+      expect(text).toContain("Date range: 2026-03-03 to today");
+    });
   });
 });

@@ -6,7 +6,7 @@
  *
  *   npx tsx scripts/sync-tools-json.ts
  */
-import { registerAllTools } from "../src/tools/index.js";
+import { registerAllTools, LOCAL_TOOL_OPTIONS } from "../src/tools/index.js";
 import { readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -43,7 +43,7 @@ const stub = {
     return {} as any;
   },
 } as any;
-registerAllTools(stub, {} as any, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
+registerAllTools(stub, {} as any, LOCAL_TOOL_OPTIONS);
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const toolsPath = path.join(root, "tools.json");
