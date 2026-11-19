@@ -111,21 +111,13 @@ describe("CLI Smoke Tests", () => {
     expect(names).toContain("call");
   });
 
-  // The CLI's `call <tool>` dispatches via the SAME registerAllTools used here,
-  // so capturing the registered handlers proves `call` can reach every MCP tool.
-  // This is what keeps the CLI 1:1 with the tool surface.
+  // `call <tool>` must reach every tool that `tools` lists, so this checks the
+  // handlers the real dispatcher loads, not a copy of its registration.
   it("call dispatcher covers every MCP tool (CLI is 1:1 with tools)", async () => {
-    const { registerAllTools } = await import("../src/tools/index.js");
+    const { loadToolHandlers } = await import("../src/cli/index.js");
     const { SPEAK_MCP_TOOL_NAMES } = await import("../src/tool-names.js");
 
-    const handlers: Record<string, unknown> = {};
-    const stub = {
-      registerTool: (name: string, _def: unknown, cb: unknown) => {
-        handlers[name] = cb;
-        return {};
-      },
-    };
-    registerAllTools(stub as any, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
+    const handlers = await loadToolHandlers();
 
     expect(Object.keys(handlers).sort()).toEqual([...SPEAK_MCP_TOOL_NAMES].sort());
   });
