@@ -18,7 +18,7 @@ function configFile(): string {
 }
 
 beforeEach(() => {
-  home = fs.mkdtempSync(path.join(os.tmpdir(), "speakai-config-"));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), "cli-config-test-"));
   process.env.HOME = home;
   process.env.USERPROFILE = home;
   delete process.env.SPEAK_API_KEY;
