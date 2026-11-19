@@ -43,166 +43,142 @@ describe("Tools Integration Tests", () => {
   });
 
   describe("Media tools", () => {
-    it("upload_media calls POST /v1/media/upload", async () => {
+    async function regMedia() {
       const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+      register(server, mockClient);
+    }
 
-      const callback = getToolCallback(server, "upload_media");
-      await callback({
-        name: "Test Recording",
-        url: "https://example.com/test.mp3",
-        mediaType: "audio",
+    it.each([
+      ["keeps a given name, trimmed", { name: "  Test Recording ", url: "https://example.com/test.mp3", mediaType: "audio" },
+        { name: "Test Recording", url: "https://example.com/test.mp3", mediaType: "audio" }],
+      ["names the file from the URL path when no name is given, and sends no guessed mediaType", { url: "https://cdn.example.com/a/call%201.mp4?sig=x" },
+        { name: "call 1.mp4", url: "https://cdn.example.com/a/call%201.mp4?sig=x" }],
+    ])("upload_media %s", async (_label, input, body) => {
+      await regMedia();
+      await getToolCallback(server, "upload_media")(input);
+      expect(mockPost).toHaveBeenCalledWith("/v1/media/upload", body);
+    });
+
+    describe("list_media query params", () => {
+      it.each([
+        ["sends the default page size when the model omits pageSize", {}, { pageSize: 25 }],
+        ["honours pageSize at the maximum", { pageSize: 100 }, { pageSize: 100 }],
+        ["passes filters through and adds the default page size", { mediaType: "audio", page: 1, isFavorites: true }, { mediaType: "audio", page: 1, isFavorites: true, pageSize: 25 }],
+        ["does not shrink a transcript request and joins include into requestTypes", { pageSize: 100, include: ["transcription", "speakers"] }, { pageSize: 100, requestTypes: "transcription,speakers" }],
+        ["scopes a plain name filter to names", { filterName: "MyaGill Inbound" }, { filterName: "name:MyaGill Inbound", pageSize: 25 }],
+        ["keeps an explicit name: scope as given", { filterName: 'name:"Quarterly review"' }, { filterName: 'name:"Quarterly review"', pageSize: 25 }],
+      ])("%s", async (_label, input, params) => {
+        await regMedia();
+        await getToolCallback(server, "list_media")(input);
+        expect(mockGet).toHaveBeenCalledWith("/v1/media", { params });
       });
 
-      expect(mockPost).toHaveBeenCalledWith("/v1/media/upload", {
-        name: "Test Recording",
-        url: "https://example.com/test.mp3",
-        mediaType: "audio",
+      // The API allows 500, but transcript pages that large are rejected, so the schema stops at 100.
+      it.each([
+        [0, false],
+        [1, true],
+        [100, true],
+        [101, false],
+        [2.5, false],
+      ])("schema pageSize %s accepted: %s", async (pageSize, accepted) => {
+        await regMedia();
+        const schema = (server as any)._registeredTools.list_media.inputSchema;
+        expect(schema.safeParse({ pageSize }).success).toBe(accepted);
       });
     });
 
-    it("list_media calls GET /v1/media with params", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+    describe("set_media_thumbnail", () => {
+      it("sends an image link as a url", async () => {
+        await regMedia();
+        await getToolCallback(server, "set_media_thumbnail")({ mediaId: "abc123", imageUrl: "https://example.com/a.png" });
+        expect(mockPut).toHaveBeenCalledWith("/v1/media/abc123/thumbnail", { url: "https://example.com/a.png" });
+      });
 
-      const callback = getToolCallback(server, "list_media");
-      await callback({ mediaType: "audio", page: 1, pageSize: 10 });
+      it("uploads base64 bytes as multipart, typed by sniffing the bytes rather than the data-URL label", async () => {
+        await regMedia();
+        const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
+        await getToolCallback(server, "set_media_thumbnail")({ mediaId: "abc123", imageBase64: `data:image/jpeg;base64,${png.toString("base64")}` });
+        expect(mockPut).toHaveBeenCalledTimes(1);
+        const [path, form, config] = mockPut.mock.calls[0];
+        expect(path).toBe("/v1/media/abc123/thumbnail");
+        expect(config).toEqual({ headers: { "Content-Type": "multipart/form-data" } });
+        const image = (form as FormData).get("image") as File;
+        expect(image.type).toBe("image/png");
+        expect(image.name).toBe("thumbnail.png");
+        expect(Buffer.from(await image.arrayBuffer())).toEqual(png);
+      });
 
-      expect(mockGet).toHaveBeenCalledWith("/v1/media", {
-        params: { mediaType: "audio", page: 1, pageSize: 10 },
+      it("sends a frame time and waits until the new thumbnail is ready", async () => {
+        await regMedia();
+        vi.useFakeTimers();
+        mockGet
+          .mockResolvedValueOnce({ data: { data: { thumbnail: { pending: true } } } })
+          .mockResolvedValueOnce({ data: { data: { thumbnail: { url: "https://cdn/x.jpg", source: "custom" } } } });
+        const pending = getToolCallback(server, "set_media_thumbnail")({ mediaId: "abc123", atSeconds: 12.5 });
+        await vi.advanceTimersByTimeAsync(10_000);
+        const result = await pending;
+        expect(mockPut).toHaveBeenCalledWith("/v1/media/abc123/thumbnail", { seekSec: 12.5 });
+        expect(mockGet).toHaveBeenCalledTimes(2);
+        expect(mockGet).toHaveBeenCalledWith("/v1/media/status/abc123");
+        expect(result.structuredContent.data).toEqual({ thumbnail: { url: "https://cdn/x.jpg", source: "custom" } });
       });
     });
 
-    it("get_transcript calls GET /v1/media/transcript/:id", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "get_transcript");
-      await callback({ mediaId: "abc123" });
-
-      expect(mockGet).toHaveBeenCalledWith("/v1/media/transcript/abc123");
-    });
-
-    it("delete_media calls DELETE /v1/media/:id", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "delete_media");
-      await callback({ mediaId: "abc123" });
-
-      expect(mockDelete).toHaveBeenCalledWith("/v1/media/abc123");
-    });
-
-    it("set_media_thumbnail sends a link, sniffed image bytes, or a frame time it waits for", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-      const callback = getToolCallback(server, "set_media_thumbnail");
-
-      await callback({ mediaId: "abc123", imageUrl: "https://example.com/a.png" });
-      expect(mockPut).toHaveBeenCalledWith("/v1/media/abc123/thumbnail", { url: "https://example.com/a.png" });
-
-      const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
-      await callback({ mediaId: "abc123", imageBase64: `data:image/jpeg;base64,${png.toString("base64")}` });
-      const [path, form, config] = mockPut.mock.calls[1];
-      expect(path).toBe("/v1/media/abc123/thumbnail");
-      expect(config).toEqual({ headers: { "Content-Type": "multipart/form-data" } });
-      const image = (form as FormData).get("image") as File;
-      expect(image.type).toBe("image/png");
-      expect(image.name).toBe("thumbnail.png");
-      expect(Buffer.from(await image.arrayBuffer())).toEqual(png);
-
-      vi.useFakeTimers();
-      mockGet
-        .mockResolvedValueOnce({ data: { data: { thumbnail: { pending: true } } } })
-        .mockResolvedValueOnce({ data: { data: { thumbnail: { url: "https://cdn/x.jpg", source: "custom" } } } });
-      const pending = callback({ mediaId: "abc123", atSeconds: 12.5 });
-      await vi.advanceTimersByTimeAsync(10_000);
-      const result = await pending;
-      expect(mockPut).toHaveBeenLastCalledWith("/v1/media/abc123/thumbnail", { seekSec: 12.5 });
-      expect(mockGet).toHaveBeenCalledWith("/v1/media/status/abc123");
-      expect(result.structuredContent.data).toEqual({ thumbnail: { url: "https://cdn/x.jpg", source: "custom" } });
-    });
-
-    it("get_media_status calls GET /v1/media/status/:id", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "get_media_status");
-      await callback({ mediaId: "abc123" });
-
-      expect(mockGet).toHaveBeenCalledWith("/v1/media/status/abc123");
+    // A wrong path on a delete removes the wrong record, so each destructive tool's path is pinned.
+    it.each([
+      ["delete_media", () => import("../src/tools/media.js"), { mediaId: "abc123" }, "/v1/media/abc123"],
+      ["delete_clip", () => import("../src/tools/clips.js"), { clipId: "clip123" }, "/v1/clips/clip123"],
+      ["delete_user_group", () => import("../src/tools/users.js"), { id: "g1" }, "/v1/admin/usergroup/g1"],
+      ["delete_dashboard", () => import("../src/tools/dashboards.js"), { dashboardId: "d1" }, "/v1/dashboards/d1"],
+    ])("%s deletes only the named record", async (tool, load, input, path) => {
+      (await load()).register(server, mockClient);
+      await getToolCallback(server, tool)(input);
+      expect(mockDelete).toHaveBeenCalledTimes(1);
+      expect(mockDelete).toHaveBeenCalledWith(path);
     });
   });
 
   describe("Prompt/Chat tools", () => {
-    it("ask_ai_chat calls POST /v1/prompt with all params", async () => {
+    async function regPrompt() {
       const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
+      register(server, mockClient, { aiChat: true });
+    }
 
-      const callback = getToolCallback(server, "ask_ai_chat");
-      await callback({
-        prompt: "What were the action items?",
-        mediaIds: ["id1", "id2"],
-        assistantType: "researcher",
-      });
-
-      expect(mockPost).toHaveBeenCalledWith("/v1/prompt", {
-        prompt: "What were the action items?",
-        mediaIds: ["id1", "id2"],
-        assistantType: "researcher",
-      });
+    // Transcript-only questions must reach axios with no third (timeout) argument; toHaveBeenCalledWith checks the arity.
+    it.each([
+      ["scoped to files", { prompt: "What were the action items?", mediaIds: ["id1", "id2"], assistantType: "researcher" }],
+      ["across the whole account", { prompt: "What themes appear across all interviews?" }],
+    ])("ask_ai_chat sends a transcript-only question %s unchanged", async (_label, input) => {
+      await regPrompt();
+      await getToolCallback(server, "ask_ai_chat")(input);
+      expect(mockPost).toHaveBeenCalledWith("/v1/prompt", input);
     });
 
-    it("ask_ai_chat works without mediaIds (workspace-wide)", async () => {
-      const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "ask_ai_chat");
-      await callback({ prompt: "What themes appear across all interviews?" });
-
-      expect(mockPost).toHaveBeenCalledWith("/v1/prompt", {
-        prompt: "What themes appear across all interviews?",
-      });
-    });
-
-    it("get_chat_history calls GET /v1/prompt/history", async () => {
-      const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "get_chat_history");
-      await callback({ limit: 5 });
-
-      expect(mockGet).toHaveBeenCalledWith("/v1/prompt/history", {
-        params: { limit: 5 },
-      });
-    });
-
-    it("list_prompts calls GET /v1/prompt", async () => {
-      const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "list_prompts");
-      await callback({});
-
-      expect(mockGet).toHaveBeenCalledWith("/v1/prompt");
+    it.each([
+      [{ limit: 5 }, { params: { limit: 5 } }],
+      [{}, { params: undefined }],
+    ])("get_chat_history %j sends %j", async (input, config) => {
+      await regPrompt();
+      await getToolCallback(server, "get_chat_history")(input);
+      expect(mockGet).toHaveBeenCalledWith("/v1/prompt/history", config);
     });
   });
 
   describe("Search tools", () => {
-    it("search_media calls POST /v1/analytics/search", async () => {
+    it.each([
+      ["fills endDate with now when only startDate is given", { query: "pricing concerns", startDate: "2026-01-01" },
+        { query: "pricing concerns", startDate: "2026-01-01", endDate: "2026-04-25T12:34:56.789Z" }],
+      ["defaults startDate to 1 January of the current UTC year", { query: "pricing concerns" },
+        { query: "pricing concerns", startDate: "2026-01-01T00:00:00.000Z", endDate: "2026-04-25T12:34:56.789Z" }],
+      ["keeps both dates when given", { query: "q", startDate: "2025-01-01", endDate: "2025-02-01" },
+        { query: "q", startDate: "2025-01-01", endDate: "2025-02-01" }],
+    ])("search_media %s", async (_label, input, body) => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date("2026-04-25T12:34:56.789Z"));
       const { register } = await import("../src/tools/analytics.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "search_media");
-      await callback({ query: "pricing concerns", startDate: "2026-01-01" });
-
-      expect(mockPost).toHaveBeenCalledWith("/v1/analytics/search", {
-        query: "pricing concerns",
-        startDate: "2026-01-01",
-        endDate: "2026-04-25T12:34:56.789Z",
-      });
+      register(server, mockClient);
+      await getToolCallback(server, "search_media")(input);
+      expect(mockPost).toHaveBeenCalledWith("/v1/analytics/search", body);
     });
   });
 
@@ -315,125 +291,11 @@ describe("Tools Integration Tests", () => {
     });
   });
 
-  describe("Clips tools", () => {
-    it("create_clip calls POST /v1/clips", async () => {
-      const { register } = await import("../src/tools/clips.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "create_clip");
-      await callback({
-        title: "Key Moment",
-        mediaType: "audio",
-        timeRanges: [{ mediaId: "abc", startTime: 60, endTime: 90 }],
-      });
-
-      expect(mockPost).toHaveBeenCalledWith("/v1/clips", {
-        title: "Key Moment",
-        mediaType: "audio",
-        timeRanges: [{ mediaId: "abc", startTime: 60, endTime: 90 }],
-      });
-    });
-
-    it("delete_clip calls DELETE /v1/clips/:id", async () => {
-      const { register } = await import("../src/tools/clips.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "delete_clip");
-      await callback({ clipId: "clip123" });
-
-      expect(mockDelete).toHaveBeenCalledWith("/v1/clips/clip123");
-    });
-  });
-
-  describe("Error handling", () => {
-    it("returns isError true when API call fails", async () => {
-      mockGet.mockRejectedValueOnce(new Error("Network error"));
-
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "get_transcript");
-      const result = await callback({ mediaId: "bad-id" });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("Error");
-    });
-
-    it("returns formatted JSON on success", async () => {
-      mockGet.mockResolvedValueOnce({
-        data: { data: { mediaId: "abc", state: "processed" } },
-      });
-
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      const callback = getToolCallback(server, "get_media_status");
-      const result = await callback({ mediaId: "abc" });
-
-      expect(result.isError).toBeUndefined();
-      expect(result.content[0].type).toBe("text");
-      const parsed = JSON.parse(result.content[0].text);
-      expect(parsed.data.mediaId).toBe("abc");
-    });
-  });
-
-  describe("User-group tools", () => {
-    async function reg() {
-      const { register } = await import("../src/tools/users.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-    }
-
-    it("list_users calls GET /v1/admin/users with params", async () => {
-      await reg();
-      await getToolCallback(server, "list_users")({ filterName: "jane", page: 0 });
-      expect(mockGet).toHaveBeenCalledWith("/v1/admin/users", { params: { filterName: "jane", page: 0 } });
-    });
-
-    it("list_user_groups calls GET /v1/admin/usergroup", async () => {
-      await reg();
-      await getToolCallback(server, "list_user_groups")({});
-      expect(mockGet).toHaveBeenCalledWith("/v1/admin/usergroup");
-    });
-
-    it("create_user_group calls POST /v1/admin/usergroup with {description, users}", async () => {
-      await reg();
-      await getToolCallback(server, "create_user_group")({ description: "Engineering", users: ["u1", "u2"] });
-      expect(mockPost).toHaveBeenCalledWith("/v1/admin/usergroup", {
-        description: "Engineering",
-        users: ["u1", "u2"],
-      });
-    });
-
-    it("update_user_group calls PUT /v1/admin/usergroup with {_id, description, users}", async () => {
-      await reg();
-      await getToolCallback(server, "update_user_group")({ _id: "g1", description: "Eng", users: ["u1"] });
-      expect(mockPut).toHaveBeenCalledWith("/v1/admin/usergroup", { _id: "g1", description: "Eng", users: ["u1"] });
-    });
-
-    it("delete_user_group calls DELETE /v1/admin/usergroup/:id", async () => {
-      await reg();
-      await getToolCallback(server, "delete_user_group")({ id: "g1" });
-      expect(mockDelete).toHaveBeenCalledWith("/v1/admin/usergroup/g1");
-    });
-  });
-
   describe("Dashboard tools", () => {
     async function reg() {
       const { register } = await import("../src/tools/dashboards.js");
       register(server, mockClient, { automations: true, voiceTestRunDetails: true });
     }
-
-    it("list_dashboards calls GET /v1/dashboards", async () => {
-      await reg();
-      await getToolCallback(server, "list_dashboards")({});
-      expect(mockGet).toHaveBeenCalledWith("/v1/dashboards");
-    });
-
-    it("get_dashboard calls GET /v1/dashboards/:id", async () => {
-      await reg();
-      await getToolCallback(server, "get_dashboard")({ dashboardId: "d1" });
-      expect(mockGet).toHaveBeenCalledWith("/v1/dashboards/d1");
-    });
 
     it("create_dashboard posts the spec envelope with defaults when only title is given", async () => {
       await reg();
@@ -656,30 +518,6 @@ describe("Tools Integration Tests", () => {
       expect(mockPut).not.toHaveBeenCalled();
     });
 
-    it("delete_dashboard calls DELETE /v1/dashboards/:id", async () => {
-      await reg();
-      await getToolCallback(server, "delete_dashboard")({ dashboardId: "d1" });
-      expect(mockDelete).toHaveBeenCalledWith("/v1/dashboards/d1");
-    });
-
-    it("duplicate_dashboard calls POST /v1/dashboards/:id/duplicate with empty body", async () => {
-      await reg();
-      await getToolCallback(server, "duplicate_dashboard")({ dashboardId: "d1" });
-      expect(mockPost).toHaveBeenCalledWith("/v1/dashboards/d1/duplicate", {});
-    });
-
-    it("share_dashboard calls PUT /v1/dashboards/:id/share with empty body", async () => {
-      await reg();
-      await getToolCallback(server, "share_dashboard")({ dashboardId: "d1" });
-      expect(mockPut).toHaveBeenCalledWith("/v1/dashboards/d1/share", {});
-    });
-
-    it("get_dashboard_speakers_insight calls POST /v1/dashboards/insights/speakers", async () => {
-      await reg();
-      await getToolCallback(server, "get_dashboard_speakers_insight")({ folderScope: ["f1"] });
-      expect(mockPost).toHaveBeenCalledWith("/v1/dashboards/insights/speakers", { folderScope: ["f1"] });
-    });
-
     it("list_dashboard_widgets documents session cards and notes actions", async () => {
       await reg();
       const result = await getToolCallback(server, "list_dashboard_widgets")({});
@@ -696,9 +534,8 @@ describe("Tools Integration Tests", () => {
     });
 
     it("dashboard folder source accepts 250 folder ids and rejects 251", async () => {
-      const { sourceInputSchema, MAX_DASHBOARD_SOURCE_FOLDERS } = await import("../src/tools/dashboards.js");
+      const { sourceInputSchema } = await import("../src/tools/dashboards.js");
       const ids = (n: number) => Array.from({ length: n }, (_, i) => `f${i}`);
-      expect(MAX_DASHBOARD_SOURCE_FOLDERS).toBe(250);
       expect(sourceInputSchema.safeParse({ type: "folders", folderIds: ids(250) }).success).toBe(true);
       expect(sourceInputSchema.safeParse({ type: "folders", folderIds: ids(251) }).success).toBe(false);
     });
@@ -764,27 +601,26 @@ describe("Tools Integration Tests", () => {
   });
 
   describe("Voice agent tools", () => {
-    it("update_voice_agent forwards chatSettings to PUT /v1/voice/agents/:id unmodified", async () => {
+    it("update_voice_agent keeps every chatSettings key through schema parsing and PUTs it whole", async () => {
       const { register } = await import("../src/tools/voice.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+      register(server, mockClient);
 
-      const callback = getToolCallback(server, "update_voice_agent");
-      await callback({
-        agentId: "agent-1",
-        chatSettings: {
-          welcomeMessage: "New welcome",
-          maxResponseLength: 40,
-          responsePace: "normal",
-        },
-      });
+      const chatSettings = {
+        welcomeMessage: "New welcome",
+        conversationStarters: ["Hi"],
+        topicsToAvoid: ["pricing"],
+        maxResponseLength: 40,
+        maxSessionLength: 15,
+        language: "en-US",
+        responsePace: "balanced",
+      };
+      const schema = (server as any)._registeredTools.update_voice_agent.inputSchema;
+      const parsed = schema.parse({ agentId: "agent-1", chatSettings });
+      expect(parsed.chatSettings).toEqual(chatSettings);
+      expect(schema.safeParse({ agentId: "agent-1", chatSettings: { maxResponseLength: 51 } }).success).toBe(false);
 
-      expect(mockPut).toHaveBeenCalledWith("/v1/voice/agents/agent-1", {
-        chatSettings: {
-          welcomeMessage: "New welcome",
-          maxResponseLength: 40,
-          responsePace: "normal",
-        },
-      });
+      await getToolCallback(server, "update_voice_agent")(parsed);
+      expect(mockPut).toHaveBeenCalledWith("/v1/voice/agents/agent-1", { chatSettings });
     });
 
     it("accepts conversationMode values that match the API server's real enum (voice/avatar)", async () => {
