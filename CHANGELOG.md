@@ -1,5 +1,21 @@
 # Changelog
 
+## v2.1.1 (2026-11-18)
+
+- Maintenance release
+
+## v2.1.0 (2026-11-18)
+
+- fix(feedback): describe the one-a-minute suggestion limit
+
+## v2.0.1 (2026-11-17)
+
+- Maintenance release
+
+## v2.0.0 (2026-11-14)
+
+- fix(sdk): never send structuredContent data undefined
+
 ## v1.43.3 (2026-11-13)
 
 - fix(chat): leave check_analysis_eligibility off the hosted server
