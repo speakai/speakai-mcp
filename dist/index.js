@@ -14371,6 +14371,7 @@ var init_media_list = __esm({
 // src/tools/index.ts
 var tools_exports = {};
 __export(tools_exports, {
+  LOCAL_TOOL_OPTIONS: () => LOCAL_TOOL_OPTIONS,
   registerAllTools: () => registerAllTools
 });
 function registerAllTools(server, client, options = {}) {
@@ -14381,7 +14382,7 @@ function registerAllTools(server, client, options = {}) {
   }
   if (options.cards) registerMediaListCard(server);
 }
-var modules;
+var LOCAL_TOOL_OPTIONS, modules;
 var init_tools = __esm({
   "src/tools/index.ts"() {
     "use strict";
@@ -14412,6 +14413,13 @@ var init_tools = __esm({
     init_client();
     init_media_list();
     init_helpers();
+    LOCAL_TOOL_OPTIONS = {
+      localFileAccess: true,
+      voiceTestRuns: true,
+      aiChat: true,
+      automations: true,
+      voiceTestRunDetails: true
+    };
     modules = [
       media_exports,
       text_exports,
@@ -14638,7 +14646,8 @@ function registerPrompts(server) {
       folder: import_zod26.z.string().optional().describe("Folder ID to scope to (optional)")
     },
     async ({ days, folder }) => {
-      const lookback = parseInt(days ?? "7");
+      const requestedDays = Number.parseInt(days ?? "", 10);
+      const lookback = Number.isFinite(requestedDays) && requestedDays > 0 && requestedDays <= MAX_BRIEF_DAYS ? requestedDays : DEFAULT_BRIEF_DAYS;
       const fromDate = /* @__PURE__ */ new Date();
       fromDate.setDate(fromDate.getDate() - lookback);
       return {
@@ -14674,13 +14683,15 @@ function registerPrompts(server) {
     }
   );
 }
-var import_zod26, FEEDBACK_OFFER;
+var import_zod26, FEEDBACK_OFFER, DEFAULT_BRIEF_DAYS, MAX_BRIEF_DAYS;
 var init_prompts = __esm({
   "src/prompts.ts"() {
     "use strict";
     import_zod26 = require("zod");
     init_media_utils();
     FEEDBACK_OFFER = "If anything in Speak AI got in the way, offer once to send that to the Speak AI team with submit_feedback, and send it only if I say yes.";
+    DEFAULT_BRIEF_DAYS = 7;
+    MAX_BRIEF_DAYS = 36500;
   }
 });
 
@@ -14930,7 +14941,10 @@ function ensureDir() {
 function loadConfig() {
   try {
     if (import_fs.default.existsSync(CONFIG_FILE)) {
-      return JSON.parse(import_fs.default.readFileSync(CONFIG_FILE, "utf-8"));
+      const parsed = JSON.parse(import_fs.default.readFileSync(CONFIG_FILE, "utf-8"));
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed;
+      }
     }
   } catch {
   }
@@ -14938,6 +14952,7 @@ function loadConfig() {
 }
 function saveConfig(config) {
   ensureDir();
+  if (import_fs.default.existsSync(CONFIG_FILE)) import_fs.default.chmodSync(CONFIG_FILE, 384);
   import_fs.default.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2) + "\n", {
     mode: 384
     // Owner read/write only
@@ -15087,7 +15102,8 @@ var init_hosted_setup = __esm({
 // src/cli/index.ts
 var cli_exports = {};
 __export(cli_exports, {
-  createCli: () => createCli
+  createCli: () => createCli,
+  loadToolHandlers: () => loadToolHandlers
 });
 async function getClient() {
   const { speakClient: speakClient2 } = await Promise.resolve().then(() => (init_client(), client_exports));
@@ -15102,6 +15118,19 @@ function requireApiKey() {
     );
     process.exit(1);
   }
+}
+async function loadToolHandlers() {
+  const client = await getClient();
+  const handlers = {};
+  const stub = {
+    registerTool: (name, _def, cb) => {
+      handlers[name] = cb;
+      return {};
+    }
+  };
+  const { registerAllTools: registerAllTools2, LOCAL_TOOL_OPTIONS: LOCAL_TOOL_OPTIONS2 } = await Promise.resolve().then(() => (init_tools(), tools_exports));
+  registerAllTools2(stub, client, LOCAL_TOOL_OPTIONS2);
+  return handlers;
 }
 function createCli() {
   const program = new import_commander.Command();
@@ -16034,19 +16063,6 @@ function createCli() {
       process.exit(1);
     }
   });
-  async function loadToolHandlers() {
-    const client = await getClient();
-    const handlers = {};
-    const stub = {
-      registerTool: (name, _def, cb) => {
-        handlers[name] = cb;
-        return {};
-      }
-    };
-    const { registerAllTools: registerAllTools2 } = await Promise.resolve().then(() => (init_tools(), tools_exports));
-    registerAllTools2(stub, client, { localFileAccess: true });
-    return handlers;
-  }
   program.command("tools").description("List every MCP tool callable via `call`").option("--json", "Output raw JSON").action(async (opts) => {
     const { SPEAK_MCP_TOOL_NAMES: SPEAK_MCP_TOOL_NAMES2 } = await Promise.resolve().then(() => (init_tool_names(), tool_names_exports));
     const names = [...SPEAK_MCP_TOOL_NAMES2].sort();
@@ -16505,13 +16521,13 @@ if (isEntryPoint && isCliMode) {
     Promise.resolve().then(() => (init_tools(), tools_exports)),
     Promise.resolve().then(() => (init_resources(), resources_exports)),
     Promise.resolve().then(() => (init_prompts(), prompts_exports))
-  ]).then(([{ McpServer: McpServer2 }, { serveStdio }, { registerAllTools: registerAllTools2 }, { registerResources: registerResources2 }, { registerPrompts: registerPrompts2 }]) => {
+  ]).then(([{ McpServer: McpServer2 }, { serveStdio }, { registerAllTools: registerAllTools2, LOCAL_TOOL_OPTIONS: LOCAL_TOOL_OPTIONS2 }, { registerResources: registerResources2 }, { registerPrompts: registerPrompts2 }]) => {
     serveStdio(() => {
       const server = new McpServer2({
         name: "speak-ai",
         version: "1.0.0"
       });
-      registerAllTools2(server, void 0, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true, cards: process.env.SPEAK_MCP_CARDS === "true" });
+      registerAllTools2(server, void 0, { ...LOCAL_TOOL_OPTIONS2, cards: process.env.SPEAK_MCP_CARDS === "true" });
       registerResources2(server);
       registerPrompts2(server);
       return server;
