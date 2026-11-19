@@ -7,9 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const DIST_ENTRY = fileURLToPath(new URL("../dist/index.js", import.meta.url));
 
-// config.ts reads os.homedir() once at load, so HOME must point at a temp folder before any import of it.
+// config.ts reads os.homedir() once at load (HOME, or USERPROFILE on Windows), so point both at a temp folder first.
 const TEST_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "cli-home-"));
 process.env.HOME = TEST_HOME;
+process.env.USERPROFILE = TEST_HOME;
 const CONFIG_FILE = path.join(TEST_HOME, ".speakai", "config.json");
 const FAKE_KEY = "fakekey1-0000-1111-2222-333344445555";
 
@@ -81,7 +82,9 @@ describe("config file", () => {
 
     saveConfig({ apiKey: FAKE_KEY, baseUrl: "https://eu.example.test" });
 
-    expect(fs.statSync(CONFIG_FILE).mode & 0o777).toBe(0o600);
+    expect(os.homedir()).toBe(TEST_HOME);
+    // Windows has no POSIX owner-only mode; access there follows the profile folder's ACL.
+    if (process.platform !== "win32") expect(fs.statSync(CONFIG_FILE).mode & 0o777).toBe(0o600);
     expect(loadConfig()).toEqual({ apiKey: FAKE_KEY, baseUrl: "https://eu.example.test" });
   });
 
