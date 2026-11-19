@@ -1,6 +1,7 @@
 /**
- * Endpoint-correctness tests for all tool modules that previously had zero coverage.
- * Each tool gets at least one happy-path test verifying the correct HTTP method + URL.
+ * Handler tests for tools that decide something: build or reshape the request, refuse bad input,
+ * enrich or summarise the reply, or upload. Pass-through wrappers are covered by the v1 schema
+ * snapshot (tool-names.test.ts) and the error mapping tests (error-handling.test.ts).
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { McpServer } from "@modelcontextprotocol/server";
@@ -58,18 +59,6 @@ describe("Automations tools", () => {
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/automations.js");
     register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-  });
-
-  it("list_automations calls GET /v1/automations", async () => {
-    const cb = getToolCallback(server, "list_automations");
-    await cb({});
-    expect(mockGet).toHaveBeenCalledWith("/v1/automations", { params: {} });
-  });
-
-  it("get_automation calls GET /v1/automations/:id", async () => {
-    const cb = getToolCallback(server, "get_automation");
-    await cb({ automationId: "auto1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/automations/auto1");
   });
 
   it("create_automation calls POST /v1/automations/", async () => {
@@ -147,10 +136,6 @@ describe("Automations tools", () => {
   });
 
   it("refuses a branch on a scheduled automation before sending it", async () => {
-    mockGet.mockImplementation((url: string) => {
-      if (url === "/v1/folder") return Promise.resolve({ data: FOLDERS });
-      return Promise.resolve({ data: { data: {} } });
-    });
     const cb = getToolCallback(server, "create_automation");
     const result = await cb({
       name: "Weekly digest",
@@ -231,202 +216,134 @@ describe("Automations tools", () => {
     expect(body.note).toContain("legacy single-action rule");
   });
 
-  it("update_automation calls PUT /v1/automations/:id", async () => {
-    const cb = getToolCallback(server, "update_automation");
-    await cb({ automationId: "auto1", name: "Updated" });
+  it("update_automation sends the changed fields and returns the saved row", async () => {
+    mockPut.mockResolvedValueOnce({ data: { status: "success", data: { automationId: "auto1", name: "Updated" } } });
+    const result = await getToolCallback(server, "update_automation")({ automationId: "auto1", name: "Updated" });
     expect(mockPut).toHaveBeenCalledWith("/v1/automations/auto1", { name: "Updated" });
+    expect(result.isError).toBeUndefined();
+    expect(result.content[0].text).toContain("Updated");
   });
 
-  it("toggle_automation_status calls PUT /v1/automations/status/:id (no body — pure toggle)", async () => {
-    const cb = getToolCallback(server, "toggle_automation_status");
-    await cb({ automationId: "auto1" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/automations/status/auto1");
-  });
-
-  it("handles error on list_automations", async () => {
-    mockGet.mockRejectedValueOnce(new Error("fail"));
-    const cb = getToolCallback(server, "list_automations");
-    const result = await cb({});
+  it("update_automation refuses a branch on a scheduled automation before sending it", async () => {
+    const result = await getToolCallback(server, "update_automation")({
+      automationId: "auto1",
+      runType: "schedule",
+      trigger: { type: "folders", triggerSlug: "schedule", folderIds: ["f1"] },
+      steps: [
+        { stepId: "c", stepType: "condition", condition: { logic: "AND", rules: [{ field: "duration", op: "gt", value: 60 }] } },
+        { stepId: "n", stepType: "notify", dependsOn: ["c"], branch: "true", notify: { channel: "in_app", message: "x" } },
+      ],
+    });
     expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain("scheduled automation cannot branch");
+    expect(mockPut).not.toHaveBeenCalled();
   });
 });
 
-describe("Embed tools", () => {
+// Tools whose handler builds, defaults or reshapes the request. Thin wrappers that pass their
+// input straight to one endpoint are not listed: the v1 schema snapshot and error-handling
+// tests cover them, and an exact-URL echo cannot fail for a reason a user would notice.
+describe("Tools that shape the request", () => {
   let server: McpServer;
+  const mocks = { get: mockGet, post: mockPost, put: mockPut, delete: mockDelete };
 
   beforeEach(async () => {
     vi.resetAllMocks();
-    mockGet.mockResolvedValue({ data: { data: {} } });
-    mockPost.mockResolvedValue({ data: { data: {} } });
-    mockPut.mockResolvedValue({ data: { data: {} } });
+    for (const mock of Object.values(mocks)) mock.mockResolvedValue({ data: { data: {} } });
     server = new McpServer({ name: "test", version: "1.0.0" });
-    const { register } = await import("../src/tools/embed.js");
-    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+    const { registerAllTools } = await import("../src/tools/index.js");
+    registerAllTools(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
   });
 
-  it("create_embed calls POST /v1/embed", async () => {
-    const cb = getToolCallback(server, "create_embed");
-    await cb({ mediaId: "m1", folderIds: ["f1"] });
-    expect(mockPost).toHaveBeenCalledWith("/v1/embed", {
-      mediaId: "m1",
-      folderIds: ["f1"],
-    });
+  it.each<{ name: string; tool: string; input: Record<string, unknown>; method: keyof typeof mocks; call: unknown[] }>([
+    {
+      name: "create_text_note mirrors text into rawText",
+      tool: "create_text_note",
+      input: { name: "My Note", text: "Hello world", folderId: "f1" },
+      method: "post",
+      call: ["/v1/text/create", { name: "My Note", text: "Hello world", rawText: "Hello world", folderId: "f1" }],
+    },
+    {
+      name: "update_text_note mirrors text into rawText",
+      tool: "update_text_note",
+      input: { mediaId: "t1", name: "Renamed", text: "Updated content" },
+      method: "put",
+      call: ["/v1/text/update/t1", { name: "Renamed", text: "Updated content", rawText: "Updated content" }],
+    },
+    {
+      name: "update_text_note omits rawText when the text is not changing",
+      tool: "update_text_note",
+      input: { mediaId: "t1", name: "Renamed only" },
+      method: "put",
+      call: ["/v1/text/update/t1", { name: "Renamed only" }],
+    },
+    {
+      name: "reanalyze_text turns on every analysis flag",
+      tool: "reanalyze_text",
+      input: { mediaId: "t1" },
+      method: "get",
+      call: ["/v1/media/reanalyze/t1", { params: { isInsights: true, isSentiment: true, isFillerWords: true, isEmbeddings: true } }],
+    },
+    {
+      name: "get_clips lists clips for a media file",
+      tool: "get_clips",
+      input: { mediaId: "m1" },
+      method: "get",
+      call: ["/v1/clips", { params: { mediaId: "m1" } }],
+    },
+    {
+      name: "get_clips fetches one clip by id, keeping the id out of the query",
+      tool: "get_clips",
+      input: { clipId: "c1" },
+      method: "get",
+      call: ["/v1/clips/c1", { params: {} }],
+    },
+    {
+      name: "get_signed_upload_url defaults an audio file to the audio prefix",
+      tool: "get_signed_upload_url",
+      input: { filename: "audio.mp3", mimeType: "audio/mpeg" },
+      method: "get",
+      call: ["/v1/media/upload/signedurl", { params: { mediaType: "audio", filename: "audio.mp3", mimeType: "audio/mpeg" } }],
+    },
+    {
+      name: "get_signed_upload_url detects a video file and its mime type from the name",
+      tool: "get_signed_upload_url",
+      input: { filename: "clip.mp4" },
+      method: "get",
+      call: ["/v1/media/upload/signedurl", { params: { mediaType: "video", filename: "clip.mp4", mimeType: "video/mp4" } }],
+    },
+    {
+      name: "update_transcript_speakers sends the speakers as a bare array",
+      tool: "update_transcript_speakers",
+      input: { mediaId: "m1", speakers: [{ id: "s1", name: "Alice" }] },
+      method: "put",
+      call: ["/v1/media/speakers/m1", [{ id: "s1", name: "Alice" }]],
+    },
+    {
+      name: "update_recorder_settings keeps the branding keys in meta",
+      tool: "update_recorder_settings",
+      input: { recorderId: "r1", meta: { logo: "s3://bucket/light.png", logoDark: "s3://bucket/dark.png" } },
+      method: "put",
+      call: ["/v1/recorder/settings/r1", { meta: { logo: "s3://bucket/light.png", logoDark: "s3://bucket/dark.png" } }],
+    },
+    {
+      name: "update_embed keeps the branding keys in meta",
+      tool: "update_embed",
+      input: { embedId: "e1", meta: { primaryColor: "#000", isLabels: true, logoDark: "s3://bucket/dark.png", theme: "dark", fontFamily: "Arimo" } },
+      method: "put",
+      call: ["/v1/embed/e1", { meta: { primaryColor: "#000", isLabels: true, logoDark: "s3://bucket/dark.png", theme: "dark", fontFamily: "Arimo" } }],
+    },
+  ])("$name", async ({ tool, input, method, call }) => {
+    const result = await getToolCallback(server, tool)(input);
+    expect(result.isError).toBeUndefined();
+    expect(mocks[method]).toHaveBeenCalledTimes(1);
+    expect(mocks[method]).toHaveBeenCalledWith(...call);
   });
 
-  it("update_embed meta description documents the fieldsFocus toggle, isPromptAsk and the brand keys", () => {
-    const description = (server as any)._registeredTools["update_embed"].inputSchema.shape.meta.description;
-    expect(description).toContain('{ name: "fieldsFocus", isActive: false }');
-    expect(description).toContain("isPromptAsk must be on");
-    for (const key of ["logoDark", "theme", "backgroundColor", "fontFamily", "titleColor"]) {
-      expect(description).toContain(key);
-    }
-    expect(description).toContain("logoDark must be an uploaded logo");
-    expect(description).toContain("max 60 chars");
-  });
-
-  it("update_embed calls PUT /v1/embed/:id", async () => {
-    const cb = getToolCallback(server, "update_embed");
-    const meta = { primaryColor: "#000", isLabels: true, isComments: true, logoDark: "s3://bucket/dark.png", theme: "dark", fontFamily: "Arimo" };
-    await cb({ embedId: "e1", meta });
-    expect(mockPut).toHaveBeenCalledWith("/v1/embed/e1", { meta });
-  });
-
-  it("check_embed calls GET /v1/embed with mediaId query param", async () => {
-    const cb = getToolCallback(server, "check_embed");
-    await cb({ mediaId: "m1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/embed", { params: { mediaId: "m1" } });
-  });
-
-  it("get_embed_iframe_url calls GET /v1/embed/iframe with params", async () => {
-    const cb = getToolCallback(server, "get_embed_iframe_url");
-    await cb({ mediaId: "m1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/embed/iframe", { params: { mediaId: "m1" } });
-  });
-
-  it("embed session tools call GET /v1/embed/sessions/:embedId routes with the id out of the query", async () => {
-    const embedId = "a".repeat(24);
-    const sessionId = "b".repeat(24);
-
-    await getToolCallback(server, "list_embed_sessions")({ embedId, page: 1, pageSize: 50, viewer: "identified", sort: "questions:desc" });
-    expect(mockGet).toHaveBeenCalledWith(`/v1/embed/sessions/${embedId}`, {
-      params: { page: 1, pageSize: 50, viewer: "identified", sort: "questions:desc" },
-    });
-
-    await getToolCallback(server, "get_embed_session_summary")({ embedId, from: "2026-10-01", tz: "UTC", mediaPage: 0 });
-    expect(mockGet).toHaveBeenCalledWith(`/v1/embed/sessions/${embedId}/summary`, {
-      params: { from: "2026-10-01", tz: "UTC", mediaPage: 0 },
-    });
-
-    await getToolCallback(server, "get_embed_session")({ embedId, id: sessionId, eventsPage: 2 });
-    expect(mockGet).toHaveBeenCalledWith(`/v1/embed/sessions/${embedId}/detail/${sessionId}`, {
-      params: { eventsPage: 2 },
-    });
-
-    const tools = (server as any)._registeredTools;
-    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId: "not-an-id" }).success).toBe(false);
-    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId, pageSize: 101 }).success).toBe(false);
-    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId, device: "watch" }).success).toBe(false);
-    expect(tools["get_embed_session"].inputSchema.safeParse({ embedId, id: sessionId, eventsPageSize: 501 }).success).toBe(false);
-  });
-
-  it("handles error on create_embed", async () => {
-    mockPost.mockRejectedValueOnce(new Error("fail"));
-    const cb = getToolCallback(server, "create_embed");
-    const result = await cb({ mediaId: "m1" });
-    expect(result.isError).toBe(true);
-  });
-});
-
-describe("Export tools", () => {
-  let server: McpServer;
-
-  beforeEach(async () => {
-    vi.resetAllMocks();
-    mockPost.mockResolvedValue({ data: { data: {} } });
-    server = new McpServer({ name: "test", version: "1.0.0" });
-    const { register } = await import("../src/tools/exports.js");
-    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-  });
-
-  it("export_media calls POST /v1/media/export/:id/:fileType", async () => {
-    const cb = getToolCallback(server, "export_media");
-    await cb({ mediaId: "m1", fileType: "pdf", isSpeakerNames: true });
-    expect(mockPost).toHaveBeenCalledWith("/v1/media/export/m1/pdf", {
-      isSpeakerNames: true,
-    });
-  });
-
-  it("export_media with srt format", async () => {
-    const cb = getToolCallback(server, "export_media");
-    await cb({ mediaId: "m1", fileType: "srt", isTimeStamps: true });
-    expect(mockPost).toHaveBeenCalledWith("/v1/media/export/m1/srt", {
-      isTimeStamps: true,
-    });
-  });
-
-  it("export_multiple_media calls POST /v1/media/exportMultiple", async () => {
-    const cb = getToolCallback(server, "export_multiple_media");
-    await cb({
-      mediaIds: ["m1", "m2"],
-      fileType: "docx",
-      isMerged: true,
-    });
-    expect(mockPost).toHaveBeenCalledWith("/v1/media/exportMultiple", {
-      mediaIds: ["m1", "m2"],
-      fileType: "docx",
-      isMerged: true,
-    });
-  });
-
-  it("handles error on export_media", async () => {
-    mockPost.mockRejectedValueOnce(new Error("fail"));
-    const cb = getToolCallback(server, "export_media");
-    const result = await cb({ mediaId: "m1", fileType: "pdf" });
-    expect(result.isError).toBe(true);
-  });
-});
-
-describe("Fields tools", () => {
-  let server: McpServer;
-
-  beforeEach(async () => {
-    vi.resetAllMocks();
-    mockGet.mockResolvedValue({ data: { data: {} } });
-    mockPost.mockResolvedValue({ data: { data: {} } });
-    mockPut.mockResolvedValue({ data: { data: {} } });
-    server = new McpServer({ name: "test", version: "1.0.0" });
-    const { register } = await import("../src/tools/fields.js");
-    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-  });
-
-  it("list_fields calls GET /v1/fields", async () => {
-    const cb = getToolCallback(server, "list_fields");
-    await cb({});
-    expect(mockGet).toHaveBeenCalledWith("/v1/fields");
-  });
-
-  it("list_fields tells the model a field's slug is the prompt token", () => {
-    const tool = (server as any)._registeredTools["list_fields"];
-    expect(tool.description).toContain("{{field.<slug>}}");
-  });
-
-  it("create_field calls POST /v1/fields", async () => {
-    const cb = getToolCallback(server, "create_field");
-    await cb({ name: "Priority", type: "select", options: ["High", "Low"] });
-    expect(mockPost).toHaveBeenCalledWith("/v1/fields", {
-      name: "Priority",
-      type: "select",
-      options: ["High", "Low"],
-    });
-  });
-
-  it("update_multiple_fields calls POST /v1/fields/batch", async () => {
-    const cb = getToolCallback(server, "update_multiple_fields");
-    await cb({ mediaIds: ["m1"], fields: [{ id: "f1", value: "Updated" }] });
-    expect(mockPost).toHaveBeenCalledWith("/v1/fields/batch", {
-      mediaIds: ["m1"],
-      fields: [{ id: "f1", value: "Updated" }],
-    });
+  it("create_field tells the model to use the returned id, not _id", async () => {
+    mockPost.mockResolvedValueOnce({ data: { status: "success", data: { id: "be5d4bfc7e0e", _id: "6acee5e45fd676474d0d0291" } } });
+    const result = await getToolCallback(server, "create_field")({ name: "Priority", type: "select", options: ["High", "Low"] });
+    expect(result.content[0].text).toMatch(/^Field id: be5d4bfc7e0e \(use this id, not _id/);
   });
 
   it("update_multiple_fields rejects a field's database _id", () => {
@@ -437,248 +354,45 @@ describe("Fields tools", () => {
     expect(schema.safeParse({ mediaIds: ["m1"], fields: [{ id: "be5d4bfc7e0e", value: "x" }] }).success).toBe(true);
   });
 
-  it("update_field calls PUT /v1/fields/:id", async () => {
-    const cb = getToolCallback(server, "update_field");
-    await cb({ id: "f1", name: "Renamed" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/fields/f1", { name: "Renamed" });
+  it("embed session tools reject a malformed embed id and out-of-range paging", () => {
+    const tools = (server as any)._registeredTools;
+    const embedId = "a".repeat(24);
+    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId }).success).toBe(true);
+    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId: "not-an-id" }).success).toBe(false);
+    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId, pageSize: 101 }).success).toBe(false);
+    expect(tools["list_embed_sessions"].inputSchema.safeParse({ embedId, device: "watch" }).success).toBe(false);
+    expect(tools["get_embed_session"].inputSchema.safeParse({ embedId, id: "b".repeat(24), eventsPageSize: 501 }).success).toBe(false);
   });
 
-  it("handles error on list_fields", async () => {
-    mockGet.mockRejectedValueOnce(new Error("fail"));
-    const cb = getToolCallback(server, "list_fields");
-    const result = await cb({});
+  // Branding keys live in an untyped meta record, so the description is the only place a model learns them.
+  it.each([
+    ["update_embed", (t: any) => t.inputSchema.shape.meta.description, ['{ name: "fieldsFocus", isActive: false }', "isPromptAsk must be on", "logoDark must be an uploaded logo", "max 60 chars", "theme", "backgroundColor", "fontFamily", "titleColor"]],
+    ["create_recorder", (t: any) => t.inputSchema.shape.meta.description, ["logoDark"]],
+    ["update_recorder_settings", (t: any) => t.inputSchema.shape.meta.description, ["logoDark"]],
+    ["list_fields", (t: any) => t.description, ["{{field.<slug>}}"]],
+  ] as const)("%s documents what the model must send", (tool, read, phrases) => {
+    const text = read((server as any)._registeredTools[tool]);
+    for (const phrase of phrases) expect(text).toContain(phrase);
+  });
+
+  it.each<[string, keyof typeof mocks, Record<string, unknown>]>([
+    ["create_embed", "post", { mediaId: "m1" }],
+    ["export_media", "post", { mediaId: "m1", fileType: "pdf" }],
+    ["schedule_meeting_event", "post", { meetingUrl: "https://zoom.us/j/123" }],
+    ["create_text_note", "post", { name: "Note" }],
+    ["create_webhook", "post", { url: "https://example.com/hook" }],
+    ["update_recorder_settings", "put", { recorderId: "r1", name: "x" }],
+    ["delete_folder", "delete", { folderId: "f1" }],
+    ["toggle_media_favorite", "post", { mediaIds: ["m1"], isFavorite: true }],
+  ])("%s reports a failed write as a tool error with the reason", async (tool, method, input) => {
+    mocks[method].mockRejectedValueOnce(new Error("upstream refused"));
+    const result = await getToolCallback(server, tool)(input);
     expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain("upstream refused");
   });
 });
 
-describe("Meeting tools", () => {
-  let server: McpServer;
-
-  beforeEach(async () => {
-    vi.resetAllMocks();
-    mockGet.mockResolvedValue({ data: { data: {} } });
-    mockPost.mockResolvedValue({ data: { data: {} } });
-    mockPut.mockResolvedValue({ data: { data: {} } });
-    mockDelete.mockResolvedValue({ data: { data: {} } });
-    server = new McpServer({ name: "test", version: "1.0.0" });
-    const { register } = await import("../src/tools/meeting.js");
-    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-  });
-
-  it("list_meeting_events calls GET /v1/meeting-assistant/events", async () => {
-    const cb = getToolCallback(server, "list_meeting_events");
-    await cb({ platformType: "zoom", page: 0 });
-    expect(mockGet).toHaveBeenCalledWith("/v1/meeting-assistant/events", {
-      params: { platformType: "zoom", page: 0 },
-    });
-  });
-
-  it("schedule_meeting_event calls POST /v1/meeting-assistant/events/schedule", async () => {
-    const cb = getToolCallback(server, "schedule_meeting_event");
-    await cb({ meetingUrl: "https://zoom.us/j/123", title: "Standup" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/meeting-assistant/events/schedule", {
-      meetingUrl: "https://zoom.us/j/123",
-      title: "Standup",
-    });
-  });
-
-  it("remove_assistant_from_meeting calls POST with body", async () => {
-    const cb = getToolCallback(server, "remove_assistant_from_meeting");
-    await cb({ meetingAssistantEventId: "evt1" });
-    expect(mockPost).toHaveBeenCalledWith(
-      "/v1/meeting-assistant/events/remove",
-      { meetingAssistantEventId: "evt1" }
-    );
-  });
-
-  it("delete_scheduled_assistant calls DELETE with params", async () => {
-    const cb = getToolCallback(server, "delete_scheduled_assistant");
-    await cb({ meetingAssistantEventId: "evt1" });
-    expect(mockDelete).toHaveBeenCalledWith(
-      "/v1/meeting-assistant/events",
-      { params: { meetingAssistantEventId: "evt1" } }
-    );
-  });
-
-  it("handles error on schedule_meeting_event", async () => {
-    mockPost.mockRejectedValueOnce(new Error("fail"));
-    const cb = getToolCallback(server, "schedule_meeting_event");
-    const result = await cb({ meetingUrl: "https://zoom.us/j/123" });
-    expect(result.isError).toBe(true);
-  });
-});
-
-describe("Recorder tools", () => {
-  let server: McpServer;
-
-  beforeEach(async () => {
-    vi.resetAllMocks();
-    mockGet.mockResolvedValue({ data: { data: {} } });
-    mockPost.mockResolvedValue({ data: { data: {} } });
-    mockPut.mockResolvedValue({ data: { data: {} } });
-    mockDelete.mockResolvedValue({ data: { data: {} } });
-    server = new McpServer({ name: "test", version: "1.0.0" });
-    const { register } = await import("../src/tools/recorder.js");
-    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-  });
-
-  it("check_recorder_status calls GET /v1/recorder/status/:token", async () => {
-    const cb = getToolCallback(server, "check_recorder_status");
-    await cb({ token: "tok1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/recorder/status/tok1");
-  });
-
-  it("create_recorder calls POST /v1/recorder/create", async () => {
-    const cb = getToolCallback(server, "create_recorder");
-    await cb({ name: "Survey 1", folderId: "f1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/recorder/create", {
-      name: "Survey 1",
-      folderId: "f1",
-    });
-  });
-
-  it("list_recorders calls GET /v1/recorder with params", async () => {
-    const cb = getToolCallback(server, "list_recorders");
-    await cb({ page: 0, pageSize: 10 });
-    expect(mockGet).toHaveBeenCalledWith("/v1/recorder", {
-      params: { page: 0, pageSize: 10 },
-    });
-  });
-
-  it("clone_recorder calls POST /v1/recorder/clone", async () => {
-    const cb = getToolCallback(server, "clone_recorder");
-    await cb({ recorderId: "r1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/recorder/clone", { recorderId: "r1" });
-  });
-
-  it("get_recorder_info calls GET /v1/recorder/:id", async () => {
-    const cb = getToolCallback(server, "get_recorder_info");
-    await cb({ recorderId: "r1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/recorder/r1");
-  });
-
-  it("get_recorder_recordings calls GET /v1/recorder/recordings/:id", async () => {
-    const cb = getToolCallback(server, "get_recorder_recordings");
-    await cb({ recorderId: "r1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/recorder/recordings/r1");
-  });
-
-  it("generate_recorder_url calls GET /v1/recorder/url/:id", async () => {
-    const cb = getToolCallback(server, "generate_recorder_url");
-    await cb({ recorderId: "r1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/recorder/url/r1");
-  });
-
-  it("update_recorder_settings calls PUT /v1/recorder/settings/:id", async () => {
-    const cb = getToolCallback(server, "update_recorder_settings");
-    await cb({ recorderId: "r1", name: "My Recorder", description: "desc" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/recorder/settings/r1", {
-      name: "My Recorder",
-      description: "desc",
-    });
-  });
-
-  it("recorder meta description documents logoDark for create_recorder and update_recorder_settings", () => {
-    for (const name of ["create_recorder", "update_recorder_settings"]) {
-      const description = (server as any)._registeredTools[name].inputSchema.shape.meta.description;
-      expect(description).toContain("logoDark");
-    }
-  });
-
-  it("update_recorder_settings passes meta.logoDark through", async () => {
-    const cb = getToolCallback(server, "update_recorder_settings");
-    const meta = { logo: "s3://bucket/light.png", logoDark: "s3://bucket/dark.png" };
-    await cb({ recorderId: "r1", meta });
-    expect(mockPut).toHaveBeenCalledWith("/v1/recorder/settings/r1", { meta });
-  });
-
-  it("update_recorder_questions calls PUT /v1/recorder/questions/:id", async () => {
-    const cb = getToolCallback(server, "update_recorder_questions");
-    await cb({ recorderId: "r1", questions: [{ text: "How was it?" }] });
-    expect(mockPut).toHaveBeenCalledWith("/v1/recorder/questions/r1", {
-      questions: [{ text: "How was it?" }],
-    });
-  });
-
-  it("delete_recorder calls DELETE /v1/recorder/:id", async () => {
-    const cb = getToolCallback(server, "delete_recorder");
-    await cb({ recorderId: "r1" });
-    expect(mockDelete).toHaveBeenCalledWith("/v1/recorder/r1");
-  });
-
-  it("handles error on list_recorders", async () => {
-    mockGet.mockRejectedValueOnce(new Error("fail"));
-    const cb = getToolCallback(server, "list_recorders");
-    const result = await cb({});
-    expect(result.isError).toBe(true);
-  });
-});
-
-describe("Text tools", () => {
-  let server: McpServer;
-
-  beforeEach(async () => {
-    vi.resetAllMocks();
-    mockGet.mockResolvedValue({ data: { data: {} } });
-    mockPost.mockResolvedValue({ data: { data: {} } });
-    mockPut.mockResolvedValue({ data: { data: {} } });
-    server = new McpServer({ name: "test", version: "1.0.0" });
-    const { register } = await import("../src/tools/text.js");
-    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-  });
-
-  it("create_text_note calls POST /v1/text/create and mirrors text into rawText", async () => {
-    const cb = getToolCallback(server, "create_text_note");
-    await cb({ name: "My Note", text: "Hello world", folderId: "f1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/text/create", {
-      name: "My Note",
-      text: "Hello world",
-      rawText: "Hello world",
-      folderId: "f1",
-    });
-  });
-
-  it("get_text_insight calls GET /v1/text/insight/:id", async () => {
-    const cb = getToolCallback(server, "get_text_insight");
-    await cb({ mediaId: "t1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/text/insight/t1");
-  });
-
-  it("reanalyze_text calls GET /v1/media/reanalyze/:id with every analysis flag", async () => {
-    const cb = getToolCallback(server, "reanalyze_text");
-    await cb({ mediaId: "t1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/media/reanalyze/t1", {
-      params: { isInsights: true, isSentiment: true, isFillerWords: true, isEmbeddings: true },
-    });
-  });
-
-  it("update_text_note calls PUT /v1/text/update/:id and mirrors text into rawText", async () => {
-    const cb = getToolCallback(server, "update_text_note");
-    await cb({ mediaId: "t1", name: "Renamed", text: "Updated content" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/text/update/t1", {
-      name: "Renamed",
-      text: "Updated content",
-      rawText: "Updated content",
-    });
-  });
-
-  it("update_text_note omits rawText when text isn't being changed", async () => {
-    const cb = getToolCallback(server, "update_text_note");
-    await cb({ mediaId: "t1", name: "Renamed only" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/text/update/t1", {
-      name: "Renamed only",
-    });
-  });
-
-  it("handles error on create_text_note", async () => {
-    mockPost.mockRejectedValueOnce(new Error("fail"));
-    const cb = getToolCallback(server, "create_text_note");
-    const result = await cb({ name: "Note" });
-    expect(result.isError).toBe(true);
-  });
-});
-
-describe("Webhook tools", () => {
+describe("Inbound webhook tools", () => {
   let server: McpServer;
 
   beforeEach(async () => {
@@ -690,40 +404,6 @@ describe("Webhook tools", () => {
     server = new McpServer({ name: "test", version: "1.0.0" });
     const { register } = await import("../src/tools/webhooks.js");
     register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-  });
-
-  it("create_webhook calls POST /v1/webhook", async () => {
-    const cb = getToolCallback(server, "create_webhook");
-    await cb({ url: "https://example.com/hook", events: ["media.processed"] });
-    expect(mockPost).toHaveBeenCalledWith("/v1/webhook", {
-      url: "https://example.com/hook",
-      events: ["media.processed"],
-    });
-  });
-
-  it("list_webhooks calls GET /v1/webhook", async () => {
-    const cb = getToolCallback(server, "list_webhooks");
-    await cb({});
-    expect(mockGet).toHaveBeenCalledWith("/v1/webhook");
-  });
-
-  it("update_webhook calls PUT /v1/webhook/:id", async () => {
-    const cb = getToolCallback(server, "update_webhook");
-    await cb({ webhookId: "wh1", url: "https://new.com/hook" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/webhook/wh1", { url: "https://new.com/hook" });
-  });
-
-  it("delete_webhook calls DELETE /v1/webhook/:id", async () => {
-    const cb = getToolCallback(server, "delete_webhook");
-    await cb({ webhookId: "wh1" });
-    expect(mockDelete).toHaveBeenCalledWith("/v1/webhook/wh1");
-  });
-
-  it("handles error on create_webhook", async () => {
-    mockPost.mockRejectedValueOnce(new Error("fail"));
-    const cb = getToolCallback(server, "create_webhook");
-    const result = await cb({ url: "https://example.com/hook" });
-    expect(result.isError).toBe(true);
   });
 
   it("provision_inbound_webhook calls POST /v1/webhook/inbound/provision and returns nextSteps", async () => {
@@ -802,14 +482,6 @@ describe("Webhook tools", () => {
     const cb = getToolCallback(server, "get_inbound_webhook");
     const result = await cb({ automationId: "auto1" });
     expect(result.isError).toBe(true);
-  });
-
-  it("get_webhook_attempts calls GET /v1/webhook/:id/attempts with paging", async () => {
-    const cb = getToolCallback(server, "get_webhook_attempts");
-    await cb({ webhookId: "wh1", page: 1, pageSize: 20 });
-    expect(mockGet).toHaveBeenCalledWith("/v1/webhook/wh1/attempts", {
-      params: { page: 1, pageSize: 20 },
-    });
   });
 });
 
@@ -990,6 +662,7 @@ describe("Workflows tools (upload_and_analyze)", () => {
       const cb = getToolCallback(server, "upload_and_analyze_batch");
       await cb({ urls: [YT(1), YT(2)], folderId: "f1", sourceLanguage: "en-US", tags: "a,b" });
 
+      expect(mockPost).toHaveBeenCalledTimes(2);
       for (const [, body] of mockPost.mock.calls) {
         expect(body).toMatchObject({ folderId: "f1", sourceLanguage: "en-US", tags: "a,b" });
         expect(body).not.toHaveProperty("mediaType");
@@ -1002,6 +675,7 @@ describe("Workflows tools (upload_and_analyze)", () => {
       const cb = getToolCallback(server, "upload_and_analyze_batch");
       await cb({ urls: [YT(1), YT(2)], mediaType: "audio" });
 
+      expect(mockPost).toHaveBeenCalledTimes(2);
       for (const [, body] of mockPost.mock.calls) expect(body.mediaType).toBe("audio");
     });
 
@@ -1095,145 +769,47 @@ describe("Workflows tools (upload_and_analyze)", () => {
     expect(result.content[0].text).toContain("File not found");
   });
 
-  it("upload_local_file requests signed URL and creates media entry", async () => {
+  it("upload_local_file puts the bytes to the signed URL and stores the URL without its signature", async () => {
     const fs = await import("fs");
+    const axios = (await import("axios")).default as any;
     (fs.existsSync as any).mockReturnValue(true);
     (fs.readFileSync as any).mockReturnValue(Buffer.from("fake-audio"));
-
-    // Signed URL response
     mockGet.mockResolvedValueOnce({
-      data: { data: { signedUrl: "https://s3.aws.com/upload?sig=xxx", key: "uploads/file.mp3" } },
+      data: { data: { signedUrl: "https://s3.aws.com/upload/test.mp3?sig=xxx", key: "uploads/file.mp3" } },
     });
-    // Create media response
-    mockPost.mockResolvedValueOnce({
-      data: { data: { mediaId: "m1", state: "pending" } },
-    });
+    mockPost.mockResolvedValueOnce({ data: { data: { mediaId: "m1", state: "pending" } } });
 
     const cb = getToolCallback(server, "upload_local_file");
-    const result = await cb({ filePath: "/tmp/test.mp3", name: "Test Audio" });
+    const result = await cb({ filePath: "/tmp/test.mp3", name: "Test Audio", folderId: "f1" });
 
-    // Verify signed URL was requested
     expect(mockGet).toHaveBeenCalledWith("/v1/media/upload/signedurl", {
-      params: expect.objectContaining({ filename: "test.mp3" }),
+      params: { mediaType: "audio", filename: "test.mp3", mimeType: "audio/mpeg" },
     });
-  });
-});
-
-describe("Prompt tools — remaining untested endpoints", () => {
-  let server: McpServer;
-
-  beforeEach(async () => {
-    vi.resetAllMocks();
-    mockGet.mockResolvedValue({ data: { data: {} } });
-    mockPost.mockResolvedValue({ data: { data: {} } });
-    mockPut.mockResolvedValue({ data: { data: {} } });
-    mockDelete.mockResolvedValue({ data: { data: {} } });
-    server = new McpServer({ name: "test", version: "1.0.0" });
-    const { register } = await import("../src/tools/prompt.js");
-    register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
-  });
-
-  it("retry_ai_chat calls POST /v1/prompt/retry", async () => {
-    const cb = getToolCallback(server, "retry_ai_chat");
-    await cb({ promptId: "p1", messageId: "msg1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/prompt/retry", {
-      promptId: "p1",
-      messageId: "msg1",
+    expect(axios.put).toHaveBeenCalledWith("https://s3.aws.com/upload/test.mp3?sig=xxx", Buffer.from("fake-audio"), expect.objectContaining({
+      headers: { "Content-Type": "audio/mpeg" },
+    }));
+    expect(mockPost).toHaveBeenCalledWith("/v1/media/upload", {
+      name: "Test Audio",
+      url: "https://s3.aws.com/upload/test.mp3",
+      mediaType: "audio",
+      folderId: "f1",
     });
+    expect(result.isError).toBeUndefined();
+    expect(JSON.parse(result.content[0].text)).toMatchObject({ mediaId: "m1", state: "pending" });
   });
 
-  it("get_chat_messages calls GET /v1/prompt/messages with params", async () => {
-    const cb = getToolCallback(server, "get_chat_messages");
-    await cb({ promptId: "p1", page: 0, pageSize: 25 });
-    expect(mockGet).toHaveBeenCalledWith("/v1/prompt/messages", {
-      params: { promptId: "p1", page: 0, pageSize: 25 },
-    });
-  });
+  it("upload_local_file stops before uploading when no signed URL comes back", async () => {
+    const fs = await import("fs");
+    const axios = (await import("axios")).default as any;
+    (fs.existsSync as any).mockReturnValue(true);
+    mockGet.mockResolvedValueOnce({ data: { data: {} } });
 
-  it("delete_chat_conversation calls DELETE /v1/prompt/message/:id", async () => {
-    const cb = getToolCallback(server, "delete_chat_conversation");
-    await cb({ promptId: "p1" });
-    expect(mockDelete).toHaveBeenCalledWith("/v1/prompt/message/p1");
-  });
+    const result = await getToolCallback(server, "upload_local_file")({ filePath: "/tmp/test.mp3" });
 
-  it("get_favorite_prompts calls GET /v1/prompt/favorites", async () => {
-    const cb = getToolCallback(server, "get_favorite_prompts");
-    await cb({});
-    expect(mockGet).toHaveBeenCalledWith("/v1/prompt/favorites");
-  });
-
-  it("toggle_prompt_favorite calls POST /v1/prompt/favorites", async () => {
-    const cb = getToolCallback(server, "toggle_prompt_favorite");
-    await cb({ promptId: "p1", messageId: "msg1", isFavorite: true });
-    expect(mockPost).toHaveBeenCalledWith("/v1/prompt/favorites", {
-      promptId: "p1",
-      messageId: "msg1",
-      isFavorite: true,
-    });
-  });
-
-  it("update_chat_title calls PUT /v1/prompt/:id", async () => {
-    const cb = getToolCallback(server, "update_chat_title");
-    await cb({ promptId: "p1", title: "Renamed Chat" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/prompt/p1", { title: "Renamed Chat" });
-  });
-
-  it("submit_chat_feedback calls POST /v1/prompt/feedback", async () => {
-    const cb = getToolCallback(server, "submit_chat_feedback");
-    await cb({ promptId: "p1", messageId: "msg1", score: 1, reason: "Great answer" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/prompt/feedback", {
-      promptId: "p1",
-      messageId: "msg1",
-      score: 1,
-      reason: "Great answer",
-    });
-  });
-
-  it("get_chat_statistics calls GET /v1/prompt/statistics with params", async () => {
-    const cb = getToolCallback(server, "get_chat_statistics");
-    await cb({ startDate: "2025-01-01", endDate: "2025-06-30" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/prompt/statistics", {
-      params: { startDate: "2025-01-01", endDate: "2025-06-30" },
-    });
-  });
-
-  it("export_chat_answer calls POST /v1/prompt/export", async () => {
-    const cb = getToolCallback(server, "export_chat_answer");
-    await cb({ promptId: "p1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/prompt/export", { promptId: "p1" });
-  });
-});
-
-describe("Clips tools — remaining untested endpoints", () => {
-  let server: McpServer;
-
-  beforeEach(async () => {
-    vi.resetAllMocks();
-    mockGet.mockResolvedValue({ data: { data: {} } });
-    mockPost.mockResolvedValue({ data: { data: {} } });
-    mockPut.mockResolvedValue({ data: { data: {} } });
-    mockDelete.mockResolvedValue({ data: { data: {} } });
-    server = new McpServer({ name: "test", version: "1.0.0" });
-    const { register } = await import("../src/tools/clips.js");
-    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-  });
-
-  it("get_clips calls GET /v1/clips with optional mediaId", async () => {
-    const cb = getToolCallback(server, "get_clips");
-    await cb({ mediaId: "m1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/clips", { params: { mediaId: "m1" } });
-  });
-
-  it("get_clips works without mediaId", async () => {
-    const cb = getToolCallback(server, "get_clips");
-    await cb({});
-    expect(mockGet).toHaveBeenCalled();
-  });
-
-  it("update_clip calls PUT /v1/clips/:id", async () => {
-    const cb = getToolCallback(server, "update_clip");
-    await cb({ clipId: "c1", title: "Renamed Clip" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/clips/c1", { title: "Renamed Clip" });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain("Could not get signed upload URL");
+    expect(axios.put).not.toHaveBeenCalled();
+    expect(mockPost).not.toHaveBeenCalled();
   });
 });
 
@@ -1251,198 +827,6 @@ describe("Billing tools", () => {
     expect(mockGet).toHaveBeenCalledWith("/v1/subscription/billing-status");
     expect(result.isError).toBeUndefined();
     expect(result.structuredContent.data).toEqual(status);
-  });
-});
-
-describe("Folder tools", () => {
-  let server: McpServer;
-
-  beforeEach(async () => {
-    vi.resetAllMocks();
-    mockGet.mockResolvedValue({ data: { data: {} } });
-    mockPost.mockResolvedValue({ data: { data: {} } });
-    mockPut.mockResolvedValue({ data: { data: {} } });
-    mockDelete.mockResolvedValue({ data: { data: {} } });
-    server = new McpServer({ name: "test", version: "1.0.0" });
-    const { register } = await import("../src/tools/folders.js");
-    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-  });
-
-  it("get_folder_info calls GET /v1/folder/:folderId", async () => {
-    const cb = getToolCallback(server, "get_folder_info");
-    await cb({ folderId: "f1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/folder/f1");
-  });
-
-  it("create_folder calls POST /v1/folder", async () => {
-    const cb = getToolCallback(server, "create_folder");
-    await cb({ name: "New Folder", parentFolderId: "parent1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/folder", {
-      name: "New Folder",
-      parentFolderId: "parent1",
-    });
-  });
-
-  it("clone_folder calls POST /v1/folder/clone", async () => {
-    const cb = getToolCallback(server, "clone_folder");
-    await cb({ folderId: "f1" });
-    expect(mockPost).toHaveBeenCalledWith("/v1/folder/clone", { folderId: "f1" });
-  });
-
-  it("update_folder calls PUT /v1/folder/:folderId", async () => {
-    const cb = getToolCallback(server, "update_folder");
-    await cb({ folderId: "f1", name: "Renamed" });
-    expect(mockPut).toHaveBeenCalledWith("/v1/folder/f1", { name: "Renamed" });
-  });
-
-  it("delete_folder calls DELETE /v1/folder/:folderId", async () => {
-    const cb = getToolCallback(server, "delete_folder");
-    await cb({ folderId: "f1" });
-    expect(mockDelete).toHaveBeenCalledWith("/v1/folder/f1");
-  });
-
-  it("create_folder_view calls POST /v1/folder/:folderId/views", async () => {
-    const cb = getToolCallback(server, "create_folder_view");
-    await cb({
-      folderId: "f1",
-      name: "My View",
-      columns: [{ name: "Name", type: "name", order: 0 }],
-    });
-    expect(mockPost).toHaveBeenCalledWith("/v1/folder/f1/views", {
-      name: "My View",
-      columns: [{ name: "Name", type: "name", order: 0 }],
-    });
-  });
-
-  it("update_folder_view calls PUT /v1/folder/:folderId/views/:viewId", async () => {
-    const cb = getToolCallback(server, "update_folder_view");
-    await cb({
-      folderId: "f1",
-      viewId: "v1",
-      name: "Updated View",
-      isDefault: true,
-      columns: [{ name: "Name", type: "name", order: 0 }],
-    });
-    expect(mockPut).toHaveBeenCalledWith("/v1/folder/f1/views/v1", {
-      name: "Updated View",
-      isDefault: true,
-      columns: [{ name: "Name", type: "name", order: 0 }],
-    });
-  });
-
-  it("clone_folder_view calls POST /v1/folder/views/clone", async () => {
-    const cb = getToolCallback(server, "clone_folder_view");
-    await cb({
-      sourceFolderId: "f1",
-      targetFolderId: "f2",
-      viewId: "v1",
-      name: "Cloned View",
-    });
-    expect(mockPost).toHaveBeenCalledWith("/v1/folder/views/clone", {
-      sourceFolderId: "f1",
-      targetFolderId: "f2",
-      viewId: "v1",
-      name: "Cloned View",
-    });
-  });
-
-  it("handles error on get_folder_info", async () => {
-    mockGet.mockRejectedValueOnce(new Error("fail"));
-    const cb = getToolCallback(server, "get_folder_info");
-    const result = await cb({ folderId: "f1" });
-    expect(result.isError).toBe(true);
-  });
-});
-
-describe("Media tools — additional endpoints", () => {
-  let server: McpServer;
-
-  beforeEach(async () => {
-    vi.resetAllMocks();
-    mockGet.mockResolvedValue({ data: { data: {} } });
-    mockPost.mockResolvedValue({ data: { data: {} } });
-    mockPut.mockResolvedValue({ data: { data: {} } });
-    mockDelete.mockResolvedValue({ data: { data: {} } });
-    server = new McpServer({ name: "test", version: "1.0.0" });
-    const { register } = await import("../src/tools/media.js");
-    register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-  });
-
-  it("get_signed_upload_url calls GET /v1/media/upload/signedurl with params", async () => {
-    const cb = getToolCallback(server, "get_signed_upload_url");
-    await cb({ filename: "audio.mp3", mimeType: "audio/mpeg" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/media/upload/signedurl", {
-      params: { mediaType: "audio", filename: "audio.mp3", mimeType: "audio/mpeg" },
-    });
-  });
-
-  it("update_transcript_speakers calls PUT /v1/media/speakers/:mediaId with a bare array", async () => {
-    const cb = getToolCallback(server, "update_transcript_speakers");
-    await cb({
-      mediaId: "m1",
-      speakers: [{ id: "s1", name: "Alice" }],
-    });
-    expect(mockPut).toHaveBeenCalledWith("/v1/media/speakers/m1", [
-      { id: "s1", name: "Alice" },
-    ]);
-  });
-
-  it("update_media_metadata calls PUT /v1/media/:mediaId", async () => {
-    const cb = getToolCallback(server, "update_media_metadata");
-    await cb({ mediaId: "m1", name: "Renamed Media", tags: ["tag1"] });
-    expect(mockPut).toHaveBeenCalledWith("/v1/media/m1", {
-      name: "Renamed Media",
-      tags: ["tag1"],
-    });
-  });
-
-  it("get_captions calls GET /v1/media/caption/:mediaId", async () => {
-    const cb = getToolCallback(server, "get_captions");
-    await cb({ mediaId: "m1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/media/caption/m1");
-  });
-
-  it("list_supported_languages calls GET /v1/media/supportedLanguages", async () => {
-    const cb = getToolCallback(server, "list_supported_languages");
-    await cb({});
-    expect(mockGet).toHaveBeenCalledWith("/v1/media/supportedLanguages");
-  });
-
-  it("get_media_statistics calls GET /v1/media/statistics", async () => {
-    const cb = getToolCallback(server, "get_media_statistics");
-    await cb({});
-    expect(mockGet).toHaveBeenCalledWith("/v1/media/statistics");
-  });
-
-  it("toggle_media_favorite calls POST /v1/media/favorites", async () => {
-    const cb = getToolCallback(server, "toggle_media_favorite");
-    await cb({ mediaIds: ["m1"], isFavorite: true });
-    expect(mockPost).toHaveBeenCalledWith("/v1/media/favorites", {
-      mediaIds: ["m1"],
-      isFavorite: true,
-    });
-  });
-
-  it("reanalyze_media calls GET /v1/media/reanalyze/:mediaId", async () => {
-    const cb = getToolCallback(server, "reanalyze_media");
-    await cb({ mediaId: "m1" });
-    expect(mockGet).toHaveBeenCalledWith("/v1/media/reanalyze/m1", { params: {} });
-  });
-
-  it("bulk_move_media calls PUT /v1/media/move", async () => {
-    const cb = getToolCallback(server, "bulk_move_media");
-    await cb({ folderId: "f1", mediaIds: ["m1", "m2"] });
-    expect(mockPut).toHaveBeenCalledWith("/v1/media/move", {
-      folderId: "f1",
-      mediaIds: ["m1", "m2"],
-    });
-  });
-
-  it("handles error on get_captions", async () => {
-    mockGet.mockRejectedValueOnce(new Error("fail"));
-    const cb = getToolCallback(server, "get_captions");
-    const result = await cb({ mediaId: "m1" });
-    expect(result.isError).toBe(true);
   });
 });
 

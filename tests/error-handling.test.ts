@@ -45,6 +45,16 @@ function axiosError(status: number, data: any = {}, headers: Record<string, stri
   return err;
 }
 
+const MODULES = {
+  media: () => import("../src/tools/media.js"),
+  folders: () => import("../src/tools/folders.js"),
+  prompt: () => import("../src/tools/prompt.js"),
+  clips: () => import("../src/tools/clips.js"),
+  analytics: () => import("../src/tools/analytics.js"),
+} as const;
+
+const MOCKS = { get: mockGet, post: mockPost } as const;
+
 describe("Error Handling & Resilience", () => {
   let server: McpServer;
 
@@ -53,275 +63,139 @@ describe("Error Handling & Resilience", () => {
     server = new McpServer({ name: "speak-ai-test", version: "1.0.0" });
   });
 
-  describe("HTTP error responses", () => {
-    it("handles 401 Unauthorized gracefully", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+  async function callFailing(module: keyof typeof MODULES, method: keyof typeof MOCKS, tool: string, args: object, error: unknown) {
+    const { register } = await MODULES[module]();
+    register(server, mockClient, { aiChat: true });
+    MOCKS[method].mockRejectedValueOnce(error);
+    return getToolCallback(server, tool)(args);
+  }
 
-      mockGet.mockRejectedValueOnce(axiosError(401, { message: "Invalid API key" }));
+  // The model reads this text to decide what to tell the user, so the status and the API's own message must both reach it.
+  it.each([
+    { module: "media", method: "get", tool: "get_transcript", args: { mediaId: "abc123" }, status: 401, body: { message: "Invalid API key" } },
+    { module: "media", method: "get", tool: "get_media_insights", args: { mediaId: "abc123" }, status: 403, body: { message: "Insufficient permissions" } },
+    { module: "media", method: "post", tool: "upload_media", args: { name: "Test", url: "https://example.com/test.mp3" }, status: 429, body: { message: "Rate limit exceeded" } },
+    { module: "media", method: "get", tool: "list_media", args: {}, status: 500, body: { message: "Internal server error" } },
+    { module: "folders", method: "get", tool: "list_folders", args: {}, status: 500, body: { error: "db down" } },
+    { module: "prompt", method: "post", tool: "ask_ai_chat", args: { prompt: "test" }, status: 503, body: { message: "Service unavailable" } },
+    { module: "clips", method: "post", tool: "create_clip", args: { title: "T", mediaType: "audio", timeRanges: [{ mediaId: "abc", startTime: 90, endTime: 60 }] }, status: 400, body: { message: "Invalid time range" } },
+  ] as const)("$tool reports HTTP $status with the API message as a tool error", async ({ module, method, tool, args, status, body }) => {
+    const result = await callFailing(module, method, tool, args, axiosError(status, body));
 
-      const callback = getToolCallback(server, "get_transcript");
-      const result = await callback({ mediaId: "abc123" });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("Error");
-      expect(result.content[0].text).toContain("401");
-    });
-
-    it("handles 403 Forbidden gracefully", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      mockGet.mockRejectedValueOnce(axiosError(403, { message: "Insufficient permissions" }));
-
-      const callback = getToolCallback(server, "get_media_insights");
-      const result = await callback({ mediaId: "abc123" });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("403");
-    });
-
-    it("handles 404 Not Found gracefully", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      mockGet.mockRejectedValueOnce(axiosError(404, { message: "Media not found" }));
-
-      const callback = getToolCallback(server, "get_media_status");
-      const result = await callback({ mediaId: "nonexistent" });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("404");
-      expect(result.content[0].text).toContain("Media not found");
-      expect(result.content[0].text).toMatch(/search_media or list_media/);
-    });
-
-    it("explains which links work when the API rejects an upload link", async () => {
-      const { register } = await import("../src/tools/workflows.js");
-      register(server, mockClient, { localFileAccess: false });
-
-      mockPost.mockRejectedValueOnce(axiosError(400, { status: "failed", message: "Could not fetch media from this URL." }));
-
-      const result = await getToolCallback(server, "upload_and_analyze")({ url: "https://www.instagram.com/p/abc/" });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("Could not fetch media from this URL.");
-      expect(result.content[0].text).toMatch(/opens without signing in/);
-    });
-
-    it("handles 429 Rate Limited gracefully", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      mockPost.mockRejectedValueOnce(
-        axiosError(429, { message: "Rate limit exceeded" }, { "retry-after": "5" })
-      );
-
-      const callback = getToolCallback(server, "upload_media");
-      const result = await callback({
-        name: "Test",
-        url: "https://example.com/test.mp3",
-        mediaType: "audio",
-      });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("429");
-    });
-
-    it("handles 500 Internal Server Error gracefully", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      mockGet.mockRejectedValueOnce(axiosError(500, { message: "Internal server error" }));
-
-      const callback = getToolCallback(server, "list_media");
-      const result = await callback({});
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("500");
-    });
+    expect(result.isError).toBe(true);
+    expect(result.content).toEqual([{ type: "text", text: `Error: HTTP ${status}: ${JSON.stringify(body, null, 2)}` }]);
   });
 
-  describe("Network errors", () => {
-    it("handles connection timeout", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+  it("tells the model how to find the right mediaId when a media lookup is a 404", async () => {
+    const { MEDIA_NOT_FOUND_HELP } = await import("../src/media-utils.js");
+    const result = await callFailing("media", "get", "get_media_status", { mediaId: "nonexistent" }, axiosError(404, { message: "Media not found" }));
 
-      mockGet.mockRejectedValueOnce(new Error("timeout of 60000ms exceeded"));
-
-      const callback = getToolCallback(server, "get_transcript");
-      const result = await callback({ mediaId: "abc123" });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("timeout");
-    });
-
-    it("handles DNS resolution failure", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      mockGet.mockRejectedValueOnce(new Error("getaddrinfo ENOTFOUND api.speakai.co"));
-
-      const callback = getToolCallback(server, "list_media");
-      const result = await callback({});
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("ENOTFOUND");
-    });
-
-    it("handles connection refused", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      mockGet.mockRejectedValueOnce(new Error("connect ECONNREFUSED 127.0.0.1:443"));
-
-      const callback = getToolCallback(server, "get_media_insights");
-      const result = await callback({ mediaId: "abc123" });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("ECONNREFUSED");
-    });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toBe(`Error: HTTP 404: ${JSON.stringify({ message: "Media not found" }, null, 2)}\n\n${MEDIA_NOT_FOUND_HELP}`);
   });
 
-  describe("Malformed API responses", () => {
-    it("handles null response data without crashing", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+  it("explains which links work when the API rejects an upload link", async () => {
+    const { register } = await import("../src/tools/workflows.js");
+    register(server, mockClient, { localFileAccess: false });
 
-      mockGet.mockResolvedValueOnce({ data: null });
+    mockPost.mockRejectedValueOnce(axiosError(400, { status: "failed", message: "Could not fetch media from this URL." }));
 
-      const callback = getToolCallback(server, "get_transcript");
-      const result = await callback({ mediaId: "abc123" });
+    const result = await getToolCallback(server, "upload_and_analyze")({ url: "https://www.instagram.com/p/abc/" });
 
-      // JSON.stringify(null) = "null" — tool should not crash
-      expect(result.content[0].type).toBe("text");
-      expect(result.content[0].text).toBe("null");
-    });
-
-    it("returns data null, never undefined, when the API sends an empty body", async () => {
-      const billing = await import("../src/tools/billing.js");
-      const media = await import("../src/tools/media.js");
-      billing.register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-      media.register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-      mockGet.mockResolvedValue({ data: undefined });
-
-      const viaOk = await getToolCallback(server, "get_billing_status")({});
-      const viaText = await getToolCallback(server, "get_media_status")({ mediaId: "abc123" });
-
-      expect(viaOk.content[0].text).toBe("null");
-      expect(viaOk.structuredContent).toStrictEqual({ data: null });
-      expect(viaText.structuredContent).toStrictEqual({ data: null });
-    });
-
-    it("handles empty object response", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      mockGet.mockResolvedValueOnce({ data: {} });
-
-      const callback = getToolCallback(server, "get_media_status");
-      const result = await callback({ mediaId: "abc123" });
-
-      expect(result.content[0].text).toBe("{}");
-    });
-
-    it("handles response with unexpected structure", async () => {
-      const { register } = await import("../src/tools/media.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      mockGet.mockResolvedValueOnce({ data: { unexpected: "shape" } });
-
-      const callback = getToolCallback(server, "list_media");
-      const result = await callback({});
-
-      const parsed = JSON.parse(result.content[0].text);
-      expect(parsed.unexpected).toBe("shape");
-    });
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain("Could not fetch media from this URL.");
+    expect(result.content[0].text).toMatch(/opens without signing in/);
   });
 
-  describe("Error across tool categories", () => {
-    it("folder tools handle errors", async () => {
-      const { register } = await import("../src/tools/folders.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+  it.each([
+    { module: "media", method: "get", tool: "get_transcript", args: { mediaId: "abc123" }, message: "timeout of 60000ms exceeded" },
+    { module: "media", method: "get", tool: "list_media", args: {}, message: "getaddrinfo ENOTFOUND api.speakai.co" },
+    { module: "media", method: "get", tool: "get_media_insights", args: { mediaId: "abc123" }, message: "connect ECONNREFUSED 127.0.0.1:443" },
+    { module: "analytics", method: "post", tool: "search_media", args: { query: "test" }, message: "Network error" },
+  ] as const)("$tool turns a network failure ($message) into a tool error instead of throwing", async ({ module, method, tool, args, message }) => {
+    const result = await callFailing(module, method, tool, args, new Error(message));
 
-      mockGet.mockRejectedValueOnce(axiosError(500, { error: "db down" }));
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toBe(`Error: ${message}`);
+  });
 
-      const callback = getToolCallback(server, "list_folders");
-      const result = await callback({});
+  it.each([
+    { tool: "get_transcript", data: null },
+    { tool: "get_media_status", data: {} },
+    { tool: "list_media", data: { unexpected: "shape" } },
+  ])("$tool passes an odd API body ($data) through as JSON without crashing", async ({ tool, data }) => {
+    const { register } = await import("../src/tools/media.js");
+    register(server, mockClient);
+    mockGet.mockResolvedValueOnce({ data });
 
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("Error");
-    });
+    const result = await getToolCallback(server, tool)({ mediaId: "abc123" });
 
-    it("prompt tools handle errors", async () => {
-      const { register } = await import("../src/tools/prompt.js");
-      register(server, mockClient, { aiChat: true, automations: true, voiceTestRunDetails: true });
+    expect(result.isError).toBeUndefined();
+    expect(result.content[0].type).toBe("text");
+    expect(JSON.parse(result.content[0].text)).toEqual(data);
+  });
 
-      mockPost.mockRejectedValueOnce(axiosError(503, { message: "Service unavailable" }));
+  // Regression (0e794ec): the output schema requires data, so an empty body must give data null, never undefined.
+  it("returns data null, never undefined, when the API sends an empty body", async () => {
+    const billing = await import("../src/tools/billing.js");
+    const media = await import("../src/tools/media.js");
+    billing.register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+    media.register(server, mockClient, { automations: true, voiceTestRunDetails: true });
+    mockGet.mockResolvedValue({ data: undefined });
 
-      const callback = getToolCallback(server, "ask_ai_chat");
-      const result = await callback({ prompt: "test" });
+    const viaOk = await getToolCallback(server, "get_billing_status")({});
+    const viaText = await getToolCallback(server, "get_media_status")({ mediaId: "abc123" });
 
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("503");
-    });
-
-    it("clip tools handle errors", async () => {
-      const { register } = await import("../src/tools/clips.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      mockPost.mockRejectedValueOnce(axiosError(400, { message: "Invalid time range" }));
-
-      const callback = getToolCallback(server, "create_clip");
-      const result = await callback({
-        title: "Test",
-        mediaType: "audio",
-        timeRanges: [{ mediaId: "abc", startTime: 90, endTime: 60 }],
-      });
-
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain("400");
-    });
-
-    it("search tools handle errors", async () => {
-      const { register } = await import("../src/tools/analytics.js");
-      register(server, mockClient, { automations: true, voiceTestRunDetails: true });
-
-      mockPost.mockRejectedValueOnce(new Error("Network error"));
-
-      const callback = getToolCallback(server, "search_media");
-      const result = await callback({ query: "test" });
-
-      expect(result.isError).toBe(true);
-    });
+    expect(viaOk.content[0].text).toBe("null");
+    expect(viaOk.structuredContent).toStrictEqual({ data: null });
+    expect(viaText.structuredContent).toStrictEqual({ data: null });
   });
 });
 
 describe("formatAxiosError", () => {
   it("formats axios error with status and JSON body", async () => {
     const { formatAxiosError } = await import("../src/client.js");
-    const err: any = new Error("fail");
-    err.isAxiosError = true;
-    err.response = { status: 422, data: { message: "Validation failed" } };
-
-    const result = formatAxiosError(err);
-    // Our mock makes isAxiosError return true for objects with isAxiosError flag
-    expect(result).toContain("422");
-    expect(result).toContain("Validation failed");
+    expect(formatAxiosError(axiosError(422, { message: "Validation failed" }))).toBe(
+      `HTTP 422: ${JSON.stringify({ message: "Validation failed" }, null, 2)}`
+    );
   });
 
-  it("formats plain Error", async () => {
+  it("says the request failed when an axios error has no response", async () => {
     const { formatAxiosError } = await import("../src/client.js");
-    const result = formatAxiosError(new Error("Something broke"));
-    expect(result).toBe("Something broke");
+    const noResponse: any = new Error("socket hang up");
+    noResponse.isAxiosError = true;
+    expect(formatAxiosError(noResponse)).toBe("Request failed: socket hang up");
   });
 
-  it("formats non-Error values", async () => {
+  // Error text goes to the model and into chat transcripts, so secrets an API echoes back must not.
+  it("redacts secret-looking keys and truncates long strings in the error body", async () => {
     const { formatAxiosError } = await import("../src/client.js");
-    expect(formatAxiosError("string error")).toBe("string error");
-    expect(formatAxiosError(42)).toBe("42");
-    expect(formatAxiosError(null)).toBe("null");
-    expect(formatAxiosError(undefined)).toBe("undefined");
+    const body = {
+      message: "x".repeat(600),
+      accessToken: "tok_live_123",
+      details: { apiKey: "key_123", "x-api-key": "key_456", password: "hunter2", Authorization: "Bearer abc", signature: "sig" },
+    };
+
+    const text = formatAxiosError(axiosError(400, body));
+    const parsed = JSON.parse(text.replace(/^HTTP 400: /, ""));
+
+    expect(parsed.message).toBe("x".repeat(500) + "…");
+    expect(parsed.accessToken).toBe("[redacted]");
+    expect(Object.values(parsed.details)).toEqual(Array(5).fill("[redacted]"));
+    for (const secret of ["tok_live_123", "key_123", "key_456", "hunter2", "Bearer abc"]) {
+      expect(text).not.toContain(secret);
+    }
+  });
+
+  it.each([
+    { input: new Error("Something broke"), expected: "Something broke" },
+    { input: "string error", expected: "string error" },
+    { input: 42, expected: "42" },
+    { input: null, expected: "null" },
+    { input: undefined, expected: "undefined" },
+  ])("formats a non-axios value $input as plain text", async ({ input, expected }) => {
+    const { formatAxiosError } = await import("../src/client.js");
+    expect(formatAxiosError(input)).toBe(expected);
   });
 });
 
