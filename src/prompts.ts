@@ -6,6 +6,9 @@ import { SUPPORTED_URL_SOURCES } from "./media-utils.js";
 export const FEEDBACK_OFFER =
   "If anything in Speak AI got in the way, offer once to send that to the Speak AI team with submit_feedback, and send it only if I say yes.";
 
+const DEFAULT_BRIEF_DAYS = 7;
+const MAX_BRIEF_DAYS = 36_500; // 100 years; far larger values make an invalid date
+
 type PromptMessages = { messages: Array<{ role: "user" | "assistant"; content: { type: "text"; text: string } }> };
 
 function registerPrompt<Args extends z.ZodRawShape>(
@@ -106,7 +109,12 @@ export function registerPrompts(server: McpServer): void {
       folder: z.string().optional().describe("Folder ID to scope to (optional)"),
     },
     async ({ days, folder }) => {
-      const lookback = parseInt(days ?? "7");
+      // An unusable value ("two weeks", 0, negative, or so large the date is invalid) uses the default
+      const requestedDays = Number.parseInt(days ?? "", 10);
+      const lookback =
+        Number.isFinite(requestedDays) && requestedDays > 0 && requestedDays <= MAX_BRIEF_DAYS
+          ? requestedDays
+          : DEFAULT_BRIEF_DAYS;
       const fromDate = new Date();
       fromDate.setDate(fromDate.getDate() - lookback);
 

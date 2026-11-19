@@ -215,6 +215,17 @@ describe("commands", () => {
       process.env.SPEAK_API_KEY = "test-key";
     });
 
+    // `call <tool>` must reach every tool that `tools` lists, so this checks the
+    // handlers the real dispatcher loads, not a copy of its registration.
+    it("reaches every MCP tool (CLI is 1:1 with tools)", async () => {
+      const { loadToolHandlers } = await import("../src/cli/index.js");
+      const { SPEAK_MCP_TOOL_NAMES } = await import("../src/tool-names.js");
+
+      const handlers = await loadToolHandlers();
+
+      expect(Object.keys(handlers).sort()).toEqual([...SPEAK_MCP_TOOL_NAMES].sort());
+    });
+
     it("runs the named tool with the JSON arguments and prints its data", async () => {
       api.get.mockResolvedValue({ data: { data: { mediaId: "m-1", state: "processed" } } });
 

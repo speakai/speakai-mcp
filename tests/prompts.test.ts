@@ -114,5 +114,12 @@ describe("Prompts", () => {
       expect(text).toContain(`(from: ${from})`);
       expect(text).toContain(scope);
     });
+
+    it.each(["two weeks", "", "0", "-3", "999999999999"])("falls back to 7 days for an unusable days value %j", async (days) => {
+      const text = await promptText("meeting-brief", { days });
+
+      expect(text).toContain("last 7 days");
+      expect(text).toContain("Date range: 2026-03-03 to today");
+    });
   });
 });

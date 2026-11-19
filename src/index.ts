@@ -85,14 +85,14 @@ if (isEntryPoint && isCliMode) {
     import("./tools/index.js"),
     import("./resources.js"),
     import("./prompts.js"),
-  ]).then(([{ McpServer }, { serveStdio }, { registerAllTools }, { registerResources }, { registerPrompts }]) => {
+  ]).then(([{ McpServer }, { serveStdio }, { registerAllTools, LOCAL_TOOL_OPTIONS }, { registerResources }, { registerPrompts }]) => {
     serveStdio(() => {
       const server = new McpServer({
         name: "speak-ai",
         version: "1.0.0",
       });
 
-      registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true, cards: process.env.SPEAK_MCP_CARDS === "true" });
+      registerAllTools(server, undefined, { ...LOCAL_TOOL_OPTIONS, cards: process.env.SPEAK_MCP_CARDS === "true" });
       registerResources(server);
       registerPrompts(server);
       return server;

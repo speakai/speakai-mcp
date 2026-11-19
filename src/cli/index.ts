@@ -32,6 +32,21 @@ function requireApiKey(): void {
   }
 }
 
+/** Register all tools against a stub server, capturing each tool's callback by name. */
+export async function loadToolHandlers() {
+  const client = await getClient();
+  const handlers: Record<string, (args: Record<string, unknown>) => Promise<any>> = {};
+  const stub = {
+    registerTool: (name: string, _def: unknown, cb: (args: Record<string, unknown>) => Promise<any>) => {
+      handlers[name] = cb;
+      return {};
+    },
+  };
+  const { registerAllTools, LOCAL_TOOL_OPTIONS } = await import("../tools/index.js");
+  registerAllTools(stub as any, client, LOCAL_TOOL_OPTIONS);
+  return handlers;
+}
+
 export function createCli(): Command {
   const program = new Command();
 
@@ -1328,21 +1343,6 @@ export function createCli(): Command {
   // Every MCP tool is callable from the CLI by name via `call`, so the CLI
   // stays in lockstep with the tool surface automatically — no per-tool command
   // to maintain. The curated commands above are ergonomic shortcuts on top.
-
-  /** Register all tools against a stub server, capturing each tool's callback by name. */
-  async function loadToolHandlers() {
-    const client = await getClient();
-    const handlers: Record<string, (args: Record<string, unknown>) => Promise<any>> = {};
-    const stub = {
-      registerTool: (name: string, _def: unknown, cb: (args: Record<string, unknown>) => Promise<any>) => {
-        handlers[name] = cb;
-        return {};
-      },
-    };
-    const { registerAllTools } = await import("../tools/index.js");
-    registerAllTools(stub as any, client, { localFileAccess: true });
-    return handlers;
-  }
 
   program
     .command("tools")
