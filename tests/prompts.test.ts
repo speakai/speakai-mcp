@@ -128,6 +128,13 @@ describe("Prompts", () => {
       expect(result.messages[0].content.text).toContain("last 14 days");
     });
 
+    it.each(["two weeks", "", "0", "-3", "999999999999"])("falls back to 7 days for an unusable days value %j", async (days) => {
+      const cb = getPromptCallback(server, "meeting-brief");
+      const result = await cb({ days });
+
+      expect(result.messages[0].content.text).toContain("last 7 days");
+    });
+
     it("scopes to a folder when provided", async () => {
       const cb = getPromptCallback(server, "meeting-brief");
       const result = await cb({ folder: "f99" });
