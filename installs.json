@@ -4,7 +4,7 @@
     {
       "id": "claude-web",
       "title": "Claude.ai (web)",
-      "tagline": "Browser-based — works on any computer.",
+      "tagline": "Browser-based, works on any computer.",
       "installButton": {
         "label": "Install in Claude.ai",
         "url": "https://claude.ai/settings/connectors",
@@ -32,7 +32,7 @@
     {
       "id": "claude-desktop",
       "title": "Claude Desktop",
-      "tagline": "Native macOS / Windows app.",
+      "tagline": "Native app for macOS and Windows.",
       "steps": [
         { "html": "Open Claude Desktop → Settings → Connectors → <strong>Add custom connector</strong>" },
         { "html": "Paste the URL from the top of this page" },
@@ -46,7 +46,7 @@
     {
       "id": "chatgpt",
       "title": "ChatGPT",
-      "tagline": "Web + desktop. Install from ChatGPT's plugin directory.",
+      "tagline": "Web and desktop. Install from ChatGPT's plugin directory.",
       "installButton": {
         "label": "Install in ChatGPT",
         "url": "https://chatgpt.com/plugins/plugin_asdk_app_6ac2ff7ad9b481918e5eef0343cf3c7b"
@@ -101,7 +101,7 @@
     {
       "id": "vscode",
       "title": "VS Code",
-      "tagline": "One-click install via deeplink.",
+      "tagline": "One-click install.",
       "installButton": {
         "label": "Install in VS Code",
         "url": "https://vscode.dev/redirect/mcp/install?name=speakai&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fapi.speakai.co%2Fv1%2Fmcp%22%7D"
@@ -114,7 +114,7 @@
     {
       "id": "windsurf",
       "title": "Windsurf",
-      "tagline": "HTTP transport, config file.",
+      "tagline": "Add Speak AI to a config file with your API key.",
       "steps": [
         { "html": "Get your API key at <a href=\"https://app.speakai.co/developers/apikeys\" target=\"_blank\" rel=\"noopener\">app.speakai.co/developers/apikeys</a>" },
         { "html": "Add the config below to <code>~/.codeium/windsurf/mcp_config.json</code>" },
@@ -201,7 +201,7 @@
     {
       "id": "muse",
       "title": "Muse",
-      "tagline": "Meta's personal AI assistant. One-click OAuth, no API key.",
+      "tagline": "Meta's personal AI assistant. One-click sign-in, no API key.",
       "installButton": {
         "label": "Open Muse",
         "url": "https://muse.ai",
@@ -213,6 +213,194 @@
         { "html": "Sign in to Speak AI, then click <strong>Allow</strong> on the permission popup. Muse uses the one-click OAuth flow, so there is no API key to paste" },
         { "html": "Confirm it worked by asking <strong>\"Summarize my most recent recording in Speak AI\"</strong>" },
         { "html": "<em>Directory listing, pending approval: once Speak AI is approved in the Muse connector directory, you will find <strong>Speak AI</strong> in Muse's directory and connect in one click, with no URL to paste. This step replaces the two above it when that lands.</em>" }
+      ]
+    },
+    {
+      "id": "gemini-cli",
+      "title": "Gemini CLI",
+      "tagline": "Google's command line assistant. Add Speak AI with one command, then sign in through your browser.",
+      "steps": [
+        {
+          "html": "Add the connector: <code>gemini mcp add --transport http speakai https://api.speakai.co/v1/mcp</code>"
+        },
+        {
+          "html": "Start Gemini CLI and type <code>/mcp auth speakai</code>"
+        },
+        {
+          "html": "Your browser opens Speak AI's sign-in page. Sign in, or create an account if you don't have one, then click <strong>Allow</strong>"
+        },
+        {
+          "html": "Sign-in needs a browser on the same machine. Over SSH, use an API key instead (below)"
+        }
+      ],
+      "devAlt": {
+        "summary": "Prefer an API key?",
+        "html": "Add <code>--header \"Authorization: Bearer $SPEAKAI_KEY\"</code> to the add command. Generate a key at <a href=\"https://app.speakai.co/developers/apikeys\" target=\"_blank\" rel=\"noopener\">app.speakai.co/developers/apikeys</a>."
+      }
+    },
+    {
+      "id": "github-copilot-cli",
+      "title": "GitHub Copilot CLI",
+      "tagline": "GitHub Copilot in your terminal. Add Speak AI with your API key.",
+      "steps": [
+        {
+          "html": "Get your API key at <a href=\"https://app.speakai.co/developers/apikeys\" target=\"_blank\" rel=\"noopener\">app.speakai.co/developers/apikeys</a>"
+        },
+        {
+          "html": "Add the config below to <code>~/.copilot/mcp-config.json</code>, or type <code>/mcp add</code> inside Copilot CLI"
+        },
+        {
+          "html": "Copilot CLI picks up the server without a restart. On Copilot Business or Enterprise, an admin must turn on the <strong>MCP servers in Copilot</strong> policy"
+        }
+      ],
+      "config": {
+        "mcpServers": {
+          "speakai": {
+            "type": "http",
+            "url": "https://api.speakai.co/v1/mcp",
+            "headers": {
+              "Authorization": "Bearer your-api-key-here"
+            },
+            "tools": [
+              "*"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "copilot-studio",
+      "title": "Microsoft Copilot Studio",
+      "tagline": "Give your Copilot Studio agents access to your Speak AI recordings and insights.",
+      "steps": [
+        {
+          "html": "Open your agent, go to <strong>Tools</strong>, choose <strong>Add a tool</strong>, then <strong>New tool</strong>, then <strong>Model Context Protocol</strong>"
+        },
+        {
+          "html": "Name it <strong>Speak AI</strong>, add a short description, and paste the URL above as the server URL"
+        },
+        {
+          "html": "For authentication choose <strong>OAuth 2.0</strong>, then <strong>Dynamic discovery</strong>, and select <strong>Create</strong>"
+        },
+        {
+          "html": "Select <strong>Create a new connection</strong>, sign in to Speak AI and click <strong>Allow</strong>, then <strong>Add to agent</strong>. Your Power Platform data policies must allow the connector"
+        }
+      ]
+    },
+    {
+      "id": "zed",
+      "title": "Zed",
+      "tagline": "The Zed editor. Add Speak AI in settings, then sign in through your browser.",
+      "steps": [
+        {
+          "html": "Open <strong>Settings</strong>, then <strong>AI</strong>, then <strong>MCP Servers</strong>. Select <strong>Add Server</strong>, then <strong>Add Remote Server</strong>"
+        },
+        {
+          "html": "Paste the URL above, or add the config below to your settings file (<code>zed: open settings file</code>)"
+        },
+        {
+          "html": "With no Authorization header, Zed opens Speak AI's sign-in page. Sign in, then click <strong>Allow</strong>"
+        }
+      ],
+      "config": {
+        "context_servers": {
+          "speakai": {
+            "url": "https://api.speakai.co/v1/mcp"
+          }
+        }
+      }
+    },
+    {
+      "id": "goose",
+      "title": "Goose",
+      "tagline": "The open source AI agent. Install Speak AI with one click, then sign in through your browser.",
+      "installButton": {
+        "label": "Install in Goose",
+        "url": "goose://extension?url=https%3A%2F%2Fapi.speakai.co%2Fv1%2Fmcp&type=streamable_http&id=speakai&name=Speak%20AI&description=Your%20Speak%20AI%20recordings%2C%20transcripts%20and%20insights"
+      },
+      "steps": [
+        {
+          "html": "Click the button. Goose opens and asks to add the Speak AI extension"
+        },
+        {
+          "html": "Confirm, then sign in to Speak AI when your browser opens and click <strong>Allow</strong>"
+        },
+        {
+          "html": "No Goose desktop app? Open <strong>Extensions</strong>, choose <strong>Add custom extension</strong>, pick <strong>Streamable HTTP</strong> and paste the URL above"
+        }
+      ]
+    },
+    {
+      "id": "opencode",
+      "title": "opencode",
+      "tagline": "The opencode coding agent. Add Speak AI to its config, then sign in through your browser.",
+      "steps": [
+        {
+          "html": "Add the config below to your opencode config file (<code>opencode.jsonc</code>)"
+        },
+        {
+          "html": "Run <code>opencode mcp auth speakai</code>, or type <code>/mcps</code> inside opencode and select <strong>speakai</strong>"
+        },
+        {
+          "html": "Your browser opens Speak AI's sign-in page. Sign in, or create an account if you don't have one, then click <strong>Allow</strong>"
+        }
+      ],
+      "config": {
+        "mcp": {
+          "servers": {
+            "speakai": {
+              "type": "remote",
+              "url": "https://api.speakai.co/v1/mcp"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "mistral-le-chat",
+      "title": "Mistral Le Chat",
+      "tagline": "Add Speak AI as a custom connector so Le Chat can search and read your recordings.",
+      "steps": [
+        {
+          "html": "Open <a href=\"https://chat.mistral.ai\" target=\"_blank\" rel=\"noopener\">Le Chat</a> and go to the <strong>Connectors</strong> page"
+        },
+        {
+          "html": "Click <strong>+ Add Connector</strong>, then open the <strong>Custom MCP Connector</strong> tab"
+        },
+        {
+          "html": "Enter a <strong>Connector name</strong> with no spaces or special characters, such as <code>SpeakAI</code>, and paste the URL above into <strong>Server URL</strong>"
+        },
+        {
+          "html": "Click <strong>Connect</strong>. Le Chat detects the sign-in method itself. Sign in to Speak AI and click <strong>Allow</strong>"
+        },
+        {
+          "html": "Optional: in <strong>My Connectors</strong>, open the Speak AI card and use the <strong>Functions</strong> tab to turn on <strong>Always allow</strong> for tools you use often"
+        },
+        {
+          "html": "Only an account administrator can add connectors. On Free, Pro and Student plans that is the account owner"
+        }
+      ]
+    },
+    {
+      "id": "perplexity",
+      "title": "Perplexity",
+      "tagline": "Add Speak AI as a custom connector so Perplexity can search and read your recordings.",
+      "steps": [
+        {
+          "html": "In Perplexity, open <strong>Plugins</strong> in the sidebar, choose <strong>Add custom</strong>, then <strong>Add MCP connector</strong>, and select <strong>Remote</strong>"
+        },
+        {
+          "html": "Enter the name <strong>Speak AI</strong> and paste the URL above into <strong>MCP server URL</strong>"
+        },
+        {
+          "html": "Open <strong>Advanced</strong>. Set <strong>Authentication</strong> to <strong>OAuth</strong> and <strong>Transport</strong> to <strong>Streamable HTTP</strong>, and leave <strong>Network access</strong> on <strong>Public</strong>"
+        },
+        {
+          "html": "Tick the risk checkbox and click <strong>Add</strong>. Then select the Speak AI card, sign in to Speak AI and click <strong>Allow</strong>"
+        },
+        {
+          "html": "Don't see <strong>Add custom</strong>? Your plan may not include custom connectors. On a work account, an administrator must turn on <strong>Allow members to add custom connectors</strong>"
+        }
       ]
     }
   ]
