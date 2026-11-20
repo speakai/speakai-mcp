@@ -610,7 +610,7 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 </details>
 
 <details>
-<summary>Automations (20 tools)</summary>
+<summary>Automations (21 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -625,15 +625,18 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 | `bulk_assign_automation_folders` | Set folder scope for multiple automations |
 | `run_automations` | Manually run automations against media now |
 | `delete_automation` | Permanently delete an automation |
-| `list_automation_apps` | List catalog apps: Speak built-ins plus third-party apps marked connected or not connected (read-only) |
-| `list_automation_triggers` | List catalog trigger types (optionally by app) |
-| `list_automation_actions` | List catalog action/step types (optionally by app) |
+| `list_automation_apps` | List catalog apps: Speak built-ins plus every third-party app, with connection state and what each brings in or sends out (read-only) |
+| `list_automation_triggers` | List catalog triggers, including every trigger of the connected apps (optionally by app) |
+| `list_automation_actions` | List catalog actions, including every action of the connected apps, with search and the confirmation each needs |
+| `suggest_automation_templates` | Suggest ready-made automations for a From app and a To app, including the linked intake and act pair for email and file intake |
 | `build_automation` | Create or update an automation from a friendly spec, without the wire format |
 | `get_automation_run` | Get one run in full: every step, plus which way each branch went |
 | `get_automation_run_stats` | Aggregate run outcome counts over a period |
 | `test_automation` | Run an automation once against one media item (real side effects) |
 | `validate_automation_graph` | Check a step graph for problems without saving it |
 | `describe_automation_graph` | Show a saved automation's steps as an indented branch tree |
+
+Connected apps work both ways in automations. A trigger pulls something into Speak, for example an email attachment that becomes a recording, and an action step pushes results out, for example a task or a CRM note. An action that sends, posts, shares or deletes needs `composio.acknowledged: true` on its step, set only after the user confirms it. If a teammate changes such a step, the automation turns off until its owner confirms the step again. When one of these blocks a save or a turn-on, the write tools return the API's `errorCode` (`CONFIRMATION_REQUIRED`, `ACTION_NOT_ALLOWED`, `CATALOG_UNAVAILABLE`, `OWNER_RECONFIRM_REQUIRED`, `RECONNECT_REQUIRED`, `OUT_OF_CREDITS` or `CLIENT_UPDATE_REQUIRED`) with the next step. App steps are sent with `composio.confirmVersion: 2` and the action catalog is asked for every action, which the API requires before it saves actions outside its curated set. An automation the server switched off carries `pausedReason` and a plain-words `pausedNotice`, and `update_automation` says when an edit turned it off for the owner. Email and file intake is two linked automations: one imports into a folder and the other acts on what is analysed there. `create_automation` can create both at once with `linkedAutomationBody`, and turning one on while its partner is off returns a `warning`.
 
 </details>
 

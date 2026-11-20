@@ -87,6 +87,7 @@ const additions: Record<string, string[]> = {
     "test_automation",
     "validate_automation_graph",
     "describe_automation_graph",
+    "suggest_automation_templates",
   ],
   "embed-other": ["list_embed_sessions", "get_embed_session_summary", "get_embed_session"],
 };

@@ -5,6 +5,7 @@ import { registerSpeakTool, refusalResult } from "./_helpers.js";
 import type { RegisterOptions } from "./index.js";
 import { speakClient, formatAxiosError, formatRefusal, getApiRefusal, type ApiRefusal } from "../client.js";
 import { MediaType } from "@speakai/shared";
+import { formatAutomationError } from "./automation-composio.js";
 import * as fs from "fs";
 import * as path from "path";
 import {
@@ -173,8 +174,8 @@ const STEP_SPEC_DESCRIPTION =
   "- { do: \"call_webhook\", url (required), method?, headers?, body? (string or object template, tokens allowed) }\n" +
   "Legacy: a flat list where steps after a branch carry runWhen: \"true\"|\"false\" is still accepted and folded " +
   "into then/otherwise, but it cannot express nesting or an ending side — prefer then/otherwise. " +
-  "Composio app actions (Google Drive, Slack apps, …) are not supported by this builder yet — use " +
-  "create_automation directly for those.";
+  "Third-party app triggers and actions (pull from or push to a connected app) are not supported by this builder " +
+  "yet — use create_automation directly for those.";
 
 /** Input shape for build_automation after zod validation. */
 interface BuildAutomationArgs {
@@ -185,6 +186,7 @@ interface BuildAutomationArgs {
   description?: string;
   isActive?: boolean;
   orTriggers?: Dict[];
+  linkedAutomationId?: string;
 }
 
 // Typed loosely (z.ZodRawShape) on purpose: the fully-inferred generic for this
@@ -200,6 +202,15 @@ const buildAutomationSchema: z.ZodRawShape = {
     .describe("Update this existing automation instead of creating a new one (full replace)"),
   description: z.string().max(1000).optional().describe("Optional description"),
   isActive: z.boolean().optional().describe("Whether the automation is active (default true)"),
+  linkedAutomationId: z
+    .string()
+    .max(64)
+    .optional()
+    .describe(
+      "Link this automation with another one in the account (an empty string unlinks). For email or file intake, " +
+        "build the folder automation that acts on the intake's folder (on: media_analyzed with that folder) and " +
+        "pass the intake's automationId here. The partner is linked back automatically.",
+    ),
   orTriggers: z
     .array(z.record(z.string(), z.unknown()))
     .max(10)
@@ -233,7 +244,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       openWorldHint: true,
     },
     async (args: unknown) => {
-      const { name, trigger, steps, automationId, description, isActive, orTriggers } =
+      const { name, trigger, steps, automationId, description, isActive, orTriggers, linkedAutomationId } =
         args as BuildAutomationArgs;
       const createdFolders: string[] = [];
       // Payload-path fields used in FILTER steps on the webhook DATA flow —
@@ -570,6 +581,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         };
         if (description) body.description = description;
         if (isActive !== undefined) body.isActive = isActive;
+        if (linkedAutomationId !== undefined) body.linkedAutomationId = linkedAutomationId;
         if (orTriggers?.length) {
           const entries: Dict[] = [];
           for (const spec of orTriggers) entries.push(await buildTrigger(spec as Dict, false));
@@ -617,7 +629,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
           content: [{ type: "text", text: JSON.stringify(response, null, 2) }],
         };
       } catch (err) {
-        let message = formatAxiosError(err);
+        let message = formatAutomationError(err);
         // The server's publish-time ownership check mistakes payload-path
         // filter fields (valid on webhook DATA flows per its own graph
         // validator) for custom-field ids and rejects them with a misleading

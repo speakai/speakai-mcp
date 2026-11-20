@@ -37,6 +37,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "list_automation_apps",
   "list_automation_triggers",
   "list_automation_actions",
+  "suggest_automation_templates",
 
   // clips
   "get_clips",
