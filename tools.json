@@ -679,7 +679,7 @@
         {
           "name": "list_automations",
           "title": "List Automations",
-          "description": "List automation rules in the workspace, with paging and filters.",
+          "description": "List automation rules in the workspace, with paging and filters. An automation the server switched off (an app connection expired, or the owner must confirm a teammate's change) carries pausedReason and a pausedNotice in plain words.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -706,7 +706,7 @@
         {
           "name": "update_automation",
           "title": "Update Automation",
-          "description": "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes. The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. Changing a Composio app-event trigger updates the subscription on that third-party account. A step that sends, posts, shares or deletes keeps its confirmation only while it is unchanged: if you change such a step, show the user the new version and list its stepId in confirmedStepIds once they confirm it. If someone other than the owner changes a confirmed step, the automation is saved but turned off until the owner confirms that step again.",
+          "description": "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes. The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. Changing a Composio app-event trigger updates the subscription on that third-party account. A step that sends, posts, shares or deletes keeps its confirmation only while it is unchanged: if you change such a step, show the user the new version and list its stepId in confirmedStepIds once they confirm it. This check here only compares the step's own app, action, account and arguments; the server's check is wider (it also covers the steps a confirmed step depends on) and is the one that decides. If someone other than the owner changes a confirmed step, the automation is saved but turned off until the owner confirms that step again, and the reply says so in pausedNotice.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
@@ -715,7 +715,7 @@
         {
           "name": "toggle_automation_status",
           "title": "Toggle Automation Status",
-          "description": "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation first if you need to know which way it will flip. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected third-party account. Turning on an automation that is off for a reason is refused until the reason is fixed: an expired app connection must be reconnected, and a teammate's change to a step that sends from the owner's account must be confirmed by the owner.",
+          "description": "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation first if you need to know which way it will flip. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected third-party account. Turning on an automation that is off for a reason is refused until the reason is fixed: an expired app connection must be reconnected (RECONNECT_REQUIRED), a teammate's change to a step that sends from the owner's account must be confirmed by the owner (OWNER_RECONFIRM_REQUIRED), and a trigger that imports files needs credits left on the account (OUT_OF_CREDITS).",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -742,7 +742,7 @@
         {
           "name": "bulk_update_automation_status",
           "title": "Bulk Update Automation Status",
-          "description": "Activate or deactivate multiple automations at once. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the connected third-party account.",
+          "description": "Activate or deactivate multiple automations at once. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the connected third-party account. Automations that cannot be turned on yet come back in failed[] with an errorCode and the next step.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,

@@ -74,9 +74,10 @@ describe("automation tools — third-party app steps", () => {
     expect(mockPost).toHaveBeenCalledWith("/v1/automations/", expect.objectContaining({ steps: [step] }));
   });
 
-  it("adds errorCode and the next step when the API refuses a step without the confirmation", async () => {
+  it("adds the next step to the API's errorCode for a step without the confirmation", async () => {
     mockPost.mockRejectedValue(
       apiError(400, {
+        errorCode: "CONFIRMATION_REQUIRED",
         message:
           'Step "send" (GMAIL_SEND_EMAIL) reaches other people or cannot be undone. Tick the confirmation on the step before saving.',
       }),
@@ -85,26 +86,50 @@ describe("automation tools — third-party app steps", () => {
 
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain("HTTP 400");
-    expect(result.content[0].text).toContain("errorCode: confirmation_required");
+    expect(result.content[0].text).toContain("errorCode: CONFIRMATION_REQUIRED");
     expect(result.content[0].text).toContain("ask them to confirm");
   });
 
-  it("prefers an errorCode the API sends over the message", async () => {
-    mockPost.mockRejectedValue(apiError(400, { errorCode: "action_not_allowed", message: "Something else" }));
+  it("trusts the API's errorCode over the message", async () => {
+    mockPost.mockRejectedValue(
+      apiError(400, { errorCode: "ACTION_NOT_ALLOWED", message: "Tick the confirmation on the step before saving." }),
+    );
     const result = await getToolCallback(server, "create_automation")(body([sendStep({})]));
 
-    expect(result.content[0].text).toContain("errorCode: action_not_allowed");
+    expect(result.content[0].text).toContain("errorCode: ACTION_NOT_ALLOWED");
+    expect(result.content[0].text).not.toContain("CONFIRMATION_REQUIRED");
   });
 
-  it.each([
-    ["This step sends from the automation owner's account, so the owner has to confirm it again before it runs.", "awaiting_owner_confirmation"],
-    ["Reconnect monday.com to turn this automation on.", "needs_reconnect"],
-  ])("explains why turning an automation on was refused: %s", async (message, code) => {
-    mockPut.mockRejectedValue(apiError(422, { message }));
+  it("reads the refusal from the message when an older API sends no errorCode", async () => {
+    mockPost.mockRejectedValue(
+      apiError(400, { message: 'Step "send" (X) reaches other people or cannot be undone. Tick the confirmation on the step before saving.' }),
+    );
+    const result = await getToolCallback(server, "create_automation")(body([sendStep({})]));
+
+    expect(result.content[0].text).toContain("errorCode: CONFIRMATION_REQUIRED");
+  });
+
+  it.each(["OWNER_RECONFIRM_REQUIRED", "RECONNECT_REQUIRED", "OUT_OF_CREDITS"])(
+    "explains why turning an automation on was refused: %s",
+    async (code) => {
+    mockPut.mockRejectedValue(apiError(422, { errorCode: code, message: "Refused." }));
     const result = await getToolCallback(server, "toggle_automation_status")({ automationId: "a1" });
 
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain(`errorCode: ${code}`);
+    expect(result.content[0].text).toContain("Next step:");
+  });
+
+  it("adds the next step to each automation the bulk turn-on could not turn on", async () => {
+    mockPut.mockResolvedValue({
+      data: {
+        status: "success",
+        data: { modifiedCount: 1, total: 2, failed: [{ automationId: "a2", message: "Reconnect Gmail to turn this automation on.", errorCode: "RECONNECT_REQUIRED" }] },
+      },
+    });
+    const result = await getToolCallback(server, "bulk_update_automation_status")({ automationIds: ["a1", "a2"], isActive: true });
+
+    expect(JSON.parse(result.content[0].text).data.failed[0].nextStep).toContain("Reconnect the app");
   });
 
   it("leaves unrelated errors as they were", async () => {
@@ -128,7 +153,7 @@ describe("automation tools — third-party app steps", () => {
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain('"send"');
-      expect(result.content[0].text).toContain("errorCode: confirmation_required");
+      expect(result.content[0].text).toContain("errorCode: CONFIRMATION_REQUIRED");
       expect(mockPut).not.toHaveBeenCalled();
     });
 
@@ -166,6 +191,33 @@ describe("automation tools — third-party app steps", () => {
       expect(result.isError).toBeUndefined();
       expect(mockPut).toHaveBeenCalled();
     });
+  });
+
+  it("tells the user when an update turned the automation off for the owner", async () => {
+    mockGet.mockResolvedValue({
+      data: {
+        status: "success",
+        data: {
+          steps: [],
+          owner: { userId: "u1", name: "Alex Lee" },
+          pausedReason: { code: "awaiting_owner_confirmation", stepId: "send", byUserId: "u2" },
+        },
+      },
+    });
+    const result = await getToolCallback(server, "update_automation")({ automationId: "a1", ...body([sendStep({ to: "x@example.com" })]) });
+
+    const reply = JSON.parse(result.content[0].text);
+    expect(reply.pausedReason.code).toBe("awaiting_owner_confirmation");
+    expect(reply.pausedNotice).toContain("Alex Lee");
+  });
+
+  it("says in words why a listed automation is off", async () => {
+    mockGet.mockResolvedValue({
+      data: { status: "success", data: { totalCount: 1, automationList: [{ automationId: "a1", pausedReason: { code: "needs_reconnect", provider: "gmail" } }] } },
+    });
+    const result = await getToolCallback(server, "list_automations")({});
+
+    expect(JSON.parse(result.content[0].text).data.automationList[0].pausedNotice).toContain("gmail");
   });
 
   it("says in words why a saved automation is off", async () => {

@@ -16,6 +16,7 @@ import {
   formatAutomationError,
   hasConfirmedAppStep,
   staleConfirmations,
+  withFailedNextSteps,
 } from "./automation-composio.js";
 import {
   validateGraph,
@@ -245,6 +246,46 @@ function graphWarnings(steps: unknown, trigger: unknown, runType: unknown): stri
   }).warnings;
 }
 
+/** Each listed automation that the server switched off gets the reason in words. */
+function withPausedNotices(responseData: unknown): unknown {
+  const data = responseData as { data?: { automationList?: unknown } } | undefined;
+  const list = data?.data?.automationList;
+  if (!Array.isArray(list)) return responseData;
+  const annotated = list.map((automation) => {
+    const pausedNotice = describePause(automation?.pausedReason, automation?.owner);
+    return pausedNotice ? { ...automation, pausedNotice } : automation;
+  });
+  return { ...data, data: { ...data!.data, automationList: annotated } };
+}
+
+/** An edit to an app step can leave the automation off for its owner; say so instead of a bare success. */
+async function withPauseAfterUpdate(
+  api: AxiosInstance,
+  responseData: unknown,
+  automationId: string,
+  steps: unknown,
+): Promise<unknown> {
+  if (!responseData || typeof responseData !== "object") return responseData;
+  let pausedReason = (unwrapData(responseData) as { pausedReason?: unknown } | undefined)?.pausedReason;
+  let owner: unknown;
+  const hasAppStep =
+    Array.isArray(steps) && steps.some((step) => (step as { stepType?: unknown })?.stepType === "composio-action");
+  if (pausedReason === undefined && hasAppStep) {
+    try {
+      const saved = unwrapData((await api.get(`/v1/automations/${automationId}`)).data) as
+        | { pausedReason?: unknown; owner?: unknown }
+        | undefined;
+      pausedReason = saved?.pausedReason;
+      owner = saved?.owner;
+    } catch {
+      // The update itself succeeded; a failed follow-up read only loses the notice.
+      return responseData;
+    }
+  }
+  const pausedNotice = describePause(pausedReason, owner);
+  return pausedNotice ? { ...(responseData as object), pausedReason, pausedNotice } : responseData;
+}
+
 /** Refuse an update that would carry an old confirmation onto a changed send, post, share or delete step. */
 async function refuseStaleConfirmations(
   api: AxiosInstance,
@@ -270,7 +311,7 @@ async function refuseStaleConfirmations(
         text:
           `Error: step(s) ${stale.map((id) => `"${id}"`).join(", ")} changed since the user confirmed them, but still ` +
           "carry composio.acknowledged: true from the saved copy.\n\n" +
-          "errorCode: confirmation_required\n" +
+          "errorCode: CONFIRMATION_REQUIRED\n" +
           "Next step: show the user the changed step (app, action and what it will send) and ask them to confirm it. " +
           "Once they agree, call update_automation again with those step ids in confirmedStepIds. " +
           "To save without confirming, remove acknowledged from those steps; the automation owner then confirms them in Speak.",
@@ -364,7 +405,9 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server,
     "list_automations",
-    "List automation rules in the workspace, with paging and filters.",
+    "List automation rules in the workspace, with paging and filters. An automation the server switched off " +
+      "(an app connection expired, or the owner must confirm a teammate's change) carries pausedReason and a " +
+      "pausedNotice in plain words.",
     {
       page: z.number().int().min(0).optional().describe("0-based page index"),
       pageSize: z.number().int().min(1).max(100).optional().describe("Results per page"),
@@ -385,7 +428,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       try {
         const result = await api.get("/v1/automations", { params });
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(withPausedNotices(result.data), null, 2) }],
         };
       } catch (err) {
         return {
@@ -442,7 +485,8 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     async ({ automationId }) => {
       try {
         const result = await api.get(`/v1/automations/${automationId}`);
-        const pausedNotice = describePause((unwrapData(result.data) as { pausedReason?: unknown })?.pausedReason);
+        const saved = unwrapData(result.data) as { pausedReason?: unknown; owner?: unknown } | undefined;
+        const pausedNotice = describePause(saved?.pausedReason, saved?.owner);
         const data =
           pausedNotice && result.data && typeof result.data === "object"
             ? { ...(result.data as object), pausedNotice }
@@ -553,8 +597,11 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "and run actions in connected third-party apps. Changing a Composio app-event trigger updates the " +
       "subscription on that third-party account. A step that sends, posts, shares or deletes keeps its " +
       "confirmation only while it is unchanged: if you change such a step, show the user the new version and list " +
-      "its stepId in confirmedStepIds once they confirm it. If someone other than the owner changes a confirmed " +
-      "step, the automation is saved but turned off until the owner confirms that step again.",
+      "its stepId in confirmedStepIds once they confirm it. This check here only compares the step's own app, " +
+      "action, account and arguments; the server's check is wider (it also covers the steps a confirmed step " +
+      "depends on) and is the one that decides. If someone other than the owner changes a confirmed step, the " +
+      "automation is saved but turned off until the owner confirms that step again, and the reply says so in " +
+      "pausedNotice.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
       ...writeSchema,
@@ -584,7 +631,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         if (staleRefusal) return staleRefusal;
 
         const result = await api.put(`/v1/automations/${automationId}`, body);
-        let data: unknown = result.data;
+        let data: unknown = await withPauseAfterUpdate(api, result.data, automationId, body.steps);
         if (isInboundWebhookTrigger(body.trigger)) {
           data = await withInboundWebhookInfo(api, data, automationId);
         }
@@ -611,8 +658,9 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party " +
       "apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected " +
       "third-party account. Turning on an automation that is off for a reason is refused until the reason is fixed: " +
-      "an expired app connection must be reconnected, and a teammate's change to a step that sends from the " +
-      "owner's account must be confirmed by the owner.",
+      "an expired app connection must be reconnected (RECONNECT_REQUIRED), a teammate's change to a step that " +
+      "sends from the owner's account must be confirmed by the owner (OWNER_RECONFIRM_REQUIRED), and a trigger " +
+      "that imports files needs credits left on the account (OUT_OF_CREDITS).",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
     },
@@ -643,7 +691,8 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     "Activate or deactivate multiple automations at once. An active automation runs on its own every time its " +
       "trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected " +
       "third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the " +
-      "connected third-party account.",
+      "connected third-party account. Automations that cannot be turned on yet come back in failed[] with an " +
+      "errorCode and the next step.",
     {
       automationIds: z
         .array(z.string().min(1))
@@ -663,7 +712,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       try {
         const result = await api.put("/v1/automations/bulk/status", body);
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(withFailedNextSteps(result.data), null, 2) }],
         };
       } catch (err) {
         return {
