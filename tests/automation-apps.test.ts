@@ -247,9 +247,14 @@ describe("automation tools — third-party app steps", () => {
       mockPost
         .mockResolvedValueOnce({ data: { status: "success", data: { automationId: "intake1" } } })
         .mockResolvedValueOnce({ data: { status: "success", data: { automationId: "act1" } } });
-      const result = await getToolCallback(server, "create_automation")({ ...intake, linkedAutomation: act });
+      const result = await getToolCallback(server, "create_automation")({
+        ...intake,
+        linkedAutomation: { ...act, automationId: "", createdAt: "" },
+      });
 
       expect(result.isError).toBeUndefined();
+      expect(mockPost.mock.calls[1][1]).not.toHaveProperty("automationId");
+      expect(mockPost.mock.calls[1][1]).not.toHaveProperty("createdAt");
       expect(mockPost.mock.calls[0][1]).not.toHaveProperty("linkedAutomation");
       expect(mockPost.mock.calls[1][1]).toMatchObject({ name: act.name, linkedAutomationId: "intake1" });
       const reply = JSON.parse(result.content[0].text);

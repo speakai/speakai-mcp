@@ -578,7 +578,9 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     },
     async ({ linkedAutomation, ...body }) => {
       try {
-        const linked = linkedAutomation as WriteBody | undefined;
+        // A template draft carries empty automationId and createdAt, which the API rejects as unknown fields.
+        const { automationId: _draftId, createdAt: _draftCreated, ...linkedBody } = (linkedAutomation ?? {}) as WriteBody;
+        const linked = linkedAutomation ? (linkedBody as WriteBody) : undefined;
         for (const candidate of linked ? [body, linked] : [body]) {
           const graphRefusal = refuseInvalidGraph(candidate.steps, candidate.trigger, candidate.runType);
           if (graphRefusal) return graphRefusal;
