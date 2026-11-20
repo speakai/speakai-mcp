@@ -173,8 +173,8 @@ const STEP_SPEC_DESCRIPTION =
   "- { do: \"call_webhook\", url (required), method?, headers?, body? (string or object template, tokens allowed) }\n" +
   "Legacy: a flat list where steps after a branch carry runWhen: \"true\"|\"false\" is still accepted and folded " +
   "into then/otherwise, but it cannot express nesting or an ending side — prefer then/otherwise. " +
-  "Composio app actions (Google Drive, Slack apps, …) are not supported by this builder yet — use " +
-  "create_automation directly for those.";
+  "Third-party app triggers and actions (pull from or push to a connected app) are not supported by this builder " +
+  "yet — use create_automation directly for those.";
 
 /** Input shape for build_automation after zod validation. */
 interface BuildAutomationArgs {

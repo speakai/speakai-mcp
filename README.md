@@ -593,15 +593,17 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 | `bulk_assign_automation_folders` | Set folder scope for multiple automations |
 | `run_automations` | Manually run automations against media now |
 | `delete_automation` | Permanently delete an automation |
-| `list_automation_apps` | List catalog apps: Speak built-ins plus third-party apps marked connected or not connected (read-only) |
-| `list_automation_triggers` | List catalog trigger types (optionally by app) |
-| `list_automation_actions` | List catalog action/step types (optionally by app) |
+| `list_automation_apps` | List catalog apps: Speak built-ins plus every third-party app, with connection state and what each brings in or sends out (read-only) |
+| `list_automation_triggers` | List catalog triggers, including every trigger of the connected apps (optionally by app) |
+| `list_automation_actions` | List catalog actions, including every action of the connected apps, with search and the confirmation each needs |
 | `build_automation` | Create or update an automation from a friendly spec, without the wire format |
 | `get_automation_run` | Get one run in full: every step, plus which way each branch went |
 | `get_automation_run_stats` | Aggregate run outcome counts over a period |
 | `test_automation` | Run an automation once against one media item (real side effects) |
 | `validate_automation_graph` | Check a step graph for problems without saving it |
 | `describe_automation_graph` | Show a saved automation's steps as an indented branch tree |
+
+Connected apps work both ways in automations. A trigger pulls something into Speak, for example an email attachment that becomes a recording, and an action step pushes results out, for example a task or a CRM note. An action that sends, posts, shares or deletes needs `composio.acknowledged: true` on its step, set only after the user confirms it. If a teammate changes such a step, the automation turns off until its owner confirms the step again. The write tools return an `errorCode` (`confirmation_required`, `action_not_allowed`, `app_check_unavailable`, `awaiting_owner_confirmation` or `needs_reconnect`) with the next step when one of these blocks a save or a turn-on.
 
 </details>
 

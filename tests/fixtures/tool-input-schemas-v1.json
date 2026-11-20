@@ -3318,6 +3318,16 @@
           "object"
         ],
         "values": {}
+      },
+      "confirmedStepIds": {
+        "type": [
+          "array"
+        ],
+        "items": {
+          "type": [
+            "string"
+          ]
+        }
       }
     },
     "required": [
@@ -3562,7 +3572,17 @@
     "type": [
       "object"
     ],
-    "properties": {},
+    "properties": {
+      "for": {
+        "type": [
+          "string"
+        ],
+        "enum": [
+          "\"action\"",
+          "\"trigger\""
+        ]
+      }
+    },
     "required": []
   },
   "list_automation_triggers": {
@@ -3584,6 +3604,11 @@
     ],
     "properties": {
       "app": {
+        "type": [
+          "string"
+        ]
+      },
+      "q": {
         "type": [
           "string"
         ]

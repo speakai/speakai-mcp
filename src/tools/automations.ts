@@ -12,6 +12,12 @@ import {
 } from "./inbound-webhook-utils.js";
 import { MULTIMODAL_DISABLED_MESSAGE, multimodalCapability } from "../capabilities.js";
 import {
+  describePause,
+  formatAutomationError,
+  hasConfirmedAppStep,
+  staleConfirmations,
+} from "./automation-composio.js";
+import {
   validateGraph,
   describeGraph,
   type WireStep,
@@ -29,6 +35,20 @@ const TOKEN_SYNTAX_NOTE =
   "A positional {{step.<index>.<path>}} form also exists but is REFUSED on a branched automation: the index " +
   "counts stored order ([condition, true leg, false leg, merge]), not run order, and a step on the branch that " +
   "was not taken produces nothing — the token would resolve to an empty string inside whatever the step sends.";
+
+// Push: a step that sends Speak's results to a connected app. The app list is not fixed here; it comes from the catalog.
+const COMPOSIO_STEP_NOTE =
+  "- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate?, acknowledged? } — runs one " +
+  "action in a connected third-party app (push: send Speak's results out, e.g. create a task, add a CRM note, post " +
+  "a message). Any app and action that list_automation_actions returns for the account can be used: app is the " +
+  "app slug, action is the action slug, argsTemplate fills the action's configSchema (tokens allowed). " +
+  "connectedAccountId picks one of the app's connected accounts when there are several. " +
+  "Actions marked requiresConfirmation (riskKind send, post, share or delete) reach other people or cannot be " +
+  "undone: the API refuses to save them unless the step carries acknowledged: true, set by the automation " +
+  "owner. Never set acknowledged on your own: describe the app, the action and what it will send to the user, " +
+  "and set it only after they confirm. If a teammate later changes a confirmed step, the confirmation is cleared " +
+  "and the automation turns off until the owner confirms again. toolkitVersion and confirmation are set by the " +
+  "server and are ignored if sent. Third-party app steps may be unavailable on some accounts.\n";
 
 const STEPS_DESCRIPTION =
   "Ordered array of graph steps (1-20). Each step is an object: " +
@@ -73,7 +93,7 @@ const STEPS_DESCRIPTION =
   "- notify -> notify: { channel: \"in_app\"|\"email\"|\"slack\", target?, message (required, tokens allowed) }\n" +
   "- outbound-webhook -> outboundWebhook: { url (required, tokens allowed), method? (\"GET\"|\"POST\"|\"PUT\"|\"PATCH\"|\"DELETE\", default \"POST\"), " +
   "headers?: { <name>: <value> }, bodyTemplate?: string | object (tokens allowed) }\n" +
-  "- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)\n" +
+  COMPOSIO_STEP_NOTE +
   "Filter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers " +
   "or a custom field id; INSIGHT (straight after a magic-prompt step) -> answer only, so put a branch on a media " +
   "field BEFORE the AI step. Neither a filter nor a condition can read the inbound webhook payload — they see the " +
@@ -82,6 +102,19 @@ const STEPS_DESCRIPTION =
   "Ops by field type — text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists " +
   "(\"exists\" takes no value; gt/lt values are numbers).\n" +
   TOKEN_SYNTAX_NOTE;
+
+// Pull: a connected app's event brings something into Speak.
+const COMPOSIO_TRIGGER_NOTE =
+  "- Third-party app event (pull: something in a connected app starts the automation and can bring a file into " +
+  "Speak): { type: \"composio\", provider: \"composio\", app, triggerSlug, connectedAccountId, triggerConfig? }. " +
+  "Use any app and trigger slug that list_automation_triggers returns; triggerConfig fills that trigger's " +
+  "configSchema. A trigger marked fileBearing hands a file to the steps: start the steps with a speak-upload step " +
+  "using sourceMode \"file\" to import it as a recording. New-email triggers (Gmail, Outlook) need at least one " +
+  "filter (from, subjectContains, or the advanced Gmail query); audio and video attachments are imported as " +
+  "recordings (importAttachments, default true) and the email body is saved as a text note only when " +
+  "saveBodyAsNote is true. The app is watched only while the automation is on. Imports use credits like uploads, " +
+  "and one automation imports at most 50 files an hour; extra items wait for the next hour. If the connection " +
+  "expires the automation turns off, and items that arrive while it is off are not imported.\n";
 
 const TRIGGER_DESCRIPTION =
   "Trigger object (the automation's root). Always include triggerSlug. Supported shapes:\n" +
@@ -93,8 +126,7 @@ const TRIGGER_DESCRIPTION =
   "- Custom field updated: { type: \"folders\", triggerSlug: \"field_updated\", values: string[] (watched custom field ids, min 1), " +
   "fieldValueMatches?: [{ fieldId, values: string[] }] (fire only when the field changes TO one of these values; empty values = any change), " +
   "fieldMatchLogic?: \"AND\"|\"OR\" (how multiple fieldValueMatches combine, default \"OR\") }\n" +
-  "- Composio app event: { type: \"composio\", provider: \"composio\", app, triggerSlug, connectedAccountId } " +
-  "(requires a connected account; may be behind a server flag)\n" +
+  COMPOSIO_TRIGGER_NOTE +
   "Notes: \"tags\"/\"keywords\" trigger types are rejected for graph automations. The server stores inbound-webhook " +
   "triggers with type \"webhook\" internally — send type \"folders\" plus the slug as shown above.";
 
@@ -211,6 +243,41 @@ function graphWarnings(steps: unknown, trigger: unknown, runType: unknown): stri
     triggerSlug: typeof triggerSlug === "string" ? triggerSlug : undefined,
     runType: typeof runType === "string" ? runType : undefined,
   }).warnings;
+}
+
+/** Refuse an update that would carry an old confirmation onto a changed send, post, share or delete step. */
+async function refuseStaleConfirmations(
+  api: AxiosInstance,
+  automationId: string,
+  steps: unknown,
+  confirmedStepIds: readonly string[] | undefined,
+): Promise<{ content: { type: "text"; text: string }[]; isError: true } | null> {
+  if (!hasConfirmedAppStep(steps)) return null;
+  let savedSteps: unknown;
+  try {
+    const saved = await api.get(`/v1/automations/${automationId}`);
+    savedSteps = (unwrapData(saved.data) as { steps?: unknown } | undefined)?.steps;
+  } catch {
+    // The save itself checks the confirmation again; a failed read here must not block it.
+    return null;
+  }
+  const stale = staleConfirmations(steps, savedSteps, confirmedStepIds);
+  if (!stale.length) return null;
+  return {
+    content: [
+      {
+        type: "text" as const,
+        text:
+          `Error: step(s) ${stale.map((id) => `"${id}"`).join(", ")} changed since the user confirmed them, but still ` +
+          "carry composio.acknowledged: true from the saved copy.\n\n" +
+          "errorCode: confirmation_required\n" +
+          "Next step: show the user the changed step (app, action and what it will send) and ask them to confirm it. " +
+          "Once they agree, call update_automation again with those step ids in confirmedStepIds. " +
+          "To save without confirming, remove acknowledged from those steps; the automation owner then confirms them in Speak.",
+      },
+    ],
+    isError: true as const,
+  };
 }
 
 /**
@@ -358,7 +425,10 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server,
     "get_automation",
-    "Get detailed information about a specific automation rule, including its trigger and step graph.",
+    "Get detailed information about a specific automation rule, including its trigger and step graph. A " +
+      "third-party app step shows composio.acknowledged: true when its send, post, share or delete action is " +
+      "confirmed. When the automation is off because a connection expired or the owner must confirm a teammate's " +
+      "change, the reply says so in pausedNotice.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
     },
@@ -372,8 +442,13 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     async ({ automationId }) => {
       try {
         const result = await api.get(`/v1/automations/${automationId}`);
+        const pausedNotice = describePause((unwrapData(result.data) as { pausedReason?: unknown })?.pausedReason);
+        const data =
+          pausedNotice && result.data && typeof result.data === "object"
+            ? { ...(result.data as object), pausedNotice }
+            : result.data;
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
         };
       } catch (err) {
         return {
@@ -424,10 +499,15 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any " +
       "address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into " +
       "Speak, run actions in connected third-party apps through Composio. An inbound-webhook " +
-      "trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio " +
-      "app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types " +
-      "come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send " +
-      "a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
+      "trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). Connected apps " +
+      "work both ways: an app trigger pulls something into Speak (for example an email attachment or a new file " +
+      "becomes a recording), and an app action step pushes results out (for example a task, a CRM note or a " +
+      "message). A Composio app-event trigger subscribes to events on the connected third-party account while the " +
+      "automation is on. Valid apps, triggers and actions come from list_automation_apps, list_automation_triggers " +
+      "and list_automation_actions. An action that sends, posts, shares or deletes needs composio.acknowledged: " +
+      "true on its step, which you set only after the user confirms that exact action. To map inbound-webhook " +
+      "payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then " +
+      "call update_automation.",
     writeSchema,
     {
       title: "Create Automation",
@@ -458,7 +538,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         };
       } catch (err) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAutomationError(err)}` }],
           isError: true,
         };
       }
@@ -471,10 +551,21 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "so fetch the current values with get_automation first and pass them all back with your changes. " +
       "The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, " +
       "and run actions in connected third-party apps. Changing a Composio app-event trigger updates the " +
-      "subscription on that third-party account.",
+      "subscription on that third-party account. A step that sends, posts, shares or deletes keeps its " +
+      "confirmation only while it is unchanged: if you change such a step, show the user the new version and list " +
+      "its stepId in confirmedStepIds once they confirm it. If someone other than the owner changes a confirmed " +
+      "step, the automation is saved but turned off until the owner confirms that step again.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
       ...writeSchema,
+      confirmedStepIds: z
+        .array(z.string().min(1))
+        .max(20)
+        .optional()
+        .describe(
+          "Step ids of changed send, post, share or delete steps that the user has just confirmed in their new form. " +
+            "A changed step that still carries composio.acknowledged: true from get_automation is refused unless it is listed here.",
+        ),
     },
     {
       title: "Update Automation",
@@ -483,12 +574,14 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       idempotentHint: true,
       openWorldHint: true,
     },
-    async ({ automationId, ...body }) => {
+    async ({ automationId, confirmedStepIds, ...body }) => {
       try {
         const graphRefusal = refuseInvalidGraph(body.steps, body.trigger, body.runType);
         if (graphRefusal) return graphRefusal;
         const refusal = await refuseUngatedAnalysis(api, body.steps);
         if (refusal) return refusal;
+        const staleRefusal = await refuseStaleConfirmations(api, automationId, body.steps, confirmedStepIds);
+        if (staleRefusal) return staleRefusal;
 
         const result = await api.put(`/v1/automations/${automationId}`, body);
         let data: unknown = result.data;
@@ -504,7 +597,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         };
       } catch (err) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAutomationError(err)}` }],
           isError: true,
         };
       }
@@ -517,7 +610,9 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "first if you need to know which way it will flip. An active automation runs on its own every time its trigger " +
       "fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party " +
       "apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected " +
-      "third-party account.",
+      "third-party account. Turning on an automation that is off for a reason is refused until the reason is fixed: " +
+      "an expired app connection must be reconnected, and a teammate's change to a step that sends from the " +
+      "owner's account must be confirmed by the owner.",
     {
       automationId: z.string().min(1).describe("Unique identifier of the automation"),
     },
@@ -536,7 +631,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         };
       } catch (err) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAutomationError(err)}` }],
           isError: true,
         };
       }
@@ -572,7 +667,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         };
       } catch (err) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: `Error: ${formatAutomationError(err)}` }],
           isError: true,
         };
       }
@@ -905,11 +1000,20 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server,
     "list_automation_apps",
-    "List the apps in Speak's automation catalog: Speak's built-in apps plus, when enabled, third-party apps " +
-      "available through Composio, each marked connected or not_connected for this user. Read-only: the list comes " +
-      "from Speak's own catalog and the user's saved connections, and no third-party service is called. Use the app " +
-      "slugs with list_automation_triggers and list_automation_actions.",
-    {},
+    "List the apps in Speak's automation catalog: Speak's built-in apps plus, when enabled, every third-party app " +
+      "available through Composio, with its connection state and connected accounts for this user. Each app says " +
+      "what it brings in (pull: its triggers start an automation and can import files) and what it sends out " +
+      "(push: its actions take Speak's results). Read-only: the list comes from Speak's own catalog and the user's " +
+      "saved connections. Use the app slugs with list_automation_triggers and list_automation_actions. An app that " +
+      "is not connected must be connected in the Speak web app first.",
+    {
+      for: z
+        .enum(["trigger", "action"])
+        .optional()
+        .describe(
+          "\"trigger\" lists only apps that can start an automation (pull), \"action\" only apps that can take its results (push). Omit for all apps.",
+        ),
+    },
     {
       title: "List Automation Apps",
       readOnlyHint: true,
@@ -917,9 +1021,9 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       idempotentHint: true,
       openWorldHint: false,
     },
-    async () => {
+    async (params) => {
       try {
-        const result = await api.get("/v1/automations/catalog/apps");
+        const result = await api.get("/v1/automations/catalog/apps", { params });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };
@@ -934,9 +1038,12 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
   registerSpeakTool(server,
     "list_automation_triggers",
-    "List the trigger types available in the automation catalog. Optionally filter by app.",
+    "List the triggers available in the automation catalog, optionally for one app: Speak's own triggers plus " +
+      "every trigger of the connected third-party apps (pull). Each trigger has a slug, a configSchema for its " +
+      "triggerConfig, outputPaths that later steps can read as {{trigger.payload.<path>}} tokens, and fileBearing " +
+      "when it brings a file to import as a recording. Read-only: listing a trigger does not subscribe to it.",
     {
-      app: z.string().min(1).max(100).optional().describe("Filter triggers to a specific app slug"),
+      app: z.string().min(1).max(100).optional().describe("App slug from list_automation_apps"),
     },
     {
       title: "List Automation Triggers",
@@ -963,10 +1070,19 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
   registerSpeakTool(server,
     "list_automation_actions",
     "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the " +
-      "fields each filter or condition step can test. Read-only: served from Speak's own catalog and the user's saved " +
-      "connections, with no third-party calls. Listing an action does not run it.",
+      "fields each filter or condition step can test. For a third-party app this includes every action it offers " +
+      "(push), each with a configSchema for the step's argsTemplate, a group, and requiresConfirmation with a " +
+      "riskKind (send, post, share or delete) when the step needs composio.acknowledged: true before it can be " +
+      "saved. Deprecated actions are marked; pick a replacement. Read-only: listing an action does not run it.",
     {
-      app: z.string().min(1).max(100).optional().describe("Filter actions to a specific app slug"),
+      app: z.string().min(1).max(100).optional().describe("App slug from list_automation_apps"),
+      q: z
+        .string()
+        .max(100)
+        .optional()
+        .describe(
+          "Search action names, descriptions and groups, e.g. \"create task\". Without app it searches every connected app.",
+        ),
     },
     {
       title: "List Automation Actions",
