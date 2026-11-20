@@ -9158,6 +9158,135 @@ var init_capabilities = __esm({
   }
 });
 
+// src/tools/automation-composio.ts
+function classifyAutomationRefusal(errorCode, message) {
+  if (typeof errorCode === "string" && errorCode) {
+    const known = KNOWN_REFUSALS.find((refusal) => refusal.code === errorCode);
+    return { code: errorCode, nextStep: known?.nextStep };
+  }
+  const text = typeof message === "string" ? message.trim() : "";
+  const byText = text ? KNOWN_REFUSALS.find((refusal) => refusal.message?.test(text)) : void 0;
+  return byText ? { code: byText.code, nextStep: byText.nextStep } : void 0;
+}
+function formatAutomationError(error) {
+  const base = formatAxiosError(error);
+  if (!import_axios3.default.isAxiosError(error)) return base;
+  const body = error.response?.data;
+  const refusal = body && typeof body === "object" ? classifyAutomationRefusal(body.errorCode, body.message) : void 0;
+  if (!refusal) return base;
+  return `${base}
+
+errorCode: ${refusal.code}` + (refusal.nextStep ? `
+Next step: ${refusal.nextStep}` : "");
+}
+function withFailedNextSteps(responseData) {
+  const data = responseData;
+  const failed = data?.data?.failed;
+  if (!Array.isArray(failed)) return responseData;
+  const annotated = failed.map((entry) => {
+    const refusal = classifyAutomationRefusal(entry?.errorCode, entry?.message);
+    return refusal?.nextStep ? { ...entry, nextStep: refusal.nextStep } : entry;
+  });
+  return { ...data, data: { ...data.data, failed: annotated } };
+}
+function isConfirmedAppStep(step) {
+  const s = step;
+  return !!s && s.stepType === COMPOSIO_STEP_TYPE && typeof s.stepId === "string" && s.composio?.acknowledged === true;
+}
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value).filter(([, v]) => v !== void 0).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0);
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableJson(v)}`).join(",")}}`;
+  }
+  return JSON.stringify(value ?? null);
+}
+function confirmedPart(composio) {
+  return stableJson({
+    app: composio?.app ?? "",
+    action: composio?.action ?? "",
+    connectedAccountId: composio?.connectedAccountId ?? "",
+    argsTemplate: composio?.argsTemplate ?? {}
+  });
+}
+function staleConfirmations(requestedSteps, savedSteps, confirmedStepIds = []) {
+  if (!Array.isArray(requestedSteps) || !Array.isArray(savedSteps)) return [];
+  const savedById = /* @__PURE__ */ new Map();
+  for (const step of savedSteps) {
+    const s = step;
+    if (typeof s?.stepId === "string") savedById.set(s.stepId, s);
+  }
+  const reconfirmed = new Set(confirmedStepIds);
+  return requestedSteps.filter(isConfirmedAppStep).filter((step) => {
+    const saved = savedById.get(step.stepId);
+    if (!saved || saved.stepType !== COMPOSIO_STEP_TYPE) return false;
+    return confirmedPart(saved.composio) !== confirmedPart(step.composio) && !reconfirmed.has(step.stepId);
+  }).map((step) => step.stepId);
+}
+function hasConfirmedAppStep(steps) {
+  return Array.isArray(steps) && steps.some(isConfirmedAppStep);
+}
+function describePause(pausedReason, owner, appName) {
+  const reason = pausedReason;
+  if (!reason || typeof reason.code !== "string") return void 0;
+  if (reason.code === "awaiting_owner_confirmation") {
+    const step = typeof reason.stepId === "string" ? ` (step "${reason.stepId}")` : "";
+    const ownerName = owner?.name;
+    const who = typeof ownerName === "string" && ownerName ? `the owner, ${ownerName},` : "the owner";
+    return `Off until ${who} confirms again: a teammate changed a step that sends from the owner's account${step}. Only the owner can confirm it and turn the automation back on.`;
+  }
+  if (reason.code === "needs_reconnect") {
+    const app = appName ?? "the app";
+    return `Off because the connection to ${app} expired or was removed. Reconnecting it on the Integrations page turns the automation back on. Items that arrived while it was off are not imported.`;
+  }
+  return void 0;
+}
+var import_axios3, KNOWN_REFUSALS, COMPOSIO_STEP_TYPE;
+var init_automation_composio = __esm({
+  "src/tools/automation-composio.ts"() {
+    "use strict";
+    import_axios3 = __toESM(require("axios"));
+    init_client();
+    KNOWN_REFUSALS = [
+      {
+        code: "CONFIRMATION_REQUIRED",
+        message: /tick the confirmation on the step/i,
+        nextStep: "This step sends, posts, shares or deletes something outside Speak. Tell the user which app, which action and what it will send, and ask them to confirm. Only after they agree, set composio.acknowledged: true on that step and save again. Only the automation owner's confirmation counts."
+      },
+      {
+        code: "ACTION_NOT_ALLOWED",
+        message: /is not an action speak automations can run/i,
+        nextStep: "Pick the action from list_automation_actions for that app, and use the app slug the action belongs to."
+      },
+      {
+        code: "CATALOG_UNAVAILABLE",
+        message: /could not check this action with the app right now/i,
+        nextStep: "The app could not be reached to check the action. Nothing was saved; try again in a minute."
+      },
+      {
+        code: "OWNER_RECONFIRM_REQUIRED",
+        message: /owner has to confirm it again/i,
+        nextStep: "A teammate changed a step that sends from the owner's account, so the automation is off until the owner confirms that step again. The owner saves the automation with composio.acknowledged: true on that step, then turns it on."
+      },
+      {
+        code: "RECONNECT_REQUIRED",
+        message: /^reconnect .+ to turn this automation on/i,
+        nextStep: "The app's connection expired or was removed. Reconnect the app on Speak's Integrations page; that turns the automation back on. Items that arrived while it was off are not imported."
+      },
+      {
+        code: "CLIENT_UPDATE_REQUIRED",
+        message: /needs the latest speak web app to add/i,
+        nextStep: "The API saves this action only from a client that asks for the confirmation on every action. Update the Speak AI MCP server to the latest version, then save again."
+      },
+      {
+        code: "OUT_OF_CREDITS",
+        nextStep: "The trigger imports files or notes and the account has no credits left. Credits are checked when an automation is created switched on, turned on, or saved with changed triggers while it stays on. Nothing was saved or turned on; to keep the draft, save it with isActive: false. Ask the user to add credits or upgrade in the Speak web app, then turn it on."
+      }
+    ];
+    COMPOSIO_STEP_TYPE = "composio-action";
+  }
+});
+
 // src/tools/automation-graph.ts
 function containsCondition(nodes) {
   return nodes.some(
@@ -9756,6 +9885,84 @@ function graphWarnings(steps, trigger, runType) {
     runType: typeof runType === "string" ? runType : void 0
   }).warnings;
 }
+function withContractMarker(body) {
+  if (!Array.isArray(body.steps)) return body;
+  const steps = body.steps.map((step) => {
+    const s = step;
+    return s?.stepType === "composio-action" && s.composio ? { ...s, composio: { ...s.composio, confirmVersion: 2 } } : step;
+  });
+  return { ...body, steps };
+}
+async function createOne(api, body) {
+  const result = await api.post("/v1/automations/", withContractMarker(body));
+  let data = result.data;
+  if (isInboundWebhookTrigger(body.trigger)) {
+    data = await withInboundWebhookInfo(api, data, unwrapData(result.data)?.automationId);
+  }
+  const warnings = graphWarnings(body.steps, body.trigger, body.runType);
+  return warnings.length && data && typeof data === "object" ? { ...data, warnings } : data;
+}
+async function reconnectAppNames(api, reasons) {
+  const names = /* @__PURE__ */ new Map();
+  const needed = reasons.some((reason) => reason?.code === "needs_reconnect");
+  if (!needed) return names;
+  try {
+    const result = await api.get("/v1/automations/catalog/apps");
+    const apps = unwrapData(result.data)?.apps;
+    for (const app of apps ?? []) {
+      if (typeof app.slug === "string" && typeof app.name === "string") names.set(app.slug, app.name);
+    }
+  } catch {
+  }
+  return names;
+}
+function appNameFor(pausedReason, names) {
+  const provider = pausedReason?.provider;
+  return typeof provider === "string" ? names.get(provider) : void 0;
+}
+async function withPausedNotices(api, responseData) {
+  const data = responseData;
+  const list = data?.data?.automationList;
+  if (!Array.isArray(list)) return responseData;
+  const names = await reconnectAppNames(api, list.map((automation) => automation?.pausedReason));
+  const annotated = list.map((automation) => {
+    const reason = automation?.pausedReason;
+    const pausedNotice = describePause(reason, automation?.owner, appNameFor(reason, names));
+    return pausedNotice ? { ...automation, pausedNotice } : automation;
+  });
+  return { ...data, data: { ...data.data, automationList: annotated } };
+}
+async function withPauseAfterUpdate(api, responseData) {
+  if (!responseData || typeof responseData !== "object") return responseData;
+  const pausedReason = unwrapData(responseData)?.pausedReason;
+  const names = await reconnectAppNames(api, [pausedReason]);
+  const pausedNotice = describePause(pausedReason, void 0, appNameFor(pausedReason, names));
+  return pausedNotice ? { ...responseData, pausedNotice } : responseData;
+}
+async function refuseStaleConfirmations(api, automationId, steps, confirmedStepIds) {
+  if (!hasConfirmedAppStep(steps)) return null;
+  let savedSteps;
+  try {
+    const saved = await api.get(`/v1/automations/${automationId}`);
+    savedSteps = unwrapData(saved.data)?.steps;
+  } catch {
+    return null;
+  }
+  const stale = staleConfirmations(steps, savedSteps, confirmedStepIds);
+  if (!stale.length) return null;
+  return {
+    content: [
+      {
+        type: "text",
+        text: `Error: step(s) ${stale.map((id) => `"${id}"`).join(", ")} changed since the user confirmed them, but still carry composio.acknowledged: true from the saved copy.
+
+errorCode: CONFIRMATION_REQUIRED
+Next step: show the user the changed step (app, action and what it will send) and ask them to confirm it. Once they agree, call update_automation again with those step ids in confirmedStepIds. To save without confirming, remove acknowledged from those steps; the automation owner then confirms them in Speak.`
+      }
+    ],
+    isError: true
+  };
+}
 function summariseBranching(data) {
   const run = data;
   const steps = Array.isArray(run?.steps) ? run.steps : [];
@@ -9796,7 +10003,7 @@ function register12(server, client, options = {}) {
   registerSpeakTool(
     server,
     "list_automations",
-    "List automation rules in the workspace, with paging and filters.",
+    "List automation rules in the workspace, with paging and filters. An automation the server switched off (an app connection expired, or the owner must confirm a teammate's change) carries pausedReason and a pausedNotice in plain words. Linked automations carry linkedAutomation ({ automationId, name, isActive }).",
     {
       page: import_zod14.z.number().int().min(0).optional().describe("0-based page index"),
       pageSize: import_zod14.z.number().int().min(1).max(100).optional().describe("Results per page"),
@@ -9817,7 +10024,7 @@ function register12(server, client, options = {}) {
       try {
         const result = await api.get("/v1/automations", { params });
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(await withPausedNotices(api, result.data), null, 2) }]
         };
       } catch (err2) {
         return {
@@ -9856,7 +10063,7 @@ function register12(server, client, options = {}) {
   registerSpeakTool(
     server,
     "get_automation",
-    "Get detailed information about a specific automation rule, including its trigger and step graph.",
+    "Get detailed information about a specific automation rule, including its trigger and step graph. A third-party app step shows composio.acknowledged: true when its send, post, share or delete action is confirmed. When the automation is off because a connection expired or the owner must confirm a teammate's change, the reply says so in pausedNotice. A linked automation shows linkedAutomationId and linkedAutomation ({ automationId, name, isActive }).",
     {
       automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation")
     },
@@ -9870,8 +10077,12 @@ function register12(server, client, options = {}) {
     async ({ automationId }) => {
       try {
         const result = await api.get(`/v1/automations/${automationId}`);
+        const saved = unwrapData(result.data);
+        const names = await reconnectAppNames(api, [saved?.pausedReason]);
+        const pausedNotice = describePause(saved?.pausedReason, saved?.owner, appNameFor(saved?.pausedReason, names));
+        const data = pausedNotice && result.data && typeof result.data === "object" ? { ...result.data, pausedNotice } : result.data;
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
         };
       } catch (err2) {
         return {
@@ -9915,8 +10126,13 @@ function register12(server, client, options = {}) {
   registerSpeakTool(
     server,
     "create_automation",
-    "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). A Composio app-event trigger subscribes to events on the connected third-party account. Valid trigger and step types come from list_automation_triggers and list_automation_actions. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
-    writeSchema,
+    "Create an automation: a trigger plus ordered steps (V2 graph model). The automation is active by default and then runs on its own every time its trigger fires. Depending on its steps, each run can send email to any address, post to the workspace's Slack, send HTTP requests to any webhook URL, fetch a file from a URL into Speak, run actions in connected third-party apps through Composio. An inbound-webhook trigger creates a public URL that accepts payloads (returned as inboundWebhook.inboundUrl). Connected apps work both ways: an app trigger pulls something into Speak (for example an email attachment or a new file becomes a recording), and an app action step pushes results out (for example a task, a CRM note or a message). A Composio app-event trigger subscribes to events on the connected third-party account while the automation is on. Valid apps, triggers and actions come from list_automation_apps, list_automation_triggers and list_automation_actions. An action that sends, posts, shares or deletes needs composio.acknowledged: true on its step, which you set only after the user confirms that exact action. To map inbound-webhook payload fields, send a test payload to the URL with ?test=1, read the tokens with get_inbound_webhook, then call update_automation.",
+    {
+      ...writeSchema,
+      linkedAutomationBody: import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown()).optional().describe(
+        "A second automation to create right after this one and link to it, with the same fields as this tool (name, trigger, steps, ...). Use it for email or file intake: this automation is the intake, and linkedAutomationBody is the act automation from suggest_automation_templates' linkedDraft. Both must use the same folder: the intake's speak-upload folderId and the linked automation's trigger.folderIds."
+      )
+    },
     {
       title: "Create Automation",
       readOnlyHint: false,
@@ -9924,28 +10140,53 @@ function register12(server, client, options = {}) {
       idempotentHint: false,
       openWorldHint: true
     },
-    async (body) => {
+    async ({ linkedAutomationBody, ...body }) => {
       try {
-        const graphRefusal = refuseInvalidGraph(body.steps, body.trigger, body.runType);
-        if (graphRefusal) return graphRefusal;
-        const refusal = await refuseUngatedAnalysis(api, body.steps);
-        if (refusal) return refusal;
-        const result = await api.post("/v1/automations/", body);
-        let data = result.data;
-        if (isInboundWebhookTrigger(body.trigger)) {
-          const automationId = unwrapData(result.data)?.automationId;
-          data = await withInboundWebhookInfo(api, data, automationId);
+        const { automationId: _draftId, createdAt: _draftCreated, ...linkedBody } = linkedAutomationBody ?? {};
+        const linked = linkedAutomationBody ? linkedBody : void 0;
+        for (const candidate of linked ? [body, linked] : [body]) {
+          const graphRefusal = refuseInvalidGraph(candidate.steps, candidate.trigger, candidate.runType);
+          if (graphRefusal) return graphRefusal;
+          const refusal = await refuseUngatedAnalysis(api, candidate.steps);
+          if (refusal) return refusal;
         }
-        const warnings = graphWarnings(body.steps, body.trigger, body.runType);
-        if (warnings.length && data && typeof data === "object") {
-          data = { ...data, warnings };
+        const first = await createOne(api, body);
+        if (!linked) return { content: [{ type: "text", text: JSON.stringify(first, null, 2) }] };
+        const firstId = unwrapData(first)?.automationId;
+        if (!firstId) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: the first automation was saved but the reply carried no automationId, so the linked one was not created. Find it with list_automations and create the linked one with its linkedAutomationId.
+
+${JSON.stringify(first, null, 2)}`
+              }
+            ],
+            isError: true
+          };
         }
-        return {
-          content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
-        };
+        try {
+          const second = await createOne(api, { ...linked, linkedAutomationId: firstId });
+          return {
+            content: [{ type: "text", text: JSON.stringify({ automation: first, partnerAutomation: second }, null, 2) }]
+          };
+        } catch (err2) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error: the first automation was created (automationId ${firstId}), but the linked one was not: ${formatAutomationError(err2)}
+
+Fix the linked automation and call create_automation for it alone with linkedAutomationId "${firstId}".`
+              }
+            ],
+            isError: true
+          };
+        }
       } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          content: [{ type: "text", text: `Error: ${formatAutomationError(err2)}` }],
           isError: true
         };
       }
@@ -9954,10 +10195,13 @@ function register12(server, client, options = {}) {
   registerSpeakTool(
     server,
     "update_automation",
-    "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes. The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. Changing a Composio app-event trigger updates the subscription on that third-party account.",
+    "Update an existing automation rule. This replaces the whole automation (name, trigger, and steps), so fetch the current values with get_automation first and pass them all back with your changes. The saved steps run automatically on later triggers and can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. Changing a Composio app-event trigger updates the subscription on that third-party account. A step that sends, posts, shares or deletes keeps its confirmation only while it is unchanged: if you change such a step, show the user the new version and list its stepId in confirmedStepIds once they confirm it. This check here only compares the step's own app, action, account and arguments; the server's check is wider (it also covers the steps a confirmed step depends on) and is the one that decides. If someone other than the owner changes a confirmed step, the automation is saved but turned off until the owner confirms that step again, and the reply says so in pausedNotice.",
     {
       automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation"),
-      ...writeSchema
+      ...writeSchema,
+      confirmedStepIds: import_zod14.z.array(import_zod14.z.string().min(1)).max(20).optional().describe(
+        "Step ids of changed send, post, share or delete steps that the user has just confirmed in their new form. A changed step that still carries composio.acknowledged: true from get_automation is refused unless it is listed here."
+      )
     },
     {
       title: "Update Automation",
@@ -9966,14 +10210,16 @@ function register12(server, client, options = {}) {
       idempotentHint: true,
       openWorldHint: true
     },
-    async ({ automationId, ...body }) => {
+    async ({ automationId, confirmedStepIds, ...body }) => {
       try {
         const graphRefusal = refuseInvalidGraph(body.steps, body.trigger, body.runType);
         if (graphRefusal) return graphRefusal;
         const refusal = await refuseUngatedAnalysis(api, body.steps);
         if (refusal) return refusal;
-        const result = await api.put(`/v1/automations/${automationId}`, body);
-        let data = result.data;
+        const staleRefusal = await refuseStaleConfirmations(api, automationId, body.steps, confirmedStepIds);
+        if (staleRefusal) return staleRefusal;
+        const result = await api.put(`/v1/automations/${automationId}`, withContractMarker(body));
+        let data = await withPauseAfterUpdate(api, result.data);
         if (isInboundWebhookTrigger(body.trigger)) {
           data = await withInboundWebhookInfo(api, data, automationId);
         }
@@ -9986,7 +10232,7 @@ function register12(server, client, options = {}) {
         };
       } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          content: [{ type: "text", text: `Error: ${formatAutomationError(err2)}` }],
           isError: true
         };
       }
@@ -9995,7 +10241,7 @@ function register12(server, client, options = {}) {
   registerSpeakTool(
     server,
     "toggle_automation_status",
-    "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation first if you need to know which way it will flip. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected third-party account.",
+    "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation first if you need to know which way it will flip. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected third-party account. Turning on an automation that is off for a reason is refused until the reason is fixed: an expired app connection must be reconnected (RECONNECT_REQUIRED), a teammate's change to a step that sends from the owner's account must be confirmed by the owner (OWNER_RECONFIRM_REQUIRED), and a trigger that imports files needs credits left on the account (OUT_OF_CREDITS). Turning on one of two linked automations while its partner is off succeeds with a warning: tell the user, because nothing acts on what the intake brings in until the partner is on too.",
     {
       automationId: import_zod14.z.string().min(1).describe("Unique identifier of the automation")
     },
@@ -10009,12 +10255,16 @@ function register12(server, client, options = {}) {
     async ({ automationId }) => {
       try {
         const result = await api.put(`/v1/automations/status/${automationId}`);
+        const warning = result.data?.warning;
+        const text = JSON.stringify(result.data, null, 2);
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: typeof warning === "string" ? `Warning: ${warning}
+
+${text}` : text }]
         };
       } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          content: [{ type: "text", text: `Error: ${formatAutomationError(err2)}` }],
           isError: true
         };
       }
@@ -10023,7 +10273,7 @@ function register12(server, client, options = {}) {
   registerSpeakTool(
     server,
     "bulk_update_automation_status",
-    "Activate or deactivate multiple automations at once. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the connected third-party account.",
+    "Activate or deactivate multiple automations at once. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the connected third-party account. Automations that cannot be turned on yet come back in failed[] with an errorCode and the next step. An automation turned on while its linked partner stays off is listed in warnings[] ({ automationId, warning }); tell the user.",
     {
       automationIds: import_zod14.z.array(import_zod14.z.string().min(1)).min(1).max(100).describe("Automation ids to update"),
       isActive: import_zod14.z.boolean().describe("true to activate, false to deactivate, for all listed automations")
@@ -10039,11 +10289,11 @@ function register12(server, client, options = {}) {
       try {
         const result = await api.put("/v1/automations/bulk/status", body);
         return {
-          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+          content: [{ type: "text", text: JSON.stringify(withFailedNextSteps(result.data), null, 2) }]
         };
       } catch (err2) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          content: [{ type: "text", text: `Error: ${formatAutomationError(err2)}` }],
           isError: true
         };
       }
@@ -10341,8 +10591,12 @@ function register12(server, client, options = {}) {
   registerSpeakTool(
     server,
     "list_automation_apps",
-    "List the apps in Speak's automation catalog: Speak's built-in apps plus, when enabled, third-party apps available through Composio, each marked connected or not_connected for this user. Read-only: the list comes from Speak's own catalog and the user's saved connections, and no third-party service is called. Use the app slugs with list_automation_triggers and list_automation_actions.",
-    {},
+    "List the apps in Speak's automation catalog: Speak's built-in apps plus, when enabled, every third-party app available through Composio, with its connection state and connected accounts for this user. Each app says what it brings in (pull: its triggers start an automation and can import files) and what it sends out (push: its actions take Speak's results). Read-only: the list comes from Speak's own catalog and the user's saved connections. Use the app slugs with list_automation_triggers and list_automation_actions. An app that is not connected must be connected in the Speak web app first.",
+    {
+      for: import_zod14.z.enum(["trigger", "action"]).optional().describe(
+        '"trigger" lists only apps that can start an automation (pull), "action" only apps that can take its results (push). Omit for all apps.'
+      )
+    },
     {
       title: "List Automation Apps",
       readOnlyHint: true,
@@ -10350,9 +10604,9 @@ function register12(server, client, options = {}) {
       idempotentHint: true,
       openWorldHint: false
     },
-    async () => {
+    async (params) => {
       try {
-        const result = await api.get("/v1/automations/catalog/apps");
+        const result = await api.get("/v1/automations/catalog/apps", { params });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -10367,9 +10621,9 @@ function register12(server, client, options = {}) {
   registerSpeakTool(
     server,
     "list_automation_triggers",
-    "List the trigger types available in the automation catalog. Optionally filter by app.",
+    "List the triggers available in the automation catalog, optionally for one app: Speak's own triggers plus every trigger of the connected third-party apps (pull). Each trigger has a slug, a configSchema for its triggerConfig, outputPaths that later steps can read as {{trigger.payload.<path>}} tokens, and fileBearing when it brings a file to import as a recording. Read-only: listing a trigger does not subscribe to it.",
     {
-      app: import_zod14.z.string().min(1).max(100).optional().describe("Filter triggers to a specific app slug")
+      app: import_zod14.z.string().min(1).max(100).optional().describe("App slug from list_automation_apps")
     },
     {
       title: "List Automation Triggers",
@@ -10395,9 +10649,15 @@ function register12(server, client, options = {}) {
   registerSpeakTool(
     server,
     "list_automation_actions",
-    "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the fields each filter or condition step can test. Read-only: served from Speak's own catalog and the user's saved connections, with no third-party calls. Listing an action does not run it.",
+    "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the fields each filter or condition step can test. For a third-party app this includes every action it offers (push), each with a configSchema for the step's argsTemplate, a group, and requiresConfirmation with a riskKind (send, post, share or delete) when the step needs composio.acknowledged: true before it can be saved. Deprecated actions are marked; pick a replacement. An action the flow cannot feed carries needsInput ({ reason, hint, next }): after an email or file trigger, next is create_folder_automation, which means import with speak-upload here and act in a linked folder automation (see create_automation's linkedAutomationBody). Read-only: listing an action does not run it.",
     {
-      app: import_zod14.z.string().min(1).max(100).optional().describe("Filter actions to a specific app slug")
+      app: import_zod14.z.string().min(1).max(100).optional().describe("App slug from list_automation_apps"),
+      q: import_zod14.z.string().max(100).optional().describe(
+        'Search action names, descriptions and groups, e.g. "create task". Without app it searches every connected app.'
+      ),
+      afterTrigger: import_zod14.z.string().max(200).optional().describe(
+        "Slug of the trigger the step will follow, so each action's needsInput hint fits what that trigger brings."
+      )
     },
     {
       title: "List Automation Actions",
@@ -10408,7 +10668,36 @@ function register12(server, client, options = {}) {
     },
     async (params) => {
       try {
-        const result = await api.get("/v1/automations/catalog/actions", { params });
+        const result = await api.get("/v1/automations/catalog/actions", { params, headers: AUTOMATION_CONTRACT_HEADERS });
+        return {
+          content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
+        };
+      } catch (err2) {
+        return {
+          content: [{ type: "text", text: `Error: ${formatAxiosError(err2)}` }],
+          isError: true
+        };
+      }
+    }
+  );
+  registerSpeakTool(
+    server,
+    "suggest_automation_templates",
+    "Suggest ready-made automations for a From app (where work starts) and a To app (where results go). Use app slugs from list_automation_apps, or speak for Speak itself. Each suggestion has a status and, when ready, a draft to adapt and save with create_automation; the draft leaves the folder empty for you to fill. An email or file app paired with an app that takes results is two linked automations: draft is the intake (the trigger, then speak-upload into a folder) and linkedDraft acts on it (media analysed in that folder, an AI step, then the action). Put the one folder the user picks in the intake's speak-upload folderId and in linkedDraft's trigger.folderIds, then call create_automation with the intake and linkedAutomationBody set to linkedDraft. Read-only: nothing is created.",
+    {
+      from: import_zod14.z.string().min(1).max(100).optional().describe("App slug where the work starts, or speak"),
+      to: import_zod14.z.string().min(1).max(100).optional().describe("App slug where the results go, or speak")
+    },
+    {
+      title: "Suggest Automation Templates",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false
+    },
+    async (params) => {
+      try {
+        const result = await api.get("/v1/automations/catalog/templates/picker", { params });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }]
         };
@@ -10421,7 +10710,7 @@ function register12(server, client, options = {}) {
     }
   );
 }
-var import_zod14, TOKEN_SYNTAX_NOTE, STEPS_DESCRIPTION, TRIGGER_DESCRIPTION, OR_TRIGGERS_DESCRIPTION, writeSchema;
+var import_zod14, TOKEN_SYNTAX_NOTE, COMPOSIO_STEP_NOTE, STEPS_DESCRIPTION, COMPOSIO_TRIGGER_NOTE, TRIGGER_DESCRIPTION, OR_TRIGGERS_DESCRIPTION, LINKED_AUTOMATION_DESCRIPTION, writeSchema, AUTOMATION_CONTRACT_HEADERS;
 var init_automations = __esm({
   "src/tools/automations.ts"() {
     "use strict";
@@ -10430,8 +10719,10 @@ var init_automations = __esm({
     init_client();
     init_inbound_webhook_utils();
     init_capabilities();
+    init_automation_composio();
     init_automation_graph();
     TOKEN_SYNTAX_NOTE = "Token syntax (usable in fields marked 'tokens allowed'): {{trigger.payload.<path>}} reads the inbound webhook payload (dot paths and [n] array indices; paths are relative to trigger.childKey when set \u2014 discover valid paths with get_inbound_webhook after sending a test payload); {{step.<stepId>.<path>}} reads a previous step's output (speak-upload -> mediaId, magic-prompt -> answer, outbound-webhook -> status/response). A positional {{step.<index>.<path>}} form also exists but is REFUSED on a branched automation: the index counts stored order ([condition, true leg, false leg, merge]), not run order, and a step on the branch that was not taken produces nothing \u2014 the token would resolve to an empty string inside whatever the step sends.";
+    COMPOSIO_STEP_NOTE = "- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate?, acknowledged? } \u2014 runs one action in a connected third-party app (push: send Speak's results out, e.g. create a task, add a CRM note, post a message). Any app and action that list_automation_actions returns for the account can be used: app is the app slug, action is the action slug, argsTemplate fills the action's configSchema (tokens allowed). connectedAccountId picks one of the app's connected accounts when there are several. Actions marked requiresConfirmation (riskKind send, post, share or delete) reach other people or cannot be undone: the API refuses to save them unless the step carries acknowledged: true, set by the automation owner. Never set acknowledged on your own: describe the app, the action and what it will send to the user, and set it only after they confirm. If a teammate later changes a confirmed step, the confirmation is cleared and the automation turns off until the owner confirms again. toolkitVersion and confirmation are set by the server and are ignored if sent; confirmVersion is set by this tool. Third-party app steps may be unavailable on some accounts.\n";
     STEPS_DESCRIPTION = `Ordered array of graph steps (1-20). Each step is an object: { stepId: string (unique within the array), stepType: one of "speak-upload" | "magic-prompt" | "translation" | "filter" | "condition" | "notify" | "outbound-webhook" | "composio-action", dependsOn?: string[] (stepIds this step runs after), branch?: "true"|"false" (which outcome of an upstream condition step this step belongs to) } plus ONE config key matching stepType:
 - speak-upload -> speakUpload: { sourceMode: "url"|"file", sourceUrl (required when sourceMode="url"; tokens allowed \u2014 if the token resolves to an object, the first http(s) URL inside it is used), folderId (required, unless folderRouting.mode="dynamic" where it becomes the optional fallback), name? (tokens allowed, mixable with static text), language? (language code or token), fieldsMap?: { <customFieldId>: "<value>" } (writes payload values into Speak custom fields on the uploaded media; values are usually {{trigger.payload.<path>}} tokens \u2014 get field ids from list_fields), folderRouting?: { mode: "static"|"dynamic", sourceKey (payload key holding the destination folder name, required when dynamic), onNoMatch: "create"|"default" (create a folder named after the value, or fall back to folderId) } }
 - magic-prompt -> magicPrompt: { prompt (required unless fieldIds given, max 20000), title?, assistantType? ("general"|"researcher"|"marketer"|"sales"|"recruiter"|"custom", default "general"), assistantTemplateId? (required if assistantType="custom"), fieldIds?: string[] (max 10 \u2014 extract answers into these custom fields), analysisInput? ("transcript" (default) | "audio" | "video") \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see what is on screen; on a video file "audio" extracts the audio track first. Premium: requires the account's audio/video analysis opt-in, and costs credits per hour of media }
@@ -10448,28 +10739,30 @@ var init_automations = __esm({
   * A scheduled automation cannot branch: a schedule runs over a batch and a condition resolves once for the whole batch, so the leg would run against media that did not match. Use a filter, which narrows the batch.
 - notify -> notify: { channel: "in_app"|"email"|"slack", target?, message (required, tokens allowed) }
 - outbound-webhook -> outboundWebhook: { url (required, tokens allowed), method? ("GET"|"POST"|"PUT"|"PATCH"|"DELETE", default "POST"), headers?: { <name>: <value> }, bodyTemplate?: string | object (tokens allowed) }
-- composio-action -> composio: { app, action, connectedAccountId?, argsTemplate? } (Composio is currently behind a server flag and may be unavailable)
-Filter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers or a custom field id; INSIGHT (straight after a magic-prompt step) -> answer only, so put a branch on a media field BEFORE the AI step. Neither a filter nor a condition can read the inbound webhook payload \u2014 they see the media and earlier step answers only \u2014 so a payload path such as "contact.status" is refused: upload first with speakUpload.fieldsMap to write that value into a custom field, then test the field id instead. Ops by field type \u2014 text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists ("exists" takes no value; gt/lt values are numbers).
-` + TOKEN_SYNTAX_NOTE;
+` + COMPOSIO_STEP_NOTE + 'Filter/condition rule fields depend on what flows into the step: MEDIA -> name|duration|sourceLanguage|tags|transcript|speakers or a custom field id; INSIGHT (straight after a magic-prompt step) -> answer only, so put a branch on a media field BEFORE the AI step. Neither a filter nor a condition can read the inbound webhook payload \u2014 they see the media and earlier step answers only \u2014 so a payload path such as "contact.status" is refused: upload first with speakUpload.fieldsMap to write that value into a custom field, then test the field id instead. Ops by field type \u2014 text: eq|neq|contains|ncontains|startsWith|exists; number: eq|neq|gt|lt|exists; array: contains|ncontains|exists ("exists" takes no value; gt/lt values are numbers).\n' + TOKEN_SYNTAX_NOTE;
+    COMPOSIO_TRIGGER_NOTE = `- Third-party app event (pull: something in a connected app starts the automation and can bring a file into Speak): { type: "composio", provider: "composio", app, triggerSlug, connectedAccountId, triggerConfig? }. Use any app and trigger slug that list_automation_triggers returns; triggerConfig fills that trigger's configSchema. A trigger marked fileBearing hands a file to the steps: start the steps with a speak-upload step using sourceMode "file" to import it as a recording. New-email triggers (Gmail, Outlook) need at least one filter (from, subjectContains, or the advanced Gmail query); audio and video attachments are imported as recordings (importAttachments, default true) and the email body is saved as a text note only when saveBodyAsNote is true. The app is watched only while the automation is on. A trigger that is checked on a schedule (call, meeting and survey apps such as Aircall, Quo or Gong) cannot be combined with Or triggers. Imports use credits like uploads; credits are checked when the automation is created switched on, turned on, or saved with changed triggers while it stays on, and one automation imports at most 50 files an hour; extra items wait for the next hour. If the connection expires the automation turns off, and items that arrive while it is off are not imported.
+`;
     TRIGGER_DESCRIPTION = `Trigger object (the automation's root). Always include triggerSlug. Supported shapes:
 - Media analyzed in folder(s): { type: "folders", triggerSlug: "media_analyzed", folderIds: string[] (min 1) }
 - Inbound webhook (receive external payloads): { type: "folders", triggerSlug: "inbound_webhook", webhookId? (from provision_inbound_webhook; omit to auto-provision a new one on create), childKey? (dot-path narrowing which part of the payload feeds the automation, e.g. "data") }. The create/update response includes inboundWebhook.inboundUrl \u2014 the public URL to POST payloads to.
 - Custom field updated: { type: "folders", triggerSlug: "field_updated", values: string[] (watched custom field ids, min 1), fieldValueMatches?: [{ fieldId, values: string[] }] (fire only when the field changes TO one of these values; empty values = any change), fieldMatchLogic?: "AND"|"OR" (how multiple fieldValueMatches combine, default "OR") }
-- Composio app event: { type: "composio", provider: "composio", app, triggerSlug, connectedAccountId } (requires a connected account; may be behind a server flag)
-Notes: "tags"/"keywords" trigger types are rejected for graph automations. The server stores inbound-webhook triggers with type "webhook" internally \u2014 send type "folders" plus the slug as shown above.`;
+` + COMPOSIO_TRIGGER_NOTE + 'Notes: "tags"/"keywords" trigger types are rejected for graph automations. The server stores inbound-webhook triggers with type "webhook" internally \u2014 send type "folders" plus the slug as shown above.';
     OR_TRIGGERS_DESCRIPTION = 'Optional additional "Or" triggers (max 10): the automation runs when ANY of them fires, sharing the same steps. Each entry mirrors the trigger shapes above but cannot be an inbound webhook and carries no webhookId/childKey. Example: [{ type: "folders", triggerSlug: "field_updated", values: ["<fieldId>"] }]';
+    LINKED_AUTOMATION_DESCRIPTION = "Id of another automation in the account to link this one with; an empty string unlinks. Email and file intake is two linked automations: the intake (an app trigger, then a speak-upload step into a folder) and the act automation (trigger media_analyzed on that same folder, an AI step, then the app action). The partner is linked back automatically, linking replaces an older pairing, and deleting either one unlinks the other.";
     writeSchema = {
       name: import_zod14.z.string().min(1).max(150).describe("Display name for the automation"),
       trigger: import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown()).describe(TRIGGER_DESCRIPTION),
       triggers: import_zod14.z.array(import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown())).max(10).optional().describe(OR_TRIGGERS_DESCRIPTION),
       steps: import_zod14.z.array(import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown())).min(1).max(20).describe(STEPS_DESCRIPTION),
       description: import_zod14.z.string().max(1e3).optional().describe("Optional description"),
+      linkedAutomationId: import_zod14.z.string().max(64).optional().describe(LINKED_AUTOMATION_DESCRIPTION),
       isActive: import_zod14.z.boolean().optional().describe("Whether the automation is active (defaults to true)"),
       runType: import_zod14.z.enum(["instant", "schedule"]).optional().describe('Run type: "instant" (default, runs on trigger) or "schedule" (cron)'),
       schedule: import_zod14.z.record(import_zod14.z.string(), import_zod14.z.unknown()).optional().describe(
         'Required when runType="schedule": { timePeriod: "today"|"yesterday"|"last7days"|"last14days"|"thisWeek", repeatAt: string }'
       )
     };
+    AUTOMATION_CONTRACT_HEADERS = { "x-speak-automation-contract": "2" };
   }
 });
 
@@ -11021,7 +11314,7 @@ function register16(server, client, options = {}) {
       openWorldHint: true
     },
     async (args2) => {
-      const { name, trigger, steps, automationId, description, isActive, orTriggers } = args2;
+      const { name, trigger, steps, automationId, description, isActive, orTriggers, linkedAutomationId } = args2;
       const createdFolders = [];
       const dataFlowFilterFields = [];
       try {
@@ -11290,6 +11583,7 @@ function register16(server, client, options = {}) {
         };
         if (description) body.description = description;
         if (isActive !== void 0) body.isActive = isActive;
+        if (linkedAutomationId !== void 0) body.linkedAutomationId = linkedAutomationId;
         if (orTriggers?.length) {
           const entries = [];
           for (const spec of orTriggers) entries.push(await buildTrigger(spec, false));
@@ -11324,7 +11618,7 @@ function register16(server, client, options = {}) {
           content: [{ type: "text", text: JSON.stringify(response, null, 2) }]
         };
       } catch (err2) {
-        let message = formatAxiosError(err2);
+        let message = formatAutomationError(err2);
         if (dataFlowFilterFields.length && message.includes("fieldIds do not belong")) {
           message += `
 
@@ -11543,8 +11837,8 @@ ${JSON.stringify(signedRes.data, null, 2)}` }],
           };
         }
         const fileBuffer = fs.readFileSync(filePath);
-        const axios5 = (await import("axios")).default;
-        await axios5.put(uploadUrl, fileBuffer, {
+        const axios6 = (await import("axios")).default;
+        await axios6.put(uploadUrl, fileBuffer, {
           headers: {
             "Content-Type": mimeType
           },
@@ -11595,6 +11889,7 @@ var init_workflows = __esm({
     init_helpers();
     init_client();
     init_dist();
+    init_automation_composio();
     fs = __toESM(require("fs"));
     path2 = __toESM(require("path"));
     init_media_utils();
@@ -11620,7 +11915,7 @@ var init_workflows = __esm({
     ]);
     ID_PATTERN = /^[0-9a-f]{12}$/;
     TRIGGER_SPEC_DESCRIPTION = 'What starts the automation. Object with:\n- on (required): "media_analyzed" | "inbound_webhook" | "field_updated"\n- folders: array of folder names or ids (required for media_analyzed; missing folders are created)\n- childKey: dot-path narrowing the webhook payload root, e.g. "data" (inbound_webhook only)\n- webhookId: reuse a webhook from provision_inbound_webhook (inbound_webhook only; omit to auto-provision)\n- watchFields: array of { field: name-or-id, values?: string[] } (required for field_updated \u2014 fires when the field changes; values restricts to specific new values)\n- matchLogic: "AND"|"OR" for combining multiple watchFields value matches (default OR)';
-    STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match, otherwise the run stops here. Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic?, then: [steps], otherwise: [steps], thenEnds?, otherwiseEnds? } \u2014 routes instead of stopping. `then` runs when the rules match, `otherwise` when they do not, and whatever follows the branch runs on both paths. Set thenEnds/otherwiseEnds to true to finish the run on that side instead of carrying on. One side may be empty ("if it matches do this, otherwise just carry on"), but not both. Branches may nest three deep, and a nested branch must be the LAST step of the side it sits on.\n  Rule fields for BOTH filter and branch depend on what reaches the step: while media is flowing use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; straight after an ai_chat step only "answer" is available, so put the branch BEFORE the ai_chat step if you need a media field. A filter and a branch CANNOT read the webhook payload \u2014 they only see the media and earlier answers. To branch on payload data, upload first with mapFields to write the value into a custom field, then branch on that field.\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default), analyse?: "transcript" (default) | "audio" | "video" \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see the screen; on a video file "audio" extracts the audio track first. Premium: requires the account\'s audio/video analysis opt-in and costs credits per hour of media }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nLegacy: a flat list where steps after a branch carry runWhen: "true"|"false" is still accepted and folded into then/otherwise, but it cannot express nesting or an ending side \u2014 prefer then/otherwise. Composio app actions (Google Drive, Slack apps, \u2026) are not supported by this builder yet \u2014 use create_automation directly for those.';
+    STEP_SPEC_DESCRIPTION = 'Ordered actions. Each step is an object with a `do` key plus its options. String values may be literals, "payload.<path>" shorthand (converted to {{trigger.payload.<path>}} only when it is the ENTIRE value), or raw {{...}} tokens \u2014 inside longer text, write the full {{trigger.payload.<path>}} form.\n- { do: "filter", rules: [{ field, op, value? }], logic?: "AND"|"OR" } \u2014 continue only if rules match, otherwise the run stops here. Ops: eq|neq|contains|ncontains|startsWith|gt|lt|exists\n- { do: "branch", rules, logic?, then: [steps], otherwise: [steps], thenEnds?, otherwiseEnds? } \u2014 routes instead of stopping. `then` runs when the rules match, `otherwise` when they do not, and whatever follows the branch runs on both paths. Set thenEnds/otherwiseEnds to true to finish the run on that side instead of carrying on. One side may be empty ("if it matches do this, otherwise just carry on"), but not both. Branches may nest three deep, and a nested branch must be the LAST step of the side it sits on.\n  Rule fields for BOTH filter and branch depend on what reaches the step: while media is flowing use name|duration|sourceLanguage|tags|transcript|speakers or a custom field name; straight after an ai_chat step only "answer" is available, so put the branch BEFORE the ai_chat step if you need a media field. A filter and a branch CANNOT read the webhook payload \u2014 they only see the media and earlier answers. To branch on payload data, upload first with mapFields to write the value into a custom field, then branch on that field.\n- { do: "upload", source (URL or payload.<path>, required), name?, language? (e.g. "en-US"), folder? (name or id; created if missing), folderFromPayload? (payload key holding the destination folder name \u2014 dynamic routing), onNoFolderMatch?: "create"|"default", mapFields?: { <field name or id>: <value or payload.<path>> } (writes payload values into custom fields on the uploaded media) }\n- { do: "ai_chat", prompt? (required unless saveToFields given), title?, saveToFields?: [field names or ids] (max 10 \u2014 values are extracted into these custom fields; prompt may be omitted for extraction-only steps), model? (a Speak-supported LLM id, e.g. "gemini-2.5-flash", "claude-sonnet-4-6"; omit for the workspace default), analyse?: "transcript" (default) | "audio" | "video" \u2014 what the model receives. "audio" lets it hear tone and delivery, "video" also lets it see the screen; on a video file "audio" extracts the audio track first. Premium: requires the account\'s audio/video analysis opt-in and costs credits per hour of media }\n- { do: "translate", language: region-qualified code like "es-ES", "fr-FR" }\n- { do: "notify", message (required, tokens allowed), channel?: "in_app"|"email"|"slack" (default in_app; email currently falls back to an in-app notification), target? (reserved \u2014 not yet used for delivery) }\n- { do: "call_webhook", url (required), method?, headers?, body? (string or object template, tokens allowed) }\nLegacy: a flat list where steps after a branch carry runWhen: "true"|"false" is still accepted and folded into then/otherwise, but it cannot express nesting or an ending side \u2014 prefer then/otherwise. Third-party app triggers and actions (pull from or push to a connected app) are not supported by this builder yet \u2014 use create_automation directly for those.';
     buildAutomationSchema = {
       name: import_zod18.z.string().min(1).max(150).describe("Display name for the automation"),
       trigger: import_zod18.z.record(import_zod18.z.string(), import_zod18.z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
@@ -11628,6 +11923,9 @@ var init_workflows = __esm({
       automationId: import_zod18.z.string().optional().describe("Update this existing automation instead of creating a new one (full replace)"),
       description: import_zod18.z.string().max(1e3).optional().describe("Optional description"),
       isActive: import_zod18.z.boolean().optional().describe("Whether the automation is active (default true)"),
+      linkedAutomationId: import_zod18.z.string().max(64).optional().describe(
+        "Link this automation with another one in the account (an empty string unlinks). For email or file intake, build the folder automation that acts on the intake's folder (on: media_analyzed with that folder) and pass the intake's automationId here. The partner is linked back automatically."
+      ),
       orTriggers: import_zod18.z.array(import_zod18.z.record(import_zod18.z.string(), import_zod18.z.unknown())).max(10).optional().describe(
         'Additional "Or" triggers (same shape as trigger, but inbound_webhook is not allowed here). The automation runs when ANY trigger fires.'
       )
@@ -13924,7 +14222,7 @@ function register23(server, client) {
         const result = await api.get("/v1/subscription/billing-status");
         return ok(result.data);
       } catch (error) {
-        if (import_axios3.default.isAxiosError(error) && error.response?.status === 404) {
+        if (import_axios4.default.isAxiosError(error) && error.response?.status === 404) {
           return {
             content: [
               {
@@ -13940,11 +14238,11 @@ function register23(server, client) {
     }
   );
 }
-var import_axios3;
+var import_axios4;
 var init_billing3 = __esm({
   "src/tools/billing.ts"() {
     "use strict";
-    import_axios3 = __toESM(require("axios"));
+    import_axios4 = __toESM(require("axios"));
     init_helpers();
     init_client();
   }
@@ -14011,18 +14309,18 @@ function register24(server, client) {
         );
         return ok(result.data);
       } catch (error) {
-        const limited = import_axios4.default.isAxiosError(error) && error.response?.status === 429 ? error.response.data?.nextAllowedAt : void 0;
+        const limited = import_axios5.default.isAxiosError(error) && error.response?.status === 429 ? error.response.data?.nextAllowedAt : void 0;
         if (limited !== void 0) return limitResult(limited);
         return err(error);
       }
     }
   );
 }
-var import_axios4, import_zod25, SURFACE_PREFIX, SURFACE_MAX, APP_VERSION_MAX;
+var import_axios5, import_zod25, SURFACE_PREFIX, SURFACE_MAX, APP_VERSION_MAX;
 var init_feedback = __esm({
   "src/tools/feedback.ts"() {
     "use strict";
-    import_axios4 = __toESM(require("axios"));
+    import_axios5 = __toESM(require("axios"));
     import_zod25 = require("zod");
     init_helpers();
     init_client();
@@ -14762,6 +15060,7 @@ var init_tool_names = __esm({
       "list_automation_apps",
       "list_automation_triggers",
       "list_automation_actions",
+      "suggest_automation_templates",
       // clips
       "get_clips",
       "create_clip",
@@ -15219,9 +15518,9 @@ function createCli() {
       process.exit(1);
     }
     try {
-      const axios5 = (await import("axios")).default;
+      const axios6 = (await import("axios")).default;
       const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
-      const res = await axios5.post(
+      const res = await axios6.post(
         `${baseUrl}/v1/auth/accessToken`,
         {},
         { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
@@ -15276,9 +15575,9 @@ function createCli() {
     }
     process.stdout.write("  Validating...");
     try {
-      const axios5 = (await import("axios")).default;
+      const axios6 = (await import("axios")).default;
       const baseUrl = process.env.SPEAK_BASE_URL ?? "https://api.speakai.co";
-      const res = await axios5.post(
+      const res = await axios6.post(
         `${baseUrl}/v1/auth/accessToken`,
         {},
         { headers: { "Content-Type": "application/json", "x-speakai-key": key } }
@@ -15504,8 +15803,8 @@ function createCli() {
         }
         process.stdout.write("Uploading...");
         const fileBuffer = fs3.readFileSync(source);
-        const axios5 = (await import("axios")).default;
-        await axios5.put(uploadUrl, fileBuffer, {
+        const axios6 = (await import("axios")).default;
+        await axios6.put(uploadUrl, fileBuffer, {
           headers: { "Content-Type": mimeType },
           maxBodyLength: Infinity,
           maxContentLength: Infinity
@@ -16322,7 +16621,8 @@ var SPEAK_MCP_TOOL_CATEGORIES = [
       "get_automation_run_stats",
       "test_automation",
       "validate_automation_graph",
-      "describe_automation_graph"
+      "describe_automation_graph",
+      "suggest_automation_templates"
     ]
   },
   {

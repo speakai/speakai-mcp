@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3.0 (2026-11-20)
+
+- feat(automations): send the client contract marker and handle CLIENT_UPDATE_REQUIRED
+
 ## v2.2.1 (2026-11-20)
 
 - Maintenance release

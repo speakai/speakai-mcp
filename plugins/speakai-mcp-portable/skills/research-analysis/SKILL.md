@@ -4,7 +4,7 @@ description: Analyze interviews, user research calls, and customer conversations
 license: MIT
 metadata:
   server: "@speakai/mcp-server"
-  server-version: "2.2.1"
+  server-version: "2.3.0"
   categories: "research"
 ---
 
