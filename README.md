@@ -7,7 +7,7 @@
 <p align="center">
   <strong>For researchers, revenue teams, meeting-heavy teams, and media workflows.</strong><br/>
   No Terminal. No npm. No JSON config files.<br/>
-  Works with Claude, ChatGPT, Cursor, VS Code, Windsurf, Muse, OpenClaw and any MCP client.
+  Works with Claude, ChatGPT, Cursor, VS Code, Windsurf, Gemini CLI, GitHub Copilot CLI, Copilot Studio, Zed, Goose, opencode, Muse, OpenClaw and any MCP client.
 </p>
 
 <p align="center">
@@ -237,6 +237,30 @@ Speak AI is published as a skill on ClawHub for OpenClaw-compatible agents.
 1. Visit the [Speak AI skill page on ClawHub](https://clawhub.ai/skills/speakai)
 2. Follow the install instructions for your agent, for example `clawhub install speakai` from the ClawHub CLI
 3. Set your `SPEAK_API_KEY` environment variable. Generate one at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
+
+### Gemini CLI
+
+Run `gemini mcp add --transport http speakai https://api.speakai.co/v1/mcp`, then type `/mcp auth speakai` in Gemini CLI to sign in through your browser. Steps: [docs.speakai.co/mcp/setup/gemini-cli](https://docs.speakai.co/mcp/setup/gemini-cli/).
+
+### GitHub Copilot CLI
+
+Copilot CLI connects with your API key through `~/.copilot/mcp-config.json`. Steps: [docs.speakai.co/mcp/setup/github-copilot-cli](https://docs.speakai.co/mcp/setup/github-copilot-cli/).
+
+### Microsoft Copilot Studio
+
+Add Speak AI to an agent as a Model Context Protocol tool with OAuth 2.0 dynamic discovery. Steps: [docs.speakai.co/mcp/setup/copilot-studio](https://docs.speakai.co/mcp/setup/copilot-studio/).
+
+### Zed
+
+Add a remote server in Settings, AI, MCP Servers, and sign in through your browser. Steps: [docs.speakai.co/mcp/setup/zed](https://docs.speakai.co/mcp/setup/zed/).
+
+### Goose
+
+Install with one click from the setup page, then sign in through your browser. Steps: [docs.speakai.co/mcp/setup/goose](https://docs.speakai.co/mcp/setup/goose/).
+
+### opencode
+
+Add Speak AI under `mcp.servers` in your opencode config, then run `opencode mcp auth speakai`. Steps: [docs.speakai.co/mcp/setup/opencode](https://docs.speakai.co/mcp/setup/opencode/).
 
 ### ChatGPT (API / Responses)
 

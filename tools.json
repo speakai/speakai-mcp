@@ -621,7 +621,7 @@
       "id": "meeting-bot",
       "name": "Meeting assistant",
       "iconKey": "meeting-bot",
-      "shortDescription": "Schedule Speak AI to join a Zoom / Google Meet / Teams call and transcribe automatically.",
+      "shortDescription": "Schedule Speak AI to join a Zoom, Google Meet or Teams call and transcribe it automatically.",
       "tools": [
         {
           "name": "list_meeting_events",
