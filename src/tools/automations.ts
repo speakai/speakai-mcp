@@ -738,7 +738,8 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected " +
       "third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the " +
       "connected third-party account. Automations that cannot be turned on yet come back in failed[] with an " +
-      "errorCode and the next step.",
+      "errorCode and the next step. An automation turned on while its linked partner stays off is listed in " +
+      "warnings[] ({ automationId, warning }); tell the user.",
     {
       automationIds: z
         .array(z.string().min(1))

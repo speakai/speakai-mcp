@@ -132,6 +132,15 @@ describe("automation tools — third-party app steps", () => {
     expect(JSON.parse(result.content[0].text).data.failed[0].nextStep).toContain("Reconnect the app");
   });
 
+  it("keeps the bulk turn-on's partner warnings in the reply", async () => {
+    mockPut.mockResolvedValue({
+      data: { status: "success", data: { modifiedCount: 1, total: 1, warnings: [{ automationId: "a1", warning: "Linked with \"Act\", which is off." }] } },
+    });
+    const result = await getToolCallback(server, "bulk_update_automation_status")({ automationIds: ["a1"], isActive: true });
+
+    expect(JSON.parse(result.content[0].text).data.warnings[0].automationId).toBe("a1");
+  });
+
   it("leaves unrelated errors as they were", async () => {
     mockPost.mockRejectedValue(apiError(400, { message: "Upload folder not found" }));
     const result = await getToolCallback(server, "create_automation")(body([sendStep({})]));

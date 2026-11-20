@@ -742,7 +742,7 @@
         {
           "name": "bulk_update_automation_status",
           "title": "Bulk Update Automation Status",
-          "description": "Activate or deactivate multiple automations at once. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the connected third-party account. Automations that cannot be turned on yet come back in failed[] with an errorCode and the next step.",
+          "description": "Activate or deactivate multiple automations at once. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For Composio app-event triggers, this also creates or removes the event subscription on the connected third-party account. Automations that cannot be turned on yet come back in failed[] with an errorCode and the next step. An automation turned on while its linked partner stays off is listed in warnings[] ({ automationId, warning }); tell the user.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": true,
