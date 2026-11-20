@@ -174,7 +174,7 @@ export function hasConfirmedAppStep(steps: unknown): boolean {
 }
 
 /** Plain words for a saved automation's pausedReason, when the API returns one. */
-export function describePause(pausedReason: unknown, owner?: unknown): string | undefined {
+export function describePause(pausedReason: unknown, owner?: unknown, appName?: string): string | undefined {
   const reason = pausedReason as { code?: unknown; provider?: unknown; stepId?: unknown } | undefined;
   if (!reason || typeof reason.code !== "string") return undefined;
   if (reason.code === "awaiting_owner_confirmation") {
@@ -187,7 +187,7 @@ export function describePause(pausedReason: unknown, owner?: unknown): string | 
     );
   }
   if (reason.code === "needs_reconnect") {
-    const app = typeof reason.provider === "string" ? reason.provider : "the app";
+    const app = appName ?? "the app";
     return (
       `Off because the connection to ${app} expired or was removed. Reconnecting it on the Integrations page ` +
       "turns the automation back on. Items that arrived while it was off are not imported."

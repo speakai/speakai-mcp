@@ -217,23 +217,34 @@ describe("automation tools — third-party app steps", () => {
     expect(reply.pausedNotice).toContain('step "send"');
   });
 
-  it("says in words why a listed automation is off", async () => {
-    mockGet.mockResolvedValue({
-      data: { status: "success", data: { totalCount: 1, automationList: [{ automationId: "a1", pausedReason: { code: "needs_reconnect", provider: "gmail" } }] } },
-    });
+  it("names the app by its display name in a listed reconnect pause", async () => {
+    mockGet.mockImplementation((url: string) =>
+      Promise.resolve(
+        url === "/v1/automations/catalog/apps"
+          ? { data: { status: "success", data: { apps: [{ slug: "one_drive", name: "OneDrive" }] } } }
+          : { data: { status: "success", data: { totalCount: 1, automationList: [{ automationId: "a1", pausedReason: { code: "needs_reconnect", provider: "one_drive", at: "2026-11-20T00:00:00Z" } }] } } },
+      ),
+    );
     const result = await getToolCallback(server, "list_automations")({});
 
-    expect(JSON.parse(result.content[0].text).data.automationList[0].pausedNotice).toContain("gmail");
+    const notice = JSON.parse(result.content[0].text).data.automationList[0].pausedNotice;
+    expect(notice).toContain("connection to OneDrive");
+    expect(notice).not.toContain("one_drive");
   });
 
-  it("says in words why a saved automation is off", async () => {
-    mockGet.mockResolvedValue({
-      data: { status: "success", data: { automationId: "a1", pausedReason: { code: "needs_reconnect", provider: "monday" } } },
-    });
+  it("says in words why a saved automation is off, even when the app catalog cannot be read", async () => {
+    mockGet.mockImplementation((url: string) =>
+      url === "/v1/automations/catalog/apps"
+        ? Promise.reject(new Error("unavailable"))
+        : Promise.resolve({ data: { status: "success", data: { automationId: "a1", pausedReason: { code: "needs_reconnect", provider: "monday" } } } }),
+    );
     const result = await getToolCallback(server, "get_automation")({ automationId: "a1" });
 
-    expect(JSON.parse(result.content[0].text).pausedNotice).toContain("Reconnecting it");
+    const notice = JSON.parse(result.content[0].text).pausedNotice;
+    expect(notice).toContain("Reconnecting it");
+    expect(notice).not.toContain("monday");
   });
+
 
   describe("linked automations for email and file intake", () => {
     const intake = {
@@ -249,23 +260,23 @@ describe("automation tools — third-party app steps", () => {
         .mockResolvedValueOnce({ data: { status: "success", data: { automationId: "act1" } } });
       const result = await getToolCallback(server, "create_automation")({
         ...intake,
-        linkedAutomation: { ...act, automationId: "", createdAt: "" },
+        linkedAutomationBody: { ...act, automationId: "", createdAt: "" },
       });
 
       expect(result.isError).toBeUndefined();
       expect(mockPost.mock.calls[1][1]).not.toHaveProperty("automationId");
       expect(mockPost.mock.calls[1][1]).not.toHaveProperty("createdAt");
-      expect(mockPost.mock.calls[0][1]).not.toHaveProperty("linkedAutomation");
+      expect(mockPost.mock.calls[0][1]).not.toHaveProperty("linkedAutomationBody");
       expect(mockPost.mock.calls[1][1]).toMatchObject({ name: act.name, linkedAutomationId: "intake1" });
       const reply = JSON.parse(result.content[0].text);
-      expect(reply.linkedAutomation.data.automationId).toBe("act1");
+      expect(reply.partnerAutomation.data.automationId).toBe("act1");
     });
 
     it("says the intake exists when the linked automation fails", async () => {
       mockPost
         .mockResolvedValueOnce({ data: { status: "success", data: { automationId: "intake1" } } })
         .mockRejectedValueOnce(apiError(400, { errorCode: "CONFIRMATION_REQUIRED", message: "Tick the confirmation on the step before saving." }));
-      const result = await getToolCallback(server, "create_automation")({ ...intake, linkedAutomation: act });
+      const result = await getToolCallback(server, "create_automation")({ ...intake, linkedAutomationBody: act });
 
       expect(result.isError).toBe(true);
       expect(result.content[0].text).toContain("intake1");
@@ -274,7 +285,7 @@ describe("automation tools — third-party app steps", () => {
 
     it("creates nothing when either graph is invalid", async () => {
       const broken = { ...act, steps: [{ stepId: "a", stepType: "notify", notify: { channel: "in_app", message: "x" }, dependsOn: ["missing"] }] };
-      const result = await getToolCallback(server, "create_automation")({ ...intake, linkedAutomation: broken });
+      const result = await getToolCallback(server, "create_automation")({ ...intake, linkedAutomationBody: broken });
 
       expect(result.isError).toBe(true);
       expect(mockPost).not.toHaveBeenCalled();

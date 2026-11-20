@@ -270,23 +270,48 @@ async function createOne(api: AxiosInstance, body: WriteBody): Promise<unknown> 
   return warnings.length && data && typeof data === "object" ? { ...(data as object), warnings } : data;
 }
 
+/** App display names for the reconnect pauses among these reasons; the reason itself carries only the app slug. */
+async function reconnectAppNames(api: AxiosInstance, reasons: unknown[]): Promise<Map<string, string>> {
+  const names = new Map<string, string>();
+  const needed = reasons.some((reason) => (reason as { code?: unknown } | undefined)?.code === "needs_reconnect");
+  if (!needed) return names;
+  try {
+    const result = await api.get("/v1/automations/catalog/apps");
+    const apps = (unwrapData(result.data) as { apps?: Array<{ slug?: unknown; name?: unknown }> } | undefined)?.apps;
+    for (const app of apps ?? []) {
+      if (typeof app.slug === "string" && typeof app.name === "string") names.set(app.slug, app.name);
+    }
+  } catch {
+    // Without the catalog the notice still reads correctly; it just says "the app" instead of its name.
+  }
+  return names;
+}
+
+function appNameFor(pausedReason: unknown, names: Map<string, string>): string | undefined {
+  const provider = (pausedReason as { provider?: unknown } | undefined)?.provider;
+  return typeof provider === "string" ? names.get(provider) : undefined;
+}
+
 /** Each listed automation that the server switched off gets the reason in words. */
-function withPausedNotices(responseData: unknown): unknown {
+async function withPausedNotices(api: AxiosInstance, responseData: unknown): Promise<unknown> {
   const data = responseData as { data?: { automationList?: unknown } } | undefined;
   const list = data?.data?.automationList;
   if (!Array.isArray(list)) return responseData;
+  const names = await reconnectAppNames(api, list.map((automation) => automation?.pausedReason));
   const annotated = list.map((automation) => {
-    const pausedNotice = describePause(automation?.pausedReason, automation?.owner);
+    const reason = automation?.pausedReason;
+    const pausedNotice = describePause(reason, automation?.owner, appNameFor(reason, names));
     return pausedNotice ? { ...automation, pausedNotice } : automation;
   });
   return { ...data, data: { ...data!.data, automationList: annotated } };
 }
 
 /** The update reply carries pausedReason when the edit turned the automation off for its owner; say it in words. */
-function withPauseAfterUpdate(responseData: unknown): unknown {
+async function withPauseAfterUpdate(api: AxiosInstance, responseData: unknown): Promise<unknown> {
   if (!responseData || typeof responseData !== "object") return responseData;
   const pausedReason = (unwrapData(responseData) as { pausedReason?: unknown } | undefined)?.pausedReason;
-  const pausedNotice = describePause(pausedReason);
+  const names = await reconnectAppNames(api, [pausedReason]);
+  const pausedNotice = describePause(pausedReason, undefined, appNameFor(pausedReason, names));
   return pausedNotice ? { ...(responseData as object), pausedNotice } : responseData;
 }
 
@@ -432,7 +457,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       try {
         const result = await api.get("/v1/automations", { params });
         return {
-          content: [{ type: "text", text: JSON.stringify(withPausedNotices(result.data), null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(await withPausedNotices(api, result.data), null, 2) }],
         };
       } catch (err) {
         return {
@@ -491,7 +516,8 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       try {
         const result = await api.get(`/v1/automations/${automationId}`);
         const saved = unwrapData(result.data) as { pausedReason?: unknown; owner?: unknown } | undefined;
-        const pausedNotice = describePause(saved?.pausedReason, saved?.owner);
+        const names = await reconnectAppNames(api, [saved?.pausedReason]);
+        const pausedNotice = describePause(saved?.pausedReason, saved?.owner, appNameFor(saved?.pausedReason, names));
         const data =
           pausedNotice && result.data && typeof result.data === "object"
             ? { ...(result.data as object), pausedNotice }
@@ -559,13 +585,13 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "call update_automation.",
     {
       ...writeSchema,
-      linkedAutomation: z
+      linkedAutomationBody: z
         .record(z.string(), z.unknown())
         .optional()
         .describe(
           "A second automation to create right after this one and link to it, with the same fields as this tool " +
             "(name, trigger, steps, ...). Use it for email or file intake: this automation is the intake, and " +
-            "linkedAutomation is the act automation from suggest_automation_templates' linkedDraft. Both must use " +
+            "linkedAutomationBody is the act automation from suggest_automation_templates' linkedDraft. Both must use " +
             "the same folder: the intake's speak-upload folderId and the linked automation's trigger.folderIds.",
         ),
     },
@@ -576,11 +602,11 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       idempotentHint: false,
       openWorldHint: true,
     },
-    async ({ linkedAutomation, ...body }) => {
+    async ({ linkedAutomationBody, ...body }) => {
       try {
         // A template draft carries empty automationId and createdAt, which the API rejects as unknown fields.
-        const { automationId: _draftId, createdAt: _draftCreated, ...linkedBody } = (linkedAutomation ?? {}) as WriteBody;
-        const linked = linkedAutomation ? (linkedBody as WriteBody) : undefined;
+        const { automationId: _draftId, createdAt: _draftCreated, ...linkedBody } = (linkedAutomationBody ?? {}) as WriteBody;
+        const linked = linkedAutomationBody ? (linkedBody as WriteBody) : undefined;
         for (const candidate of linked ? [body, linked] : [body]) {
           const graphRefusal = refuseInvalidGraph(candidate.steps, candidate.trigger, candidate.runType);
           if (graphRefusal) return graphRefusal;
@@ -608,7 +634,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         try {
           const second = await createOne(api, { ...linked, linkedAutomationId: firstId });
           return {
-            content: [{ type: "text", text: JSON.stringify({ automation: first, linkedAutomation: second }, null, 2) }],
+            content: [{ type: "text", text: JSON.stringify({ automation: first, partnerAutomation: second }, null, 2) }],
           };
         } catch (err) {
           return {
@@ -675,7 +701,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         if (staleRefusal) return staleRefusal;
 
         const result = await api.put(`/v1/automations/${automationId}`, body);
-        let data: unknown = withPauseAfterUpdate(result.data);
+        let data: unknown = await withPauseAfterUpdate(api, result.data);
         if (isInboundWebhookTrigger(body.trigger)) {
           data = await withInboundWebhookInfo(api, data, automationId);
         }
@@ -1174,7 +1200,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "saved. Deprecated actions are marked; pick a replacement. An action the flow cannot feed carries needsInput " +
       "({ reason, hint, next }): after an email or file trigger, next is create_folder_automation, which means " +
       "import with speak-upload here and act in a linked folder automation (see create_automation's " +
-      "linkedAutomation). Read-only: listing an action does not run it.",
+      "linkedAutomationBody). Read-only: listing an action does not run it.",
     {
       app: z.string().min(1).max(100).optional().describe("App slug from list_automation_apps"),
       q: z
@@ -1222,7 +1248,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       "or file app paired with an app that takes results is two linked automations: draft is the intake (the " +
       "trigger, then speak-upload into a folder) and linkedDraft acts on it (media analysed in that folder, an AI " +
       "step, then the action). Put the one folder the user picks in the intake's speak-upload folderId and in " +
-      "linkedDraft's trigger.folderIds, then call create_automation with the intake and linkedAutomation set to " +
+      "linkedDraft's trigger.folderIds, then call create_automation with the intake and linkedAutomationBody set to " +
       "linkedDraft. Read-only: nothing is created.",
     {
       from: z.string().min(1).max(100).optional().describe("App slug where the work starts, or speak"),
