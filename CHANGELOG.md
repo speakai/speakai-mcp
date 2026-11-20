@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.2.0 (2026-11-20)
+
+- feat(tools): document showDescriptionWhileRecording in recorder meta
+
 ## v2.1.3 (2026-11-19)
 
 - Maintenance release
