@@ -1,0 +1,43 @@
+import { McpServer } from "@modelcontextprotocol/server";
+import axios, { AxiosInstance } from "axios";
+import { registerSpeakTool, ok, err } from "./_helpers.js";
+import { speakClient } from "../client.js";
+
+export function register(server: McpServer, client?: AxiosInstance): void {
+  const api = client ?? speakClient;
+
+  registerSpeakTool(server,
+    "get_billing_status",
+    "Show the account's billing status: plan (free_trial, pay_as_you_go, pro or custom), creditsRemaining, renewsAt, trialEndsAt, " +
+      "pendingPayment and canManageBilling. Read-only and free to call. Use it to tell the user before an upload, analysis or chat " +
+      "would run past the remaining credits, or after a tool reports that the account cannot cover the work. " +
+      "Retry a blocked tool only after the user confirms their account has credits.",
+    {},
+    {
+      title: "Get Billing Status",
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    async () => {
+      try {
+        const result = await api.get("/v1/subscription/billing-status");
+        return ok(result.data);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: "Error: Billing status is not available from this Speak AI server yet (HTTP 404). Ask the user to check their plan and credits in the Speak AI app.",
+              },
+            ],
+            isError: true,
+          };
+        }
+        return err(error);
+      }
+    }
+  );
+}

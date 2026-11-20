@@ -1,4 +1,6 @@
 import * as path from "path";
+import axios from "axios";
+import { formatAxiosError } from "./client.js";
 
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"];
 
@@ -49,6 +51,47 @@ export const SUPPORTED_URL_SOURCES =
 
 /** Page links that look importable but are not handled by the URL upload path. */
 export const UNSUPPORTED_URL_SOURCES = "Vimeo and Loom page links are not supported.";
+
+export const URL_UPLOAD_HELP =
+  "If the message above is about the link, show it to the user and ask for a different link instead of retrying the same one. " +
+  "A link works when it opens without signing in and is either a direct link to an audio or video file (such as .mp3, .m4a, .wav or .mp4) " +
+  `or a public page link from ${SUPPORTED_URL_SOURCES}. ${UNSUPPORTED_URL_SOURCES} ` +
+  "Private or sign-in-only links, photo-only posts and links to web pages without media cannot be imported.";
+
+export const MEDIA_NOT_FOUND_HELP =
+  "No media with this mediaId exists in the signed-in Speak account. It may have been deleted, belong to a different Speak account, " +
+  "or not be a mediaId at all (a media name, a database _id or an id from another tool). " +
+  "Call search_media or list_media to find the right mediaId, then try again.";
+
+export function apiErrorText(error: unknown, helpByStatus: Record<number, string>): string {
+  const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+  const help = status === undefined ? undefined : helpByStatus[status];
+  return `Error: ${formatAxiosError(error)}${help ? `\n\n${help}` : ""}`;
+}
+
+export function defaultUploadName(source: string, name?: string, now: Date = new Date()): string {
+  const given = name?.trim();
+  if (given) return given;
+  const fileName = fileNameFromSource(source);
+  if (fileName) return fileName;
+  return `Upload ${now.toISOString().slice(0, 16).replace("T", " ")} UTC`;
+}
+
+function fileNameFromSource(source: string): string | undefined {
+  if (!/^https?:\/\//i.test(source.trim())) return path.basename(source.trim()) || undefined;
+  let lastSegment: string | undefined;
+  try {
+    lastSegment = new URL(source.trim()).pathname.split("/").filter(Boolean).pop();
+  } catch {
+    return undefined;
+  }
+  if (!lastSegment) return undefined;
+  let fileName = lastSegment.trim();
+  try {
+    fileName = decodeURIComponent(lastSegment).trim();
+  } catch {}
+  return fileName && path.extname(fileName) ? fileName : undefined;
+}
 
 
 export function detectImageMimeType(bytes: Uint8Array): "image/jpeg" | "image/png" | "image/webp" | null {

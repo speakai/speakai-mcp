@@ -1,9 +1,9 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
-import { registerSpeakTool } from "./_helpers.js";
+import { registerSpeakTool, refusalResult } from "./_helpers.js";
 import type { RegisterOptions } from "./index.js";
-import { speakClient, formatAxiosError } from "../client.js";
+import { speakClient, formatAxiosError, formatRefusal, getApiRefusal, type ApiRefusal } from "../client.js";
 import { MediaType } from "@speakai/shared";
 import * as fs from "fs";
 import * as path from "path";
@@ -12,6 +12,9 @@ import {
   detectMediaType,
   SUPPORTED_URL_SOURCES,
   UNSUPPORTED_URL_SOURCES,
+  URL_UPLOAD_HELP,
+  apiErrorText,
+  defaultUploadName,
 } from "../media-utils.js";
 import { MULTIMODAL_DISABLED_MESSAGE, multimodalCapability } from "../capabilities.js";
 import {
@@ -189,8 +192,8 @@ interface BuildAutomationArgs {
 // registerSpeakTool call site. Validation behavior is unchanged.
 const buildAutomationSchema: z.ZodRawShape = {
   name: z.string().min(1).max(150).describe("Display name for the automation"),
-  trigger: z.record(z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
-  steps: z.array(z.record(z.unknown())).min(1).max(20).describe(STEP_SPEC_DESCRIPTION),
+  trigger: z.record(z.string(), z.unknown()).describe(TRIGGER_SPEC_DESCRIPTION),
+  steps: z.array(z.record(z.string(), z.unknown())).min(1).max(20).describe(STEP_SPEC_DESCRIPTION),
   automationId: z
     .string()
     .optional()
@@ -198,7 +201,7 @@ const buildAutomationSchema: z.ZodRawShape = {
   description: z.string().max(1000).optional().describe("Optional description"),
   isActive: z.boolean().optional().describe("Whether the automation is active (default true)"),
   orTriggers: z
-    .array(z.record(z.unknown()))
+    .array(z.record(z.string(), z.unknown()))
     .max(10)
     .optional()
     .describe(
@@ -641,7 +644,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       // A plain literal, not a template: the docs generator drops a tool's whole parameter
       // table when a description interpolates a value it cannot resolve statically.
       url: z.string().describe("Direct/public media file URL, or a shareable social/video page link — page links are resolved to the underlying media server-side. See this tool's description for the platforms accepted. Pass the URL the user gave you as-is; do not try to convert it to a file URL first."),
-      name: z.string().optional().describe("Display name for the media (defaults to filename from URL)"),
+      name: z.string().optional().describe("Display name for the media. Defaults to the file name in the URL, or \"Upload\" with the date and time when the URL has none."),
       mediaType: z.enum([MediaType.AUDIO, MediaType.VIDEO] as [string, ...string[]]).optional().describe('Type of media: "audio" or "video". Send it whenever the user has told you which they want — if they called it an audio file, or asked for audio only, pass "audio"; if they called it a video, pass "video". Otherwise omit it and the server decides: it inspects the actual file for a direct URL, and picks the best track the platform offers for a page link. Do not guess from the URL, because sending a value stops the server inspecting the file, and a video imported as "audio" can never be analysed as video afterwards.'),
       sourceLanguage: z.string().optional().describe("BCP-47 language code (e.g., 'en-US', 'he-IL')"),
       folderId: z.string().optional().describe("Folder ID to place the media in"),
@@ -665,7 +668,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         // would send a guess the server cannot tell apart from a decision, and an explicit
         // mediaType stops the server probing the real file.
         const uploadBody: Record<string, unknown> = {
-          name: params.name ?? params.url.split("/").pop()?.split("?")[0] ?? "Upload",
+          name: defaultUploadName(params.url, params.name),
           url: params.url,
         };
         if (params.mediaType) uploadBody.mediaType = params.mediaType;
@@ -678,6 +681,8 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         const state = uploadRes.data?.data?.state ?? "pending";
 
         if (!mediaId) {
+          const refusal = getApiRefusal(uploadRes.data);
+          if (refusal) return refusalResult(refusal);
           return {
             content: [{ type: "text", text: `Error: Upload succeeded but no mediaId returned.\n${JSON.stringify(uploadRes.data, null, 2)}` }],
             isError: true,
@@ -700,7 +705,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         };
       } catch (err) {
         return {
-          content: [{ type: "text", text: `Error: ${formatAxiosError(err)}` }],
+          content: [{ type: "text", text: apiErrorText(err, { 400: URL_UPLOAD_HELP }) }],
           isError: true,
         };
       }
@@ -753,6 +758,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
       const uploaded: { url: string; mediaId: string; state: string }[] = [];
       const failed: { url: string; error: string }[] = [];
+      let refusal: ApiRefusal | undefined;
 
       // A shared cursor is what bounds concurrency: N workers pull from one queue, so a slow
       // URL never leaves the others waiting on a fixed-size chunk to drain.
@@ -761,12 +767,12 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       const send = (url: string) =>
         api.post("/v1/media/upload", {
           ...shared,
-          name: url.split("/").pop()?.split("?")[0] || "Upload",
+          name: defaultUploadName(url),
           url,
         });
 
       const worker = async () => {
-        for (let i = cursor++; i < urls.length; i = cursor++) {
+        for (let i = cursor++; i < urls.length && !refusal; i = cursor++) {
           const url = urls[i];
           try {
             let res;
@@ -779,14 +785,24 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
               res = await send(url);
             }
             const mediaId = res.data?.data?.mediaId;
-            if (mediaId) uploaded.push({ url, mediaId, state: res.data?.data?.state ?? "pending" });
-            else failed.push({ url, error: "Upload accepted but no mediaId was returned." });
+            if (mediaId) {
+              uploaded.push({ url, mediaId, state: res.data?.data?.state ?? "pending" });
+              continue;
+            }
+            refusal ??= getApiRefusal(res.data);
+            failed.push({ url, error: refusal ? formatRefusal(refusal) : "Upload accepted but no mediaId was returned." });
           } catch (err) {
+            refusal ??= getApiRefusal(err);
             failed.push({ url, error: formatAxiosError(err) });
           }
         }
       };
       await Promise.all(Array.from({ length: workerCount }, worker));
+
+      if (refusal && uploaded.length === 0) return refusalResult(refusal);
+
+      const attempted = new Set([...uploaded, ...failed].map((entry) => entry.url));
+      const notSent = urls.filter((url) => !attempted.has(url));
 
       const result = {
         requested: urls.length,
@@ -794,15 +810,22 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         failed: failed.length,
         media: uploaded,
         errors: failed,
-        nextSteps: uploaded.length
+        ...(refusal ? { notSent, refusal } : {}),
+        nextSteps: refusal
+          ? [
+              `1. Stopped after ${uploaded.length} upload(s): ${formatRefusal(refusal)}`,
+              `2. Show that message to the user. ${notSent.length + failed.length} URL(s) were not imported; send them again only after the user confirms.`,
+              `3. Poll get_media_status for each uploaded mediaId every 10-30 seconds.`,
+            ]
+          : uploaded.length
           ? [
               `1. Poll get_media_status for each of the ${uploaded.length} mediaId values every 10-30 seconds, or call list_media on the folder to see them together.`,
               `2. When one reads "processed", call get_media_insights and get_transcript for it.`,
               failed.length
-                ? `3. ${failed.length} URL(s) did not upload — report the reasons above rather than silently retrying.`
+                ? `3. ${failed.length} URL(s) did not upload — report the reasons above rather than silently retrying. ${URL_UPLOAD_HELP}`
                 : `3. Nothing failed in this batch.`,
             ]
-          : ["No uploads were accepted. Report the errors above to the user."],
+          : [`No uploads were accepted. Report the errors above to the user. ${URL_UPLOAD_HELP}`],
       };
 
       // Every URL failing is a failed call, not a successful batch of failures.
@@ -880,7 +903,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
 
         // 3. Create media entry
         const createBody: Record<string, unknown> = {
-          name: params.name ?? filename,
+          name: defaultUploadName(filename, params.name),
           url: uploadUrl.split("?")[0], // S3 URL without query params; server re-signs via CloudFront
           mediaType,
         };

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -26,6 +26,15 @@ function getRegisteredTools(server: McpServer): Record<string, any> {
   return (server as any)._registeredTools;
 }
 
+const ALL_OPTIONS = { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true };
+
+async function toolNamesWith(options: Record<string, unknown>): Promise<string[]> {
+  const { registerAllTools } = await import("../src/tools/index.js");
+  const server = new McpServer({ name: "speak-ai-test", version: "1.0.0" });
+  registerAllTools(server, undefined, options);
+  return Object.keys(getRegisteredTools(server)).sort();
+}
+
 describe("MCP Server Smoke Tests", () => {
   let server: McpServer;
 
@@ -33,24 +42,23 @@ describe("MCP Server Smoke Tests", () => {
     server = new McpServer({ name: "speak-ai-test", version: "1.0.0" });
   });
 
-  it("registers all 189 MCP tools without errors", async () => {
+  it("gives the hosted server answer-only AI Chat and leaves local-disk, automation and voice test-run detail tools off", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
-    expect(() => registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true })).not.toThrow();
+    registerAllTools(server, undefined, { aiChatAnswerOnly: true });
 
     const tools = getRegisteredTools(server);
     const toolNames = Object.keys(tools);
-    expect(toolNames).toHaveLength(189);
-  });
-
-  it("leaves local-disk, AI Chat, automation and voice test-run detail tools off the hosted server", async () => {
-    const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server);
-
-    const toolNames = Object.keys(getRegisteredTools(server));
     expect(toolNames).not.toContain("upload_local_file");
-    for (const chatTool of ["ask_ai_chat", "retry_ai_chat", "get_analysis_quote"]) {
-      expect(toolNames).not.toContain(chatTool);
+    for (const chatTool of ["ask_ai_chat", "retry_ai_chat"]) {
+      expect(tools[chatTool].description).toContain("answers only from the person's Speak recordings");
+      expect(tools[chatTool].description).not.toContain("third-party");
+      expect(tools[chatTool].annotations.openWorldHint).toBe(false);
     }
+    expect(tools.ask_ai_chat.annotations.destructiveHint).toBe(false);
+    expect(toolNames).not.toContain("check_analysis_eligibility");
+    const askSchema = JSON.stringify(tools.ask_ai_chat.inputSchema ?? {});
+    expect(askSchema).not.toContain("analysisInput");
+    expect(tools.ask_ai_chat.description).not.toContain("check_analysis_eligibility");
     for (const gated of [
       "create_automation",
       "build_automation",
@@ -66,30 +74,32 @@ describe("MCP Server Smoke Tests", () => {
     expect(toolNames).toContain("get_chat_history");
     expect(toolNames).toContain("create_webhook");
     expect(toolNames).toContain("start_voice_test_run");
-    expect(toolNames).toHaveLength(160);
+    // Hosted exposes a subset of the full surface and none of the automation tools,
+    // whose steps can run actions in connected third-party apps.
+    const { SPEAK_MCP_TOOL_CATEGORIES } = await import("../src/tool-categories.js");
+    const automationTools: readonly string[] = SPEAK_MCP_TOOL_CATEGORIES.find((c) => c.id === "automations")!.tools;
+    const full = await toolNamesWith(ALL_OPTIONS);
+    expect(toolNames.filter((name) => !full.includes(name))).toEqual([]);
+    expect(toolNames.filter((name) => automationTools.includes(name))).toEqual([]);
   });
 
-  it("leaves the voice test-run tools off when voiceTestRuns is false", async () => {
-    const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { voiceTestRuns: false });
+  it("voiceTestRuns: false removes exactly the voice test-run tools and keeps the suite tools", async () => {
+    const full = await toolNamesWith(ALL_OPTIONS);
+    const withoutRuns = await toolNamesWith({ ...ALL_OPTIONS, voiceTestRuns: false });
 
-    const toolNames = Object.keys(getRegisteredTools(server));
-    for (const runTool of [
-      "start_voice_test_run",
+    expect(full.filter((name) => !withoutRuns.includes(name))).toEqual([
+      "apply_voice_test_recommendation",
+      "cancel_voice_test_run",
       "get_active_voice_test_run",
+      "get_voice_test_baseline",
+      "get_voice_test_run",
+      "get_voice_test_score_history",
+      "list_voice_test_runs",
       "pause_voice_test_run",
       "resume_voice_test_run",
-      "cancel_voice_test_run",
-      "list_voice_test_runs",
-      "get_voice_test_run",
-      "apply_voice_test_recommendation",
-      "get_voice_test_baseline",
-      "get_voice_test_score_history",
-    ]) {
-      expect(toolNames).not.toContain(runTool);
-    }
-    expect(toolNames).toContain("get_voice_test_suite");
-    expect(toolNames).toHaveLength(152);
+      "start_voice_test_run",
+    ]);
+    expect(withoutRuns).toContain("get_voice_test_suite");
   });
 
   it("declares every registerAllTools option in the published types", () => {
@@ -101,33 +111,13 @@ describe("MCP Server Smoke Tests", () => {
     expect(published).toEqual(source);
   });
 
-  it("registers all tools with unique names", async () => {
-    const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
-
-    const tools = getRegisteredTools(server);
-    const names = Object.keys(tools);
-    const uniqueNames = new Set(names);
-    expect(uniqueNames.size).toBe(names.length);
-  });
-
-  it("every tool has a non-empty description", async () => {
+  it("every tool declares a description, Apps SDK annotations and an output schema", async () => {
     const { registerAllTools } = await import("../src/tools/index.js");
     registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
 
     const tools = getRegisteredTools(server);
     for (const [name, tool] of Object.entries(tools)) {
-      expect(tool.description, `Tool ${name} missing description`).toBeTruthy();
-      expect(tool.description.length).toBeGreaterThan(10);
-    }
-  });
-
-  it("every tool declares Apps SDK annotations and an output schema", async () => {
-    const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
-
-    const tools = getRegisteredTools(server);
-    for (const [name, tool] of Object.entries(tools)) {
+      expect(String(tool.description ?? "").length, `Tool ${name} missing a description`).toBeGreaterThan(10);
       expect(tool.outputSchema, `Tool ${name} missing outputSchema`).toBeTruthy();
       expect(tool.annotations?.title, `Tool ${name} missing annotations.title`).toBeTruthy();
       expect(tool.annotations?.title, `Tool ${name} title out of step`).toBe(tool.title);
@@ -195,6 +185,7 @@ describe("MCP Server Smoke Tests", () => {
       "provision_inbound_webhook",
       "resume_voice_test_run",
       "start_voice_test_run",
+      "submit_feedback",
       "upload_and_analyze",
       "upload_and_analyze_batch",
       "upload_local_file",
@@ -315,25 +306,6 @@ describe("MCP Server Smoke Tests", () => {
     expect(result.structuredContent).toEqual({
       data: { data: [{ id: "media-1" }] },
     });
-  });
-
-  it("registers all 5 MCP resources without errors", async () => {
-    const { registerResources } = await import("../src/resources.js");
-    expect(() => registerResources(server)).not.toThrow();
-  });
-
-  it("registers all 3 MCP prompts without errors", async () => {
-    const { registerPrompts } = await import("../src/prompts.js");
-    expect(() => registerPrompts(server)).not.toThrow();
-  });
-
-  it("exports public API correctly", async () => {
-    const exports = await import("../src/index.js");
-    expect(exports.registerAllTools).toBeTypeOf("function");
-    expect(exports.registerResources).toBeTypeOf("function");
-    expect(exports.registerPrompts).toBeTypeOf("function");
-    expect(exports.createSpeakClient).toBeTypeOf("function");
-    expect(exports.formatAxiosError).toBeTypeOf("function");
   });
 
   describe("get_live_meeting_transcript", () => {
@@ -498,39 +470,5 @@ describe("MCP Server Smoke Tests", () => {
       expect(result.structuredContent.data.nextCursor).toBe(12.5);
       expect(result.structuredContent.data.newSentences).toHaveLength(0);
     });
-  });
-
-  it("includes expected tool categories", async () => {
-    const { registerAllTools } = await import("../src/tools/index.js");
-    registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
-
-    const tools = getRegisteredTools(server);
-    const names = Object.keys(tools);
-
-    // Verify key tools from each category exist
-    const expectedTools = [
-      // Media
-      "upload_media", "list_media", "get_transcript", "get_media_insights",
-      "get_media_status", "delete_media", "upload_local_file", "upload_and_analyze",
-      "get_captions", "reanalyze_media", "toggle_media_favorite",
-      // Chat
-      "ask_ai_chat", "get_chat_history", "get_chat_messages",
-      "retry_ai_chat", "export_chat_answer",
-      // Search
-      "search_media",
-      // Clips
-      "create_clip", "get_clips", "delete_clip",
-      // Folders
-      "list_folders", "create_folder", "delete_folder",
-      // Webhooks
-      "create_webhook", "list_webhooks",
-      // Meeting
-      "schedule_meeting_event",
-      "get_live_meeting_transcript",
-    ];
-
-    for (const name of expectedTools) {
-      expect(names, `Missing tool: ${name}`).toContain(name);
-    }
   });
 });

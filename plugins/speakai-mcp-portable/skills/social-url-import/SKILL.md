@@ -3,7 +3,7 @@ name: social-url-import
 description: Import public social and video links into Speak AI and read the results. Use this when someone pastes a YouTube, TikTok, Instagram, X, Facebook, Reddit, SoundCloud, Twitch, Dailymotion, Streamable, Snapchat, Pinterest, Tumblr, Bilibili, VK, OK.ru or Rutube link and wants it transcribed, summarized, analyzed or compared, when they hand over a list of links to process together, or when a link import fails and you need to tell them why. Covers which tool to call, what to pass for mediaType, how the batch import paces itself, and which failures are worth retrying. Uses upload_and_analyze, upload_and_analyze_batch, get_media_status, get_transcript, get_media_insights and list_media.
 license: MIT
 metadata:
-  server-version: "1.41.4"
+  server-version: "2.1.3"
   categories: "media"
 ---
 
@@ -134,3 +134,9 @@ as `state: "failed"` from `get_media_status`, so a status poll that never reache
 Every import consumes the workspace's credits, and a batch multiplies that. When a user
 pastes a long list, say how many links you are about to import before you run it. Imported
 media lands in their workspace permanently until deleted.
+
+## Feedback
+
+If Speak AI gets in the way during this workflow, or the person says what they like or
+dislike about it, offer once to send that to the Speak AI team with `submit_feedback`. The
+getting-started skill has the rules.

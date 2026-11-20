@@ -42,7 +42,7 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "submit_chat_feedback",
       "get_chat_statistics",
       "export_chat_answer",
-      "get_analysis_quote",
+      "check_analysis_eligibility",
     ],
   },
   {
@@ -296,6 +296,20 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "delete_voice_agent_resource",
       "analyze_voice_instruction_gaps",
       "apply_voice_instruction_gap",
+    ],
+  },
+  {
+    id: "billing",
+    name: "Billing",
+    tools: [
+      "get_billing_status",
+    ],
+  },
+  {
+    id: "feedback",
+    name: "Feedback",
+    tools: [
+      "submit_feedback",
     ],
   },
 ] as const satisfies readonly { id: string; name: string; tools: readonly string[] }[];

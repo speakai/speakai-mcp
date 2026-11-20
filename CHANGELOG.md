@@ -1,5 +1,57 @@
 # Changelog
 
+## v2.1.3 (2026-11-19)
+
+- Maintenance release
+
+## v2.1.2 (2026-11-19)
+
+- fix(cli): call reaches every listed tool, safe meeting-brief days, owner-only config (#191)
+
+## v2.1.1 (2026-11-18)
+
+- Maintenance release
+
+## v2.1.0 (2026-11-18)
+
+- fix(feedback): describe the one-a-minute suggestion limit
+
+## v2.0.1 (2026-11-17)
+
+- Maintenance release
+
+## v2.0.0 (2026-11-14)
+
+- fix(sdk): never send structuredContent data undefined
+
+## v1.43.3 (2026-11-13)
+
+- fix(chat): leave check_analysis_eligibility off the hosted server
+
+## v1.43.2 (2026-11-13)
+
+- fix(chat): rename get_analysis_quote to check_analysis_eligibility
+
+## v1.43.1 (2026-11-13)
+
+- fix(plugin): keep the OpenAI package in line with the hosted tool set
+
+## v1.43.0 (2026-11-13)
+
+- feat(tools): file list card in the chat
+
+## v1.42.2 (2026-11-13)
+
+- fix(billing): get_billing_status describes billing without offers or links
+
+## v1.42.1 (2026-11-13)
+
+- fix(billing): get_billing_status says how Pro compares and when to retry
+
+## v1.42.0 (2026-11-13)
+
+- fix(tools): keep billing wording out of tool descriptions
+
 ## v1.41.4 (2026-11-11)
 
 - Maintenance release

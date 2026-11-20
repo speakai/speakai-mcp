@@ -19,7 +19,11 @@ function ensureDir(): void {
 export function loadConfig(): SpeakConfig {
   try {
     if (fs.existsSync(CONFIG_FILE)) {
-      return JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8"));
+      const parsed: unknown = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8"));
+      // A file holding null, an array or a plain value is treated as empty
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed as SpeakConfig;
+      }
     }
   } catch {
     // Corrupted config — start fresh
@@ -29,6 +33,9 @@ export function loadConfig(): SpeakConfig {
 
 export function saveConfig(config: SpeakConfig): void {
   ensureDir();
+  // writeFileSync applies `mode` only when it creates the file, so make an
+  // existing file owner-only before the key is written to it.
+  if (fs.existsSync(CONFIG_FILE)) fs.chmodSync(CONFIG_FILE, 0o600);
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2) + "\n", {
     mode: 0o600, // Owner read/write only
   });

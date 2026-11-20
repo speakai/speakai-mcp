@@ -1,4 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { AxiosInstance } from "axios";
 import { z } from "zod";
 import { registerSpeakTool } from "./_helpers.js";
@@ -8,24 +8,29 @@ import { AssistantType } from "@speakai/shared";
 
 export function register(server: McpServer, client?: AxiosInstance, options: RegisterOptions = {}): void {
   const api = client ?? speakClient;
+  const answerOnly = Boolean(options.aiChatAnswerOnly);
 
   // ── Chat (AI Chat) ──────────────────────────────────────────────────
 
   const askAiChatDescription = [
     "Ask an AI-powered question about your media using Speak AI's AI Chat.",
-    "Supports querying a single file, multiple files, entire folders, or your whole workspace.",
+    "Supports querying a single file, multiple files, entire folders, or your whole account.",
     "Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media.",
     "Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights).",
     "To continue a conversation, pass the promptId from a previous response.",
     "Returns a promptId — save it to continue the conversation with follow-up questions.",
-    "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
-    "reading the transcript alone. That is a premium feature and costs credits per hour of media —",
-    "call get_analysis_quote first to check eligibility and price.",
-    "Each question is charged to the account's chat usage.",
-    "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
+    ...(answerOnly
+      ? []
+      : [
+          "Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of",
+          "reading the transcript alone; call check_analysis_eligibility first to check the file can be analysed that way.",
+        ]),
+    answerOnly
+      ? "The assistant answers only from the person's Speak recordings: it can search them and chart what it finds, and it does not take actions in other apps."
+      : "The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
   ].join(" ");
 
-  const askAiChatInputSchema = {
+  const fullAskAiChatInputSchema = {
     prompt: z.string().min(1).describe("The question or prompt to ask about the media"),
     mediaIds: z
       .array(z.string())
@@ -81,25 +86,32 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       .optional()
       .describe("Scope the prompt to multiple custom fields (max 10)"),
     filters: z
-      .record(z.unknown())
+      .record(z.string(), z.unknown())
       .optional()
       .describe("Advanced filter object to scope which media the prompt runs over"),
     analysisMediaId: z
       .string()
       .optional()
-      .describe("Media to analyse as audio/video rather than transcript. Must also appear in mediaIds, and must be sent together with analysisInput. Premium feature."),
+      .describe("Media to analyse as audio/video rather than transcript. Must also appear in mediaIds, and must be sent together with analysisInput."),
     analysisInput: z
       .enum(["audio", "video"])
       .optional()
-      .describe("'audio' lets the model hear tone, pacing and delivery; 'video' also lets it see what is on screen. Omit for transcript-only, which is the default and costs nothing extra. 'transcript' is not a valid value here — omitting the field IS transcript-only."),
+      .describe("'audio' lets the model hear tone, pacing and delivery; 'video' also lets it see what is on screen. Omit for transcript-only, which is the default. 'transcript' is not a valid value here — omitting the field IS transcript-only."),
   };
+
+  // The hosted server answers from transcripts only, so it leaves out the audio and video fields and the eligibility check.
+  const { analysisMediaId: _hostedSkipsMedia, analysisInput: _hostedSkipsInput, ...hostedAskAiChatInputSchema } =
+    fullAskAiChatInputSchema;
+  const askAiChatInputSchema = answerOnly
+    ? (hostedAskAiChatInputSchema as typeof fullAskAiChatInputSchema)
+    : fullAskAiChatInputSchema;
 
   const askAiChatAnnotations = {
     title: "Ask AI Chat",
     readOnlyHint: false,
-    destructiveHint: true,
+    destructiveHint: !answerOnly,
     idempotentHint: false,
-    openWorldHint: true,
+    openWorldHint: !answerOnly,
   };
 
   /**
@@ -198,8 +210,9 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     }
   };
 
-  // Speak's assistant behind AI Chat can call other tools, so only servers that opt in expose it.
-  if (options.aiChat) registerSpeakTool(
+  const aiChat = options.aiChat || answerOnly;
+
+  if (aiChat) registerSpeakTool(
     server,
     "ask_ai_chat",
     askAiChatDescription,
@@ -208,22 +221,22 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     askAiChatHandler
   );
 
-  if (options.aiChat) registerSpeakTool(server,
-    "get_analysis_quote",
-    "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. " +
-      "Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason — an unavailable file is a normal result here, not an error. " +
-      "This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
+  if (aiChat && !answerOnly) registerSpeakTool(server,
+    "check_analysis_eligibility",
+    "Check whether a media file can be analysed as audio or video before running ask_ai_chat with analysisInput. " +
+      "Returns whether the file is eligible and, when it is not, a plain-English reason. An unavailable file is a normal result here, not an error. " +
+      "This is the only check that accounts for both the account's opt-in and the server-wide switch, so call it before an audio or video run.",
     {
-      mediaId: z.string().min(1).describe("Media file to price"),
+      mediaId: z.string().min(1).describe("Media file to check"),
       analysisInput: z
         .enum(["audio", "video"])
         .describe(
-          "Which pass to price: 'audio' (tone, pacing, delivery) or 'video' (also on-screen visuals, gestures, slides). Required."
+          "Which pass to check: 'audio' (tone, pacing, delivery) or 'video' (also on-screen visuals, gestures, slides). Required."
         ),
       modelId: z
         .string()
         .optional()
-        .describe("Optional model id to price against. Omit for the workspace default."),
+        .describe("Optional model id to check against. Omit for the workspace default."),
     },
     {
       title: "Get Analysis Quote",
@@ -247,9 +260,12 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     }
   );
 
-  if (options.aiChat) registerSpeakTool(server,
+  if (aiChat) registerSpeakTool(server,
     "retry_ai_chat",
-    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
+    "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings and replaces the earlier answer for that message. " +
+      (answerOnly
+        ? "Like ask_ai_chat, the assistant answers only from the person's Speak recordings and does not take actions in other apps."
+        : "Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps."),
     {
       promptId: z.string().min(1).describe("ID of the conversation containing the failed message"),
       messageId: z.string().min(1).describe("ID of the specific message to retry"),
@@ -259,7 +275,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: false,
-      openWorldHint: true,
+      openWorldHint: !answerOnly,
     },
     async (body) => {
       try {

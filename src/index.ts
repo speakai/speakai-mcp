@@ -2,7 +2,7 @@
 
 // Public API — for use as a library (e.g., from the API server)
 export { registerAllTools } from "./tools/index.js";
-export type { RegisterOptions } from "./tools/index.js";
+export type { RegisterOptions, ToolCallEvent } from "./tools/index.js";
 export { registerResources } from "./resources.js";
 export { registerPrompts } from "./prompts.js";
 export { createSpeakClient, formatAxiosError } from "./client.js";
@@ -61,7 +61,10 @@ const isCliMode =
   args.length > 0 &&
   (args[0].startsWith("-") || cliCommands.includes(args[0]));
 
-if (isCliMode) {
+// Importing the package as a library must never read the host's stdin or write to its stdout.
+const isEntryPoint = typeof module !== "undefined" && require.main === module;
+
+if (isEntryPoint && isCliMode) {
   // CLI mode — resolve config before importing client
   import("./cli/config.js").then(({ resolveApiKey, resolveBaseUrl }) => {
     resolveApiKey();
@@ -74,33 +77,26 @@ if (isCliMode) {
       });
     });
   });
-} else {
+} else if (isEntryPoint) {
   // MCP STDIO server mode (bare invocation or piped input)
-  import("@modelcontextprotocol/sdk/server/mcp.js").then(({ McpServer }) => {
-    import("@modelcontextprotocol/sdk/server/stdio.js").then(
-      ({ StdioServerTransport }) => {
-        Promise.all([
-          import("./tools/index.js"),
-          import("./resources.js"),
-          import("./prompts.js"),
-        ]).then(([{ registerAllTools }, { registerResources }, { registerPrompts }]) => {
-          const server = new McpServer({
-            name: "speak-ai",
-            version: "1.0.0",
-          });
+  Promise.all([
+    import("@modelcontextprotocol/server"),
+    import("@modelcontextprotocol/server/stdio"),
+    import("./tools/index.js"),
+    import("./resources.js"),
+    import("./prompts.js"),
+  ]).then(([{ McpServer }, { serveStdio }, { registerAllTools, LOCAL_TOOL_OPTIONS }, { registerResources }, { registerPrompts }]) => {
+    serveStdio(() => {
+      const server = new McpServer({
+        name: "speak-ai",
+        version: "1.0.0",
+      });
 
-          registerAllTools(server, undefined, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
-          registerResources(server);
-          registerPrompts(server);
-
-          const transport = new StdioServerTransport();
-          server.connect(transport).then(() => {
-            process.stderr.write(
-              "[speakai-mcp] Server started on stdio transport\n"
-            );
-          });
-        });
-      }
-    );
+      registerAllTools(server, undefined, { ...LOCAL_TOOL_OPTIONS, cards: process.env.SPEAK_MCP_CARDS === "true" });
+      registerResources(server);
+      registerPrompts(server);
+      return server;
+    });
+    process.stderr.write("[speakai-mcp] Server started on stdio transport\n");
   });
 }

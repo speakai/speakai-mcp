@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { __resetCapabilityCache } from "../src/capabilities.js";
 
 const mockGet = vi.fn();
@@ -224,7 +224,7 @@ describe("ask_ai_chat — analysis fields", () => {
   });
 });
 
-describe("get_analysis_quote", () => {
+describe("check_analysis_eligibility", () => {
   let server: McpServer;
 
   beforeEach(async () => {
@@ -237,7 +237,7 @@ describe("get_analysis_quote", () => {
   });
 
   it("queries the quote endpoint with the media and mode", async () => {
-    const cb = getToolCallback(server, "get_analysis_quote");
+    const cb = getToolCallback(server, "check_analysis_eligibility");
     await cb({ mediaId: "abc", analysisInput: "video" });
 
     expect(mockGet).toHaveBeenCalledWith("/v1/prompt/analysisQuote", {
@@ -252,7 +252,7 @@ describe("get_analysis_quote", () => {
       data: { data: { eligible: false, reason: "Audio and video analysis is not enabled for this account.", credits: 0, seconds: 0 } },
     });
 
-    const cb = getToolCallback(server, "get_analysis_quote");
+    const cb = getToolCallback(server, "check_analysis_eligibility");
     const result = await cb({ mediaId: "abc", analysisInput: "audio" });
 
     expect(result.isError).toBeUndefined();

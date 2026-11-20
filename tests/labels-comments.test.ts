@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 
 const mockGet = vi.fn();
 const mockPost = vi.fn();
@@ -253,5 +253,59 @@ describe("Labels and comments notification notes", () => {
     for (const name of ["list_labels", "list_media_labels", "list_media_comments"]) {
       expect(description(name), name).not.toContain("Notifications under");
     }
+  });
+});
+
+// Words of TRANSCRIPT, by index: 0 hello, 1 new, 2 york, 3 we, 4 can't, 5 ship, 6 this, 7 we, 8 can, 9 fix, 10 it.
+describe("resolveRange", () => {
+  async function resolve(input: Record<string, unknown>, transcript: unknown = TRANSCRIPT) {
+    mockGet.mockReset().mockResolvedValue({ data: transcript });
+    const { resolveRange } = await import("../src/tools/transcript-range.js");
+    return resolveRange(mockClient, "m1", input);
+  }
+
+  it.each([
+    ["the last word of the transcript", { quote: "it." }, { start: 10, end: 10 }],
+    ["a quote across a sentence end", { quote: "this. We" }, { start: 6, end: 7 }],
+    ["the chosen occurrence of a repeated word", { quote: "we", occurrence: 1 }, { start: 3, end: 3 }],
+  ])("anchors %s at the current revision", async (_case, input, range) => {
+    expect(await resolve(input)).toEqual({ range, expectedTranscriptRevision: 4 });
+  });
+
+  it("lists overlapping matches and picks the asked one", async () => {
+    const chant = { status: "success", data: { transcriptRevision: 1, insight: { transcript: [{ text: "na na na" }] } } };
+
+    await expect(resolve({ quote: "na na" }, chant)).rejects.toThrow(
+      /appears 2 times[\s\S]*occurrence 1 \(words 0-1\)[\s\S]*occurrence 2 \(words 1-2\)/
+    );
+    expect(await resolve({ quote: "na na", occurrence: 2 }, chant)).toEqual({ range: { start: 1, end: 2 }, expectedTranscriptRevision: 1 });
+  });
+
+  it("means the whole file when neither range nor quote is given, without reading the transcript", async () => {
+    expect(await resolve({})).toBeNull();
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["occurrence without quote", { occurrence: 1 }, "occurrence only applies together with quote"],
+    ["a reversed range", { range: { start: 5, end: 4 }, expectedTranscriptRevision: 4 }, "range.end must be greater than or equal to range.start"],
+    ["a revision with nothing to anchor", { expectedTranscriptRevision: 4 }, "expectedTranscriptRevision only applies together with range or quote"],
+  ])("rejects %s before reading the transcript", async (_case, input, message) => {
+    await expect(resolve(input)).rejects.toThrow(message);
+    expect(mockGet).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["an occurrence past the last match", { quote: "we", occurrence: 3 }, TRANSCRIPT, "occurrence 3 requested, but quote appears 2 time(s)"],
+    ["a quote of punctuation only", { quote: "— !" }, TRANSCRIPT, "quote has no words once punctuation is removed"],
+    [
+      "a transcript with no revision",
+      { quote: "we can" },
+      { status: "success", data: { insight: { transcript: [{ text: "we can" }] } } },
+      "did not return transcriptRevision",
+    ],
+  ])("refuses to guess a range for %s", async (_case, input, transcript, message) => {
+    await expect(resolve(input, transcript)).rejects.toThrow(message);
+    expect(mockGet).toHaveBeenCalledWith("/v1/media/transcript/m1");
   });
 });

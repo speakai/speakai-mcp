@@ -4,7 +4,7 @@ description: Analyze interviews, user research calls, and customer conversations
 license: MIT
 metadata:
   server: "@speakai/mcp-server"
-  server-version: "1.41.4"
+  server-version: "2.1.3"
   categories: "research"
 ---
 
@@ -17,9 +17,8 @@ recording. The work always follows the same shape. Find the right recordings, co
 they are ready to read, scope the set, read it and do the analysis yourself, then check
 the exact words against the transcripts so the answer is defensible.
 
-The Speak AI MCP server has 189 tools. This skill uses tools from five of the fifteen
-categories: search-analytics (3 tools), magic-prompt (13 tools), media (19 tools),
-folders-views (11 tools), and custom-fields (4 tools). Every tool named below exists.
+This skill uses tools from five of the Speak AI MCP server's categories:
+search-analytics, magic-prompt, media, folders-views, and custom-fields. Every tool named below exists.
 Do not invent tool names. If you need something that is not listed here, check
 `tools.json` in the repository before you call anything.
 
@@ -355,3 +354,9 @@ before you answer, rather than reusing the media ids from the earlier question.
 
 Per tool documentation follows the pattern
 `https://docs.speakai.co/mcp/tools/<category-id>/<tool_name>/`.
+
+## Feedback
+
+If Speak AI gets in the way during this workflow, or the person says what they like or
+dislike about it, offer once to send that to the Speak AI team with `submit_feedback`. The
+getting-started skill has the rules.

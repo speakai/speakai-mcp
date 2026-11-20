@@ -3,7 +3,7 @@ name: clips-and-captions
 description: Turn Speak AI recordings into shareable output. Use this when someone asks for a highlight clip, a soundbite, a reel, subtitles, a caption track, an SRT or VTT file, a transcript exported as PDF, DOCX, TXT, CSV, MD, HTML or JSON, a merged export across several recordings, or an embeddable player or transcript widget for a website. Walks through finding the moment in a timestamped transcript, cutting the clip, waiting for it to finish processing, exporting captions in a supported format, and publishing an embed. Covers search_media, list_media, get_media_status, get_transcript, get_captions, create_clip, get_clips, update_clip, delete_clip, export_media, export_multiple_media, create_embed, check_embed, update_embed and get_embed_iframe_url.
 license: MIT
 metadata:
-  server-version: "1.41.4"
+  server-version: "2.1.3"
   categories: "clips, exports, media, embed-other"
 ---
 
@@ -12,8 +12,8 @@ metadata:
 The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
 
 This skill covers the tools that produce something a person can watch, read, or
-publish. Four categories matter here: clips (4 tools), exports (2 tools), media
-(19 tools), and embed-other (7 tools).
+publish. Four categories matter here: clips, exports, media,
+and embed-other.
 
 Every step below needs a `mediaId`. Get one from `search_media` or `list_media`
 before you do anything else.
@@ -281,3 +281,9 @@ file carries whatever the labels were at export time. Fix labels first with
 **Redaction is opt-in.** Exports are not redacted unless you set `isRedacted`.
 If the user mentions customer names, personal details, or anything regulated,
 set it.
+
+## Feedback
+
+If Speak AI gets in the way during this workflow, or the person says what they like or
+dislike about it, offer once to send that to the Speak AI team with `submit_feedback`. The
+getting-started skill has the rules.

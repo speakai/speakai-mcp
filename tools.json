@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 189,
+  "totalTools": 191,
   "categories": [
     {
       "id": "media",
@@ -21,7 +21,7 @@
         {
           "name": "get_signed_upload_url",
           "title": "Get Signed Upload URL",
-          "description": "Get a pre-signed S3 URL for direct file upload to Speak AI storage. After getting the URL, PUT your file to it, then call upload_media with the S3 URL. For a simpler workflow, use upload_local_file instead which handles all steps automatically.",
+          "description": "Get a pre-signed URL for sending a file's bytes straight to Speak AI storage. Use it only when you can make an HTTP PUT request with the file's bytes yourself, for example from a terminal on the user's computer. If you cannot send that request, do not call this tool: ask the user for a public link to the file and use upload_and_analyze, or ask them to upload it in the Speak AI app. After the PUT succeeds, call upload_media with the returned URL. Where upload_local_file is available it does all of these steps for you.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": false,
@@ -191,7 +191,7 @@
         {
           "name": "ask_ai_chat",
           "title": "Ask AI Chat",
-          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole workspace. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone. That is a premium feature and costs credits per hour of media — call get_analysis_quote first to check eligibility and price. Each question is charged to the account's chat usage. The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
+          "description": "Ask an AI-powered question about your media using Speak AI's AI Chat. Supports querying a single file, multiple files, entire folders, or your whole account. Pass mediaIds for specific files, folderIds for entire folders, or omit both to search across all media. Use assistantType to get specialized responses (e.g., 'researcher' for academic analysis, 'sales' for deal insights). To continue a conversation, pass the promptId from a previous response. Returns a promptId — save it to continue the conversation with follow-up questions. Set analysisMediaId + analysisInput to have the model listen to the audio or watch the video instead of reading the transcript alone; call check_analysis_eligibility first to check the file can be analysed that way. The assistant can also call other Speak AI tools and actions in the user's connected third-party apps (for example, sending a message), so a prompt can change data or send content outside this chat.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -200,7 +200,7 @@
         {
           "name": "retry_ai_chat",
           "title": "Retry AI Chat",
-          "description": "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings, replaces the earlier answer for that message, and is charged to the account's chat usage again. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
+          "description": "Retry a failed or incomplete AI Chat response. Use when a previous ask_ai_chat call returned an error or incomplete answer. The turn runs again with its original settings and replaces the earlier answer for that message. Like ask_ai_chat, the assistant can call other Speak AI tools and actions in connected third-party apps.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -297,9 +297,9 @@
           "openWorldHint": false
         },
         {
-          "name": "get_analysis_quote",
+          "name": "check_analysis_eligibility",
           "title": "Get Analysis Quote",
-          "description": "Check whether a media file can be analysed as audio or video, and what it will cost, before running ask_ai_chat with analysisInput. Returns { eligible, credits, seconds } and, when not eligible, a plain-English reason — an unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's premium opt-in and the server-wide switch, so call it before committing to an expensive run.",
+          "description": "Check whether a media file can be analysed as audio or video before running ask_ai_chat with analysisInput. Returns whether the file is eligible and, when it is not, a plain-English reason. An unavailable file is a normal result here, not an error. This is the only check that accounts for both the account's opt-in and the server-wide switch, so call it before an audio or video run.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -1843,6 +1843,40 @@
           "description": "Insert a suggested instruction patch into a voice agent's instructions and persist the result. Requires the OWNER or ADMIN role. suggestedPatch is typically taken directly from analyze_voice_instruction_gaps.",
           "readOnlyHint": false,
           "destructiveHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "billing",
+      "name": "Billing",
+      "iconKey": "billing",
+      "shortDescription": "Check the account's plan and remaining credits, with upgrade and top-up links.",
+      "tools": [
+        {
+          "name": "get_billing_status",
+          "title": "Get Billing Status",
+          "description": "Show the account's billing status: plan (free_trial, pay_as_you_go, pro or custom), creditsRemaining, renewsAt, trialEndsAt, pendingPayment and canManageBilling. Read-only and free to call. Use it to tell the user before an upload, analysis or chat would run past the remaining credits, or after a tool reports that the account cannot cover the work. Retry a blocked tool only after the user confirms their account has credits.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        }
+      ]
+    },
+    {
+      "id": "feedback",
+      "name": "Feedback",
+      "iconKey": "feedback",
+      "shortDescription": "Send the person's feedback about Speak AI to the Speak AI team, with their approval.",
+      "tools": [
+        {
+          "name": "submit_feedback",
+          "title": "Submit Feedback",
+          "description": "Send the person's feedback about Speak AI (a bug, something confusing, a missing feature, or praise) straight to the Speak AI team. When to offer it: when the person is frustrated with Speak AI, hits a bug or a limit, asks for something Speak AI cannot do, or says what they like or dislike about it. Offer once in a conversation, in one short sentence, and do not repeat the offer if they decline. Rules: send only with the person's clear yes. Write it in their words, show them the exact text first, and leave out recording or transcript content and anyone else's personal details unless they ask you to include them. Limit: one message a minute for each person; a refusal says when they can send again. For feedback on a single AI Chat answer, use submit_chat_feedback instead.",
+          "readOnlyHint": false,
+          "destructiveHint": false,
           "idempotentHint": false,
           "openWorldHint": false
         }

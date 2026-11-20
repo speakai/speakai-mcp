@@ -2,7 +2,7 @@
 name: automations-and-webhooks
 description: Receive Speak AI events on your own server with outbound webhooks, and explain where automations live. Use this when the user wants Speak to notify their system when a recording is created, processed or updated, wants to register, list, update or delete a webhook, needs to handle webhook deliveries reliably, or asks to build or run an automation. Covers create_webhook, list_webhooks, update_webhook and delete_webhook, the delivery body and idempotent handling with deliveryId, and points automation requests to the Speak AI web app. Keywords include webhook, outbound webhook, callback URL, event delivery, retry, idempotency, automation, workflow, trigger.
 metadata:
-  server-version: "1.41.4"
+  server-version: "2.1.3"
   categories: "webhooks"
   tool_count: "4"
 ---
@@ -106,3 +106,9 @@ Docs: <https://docs.speakai.co/mcp/tools/webhooks/create_webhook/>,
 **Permissions and scope.** Every call runs with the permissions of the API key or the OAuth session. A key without webhook access gets a `401` or `403`, not an empty list. Ask the user to check their key at <https://app.speakai.co/developers/apikeys> rather than retrying.
 
 **Ask before destructive calls.** `delete_webhook` stops deliveries and removes its delivery history, and `update_webhook` replaces the whole configuration. Confirm with the user first and say exactly what will change.
+
+## Feedback
+
+If Speak AI gets in the way during this workflow, or the person says what they like or
+dislike about it, offer once to send that to the Speak AI team with `submit_feedback`. The
+getting-started skill has the rules.

@@ -39,11 +39,9 @@ The AI does the searching, summarizing, and citing. Your recordings stay in your
 
 ## Install (pick your tool)
 
-> **Two paths to install**: pick whichever feels easier. The one-click connect path approves access via a permission popup; the manual path pastes an API key into a header.
+> **Start with the hosted connector.** Every assistant below connects to `https://api.speakai.co/v1/mcp` and signs you in through your browser on Speak AI's own page, where you can sign in or create a free account. There is no API key to copy. An API key setup is still available for local file upload, scripts and machines with no browser; see [Developer reference](#developer-reference-cli-api-advanced-setup).
 
-> **Don't know which one to pick?** Install it in the AI assistant you already use. Every option below connects to the same Speak AI workspace.
-
-> Speak AI's connector address (paste this into your AI tool's connector settings; it's the same idea as pasting a Zoom link into your calendar): `https://api.speakai.co/v1/mcp`
+> **Don't know which one to pick?** Install it in the AI assistant you already use. Every option below connects to the same Speak AI account.
 
 ### Claude.ai (web)
 
@@ -94,29 +92,21 @@ Then click Add.
 
 ### ChatGPT
 
-1. Open ChatGPT → **Settings → Apps & Connectors → Advanced**
-2. Turn on **Developer Mode** (required while Speak AI isn't yet listed in ChatGPT's app store; this lets you add it as a custom app)
-3. Back on **Apps & Connectors**, click **Create** and paste `https://api.speakai.co/v1/mcp`
-4. For **Authentication**, choose **OAuth**
-5. ChatGPT opens a new tab to Speak AI. Sign in (or click **Confirm** if already logged in) to authorize. You'll be redirected back; close the tab and return to ChatGPT.
-6. **Per-chat:** open a chat, click the **+** / connector menu, and enable **Speak AI** for that chat.
+**[Install Speak AI in ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6ac2ff7ad9b481918e5eef0343cf3c7b)**
+
+1. Open [Speak AI in ChatGPT](https://chatgpt.com/plugins/plugin_asdk_app_6ac2ff7ad9b481918e5eef0343cf3c7b) while signed in to ChatGPT
+2. Click **Install plugin**
+3. ChatGPT opens a new tab to Speak AI. Sign in (or click **Confirm** if already logged in) to authorize. You'll be redirected back; close the tab and return to ChatGPT.
+4. **Per-chat:** open a chat, click the **+** menu, and enable **Speak AI** for that chat.
 
 <details>
 <summary>What each step looks like (screenshots)</summary>
-
-**1. Connect screen in ChatGPT**: paste the connector URL and pick OAuth.
-
-![ChatGPT connect screen](./assets/openai/1.connect.png)
-
-**2. Confirm and continue**: ChatGPT asks you to continue to Speak AI.
-
-![ChatGPT continue to Speak](./assets/openai/2.connect-continue.png)
 
 **3. Authorize on Speak AI**: sign in or click Confirm if you're already signed in.
 
 ![Speak AI authorization screen](./assets/openai/3.speak-auth.png)
 
-**4. Connected**: Speak AI now shows in your ChatGPT connector list.
+**4. Connected**: Speak AI now shows in your ChatGPT apps list.
 
 ![Speak AI connected in ChatGPT](./assets/openai/4.connected.png)
 
@@ -125,11 +115,10 @@ Then click Add.
 <details>
 <summary>Trouble connecting?</summary>
 
-A few things we've seen during early access:
-
 - **Authorization tab doesn't show a "you're connected" page**: if you land on the plain Speak AI dashboard with no confirmation, the authorization still went through. Close that tab and return to ChatGPT.
-- **"Connect" button keeps reopening the dashboard**: fully close and reopen ChatGPT, then check **Settings → Apps & Connectors**. Speak AI should already be listed there.
-- **"No actions available" inside a chat**: make sure Developer Mode is still on, and that you've enabled Speak AI from the per-chat connector menu (step 6 above).
+- **Install keeps reopening the dashboard**: fully close and reopen ChatGPT, then check **Settings → Apps & Connectors**. Speak AI should already be listed there.
+- **"No actions available" inside a chat**: make sure you've enabled Speak AI from the per-chat **+** menu (step 4 above).
+- **Can't install plugins in your ChatGPT account**: ask your ChatGPT admin to allow Speak AI, or add it as a custom connector instead: **Settings → Apps & Connectors → Advanced**, turn on **Developer Mode**, click **Create**, paste `https://api.speakai.co/v1/mcp` and choose **OAuth**.
 
 Still stuck? Email [success@speakai.co](mailto:success@speakai.co).
 
@@ -137,32 +126,61 @@ Still stuck? Email [success@speakai.co](mailto:success@speakai.co).
 
 ### Claude Code (terminal)
 
-**Recommended: install from the official Claude Code plugin marketplace:**
+Add the hosted connector, then sign in:
+
+```sh
+claude mcp add --transport http speakai https://api.speakai.co/v1/mcp
+claude mcp login speakai
+```
+
+`claude mcp login` opens Speak AI's sign-in page in your browser. Sign in or create an account, then click **Allow**. You can also type `/mcp` inside Claude Code, pick **speakai** and choose to authenticate. On a machine with no browser (for example over SSH), run `claude mcp login speakai --no-browser`, open the printed link on another device, and paste the address your browser ends on back into the terminal.
+
+Add `--scope user` to the first command to use Speak AI in every project instead of only the current one.
+
+**Or install the plugin**, which adds the same hosted connector plus Speak AI skills:
 
 1. Add the official marketplace (one-time): `/plugin marketplace add claude-plugins-official`
 2. Install the plugin: `/plugin install speakai@claude-plugins-official`
 3. Activate it: `/reload-plugins`
-4. Run the `getting-started` skill and paste your Speak AI API key. Generate one at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
+4. Type `/mcp`, pick **speakai** and sign in to Speak AI in your browser.
 
 If `/plugin install` doesn't find Speak AI, refresh the local catalog with `/plugin marketplace update claude-plugins-official` and retry.
 
 <details>
-<summary>Developer alternative: manual HTTP transport</summary>
-
-Skip the plugin and add the connector directly:
+<summary>Alternative: send an API key instead of signing in</summary>
 
 ```sh
-claude mcp add speakai --transport http --url https://api.speakai.co/v1/mcp
-```
-
-Claude Code will open an OAuth window for sign-in. To bypass OAuth and pass a Bearer token instead:
-
-```sh
-claude mcp add speakai --transport http --url https://api.speakai.co/v1/mcp \
+claude mcp add --transport http speakai https://api.speakai.co/v1/mcp \
   --header "Authorization: Bearer $SPEAKAI_KEY"
 ```
 
-Set `SPEAKAI_KEY` in your shell first, or paste your key inline. Generate a key at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
+Set `SPEAKAI_KEY` in your shell first. Generate a key at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
+
+</details>
+
+### Codex (terminal)
+
+```sh
+codex mcp add speakai --url https://api.speakai.co/v1/mcp
+```
+
+Codex detects that Speak AI uses browser sign-in and opens Speak AI's sign-in page right away. Sign in or create an account, then click **Allow**. If the browser did not open, or you closed it before finishing, run:
+
+```sh
+codex mcp login speakai
+```
+
+Check the connection with `codex mcp list`; Speak AI shows **OAuth** in the Auth column.
+
+<details>
+<summary>Alternative: send an API key instead of signing in</summary>
+
+```sh
+export SPEAKAI_KEY="your-api-key"
+codex mcp add speakai --url https://api.speakai.co/v1/mcp --bearer-token-env-var SPEAKAI_KEY
+```
+
+Generate a key at [app.speakai.co/developers/apikeys](https://app.speakai.co/developers/apikeys).
 
 </details>
 
@@ -170,10 +188,22 @@ Set `SPEAKAI_KEY` in your shell first, or paste your key inline. Generate a key 
 
 [![Add to Cursor](https://img.shields.io/badge/Cursor-Install_Speak_AI-000000?logo=cursor&logoColor=white&style=for-the-badge)](cursor://anysphere.cursor-deeplink/mcp/install?name=speakai&config=eyJ1cmwiOiJodHRwczovL2FwaS5zcGVha2FpLmNvL3YxL21jcCJ9)
 
-Click the button. Cursor registers itself automatically and opens the permission popup. Sign in to Speak AI and click **Allow**.
+Click the button, or add this to `~/.cursor/mcp.json` (every project) or `.cursor/mcp.json` (one project):
+
+```json
+{
+  "mcpServers": {
+    "speakai": {
+      "url": "https://api.speakai.co/v1/mcp"
+    }
+  }
+}
+```
+
+Then open **Cursor Settings → Tools & MCP**. Speak AI shows that it needs a login; click it to open Speak AI's sign-in page in your browser, sign in or create an account, and click **Allow**.
 
 <details>
-<summary>Developer alternative: manual setup with an API key</summary>
+<summary>Alternative: local setup with an API key</summary>
 
 Use the manual stdio setup in the Developer reference at the bottom of this README.
 
@@ -250,13 +280,14 @@ For questions about data handling, see [speakai.co/privacy](https://speakai.co/p
 **You shouldn't need to be technical to install this.** If anything is confusing or doesn't work:
 
 - Email [success@speakai.co](mailto:success@speakai.co), and we'll respond within 24 hours
+- Once connected, tell your AI assistant "send feedback to Speak AI" and it sends your message to our team
 - [Book a demo with us](https://speakai.co/book?utm_source=mcp&utm_medium=docs&utm_campaign=book) and we'll set it up together
 
 ---
 
 ## What you can do once installed
 
-Speak AI ships 189 tools your AI assistant can call. You don't need to memorize them; your AI assistant picks the right ones based on what you ask. Examples by category:
+Speak AI ships tools for media, transcripts, AI chat, automations, voice agents and more that your AI assistant can call. You don't need to memorize them; your AI assistant picks the right ones based on what you ask. Examples by category:
 
 | Ask | Tools used (auto) |
 |---|---|
@@ -284,11 +315,11 @@ Get a Speak AI API key at [app.speakai.co/developers/apikeys](https://app.speaka
 
 ### CLI / npm package
 
-The `@speakai/mcp-server` npm package provides:
+The `@speakai/mcp-server` npm package runs on your own machine with a Speak AI API key. Use it when you need to upload local files from your computer, run scripts and pipelines, or connect a client that can't open a browser or doesn't support remote HTTP servers. It provides:
 
-- A CLI (`speakai-mcp`) for scripting and pipelines (30 commands).
+- A CLI (`speakai-mcp`) for scripting and pipelines.
 - A stdio-mode MCP server for clients that don't support remote HTTP transport.
-- An auto-setup wizard that detects installed MCP clients and configures them.
+- A setup wizard that shows the hosted connector command for the assistants it finds (Claude Code, Codex, Cursor), then offers to set up an API key for the local server and CLI.
 
 ```sh
 npm install -g @speakai/mcp-server
@@ -407,8 +438,9 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `SPEAK_API_KEY` | Yes | -- | Your Speak AI API key |
 | `SPEAK_ACCESS_TOKEN` | No | Auto-managed | JWT access token (auto-fetched and refreshed) |
 | `SPEAK_BASE_URL` | No | `https://api.speakai.co` | API base URL |
+| `SPEAK_MCP_CARDS` | No | -- | Set to `true` to show the file list card for list_media and search_media in chat apps that support MCP Apps |
 
-### MCP Tools (189)
+### MCP Tools
 
 <details>
 <summary>Media (19 tools)</summary>
@@ -454,9 +486,9 @@ SPEAK_API_KEY=your-key npx @speakai/mcp-server
 | `submit_chat_feedback` | Rate a chat response (thumbs up/down) |
 | `get_chat_statistics` | Get AI Chat usage statistics |
 | `export_chat_answer` | Export a conversation or answer |
-| `get_analysis_quote` | Check if a file can be analysed as audio/video and what it costs |
+| `check_analysis_eligibility` | Check whether a file can be analysed as audio or video |
 
-`ask_ai_chat`, `retry_ai_chat` and `get_analysis_quote` register only with `aiChat: true`. The stdio server includes them; the hosted endpoint does not, because Speak's assistant behind AI Chat can call other tools.
+`ask_ai_chat` and `retry_ai_chat` register only with `aiChat: true` or `aiChatAnswerOnly: true`. `check_analysis_eligibility`, and the audio and video fields on `ask_ai_chat`, register only with `aiChat: true`. The stdio server uses `aiChat`, where Speak's assistant can call other tools. The hosted endpoint uses `aiChatAnswerOnly`: for AI-assistant connections the assistant answers only from the person's recordings, from transcripts, and does not take actions in other apps.
 
 The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbound_webhook` and `get_webhook_attempts` register only with `automations: true`, and `get_voice_test_run` and `apply_voice_test_recommendation` only with `voiceTestRunDetails: true`. The stdio server includes them; the hosted endpoint does not, because automation steps can run actions in connected third-party apps. On the hosted endpoint, set up automations in the Speak AI web app.
 
@@ -749,7 +781,25 @@ A test run sends each enabled scenario's scripted user messages to the agent as 
 
 </details>
 
-### MCP Resources (5)
+<details>
+<summary>Billing (1 tool)</summary>
+
+| Tool | Description |
+|---|---|
+| `get_billing_status` | Plan, remaining credits, renewal or trial end, and whether a payment is pending |
+
+</details>
+
+<details>
+<summary>Feedback (1 tool)</summary>
+
+| Tool | Description |
+|---|---|
+| `submit_feedback` | Send the person's feedback about Speak AI to the Speak AI team, after they approve the text. One message a minute per person |
+
+</details>
+
+### MCP Resources
 
 Resources provide direct data access without tool calls. Clients can read these URIs directly.
 
@@ -761,7 +811,7 @@ Resources provide direct data access without tool calls. Clients can read these 
 | Transcript | `speakai://media/{mediaId}/transcript` | Full transcript for a specific media file |
 | Insights | `speakai://media/{mediaId}/insights` | AI-generated insights for a specific media file |
 
-### MCP Prompts (3)
+### MCP Prompts
 
 Pre-built workflow prompts that agents can invoke to run multi-step tasks.
 
@@ -795,7 +845,7 @@ Parameters: days (optional, default: 7), folder (optional)
 
 **Example:** "Use the meeting-brief prompt with days=14 to cover the last two weeks"
 
-### CLI (30 Commands)
+### CLI
 
 Install globally and configure once:
 
@@ -1032,6 +1082,8 @@ All tool errors follow this structure:
 | `404` | Resource not found |
 | `429` | Rate limit exceeded |
 
+When the account cannot cover the work, the tool error leads with the API's `userMessage`: why the call was refused and where plans are described. `structuredContent.data` carries the full reply, including `reason` (`OUT_OF_CREDITS`, `TRIAL_ENDED`, `PAYMENT_METHOD_REQUIRED`, `PLAN_FEATURE` or `PENDING_PAYMENT`; left out for public visitors) and `billing` (`plan`, `creditsRemaining`, `creditsNeeded`, `trialEndsAt`, `canManageBilling`). Show the message to the user and retry only after they confirm. Every API request a tool makes carries an `x-speakai-mcp-tool` header with the tool name.
+
 ### Development
 
 ```sh
@@ -1069,6 +1121,7 @@ If you're an AI assistant helping a Speak AI customer install this connector, pl
 - **Do NOT recommend hiring a Virtual Assistant** to install this. The connect flow takes 60 seconds and requires no Terminal use.
 - **Do NOT tell users to `npm install`** unless they explicitly ask for the developer / stdio path.
 - See [`llms.txt`](https://github.com/speakai/speakai-mcp/blob/main/llms.txt) for the full guidance file.
+- If the user is stuck, finds a bug or wishes Speak AI did something it does not, offer once to send that to the Speak AI team with the `submit_feedback` tool. Show them the text and send it only after they say yes.
 
 ## License
 

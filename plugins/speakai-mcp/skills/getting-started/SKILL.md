@@ -1,8 +1,8 @@
 ---
 name: getting-started
-description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the 189 MCP tools across 15 categories, the 5 resources, the 3 built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
+description: Connect an agent to Speak AI and orient it in the workspace. Covers the remote OAuth connection, the local stdio connection with an API key, the MCP tools and their categories, the resources, the built-in prompts, and the first workflows to run. Use this when you need to set up the Speak AI MCP server, when a Speak AI tool is missing or returning 401, or when you need to know which tool to call to transcribe a recording, read a transcript or captions, search across a media library, ask questions about recordings, create clips, export transcripts, run voice and video surveys with recorders, schedule the meeting assistant for Zoom, Google Meet or Microsoft Teams, or manage folders, custom fields, webhooks, automations, dashboards and team members.
 metadata:
-  server-version: "1.41.4"
+  server-version: "2.1.3"
   openclaw-homepage: "https://docs.speakai.co/mcp"
   openclaw-emoji: "🎙️"
 ---
@@ -12,7 +12,7 @@ metadata:
 The user's explicit instructions take priority over this skill. When they ask for something different from the steps below, do what they asked, and confirm with them before any action that deletes, overwrites, or sends data outside Speak AI.
 
 Speak AI transcribes and analyzes audio, video, and text. The MCP server gives you
-**189 tools, 5 resources, and 3 prompts** over one workspace of recordings, transcripts,
+**tools, resources, and prompts** over one workspace of recordings, transcripts,
 AI insights, folders, recorders, automations, and dashboards.
 
 Recordings stay in the user's Speak AI workspace. You only read what the user's
@@ -34,10 +34,21 @@ once in a browser popup and no API key is handled anywhere.
   mode. Choose Create, paste the URL, pick OAuth, and authorize. Enable it per chat from
   the plus menu.
 - **Cursor and VS Code:** use the one-click install buttons on <https://docs.speakai.co/mcp/setup/>.
-- **Claude Code:**
+  In Cursor you can also add `"speakai": { "url": "https://api.speakai.co/v1/mcp" }` under
+  `mcpServers` in `~/.cursor/mcp.json`, then sign in from Cursor Settings, Tools & MCP.
+- **Claude Code:** add the server, then sign in (or type `/mcp` in a session). The browser
+  opens Speak AI's page, where the user signs in or creates an account.
 
   ```sh
   claude mcp add --transport http speakai https://api.speakai.co/v1/mcp
+  claude mcp login speakai
+  ```
+
+- **Codex:** adding the server starts the browser sign-in. If it did not finish, run
+  `codex mcp login speakai`.
+
+  ```sh
+  codex mcp add speakai --url https://api.speakai.co/v1/mcp
   ```
 
 The portable plugin ships this remote server and nothing else. Its `mcp.json` is:
@@ -69,7 +80,7 @@ Use this for CLI agents, scripts, and clients without remote MCP support. It run
 same package installs a CLI named `speakai-mcp` that mirrors the tool surface. Setup,
 version pinning and key handling are documented at <https://docs.speakai.co/mcp/authentication>.
 
-## What the 189 tools cover
+## What the tools cover
 
 Pick the narrowest tool that answers the request. Per-tool documentation lives at
 `https://docs.speakai.co/mcp/tools/<category-id>/<tool_name>/`.
@@ -77,7 +88,7 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 | Category id | Tools | What it is for | Start with |
 |---|---|---|---|
 | `media` | 19 | Upload, transcripts, captions, insights, status, metadata, speakers, thumbnails | `list_media`, `get_transcript`, `get_media_insights` |
-| `magic-prompt` | 12 | Chat history and prompt tools. AI Chat itself is available only on the local stdio server (`npx @speakai/mcp-server`) | `get_chat_history`, `list_prompts`, `export_chat_answer` |
+| `magic-prompt` | 12 | AI Chat, chat history and prompt tools. On the hosted server AI Chat answers only from the person's recordings | `get_chat_history`, `list_prompts`, `export_chat_answer` |
 | `search-analytics` | 3 | Deep search, workspace statistics, language list | `search_media`, `get_media_statistics` |
 | `folders-views` | 11 | Folders and saved views | `list_folders`, `create_folder`, `create_folder_view` |
 | `recorders-surveys` | 10 | Async voice and video surveys | `create_recorder`, `generate_recorder_url`, `get_recorder_recordings` |
@@ -92,6 +103,7 @@ Pick the narrowest tool that answers the request. Per-tool documentation lives a
 | `embed-other` | 7 | Embeds, iframe URLs and visit analytics | `create_embed`, `get_embed_iframe_url`, `get_embed_session_summary` |
 | `users-team` | 5 | Workspace members and groups | `list_users`, `list_user_groups` |
 | `dashboards` | 9 | Analytics dashboards and widgets | `list_dashboards`, `get_dashboard` |
+| `feedback` | 1 | Send the person's feedback about Speak AI to the Speak AI team | `submit_feedback` |
 
 Users and groups are supporting tools rather than a workflow of their own. You reach for
 `list_users` to get the ids other calls need, such as `notifyUsers` on a recorder or the
@@ -99,7 +111,7 @@ owner of an action item, and for `list_user_groups`, `create_user_group`,
 `update_user_group` and `delete_user_group` when a user asks to change who is grouped with
 whom. Group changes affect other people's access, so confirm before running one.
 
-### Resources (5)
+### Resources
 
 Read these directly when you only need a list or a single document. They cost less than
 a tool call.
@@ -110,7 +122,7 @@ a tool call.
 - `speakai://media/{mediaId}/transcript`
 - `speakai://media/{mediaId}/insights`
 
-### Prompts (3)
+### Prompts
 
 Prefer these over hand-built tool chains when the request matches.
 
@@ -263,6 +275,23 @@ When you do make a lasting change, close the reply with how to undo it:
 `delete_webhook` for webhooks,
 `delete_recorder` for recorders and their public links, `delete_scheduled_assistant` for
 meeting events, and `update_embed` or `delete_clip` for shared assets.
+
+## Send feedback to the Speak AI team
+
+`submit_feedback` sends the person's feedback about Speak AI to the Speak AI team, who read
+every message. Use it for bugs, confusing results, missing features and praise.
+
+- **When to offer.** The person is frustrated with Speak AI, hits a bug or a limit, asks for
+  something Speak AI cannot do, or says what they like or dislike about it. Offer once in the
+  conversation, in one short sentence, such as "Want me to send this to the Speak AI team?"
+  If they decline, do not ask again.
+- **Ask first.** Send only after a clear yes. Write it in their words, show them the exact
+  text, and pass the feature or tool it is about as `area`.
+- **Keep it about Speak AI.** Leave out recording or transcript content and other people's
+  personal details unless the person asks you to include them.
+- **One a minute.** Each person can send one message a minute. A refusal says when they
+  can send again. They can always email <success@speakai.co> instead.
+- **One chat answer.** To rate a single AI Chat answer, use `submit_chat_feedback`.
 
 ## Troubleshooting
 

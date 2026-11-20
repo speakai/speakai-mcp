@@ -6,7 +6,7 @@
  *
  *   npx tsx scripts/sync-tools-json.ts
  */
-import { registerAllTools } from "../src/tools/index.js";
+import { registerAllTools, LOCAL_TOOL_OPTIONS } from "../src/tools/index.js";
 import { readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -43,7 +43,7 @@ const stub = {
     return {} as any;
   },
 } as any;
-registerAllTools(stub, {} as any, { localFileAccess: true, voiceTestRuns: true, aiChat: true, automations: true, voiceTestRunDetails: true });
+registerAllTools(stub, {} as any, LOCAL_TOOL_OPTIONS);
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const toolsPath = path.join(root, "tools.json");
@@ -62,7 +62,7 @@ for (const cat of json.categories) {
 // New tools appended to an existing category.
 const additions: Record<string, string[]> = {
   media: ["upload_and_analyze_batch", "set_media_thumbnail"],
-  "magic-prompt": ["get_analysis_quote"],
+  "magic-prompt": ["check_analysis_eligibility"],
   "automations-webhooks": [
     "list_automation_names",
     "get_automation_runs",
@@ -206,6 +206,20 @@ const newCategories = [
       "share_dashboard",
       "get_dashboard_speakers_insight",
     ],
+  },
+  {
+    id: "billing",
+    name: "Billing",
+    iconKey: "billing",
+    shortDescription: "Check the account's plan and remaining credits, with upgrade and top-up links.",
+    tools: ["get_billing_status"],
+  },
+  {
+    id: "feedback",
+    name: "Feedback",
+    iconKey: "feedback",
+    shortDescription: "Send the person's feedback about Speak AI to the Speak AI team, with their approval.",
+    tools: ["submit_feedback"],
   },
 ];
 

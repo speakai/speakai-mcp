@@ -125,7 +125,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
 
   // prompt
   "ask_ai_chat",
-  "get_analysis_quote",
+  "check_analysis_eligibility",
   "list_prompts",
   "get_favorite_prompts",
   "toggle_prompt_favorite",
@@ -173,6 +173,7 @@ export const SPEAK_MCP_TOOL_NAMES = [
 
   // users / team management
   "list_users",
+  "get_billing_status",
   "list_user_groups",
   "create_user_group",
   "update_user_group",
@@ -248,6 +249,9 @@ export const SPEAK_MCP_TOOL_NAMES = [
   "delete_voice_agent_resource",
   "analyze_voice_instruction_gaps",
   "apply_voice_instruction_gap",
+
+  // feedback
+  "submit_feedback",
 ] as const satisfies readonly string[];
 
 export type SpeakMcpToolName = (typeof SPEAK_MCP_TOOL_NAMES)[number];

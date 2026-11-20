@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getMimeType, isVideoFile, detectMediaType } from "../src/media-utils.js";
+import { getMimeType, isVideoFile, detectMediaType, defaultUploadName } from "../src/media-utils.js";
 
 describe("media-utils", () => {
   describe("isVideoFile", () => {
@@ -72,6 +72,17 @@ describe("media-utils", () => {
 
     it("falls back to audio/mpeg for unknown extensions", () => {
       expect(getMimeType("file.xyz")).toBe("audio/mpeg");
+    });
+  });
+
+  describe("defaultUploadName", () => {
+    it("never returns an empty name", () => {
+      const now = new Date("2026-11-13T07:28:00Z");
+      expect(defaultUploadName("https://example.com/a.mp3", "  Board call ", now)).toBe("Board call");
+      expect(defaultUploadName("https://cdn.example.com/files/Team%20Sync.m4a?sig=1", "", now)).toBe("Team Sync.m4a");
+      expect(defaultUploadName("https://www.instagram.com/reel/abc123/", undefined, now)).toBe("Upload 2026-11-13 07:28 UTC");
+      expect(defaultUploadName("https://www.youtube.com/watch?v=xyz", "   ", now)).toBe("Upload 2026-11-13 07:28 UTC");
+      expect(defaultUploadName("interview.mp4", undefined, now)).toBe("interview.mp4");
     });
   });
 });

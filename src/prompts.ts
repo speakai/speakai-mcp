@@ -1,10 +1,16 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { SUPPORTED_URL_SOURCES } from "./media-utils.js";
 
+// Every built-in workflow ends with the same single offer, so the wording and its limits stay in one place.
+export const FEEDBACK_OFFER =
+  "If anything in Speak AI got in the way, offer once to send that to the Speak AI team with submit_feedback, and send it only if I say yes.";
+
+const DEFAULT_BRIEF_DAYS = 7;
+const MAX_BRIEF_DAYS = 36_500; // 100 years; far larger values make an invalid date
+
 type PromptMessages = { messages: Array<{ role: "user" | "assistant"; content: { type: "text"; text: string } }> };
 
-// The SDK's prompt() generics compare zod 3 and zod 4 shapes and fail to typecheck; this keeps the callback args typed.
 function registerPrompt<Args extends z.ZodRawShape>(
   server: McpServer,
   name: string,
@@ -12,7 +18,7 @@ function registerPrompt<Args extends z.ZodRawShape>(
   args: Args,
   callback: (args: z.infer<z.ZodObject<Args>>) => PromptMessages | Promise<PromptMessages>
 ): void {
-  (server.prompt.bind(server) as (name: string, description: string, args: Args, cb: unknown) => void)(name, description, args, callback);
+  server.registerPrompt(name, { description, argsSchema: z.object(args) }, callback);
 }
 
 export function registerPrompts(server: McpServer): void {
@@ -47,6 +53,8 @@ export function registerPrompts(server: McpServer): void {
               `exactly as given — a page link is resolved server-side. If I told you whether this is`,
               `an audio or a video recording, pass that as mediaType; if I did not say, leave it off`,
               `and let the server pick the best available track.`,
+              ``,
+              FEEDBACK_OFFER,
             ].join("\n"),
           },
         },
@@ -83,6 +91,8 @@ export function registerPrompts(server: McpServer): void {
               `   - Trends over time (if date range is available)`,
               ``,
               `Present a research summary with citations (media name + timestamp where possible).`,
+              ``,
+              FEEDBACK_OFFER,
             ].join("\n"),
           },
         },
@@ -99,7 +109,12 @@ export function registerPrompts(server: McpServer): void {
       folder: z.string().optional().describe("Folder ID to scope to (optional)"),
     },
     async ({ days, folder }) => {
-      const lookback = parseInt(days ?? "7");
+      // An unusable value ("two weeks", 0, negative, or so large the date is invalid) uses the default
+      const requestedDays = Number.parseInt(days ?? "", 10);
+      const lookback =
+        Number.isFinite(requestedDays) && requestedDays > 0 && requestedDays <= MAX_BRIEF_DAYS
+          ? requestedDays
+          : DEFAULT_BRIEF_DAYS;
       const fromDate = new Date();
       fromDate.setDate(fromDate.getDate() - lookback);
 
@@ -126,6 +141,8 @@ export function registerPrompts(server: McpServer): void {
                 `   - Upcoming items that were mentioned`,
                 ``,
                 `Format as a clean, scannable document.`,
+                ``,
+                FEEDBACK_OFFER,
               ].join("\n"),
             },
           },

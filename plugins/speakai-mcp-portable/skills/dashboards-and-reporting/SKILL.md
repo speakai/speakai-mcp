@@ -2,7 +2,7 @@
 name: dashboards-and-reporting
 description: Build, update, and share Speak AI analytics dashboards. Use this when someone asks for a dashboard, a recurring report, a chart or widget over their recordings, a speaker breakdown, a view of sentiment or themes over time, a shareable link or embed for stakeholders, or a copy of an existing dashboard scoped to a different folder or date range. Covers list_dashboard_widgets, list_dashboards, get_dashboard, create_dashboard, update_dashboard, duplicate_dashboard, share_dashboard, delete_dashboard and get_dashboard_speakers_insight, and explains the strict widget config rules that reject unknown keys.
 metadata:
-  server-version: "1.41.4"
+  server-version: "2.1.3"
   categories: "dashboards, custom-fields, folders-views"
 ---
 
@@ -159,3 +159,9 @@ Dashboards: `list_dashboard_widgets`, `list_dashboards`, `get_dashboard`,
 Supporting: `list_fields` for custom field names, `list_folders` for scoping.
 
 Per-tool documentation: `https://docs.speakai.co/mcp/tools/dashboards/<tool_name>/`
+
+## Feedback
+
+If Speak AI gets in the way during this workflow, or the person says what they like or
+dislike about it, offer once to send that to the Speak AI team with `submit_feedback`. The
+getting-started skill has the rules.

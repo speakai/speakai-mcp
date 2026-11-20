@@ -102,8 +102,8 @@ describe("client.ts", () => {
       // Import triggers module-level code that registers interceptors
       await import("../src/client.js");
 
-      // The request interceptor should have been registered
-      expect(mockRequestInterceptors.length).toBe(1);
+      // Auth interceptor first, then the tool-header one from instrumentSpeakClient
+      expect(mockRequestInterceptors.length).toBe(2);
 
       // Invoke the request interceptor — since there's no accessToken,
       // it will call authenticate()
@@ -233,7 +233,7 @@ describe("client.ts", () => {
       // Now simulate a 401 in the response interceptor, which resets tokenExpiresAt to 0
       // and calls ensureAuthenticated -> since we have both tokens, it calls refreshAccessToken
       // refreshAccessToken fails -> falls back to authenticate
-      expect(mockResponseInterceptors.length).toBe(1);
+      expect(mockResponseInterceptors.length).toBe(2);
 
       // Simulate the refresh failing, then authenticate succeeding
       mockPost
@@ -498,6 +498,20 @@ describe("client.ts", () => {
       };
 
       await expect(errHandler(err)).rejects.toEqual(err);
+    });
+
+    it("does not retry a 429 when the request sets skipRateLimitRetry", async () => {
+      await import("../src/client.js");
+      const errHandler = mockResponseInterceptors[0].rejected;
+
+      const req: any = { _retryCount: 0, headers: {}, skipRateLimitRetry: true };
+      const err: any = {
+        config: req,
+        response: { status: 429, headers: {} },
+      };
+
+      await expect(errHandler(err)).rejects.toEqual(err);
+      expect(req._retryCount).toBe(0);
     });
   });
 

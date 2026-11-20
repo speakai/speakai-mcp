@@ -8,6 +8,7 @@ import {
   getConfigPath,
 } from "./config.js";
 import { printJson, printTable, printError, printSuccess } from "./format.js";
+import { detectHostedClients, hostedSetupText } from "./hosted-setup.js";
 import { getMimeType, detectMediaType } from "../media-utils.js";
 import { toNameFilter } from "../tools/media.js";
 
@@ -29,6 +30,21 @@ function requireApiKey(): void {
     );
     process.exit(1);
   }
+}
+
+/** Register all tools against a stub server, capturing each tool's callback by name. */
+export async function loadToolHandlers() {
+  const client = await getClient();
+  const handlers: Record<string, (args: Record<string, unknown>) => Promise<any>> = {};
+  const stub = {
+    registerTool: (name: string, _def: unknown, cb: (args: Record<string, unknown>) => Promise<any>) => {
+      handlers[name] = cb;
+      return {};
+    },
+  };
+  const { registerAllTools, LOCAL_TOOL_OPTIONS } = await import("../tools/index.js");
+  registerAllTools(stub as any, client, LOCAL_TOOL_OPTIONS);
+  return handlers;
 }
 
 export function createCli(): Command {
@@ -137,7 +153,9 @@ export function createCli(): Command {
 
   program
     .command("init")
-    .description("Interactive setup — configure API key and auto-detect MCP clients")
+    .description(
+      "Interactive setup — shows the hosted connector command for your AI assistant, then offers API key setup"
+    )
     .action(async () => {
       const rl = createInterface({ input: process.stdin, output: process.stdout });
       const ask = (q: string) =>
@@ -145,7 +163,20 @@ export function createCli(): Command {
 
       console.log("\n  Speak AI MCP Server — Setup\n");
 
-      // 1. API key
+      // 1. Hosted connector first
+      console.log(hostedSetupText(detectHostedClients()));
+      console.log(
+        "\n  An API key is only needed for the local server and the speakai-mcp CLI:" +
+          "\n  uploading files from this computer, scripts, or a machine with no browser.\n"
+      );
+      const wantsKey = await ask("  Set up an API key as well? (y/N) ");
+      if (wantsKey.toLowerCase() !== "y") {
+        rl.close();
+        printSuccess("Run the command above for your assistant to connect.");
+        return;
+      }
+
+      // 2. API key
       const existingKey = resolveApiKey();
       let key = existingKey;
       if (existingKey) {
@@ -162,7 +193,7 @@ export function createCli(): Command {
         }
       }
 
-      // 2. Validate
+      // 3. Validate
       process.stdout.write("  Validating...");
       try {
         const axios = (await import("axios")).default;
@@ -181,13 +212,13 @@ export function createCli(): Command {
         process.exit(1);
       }
 
-      // 3. Save
+      // 4. Save
       const cfg = loadConfig();
       cfg.apiKey = key;
       saveConfig(cfg);
       printSuccess(`API key saved to ${getConfigPath()}`);
 
-      // 4. Auto-detect MCP clients
+      // 5. Auto-detect MCP clients
       const os = await import("os");
       const fs = await import("fs");
       const pathMod = await import("path");
@@ -260,7 +291,7 @@ export function createCli(): Command {
         }
       }
 
-      // 5. Claude Code hint
+      // 6. Claude Code hint (API key path)
       console.log("\n  For Claude Code, run:");
       console.log(`    export SPEAK_API_KEY="your-api-key"`);
       console.log("    claude mcp add speak-ai -- npx -y @speakai/mcp-server\n");
@@ -1312,21 +1343,6 @@ export function createCli(): Command {
   // Every MCP tool is callable from the CLI by name via `call`, so the CLI
   // stays in lockstep with the tool surface automatically — no per-tool command
   // to maintain. The curated commands above are ergonomic shortcuts on top.
-
-  /** Register all tools against a stub server, capturing each tool's callback by name. */
-  async function loadToolHandlers() {
-    const client = await getClient();
-    const handlers: Record<string, (args: Record<string, unknown>) => Promise<any>> = {};
-    const stub = {
-      registerTool: (name: string, _def: unknown, cb: (args: Record<string, unknown>) => Promise<any>) => {
-        handlers[name] = cb;
-        return {};
-      },
-    };
-    const { registerAllTools } = await import("../tools/index.js");
-    registerAllTools(stub as any, client, { localFileAccess: true });
-    return handlers;
-  }
 
   program
     .command("tools")
