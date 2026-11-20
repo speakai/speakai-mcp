@@ -49,7 +49,8 @@ const COMPOSIO_STEP_NOTE =
   "owner. Never set acknowledged on your own: describe the app, the action and what it will send to the user, " +
   "and set it only after they confirm. If a teammate later changes a confirmed step, the confirmation is cleared " +
   "and the automation turns off until the owner confirms again. toolkitVersion and confirmation are set by the " +
-  "server and are ignored if sent. Third-party app steps may be unavailable on some accounts.\n";
+  "server and are ignored if sent; confirmVersion is set by this tool. Third-party app steps may be unavailable on " +
+  "some accounts.\n";
 
 const STEPS_DESCRIPTION =
   "Ordered array of graph steps (1-20). Each step is an object: " +
@@ -113,7 +114,10 @@ const COMPOSIO_TRIGGER_NOTE =
   "using sourceMode \"file\" to import it as a recording. New-email triggers (Gmail, Outlook) need at least one " +
   "filter (from, subjectContains, or the advanced Gmail query); audio and video attachments are imported as " +
   "recordings (importAttachments, default true) and the email body is saved as a text note only when " +
-  "saveBodyAsNote is true. The app is watched only while the automation is on. Imports use credits like uploads, " +
+  "saveBodyAsNote is true. The app is watched only while the automation is on. A trigger that is checked on a " +
+  "schedule (call, meeting and survey apps such as Aircall, Quo or Gong) cannot be combined with Or triggers. " +
+  "Imports use credits like uploads; credits are checked when the automation is created switched on, turned on, " +
+  "or saved with changed triggers while it stays on, " +
   "and one automation imports at most 50 files an hour; extra items wait for the next hour. If the connection " +
   "expires the automation turns off, and items that arrive while it is off are not imported.\n";
 
@@ -259,9 +263,22 @@ function graphWarnings(steps: unknown, trigger: unknown, runType: unknown): stri
 
 type WriteBody = Record<string, unknown> & { steps?: unknown; trigger?: unknown; runType?: unknown };
 
+// The API lists, and saves, actions outside its curated set only for clients that show the confirmation for every action.
+const AUTOMATION_CONTRACT_HEADERS = { "x-speak-automation-contract": "2" };
+
+/** Marks every app step as coming from a client that asks for the confirmation on every action. */
+function withContractMarker(body: WriteBody): WriteBody {
+  if (!Array.isArray(body.steps)) return body;
+  const steps = body.steps.map((step) => {
+    const s = step as { stepType?: unknown; composio?: Record<string, unknown> };
+    return s?.stepType === "composio-action" && s.composio ? { ...s, composio: { ...s.composio, confirmVersion: 2 } } : step;
+  });
+  return { ...body, steps };
+}
+
 /** POST one automation and add what the server reply leaves out: the inbound webhook URL and graph warnings. */
 async function createOne(api: AxiosInstance, body: WriteBody): Promise<unknown> {
-  const result = await api.post("/v1/automations/", body);
+  const result = await api.post("/v1/automations/", withContractMarker(body));
   let data: unknown = result.data;
   if (isInboundWebhookTrigger(body.trigger)) {
     data = await withInboundWebhookInfo(api, data, unwrapData(result.data)?.automationId);
@@ -700,7 +717,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
         const staleRefusal = await refuseStaleConfirmations(api, automationId, body.steps, confirmedStepIds);
         if (staleRefusal) return staleRefusal;
 
-        const result = await api.put(`/v1/automations/${automationId}`, body);
+        const result = await api.put(`/v1/automations/${automationId}`, withContractMarker(body));
         let data: unknown = await withPauseAfterUpdate(api, result.data);
         if (isInboundWebhookTrigger(body.trigger)) {
           data = await withInboundWebhookInfo(api, data, automationId);
@@ -1227,7 +1244,7 @@ export function register(server: McpServer, client?: AxiosInstance, options: Reg
     },
     async (params) => {
       try {
-        const result = await api.get("/v1/automations/catalog/actions", { params });
+        const result = await api.get("/v1/automations/catalog/actions", { params, headers: AUTOMATION_CONTRACT_HEADERS });
         return {
           content: [{ type: "text", text: JSON.stringify(result.data, null, 2) }],
         };

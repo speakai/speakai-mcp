@@ -67,11 +67,33 @@ describe("automation tools — third-party app steps", () => {
     register(server, mockClient, { automations: true, voiceTestRunDetails: true });
   });
 
-  it("sends composio.acknowledged to the API with the step", async () => {
+  it("sends composio.acknowledged and the contract marker to the API with the step", async () => {
     const step = sendStep({ to: "team@example.com" }, true);
     await getToolCallback(server, "create_automation")(body([step]));
 
-    expect(mockPost).toHaveBeenCalledWith("/v1/automations/", expect.objectContaining({ steps: [step] }));
+    expect(mockPost).toHaveBeenCalledWith(
+      "/v1/automations/",
+      expect.objectContaining({ steps: [{ ...step, composio: { ...step.composio, confirmVersion: 2 } }] }),
+    );
+  });
+
+  it("marks app steps on update, asks the catalog for every action, and explains CLIENT_UPDATE_REQUIRED", async () => {
+    mockGet.mockResolvedValue({ data: { status: "success", data: { actions: [] } } });
+    await getToolCallback(server, "update_automation")({ automationId: "a1", ...body([sendStep({ to: "x@example.com" })]) });
+    await getToolCallback(server, "list_automation_actions")({ app: "gmail" });
+
+    expect(mockPut.mock.calls[0][1].steps[0].composio.confirmVersion).toBe(2);
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations/catalog/actions", {
+      params: { app: "gmail" },
+      headers: { "x-speak-automation-contract": "2" },
+    });
+
+    mockPost.mockRejectedValue(
+      apiError(400, { errorCode: "CLIENT_UPDATE_REQUIRED", message: 'Step "send" (X) needs the latest Speak web app to add. Refresh the page and try again.' }),
+    );
+    const result = await getToolCallback(server, "create_automation")(body([sendStep({})]));
+    expect(result.content[0].text).toContain("errorCode: CLIENT_UPDATE_REQUIRED");
+    expect(result.content[0].text).toContain("Update the Speak AI MCP server");
   });
 
   it("adds the next step to the API's errorCode for a step without the confirmation", async () => {
@@ -317,6 +339,6 @@ describe("automation tools — third-party app steps", () => {
     await getToolCallback(server, "list_automation_actions")({ app: "monday", q: "item", afterTrigger: "GMAIL_NEW_GMAIL_MESSAGE" });
 
     expect(mockGet).toHaveBeenCalledWith("/v1/automations/catalog/apps", { params: { for: "action" } });
-    expect(mockGet).toHaveBeenCalledWith("/v1/automations/catalog/actions", { params: { app: "monday", q: "item", afterTrigger: "GMAIL_NEW_GMAIL_MESSAGE" } });
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations/catalog/actions", { params: { app: "monday", q: "item", afterTrigger: "GMAIL_NEW_GMAIL_MESSAGE" }, headers: { "x-speak-automation-contract": "2" } });
   });
 });

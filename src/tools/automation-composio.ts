@@ -10,7 +10,8 @@ export type AutomationAppErrorCode =
   | "CATALOG_UNAVAILABLE"
   | "OWNER_RECONFIRM_REQUIRED"
   | "RECONNECT_REQUIRED"
-  | "OUT_OF_CREDITS";
+  | "OUT_OF_CREDITS"
+  | "CLIENT_UPDATE_REQUIRED";
 
 interface KnownRefusal {
   code: AutomationAppErrorCode;
@@ -55,10 +56,19 @@ const KNOWN_REFUSALS: KnownRefusal[] = [
       "the automation back on. Items that arrived while it was off are not imported.",
   },
   {
+    code: "CLIENT_UPDATE_REQUIRED",
+    message: /needs the latest speak web app to add/i,
+    nextStep:
+      "The API saves this action only from a client that asks for the confirmation on every action. Update the " +
+      "Speak AI MCP server to the latest version, then save again.",
+  },
+  {
     code: "OUT_OF_CREDITS",
     nextStep:
-      "The trigger imports files or notes and the account has no credits left. Nothing was turned on; to keep the " +
-      "draft, save it with isActive: false. Ask the user to add credits or upgrade in the Speak web app, then turn it on.",
+      "The trigger imports files or notes and the account has no credits left. Credits are checked when an " +
+      "automation is created switched on, turned on, or saved with changed triggers while it stays on. Nothing was " +
+      "saved or turned on; to keep the draft, save it with isActive: false. Ask the user to add credits or upgrade " +
+      "in the Speak web app, then turn it on.",
   },
 ];
 
