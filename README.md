@@ -7,7 +7,7 @@
 <p align="center">
   <strong>For researchers, revenue teams, meeting-heavy teams, and media workflows.</strong><br/>
   No Terminal. No npm. No JSON config files.<br/>
-  Works with Claude, ChatGPT, Cursor, VS Code, Windsurf, Gemini CLI, GitHub Copilot CLI, Copilot Studio, Zed, Goose, opencode, Muse, OpenClaw and any MCP client.
+  Works with Claude, ChatGPT, Cursor, VS Code, Windsurf, Gemini CLI, GitHub Copilot CLI, Copilot Studio, Zed, Goose, opencode, Mistral Le Chat, Perplexity, Muse, OpenClaw and any MCP client.
 </p>
 
 <p align="center">
@@ -261,6 +261,14 @@ Install with one click from the setup page, then sign in through your browser. S
 ### opencode
 
 Add Speak AI under `mcp.servers` in your opencode config, then run `opencode mcp auth speakai`. Steps: [docs.speakai.co/mcp/setup/opencode](https://docs.speakai.co/mcp/setup/opencode/).
+
+### Mistral Le Chat
+
+Add Speak AI as a Custom MCP Connector from the Connectors page and sign in. Steps: [docs.speakai.co/mcp/setup/mistral-le-chat](https://docs.speakai.co/mcp/setup/mistral-le-chat/).
+
+### Perplexity
+
+Add Speak AI as a remote custom connector from Plugins, with OAuth sign-in. Steps: [docs.speakai.co/mcp/setup/perplexity](https://docs.speakai.co/mcp/setup/perplexity/).
 
 ### ChatGPT (API / Responses)
 

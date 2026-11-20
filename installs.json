@@ -355,6 +355,53 @@
           }
         }
       }
+    },
+    {
+      "id": "mistral-le-chat",
+      "title": "Mistral Le Chat",
+      "tagline": "Add Speak AI as a custom connector so Le Chat can search and read your recordings.",
+      "steps": [
+        {
+          "html": "Open <a href=\"https://chat.mistral.ai\" target=\"_blank\" rel=\"noopener\">Le Chat</a> and go to the <strong>Connectors</strong> page"
+        },
+        {
+          "html": "Click <strong>+ Add Connector</strong>, then open the <strong>Custom MCP Connector</strong> tab"
+        },
+        {
+          "html": "Enter a <strong>Connector name</strong> with no spaces or special characters, such as <code>SpeakAI</code>, and paste the URL above into <strong>Server URL</strong>"
+        },
+        {
+          "html": "Click <strong>Connect</strong>. Le Chat detects the sign-in method itself. Sign in to Speak AI and click <strong>Allow</strong>"
+        },
+        {
+          "html": "Optional: in <strong>My Connectors</strong>, open the Speak AI card and use the <strong>Functions</strong> tab to turn on <strong>Always allow</strong> for tools you use often"
+        },
+        {
+          "html": "Only an account administrator can add connectors. On Free, Pro and Student plans that is the account owner"
+        }
+      ]
+    },
+    {
+      "id": "perplexity",
+      "title": "Perplexity",
+      "tagline": "Add Speak AI as a custom connector so Perplexity can search and read your recordings.",
+      "steps": [
+        {
+          "html": "In Perplexity, open <strong>Plugins</strong> in the sidebar, choose <strong>Add custom</strong>, then <strong>Add MCP connector</strong>, and select <strong>Remote</strong>"
+        },
+        {
+          "html": "Enter the name <strong>Speak AI</strong> and paste the URL above into <strong>MCP server URL</strong>"
+        },
+        {
+          "html": "Open <strong>Advanced</strong>. Set <strong>Authentication</strong> to <strong>OAuth</strong> and <strong>Transport</strong> to <strong>Streamable HTTP</strong>, and leave <strong>Network access</strong> on <strong>Public</strong>"
+        },
+        {
+          "html": "Tick the risk checkbox and click <strong>Add</strong>. Then select the Speak AI card, sign in to Speak AI and click <strong>Allow</strong>"
+        },
+        {
+          "html": "Don't see <strong>Add custom</strong>? Your plan may not include custom connectors. On a work account, an administrator must turn on <strong>Allow members to add custom connectors</strong>"
+        }
+      ]
     }
   ]
 }
