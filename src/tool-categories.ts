@@ -140,6 +140,7 @@ export const SPEAK_MCP_TOOL_CATEGORIES = [
       "test_automation",
       "validate_automation_graph",
       "describe_automation_graph",
+      "suggest_automation_templates",
     ],
   },
   {

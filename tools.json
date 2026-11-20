@@ -1,7 +1,7 @@
 {
   "$schema": "https://speakai.co/schemas/tools.v1.json",
   "version": "1.0",
-  "totalTools": 191,
+  "totalTools": 192,
   "categories": [
     {
       "id": "media",
@@ -679,7 +679,7 @@
         {
           "name": "list_automations",
           "title": "List Automations",
-          "description": "List automation rules in the workspace, with paging and filters. An automation the server switched off (an app connection expired, or the owner must confirm a teammate's change) carries pausedReason and a pausedNotice in plain words.",
+          "description": "List automation rules in the workspace, with paging and filters. An automation the server switched off (an app connection expired, or the owner must confirm a teammate's change) carries pausedReason and a pausedNotice in plain words. Linked automations carry linkedAutomation ({ automationId, name, isActive }).",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -688,7 +688,7 @@
         {
           "name": "get_automation",
           "title": "Get Automation Details",
-          "description": "Get detailed information about a specific automation rule, including its trigger and step graph. A third-party app step shows composio.acknowledged: true when its send, post, share or delete action is confirmed. When the automation is off because a connection expired or the owner must confirm a teammate's change, the reply says so in pausedNotice.",
+          "description": "Get detailed information about a specific automation rule, including its trigger and step graph. A third-party app step shows composio.acknowledged: true when its send, post, share or delete action is confirmed. When the automation is off because a connection expired or the owner must confirm a teammate's change, the reply says so in pausedNotice. A linked automation shows linkedAutomationId and linkedAutomation ({ automationId, name, isActive }).",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -715,7 +715,7 @@
         {
           "name": "toggle_automation_status",
           "title": "Toggle Automation Status",
-          "description": "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation first if you need to know which way it will flip. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected third-party account. Turning on an automation that is off for a reason is refused until the reason is fixed: an expired app connection must be reconnected (RECONNECT_REQUIRED), a teammate's change to a step that sends from the owner's account must be confirmed by the owner (OWNER_RECONFIRM_REQUIRED), and a trigger that imports files needs credits left on the account (OUT_OF_CREDITS).",
+          "description": "Toggle an automation rule between active and inactive. This flips the current state, so call get_automation first if you need to know which way it will flip. An active automation runs on its own every time its trigger fires, and its steps can send email, post to Slack, call webhook URLs, and run actions in connected third-party apps. For a Composio app-event trigger, this also creates or removes the event subscription on the connected third-party account. Turning on an automation that is off for a reason is refused until the reason is fixed: an expired app connection must be reconnected (RECONNECT_REQUIRED), a teammate's change to a step that sends from the owner's account must be confirmed by the owner (OWNER_RECONFIRM_REQUIRED), and a trigger that imports files needs credits left on the account (OUT_OF_CREDITS). Turning on one of two linked automations while its partner is off succeeds with a warning: tell the user, because nothing acts on what the intake brings in until the partner is on too.",
           "readOnlyHint": false,
           "destructiveHint": true,
           "idempotentHint": false,
@@ -796,7 +796,7 @@
         {
           "name": "list_automation_actions",
           "title": "List Automation Actions",
-          "description": "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the fields each filter or condition step can test. For a third-party app this includes every action it offers (push), each with a configSchema for the step's argsTemplate, a group, and requiresConfirmation with a riskKind (send, post, share or delete) when the step needs composio.acknowledged: true before it can be saved. Deprecated actions are marked; pick a replacement. Read-only: listing an action does not run it.",
+          "description": "List the step types (actions) available in Speak's automation catalog, optionally for one app slug, plus the fields each filter or condition step can test. For a third-party app this includes every action it offers (push), each with a configSchema for the step's argsTemplate, a group, and requiresConfirmation with a riskKind (send, post, share or delete) when the step needs composio.acknowledged: true before it can be saved. Deprecated actions are marked; pick a replacement. An action the flow cannot feed carries needsInput ({ reason, hint, next }): after an email or file trigger, next is create_folder_automation, which means import with speak-upload here and act in a linked folder automation (see create_automation's linkedAutomation). Read-only: listing an action does not run it.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,
@@ -851,6 +851,15 @@
           "name": "describe_automation_graph",
           "title": "Describe Automation Graph",
           "description": "Show a saved automation's steps as an indented branch tree instead of a flat list. Worth calling before update_automation, which replaces the whole automation: editing one leg means re-sending every step with its dependsOn intact, and this shows what the shape currently is.",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        {
+          "name": "suggest_automation_templates",
+          "title": "Suggest Automation Templates",
+          "description": "Suggest ready-made automations for a From app (where work starts) and a To app (where results go). Use app slugs from list_automation_apps, or speak for Speak itself. Each suggestion has a status and, when ready, a draft to adapt and save with create_automation; the draft leaves the folder empty for you to fill. An email or file app paired with an app that takes results is two linked automations: draft is the intake (the trigger, then speak-upload into a folder) and linkedDraft acts on it (media analysed in that folder, an AI step, then the action). Put the one folder the user picks in the intake's speak-upload folderId and in linkedDraft's trigger.folderIds, then call create_automation with the intake and linkedAutomation set to linkedDraft. Read-only: nothing is created.",
           "readOnlyHint": true,
           "destructiveHint": false,
           "idempotentHint": true,

@@ -578,7 +578,7 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 </details>
 
 <details>
-<summary>Automations (20 tools)</summary>
+<summary>Automations (21 tools)</summary>
 
 | Tool | Description |
 |---|---|
@@ -596,6 +596,7 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 | `list_automation_apps` | List catalog apps: Speak built-ins plus every third-party app, with connection state and what each brings in or sends out (read-only) |
 | `list_automation_triggers` | List catalog triggers, including every trigger of the connected apps (optionally by app) |
 | `list_automation_actions` | List catalog actions, including every action of the connected apps, with search and the confirmation each needs |
+| `suggest_automation_templates` | Suggest ready-made automations for a From app and a To app, including the linked intake and act pair for email and file intake |
 | `build_automation` | Create or update an automation from a friendly spec, without the wire format |
 | `get_automation_run` | Get one run in full: every step, plus which way each branch went |
 | `get_automation_run_stats` | Aggregate run outcome counts over a period |
@@ -603,7 +604,7 @@ The automation tools, `build_automation`, `provision_inbound_webhook`, `get_inbo
 | `validate_automation_graph` | Check a step graph for problems without saving it |
 | `describe_automation_graph` | Show a saved automation's steps as an indented branch tree |
 
-Connected apps work both ways in automations. A trigger pulls something into Speak, for example an email attachment that becomes a recording, and an action step pushes results out, for example a task or a CRM note. An action that sends, posts, shares or deletes needs `composio.acknowledged: true` on its step, set only after the user confirms it. If a teammate changes such a step, the automation turns off until its owner confirms the step again. When one of these blocks a save or a turn-on, the write tools return the API's `errorCode` (`CONFIRMATION_REQUIRED`, `ACTION_NOT_ALLOWED`, `CATALOG_UNAVAILABLE`, `OWNER_RECONFIRM_REQUIRED`, `RECONNECT_REQUIRED` or `OUT_OF_CREDITS`) with the next step. An automation the server switched off carries `pausedReason` and a plain-words `pausedNotice`, and `update_automation` says when an edit turned it off for the owner.
+Connected apps work both ways in automations. A trigger pulls something into Speak, for example an email attachment that becomes a recording, and an action step pushes results out, for example a task or a CRM note. An action that sends, posts, shares or deletes needs `composio.acknowledged: true` on its step, set only after the user confirms it. If a teammate changes such a step, the automation turns off until its owner confirms the step again. When one of these blocks a save or a turn-on, the write tools return the API's `errorCode` (`CONFIRMATION_REQUIRED`, `ACTION_NOT_ALLOWED`, `CATALOG_UNAVAILABLE`, `OWNER_RECONFIRM_REQUIRED`, `RECONNECT_REQUIRED` or `OUT_OF_CREDITS`) with the next step. An automation the server switched off carries `pausedReason` and a plain-words `pausedNotice`, and `update_automation` says when an edit turned it off for the owner. Email and file intake is two linked automations: one imports into a folder and the other acts on what is analysed there. `create_automation` can create both at once with `linkedAutomation`, and turning one on while its partner is off returns a `warning`.
 
 </details>
 

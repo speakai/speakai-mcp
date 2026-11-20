@@ -57,8 +57,8 @@ const KNOWN_REFUSALS: KnownRefusal[] = [
   {
     code: "OUT_OF_CREDITS",
     nextStep:
-      "The trigger imports files or notes and the account has no credits left, so the automation stays off as a " +
-      "saved draft. Ask the user to add credits or upgrade in the Speak web app, then turn it on.",
+      "The trigger imports files or notes and the account has no credits left. Nothing was turned on; to keep the " +
+      "draft, save it with isActive: false. Ask the user to add credits or upgrade in the Speak web app, then turn it on.",
   },
 ];
 

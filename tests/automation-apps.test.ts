@@ -194,21 +194,18 @@ describe("automation tools — third-party app steps", () => {
   });
 
   it("tells the user when an update turned the automation off for the owner", async () => {
-    mockGet.mockResolvedValue({
+    mockGet.mockResolvedValue({ data: { status: "success", data: { steps: [] } } });
+    mockPut.mockResolvedValue({
       data: {
         status: "success",
-        data: {
-          steps: [],
-          owner: { userId: "u1", name: "Alex Lee" },
-          pausedReason: { code: "awaiting_owner_confirmation", stepId: "send", byUserId: "u2" },
-        },
+        data: { automationId: "a1", message: "Saved", pausedReason: { code: "awaiting_owner_confirmation", stepId: "send", byUserId: "u2" } },
       },
     });
     const result = await getToolCallback(server, "update_automation")({ automationId: "a1", ...body([sendStep({ to: "x@example.com" })]) });
 
     const reply = JSON.parse(result.content[0].text);
-    expect(reply.pausedReason.code).toBe("awaiting_owner_confirmation");
-    expect(reply.pausedNotice).toContain("Alex Lee");
+    expect(reply.data.pausedReason.code).toBe("awaiting_owner_confirmation");
+    expect(reply.pausedNotice).toContain('step "send"');
   });
 
   it("says in words why a listed automation is off", async () => {
@@ -229,15 +226,72 @@ describe("automation tools — third-party app steps", () => {
     expect(JSON.parse(result.content[0].text).pausedNotice).toContain("Reconnecting it");
   });
 
+  describe("linked automations for email and file intake", () => {
+    const intake = {
+      name: "Gmail intake",
+      trigger: { type: "composio", provider: "composio", app: "gmail", triggerSlug: "GMAIL_NEW_GMAIL_MESSAGE", triggerConfig: { from: "calls@example.com" } },
+      steps: [{ stepId: "up", stepType: "speak-upload", speakUpload: { sourceMode: "file", folderId: "f1" } }],
+    };
+    const act = body([sendStep({ to: "team@example.com" }, true)]);
+
+    it("creates the intake, then the act automation linked to it", async () => {
+      mockPost
+        .mockResolvedValueOnce({ data: { status: "success", data: { automationId: "intake1" } } })
+        .mockResolvedValueOnce({ data: { status: "success", data: { automationId: "act1" } } });
+      const result = await getToolCallback(server, "create_automation")({ ...intake, linkedAutomation: act });
+
+      expect(result.isError).toBeUndefined();
+      expect(mockPost.mock.calls[0][1]).not.toHaveProperty("linkedAutomation");
+      expect(mockPost.mock.calls[1][1]).toMatchObject({ name: act.name, linkedAutomationId: "intake1" });
+      const reply = JSON.parse(result.content[0].text);
+      expect(reply.linkedAutomation.data.automationId).toBe("act1");
+    });
+
+    it("says the intake exists when the linked automation fails", async () => {
+      mockPost
+        .mockResolvedValueOnce({ data: { status: "success", data: { automationId: "intake1" } } })
+        .mockRejectedValueOnce(apiError(400, { errorCode: "CONFIRMATION_REQUIRED", message: "Tick the confirmation on the step before saving." }));
+      const result = await getToolCallback(server, "create_automation")({ ...intake, linkedAutomation: act });
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain("intake1");
+      expect(result.content[0].text).toContain("errorCode: CONFIRMATION_REQUIRED");
+    });
+
+    it("creates nothing when either graph is invalid", async () => {
+      const broken = { ...act, steps: [{ stepId: "a", stepType: "notify", notify: { channel: "in_app", message: "x" }, dependsOn: ["missing"] }] };
+      const result = await getToolCallback(server, "create_automation")({ ...intake, linkedAutomation: broken });
+
+      expect(result.isError).toBe(true);
+      expect(mockPost).not.toHaveBeenCalled();
+    });
+
+    it("puts the warning first when the partner is off", async () => {
+      mockPut.mockResolvedValue({
+        data: { status: "success", message: "Automation activated", warning: 'Linked with "Act", which is off. Turn it on to act on what this automation brings in.' },
+      });
+      const result = await getToolCallback(server, "toggle_automation_status")({ automationId: "intake1" });
+
+      expect(result.content[0].text.startsWith('Warning: Linked with "Act"')).toBe(true);
+    });
+
+    it("asks the template picker for a From and To pair", async () => {
+      mockGet.mockResolvedValue({ data: { status: "success", data: { from: [], to: [], suggestions: [] } } });
+      await getToolCallback(server, "suggest_automation_templates")({ from: "gmail", to: "monday" });
+
+      expect(mockGet).toHaveBeenCalledWith("/v1/automations/catalog/templates/picker", { params: { from: "gmail", to: "monday" } });
+    });
+  });
+
   it("passes the catalog filters through to the API", async () => {
     mockGet.mockResolvedValue({ data: { status: "success", data: [] } });
     expect(getToolInputSchema(server, "list_automation_apps").safeParse({ for: "trigger" }).data).toEqual({ for: "trigger" });
     expect(getToolInputSchema(server, "list_automation_actions").safeParse({ q: "create task" }).data).toEqual({ q: "create task" });
 
     await getToolCallback(server, "list_automation_apps")({ for: "action" });
-    await getToolCallback(server, "list_automation_actions")({ app: "monday", q: "item" });
+    await getToolCallback(server, "list_automation_actions")({ app: "monday", q: "item", afterTrigger: "GMAIL_NEW_GMAIL_MESSAGE" });
 
     expect(mockGet).toHaveBeenCalledWith("/v1/automations/catalog/apps", { params: { for: "action" } });
-    expect(mockGet).toHaveBeenCalledWith("/v1/automations/catalog/actions", { params: { app: "monday", q: "item" } });
+    expect(mockGet).toHaveBeenCalledWith("/v1/automations/catalog/actions", { params: { app: "monday", q: "item", afterTrigger: "GMAIL_NEW_GMAIL_MESSAGE" } });
   });
 });
