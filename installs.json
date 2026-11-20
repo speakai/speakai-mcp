@@ -4,7 +4,7 @@
     {
       "id": "claude-web",
       "title": "Claude.ai (web)",
-      "tagline": "Browser-based — works on any computer.",
+      "tagline": "Browser-based, works on any computer.",
       "installButton": {
         "label": "Install in Claude.ai",
         "url": "https://claude.ai/settings/connectors",
@@ -32,7 +32,7 @@
     {
       "id": "claude-desktop",
       "title": "Claude Desktop",
-      "tagline": "Native macOS / Windows app.",
+      "tagline": "Native app for macOS and Windows.",
       "steps": [
         { "html": "Open Claude Desktop → Settings → Connectors → <strong>Add custom connector</strong>" },
         { "html": "Paste the URL from the top of this page" },
@@ -46,7 +46,7 @@
     {
       "id": "chatgpt",
       "title": "ChatGPT",
-      "tagline": "Web + desktop. Install from ChatGPT's plugin directory.",
+      "tagline": "Web and desktop. Install from ChatGPT's plugin directory.",
       "installButton": {
         "label": "Install in ChatGPT",
         "url": "https://chatgpt.com/plugins/plugin_asdk_app_6ac2ff7ad9b481918e5eef0343cf3c7b"
@@ -101,7 +101,7 @@
     {
       "id": "vscode",
       "title": "VS Code",
-      "tagline": "One-click install via deeplink.",
+      "tagline": "One-click install.",
       "installButton": {
         "label": "Install in VS Code",
         "url": "https://vscode.dev/redirect/mcp/install?name=speakai&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fapi.speakai.co%2Fv1%2Fmcp%22%7D"
@@ -114,7 +114,7 @@
     {
       "id": "windsurf",
       "title": "Windsurf",
-      "tagline": "HTTP transport, config file.",
+      "tagline": "Add Speak AI to a config file with your API key.",
       "steps": [
         { "html": "Get your API key at <a href=\"https://app.speakai.co/developers/apikeys\" target=\"_blank\" rel=\"noopener\">app.speakai.co/developers/apikeys</a>" },
         { "html": "Add the config below to <code>~/.codeium/windsurf/mcp_config.json</code>" },
@@ -201,7 +201,7 @@
     {
       "id": "muse",
       "title": "Muse",
-      "tagline": "Meta's personal AI assistant. One-click OAuth, no API key.",
+      "tagline": "Meta's personal AI assistant. One-click sign-in, no API key.",
       "installButton": {
         "label": "Open Muse",
         "url": "https://muse.ai",

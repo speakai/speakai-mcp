@@ -186,7 +186,7 @@
       "id": "magic-prompt",
       "name": "AI Chat",
       "iconKey": "magic-prompt",
-      "shortDescription": "Run AI prompts across one file, a folder, or your whole workspace. Save favorites.",
+      "shortDescription": "Run AI prompts across one file, a folder, or your whole account. Save favorites.",
       "tools": [
         {
           "name": "ask_ai_chat",
@@ -311,7 +311,7 @@
       "id": "search-analytics",
       "name": "Search & analytics",
       "iconKey": "search-analytics",
-      "shortDescription": "Full-text search across transcripts, insights, and metadata. Workspace-level stats.",
+      "shortDescription": "Full-text search across transcripts, insights, and metadata. Account-wide stats.",
       "tools": [
         {
           "name": "search_media",
@@ -595,7 +595,7 @@
       "id": "exports",
       "name": "Exports",
       "iconKey": "clips-exports",
-      "shortDescription": "Highlight clips from any time range. Export PDF, DOCX, SRT, VTT, TXT, CSV.",
+      "shortDescription": "Export transcripts, insights or labels from one file or many at once, as PDF, DOCX, SRT, VTT, TXT or CSV.",
       "tools": [
         {
           "name": "export_media",
@@ -674,7 +674,7 @@
       "id": "automations",
       "name": "Automations",
       "iconKey": "automations-webhooks",
-      "shortDescription": "Trigger actions on new recordings. Send events to your own backend.",
+      "shortDescription": "Run AI chat and other steps on their own every time a trigger fires, such as a new recording.",
       "tools": [
         {
           "name": "list_automations",
@@ -862,7 +862,7 @@
       "id": "webhooks",
       "name": "Webhooks",
       "iconKey": "automations-webhooks",
-      "shortDescription": "Trigger actions on new recordings. Send events to your own backend.",
+      "shortDescription": "Send Speak events to your own endpoint, or receive events from other tools to start an automation.",
       "tools": [
         {
           "name": "create_webhook",
@@ -1021,7 +1021,7 @@
       "id": "labels-comments",
       "name": "Labels & comments",
       "iconKey": "text-fields",
-      "shortDescription": "Manage workspace labels, apply them to transcript words, and discuss a file in comment threads.",
+      "shortDescription": "Manage your account's labels, apply them to transcript words, and discuss a file in comment threads.",
       "tools": [
         {
           "name": "list_labels",
@@ -1244,7 +1244,7 @@
       "id": "users-team",
       "name": "Users & teams",
       "iconKey": "users-team",
-      "shortDescription": "List workspace members and manage user groups.",
+      "shortDescription": "List your team members and manage user groups.",
       "tools": [
         {
           "name": "list_users",
