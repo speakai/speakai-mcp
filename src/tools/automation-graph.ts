@@ -89,6 +89,7 @@ export const TRIGGER_OUT: Record<string, IOType> = {
   ai_chat_completed: "media",
   recording_received: "media",
   clip_created: "data",
+  zoom_phone_call: "media",
 };
 
 /** Canonical rule fields per IO type (the API server's FILTER_FIELDS_BY_IOTYPE). */
