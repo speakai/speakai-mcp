@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.4.0 (2026-11-22)
+
+- feat(automations): check graphs on the Zoom Phone call recorded trigger
+
 ## v2.3.0 (2026-11-20)
 
 - feat(automations): send the client contract marker and handle CLIENT_UPDATE_REQUIRED

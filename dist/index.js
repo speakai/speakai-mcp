@@ -9801,7 +9801,8 @@ var init_automation_graph = __esm({
       inbound_webhook: "data",
       ai_chat_completed: "media",
       recording_received: "media",
-      clip_created: "data"
+      clip_created: "data",
+      zoom_phone_call: "media"
     };
     FILTER_FIELDS_BY_IOTYPE = {
       media: ["name", "duration", "sourceLanguage", "tags", "transcript", "speakers"],
